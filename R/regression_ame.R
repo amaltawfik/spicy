@@ -2,15 +2,17 @@
 #
 # Two computation paths per dev/table_regression_design.md Q14:
 #
-#   Path A (Q14b -- differentiation pro)  : `vcov in CR*` + linear formula
+#   Path A (Q14b -- differentiation pro)  : lm under `vcov in CR*`, any
+#                                          formula (the AME of an lm is
+#                                          linear in the coefficients)
 #                                          -> AME inference via
 #                                          `clubSandwich::linear_contrast()`
 #                                          with Satterthwaite-corrected df.
 #                                          spicy is the **first R package**
 #                                          to offer this for `lm`.
 #
-#   Path B (general)                     : non-CR* vcov OR CR* with
-#                                          non-linear formula
+#   Path B (general)                     : non-CR* vcov, or an
+#                                          unexpected Path A failure
 #                                          -> AME via
 #                                          `marginaleffects::avg_slopes()`
 #                                          with our vcov matrix passed +
@@ -138,8 +140,16 @@ extract_ame_rows <- function(
     ))
   }
 
-  # Path A: try Satterthwaite when CR* and AME requested
-  if (isTRUE(use_ame_satterthwaite)) {
+  # Path A: try Satterthwaite when AME is requested and THIS model has a
+  # CR* matrix (`use_ame_satterthwaite` is set for the whole table when
+  # any model has one). The rows carry the attribute
+  # "ame_satterthwaite", which the note reads.
+  if (
+    isTRUE(use_ame_satterthwaite) &&
+      is.character(vcov_type) &&
+      startsWith(vcov_type, "CR") &&
+      !is.null(cluster)
+  ) {
     rows <- tryCatch(
       extract_ame_satterthwaite(
         fit,
@@ -153,48 +163,31 @@ extract_ame_rows <- function(
       error = function(e) e
     )
     if (!inherits(rows, "error")) {
+      if (nrow(rows) > 0L) {
+        attr(rows, "ame_satterthwaite") <- TRUE
+      }
       return(rows)
     }
-    # Fallback: explain why Satterthwaite failed. The wording is
-    # tailored to the cause via the classed condition system --
-    # `spicy_ame_satt_unsupported_formula` is the documented
-    # contract for "this formula isn't compatible with the
-    # closed-form contrast"; anything else is treated as an
-    # unexpected internal failure (still recoverable but worth
-    # surfacing more bluntly).
-    if (inherits(rows, "spicy_ame_satt_unsupported_formula")) {
-      spicy_warn(
-        c(
-          paste0(
-            "AME-Satterthwaite is not applicable to this formula; ",
-            "falling back to z-asymptotic AME inference."
-          ),
-          "x" = paste0("Reason: ", conditionMessage(rows)),
-          "i" = paste0(
-            "AME magnitudes are unaffected; only the inference ",
-            "framework (t-Satterthwaite vs z-asymptotic) differs."
-          )
+    # Every lm formula has its contrast, so a failure here is
+    # unexpected: Path B takes over, with a t-test on the residual
+    # degrees of freedom, and the note no longer names Satterthwaite.
+    spicy_warn(
+      c(
+        paste0(
+          "AME-Satterthwaite computation failed unexpectedly; ",
+          "falling back to a t-test on the residual degrees of freedom ",
+          "for the AME."
         ),
-        class = "spicy_fallback"
-      )
-    } else {
-      spicy_warn(
-        c(
-          paste0(
-            "AME-Satterthwaite computation failed unexpectedly; ",
-            "falling back to z-asymptotic AME inference."
-          ),
-          "x" = paste0("Reason: ", conditionMessage(rows)),
-          "i" = paste0(
-            "If this is reproducible, please open an issue at ",
-            "https://github.com/amaltawfik/spicy/issues -- ",
-            "spicy is the only R package offering AME-Satterthwaite ",
-            "for `lm`, so unexpected failures are worth reporting."
-          )
-        ),
-        class = "spicy_fallback"
-      )
-    }
+        "x" = paste0("Reason: ", conditionMessage(rows)),
+        "i" = paste0(
+          "If this is reproducible, please open an issue at ",
+          "https://github.com/amaltawfik/spicy/issues -- ",
+          "spicy is the only R package offering AME-Satterthwaite ",
+          "for `lm`, so unexpected failures are worth reporting."
+        )
+      ),
+      class = "spicy_fallback"
+    )
   }
   # Path B: marginaleffects with our vcov matrix + df-aware
   extract_ame_marginaleffects(
@@ -236,35 +229,12 @@ extract_ame_satterthwaite <- function(
     # nocov end
   }
 
-  # Identify predictors: term.labels minus pure-interaction terms
-  trms <- attr(stats::terms(fit), "term.labels")
-  preds <- trms[!grepl(":", trms, fixed = TRUE)]
-  # Exclude function-call predictors -- closed-form contrast won't work.
-  # Carries the dedicated `spicy_ame_satt_unsupported_formula` leaf
-  # class so `extract_ame_rows()` can distinguish this expected
-  # condition from genuine internal failures and tailor its
-  # fallback warning accordingly.
-  if (any(grepl("(", preds, fixed = TRUE))) {
-    bad <- preds[grepl("(", preds, fixed = TRUE)]
-    spicy_abort(
-      c(
-        sprintf(
-          "Formula contains function-call predictor(s): %s.",
-          paste(.quote_val(bad), collapse = ", ")
-        ),
-        "i" = paste0(
-          "Closed-form contrast construction is not applicable for ",
-          "`I()`, `poly()`, `log()`, `splines::ns()`, and similar ",
-          "transforms. Pre-build the transformed column in `data` ",
-          "before calling `lm()` to use the Satterthwaite path."
-        )
-      ),
-      class = c("spicy_ame_satt_unsupported_formula", "spicy_unsupported")
-    )
-  }
-  # Exclude predictors absent from the model frame (defensive)
-  data <- stats::model.frame(fit)
-  preds <- preds[preds %in% names(data)]
+  # The predictors: the variables of the terms that are not pure
+  # interactions, a transform included (`I(x^2)`, `log(x)`, `poly(x, 2)`,
+  # `ns(x, 3)` name the variable x). The AME of an lm is linear in the
+  # coefficients whatever the formula, so every one of them has its
+  # contrast (`build_ame_contrasts_for_predictor()`).
+  preds <- .ame_lm_predictor_vars(fit)
   if (length(preds) == 0L) {
     return(empty_coefs_long())
   }
@@ -351,32 +321,121 @@ extract_ame_satterthwaite <- function(
 
 # ---- Closed-form AME contrast builders (lm linear) ------------------------
 
+# The AME of an lm is c'b for every formula: the design row x(v) is a
+# fixed function of the data, so the average change of x(v)'b when v
+# moves is the average change of the design row, times b. The design is
+# rebuilt on moved data with the terms of the fit, whose `predvars`
+# keep the basis of `poly()` / `ns()` / `scale()` as fitted (a formula
+# re-evaluated on the moved data would compute another basis).
+
+# The variables of the non-interaction terms that the data hold (a
+# global constant inside `I(x - m)` is not a predictor), offsets apart.
+.ame_lm_predictor_vars <- function(fit) {
+  trms <- attr(stats::terms(fit), "term.labels")
+  trms <- trms[!grepl(":", trms, fixed = TRUE)]
+  vars <- unique(unlist(lapply(trms, function(t) {
+    all.vars(str2lang(t))
+  })))
+  vars <- setdiff(vars, .offset_only_vars(fit))
+  vars[vars %in% names(.ame_lm_raw_data(fit))]
+}
+
+# The data the design is rebuilt from, row-aligned with the model frame:
+# the model frame itself when every variable of the formula is one of
+# its columns, the fit's data with the raw variables otherwise (the
+# model frame of `I(x^2)` holds x^2, not x).
+.ame_lm_raw_data <- function(fit) {
+  mf <- stats::model.frame(fit)
+  tt <- stats::delete.response(stats::terms(fit))
+  vars <- all.vars(tt)
+  if (all(vars %in% names(mf))) {
+    return(mf)
+  }
+  extra <- setdiff(vars, names(mf))
+  raw <- stats::expand.model.frame(fit, extra, na.expand = FALSE)
+  rn <- rownames(mf)
+  if (!all(rn %in% rownames(raw))) {
+    spicy_abort(
+      "The rows of the fit could not be recovered from its data.",
+      class = "spicy_internal"
+    )
+  }
+  raw[rn, , drop = FALSE]
+}
+
+# The model frame of the predictors on `nd`, with the levels and the
+# transforms of the fit.
+.ame_lm_frame <- function(fit, nd) {
+  stats::model.frame(
+    stats::delete.response(stats::terms(fit)),
+    nd,
+    xlev = fit$xlevels,
+    na.action = stats::na.pass
+  )
+}
+
+# The design matrix of a model frame built by `.ame_lm_frame()`.
+.ame_lm_design <- function(fit, mf) {
+  stats::model.matrix(
+    stats::delete.response(stats::terms(fit)),
+    mf,
+    contrasts.arg = fit$contrasts
+  )
+}
+
+# The model-frame column that carries the variable `v`, as the AME rows
+# of marginaleffects name it (extract_ame_marginaleffects()): `v` itself,
+# or the wrapped column (`factor(cyl)`, `log(x)`) when `v` is not bare.
+.ame_lm_column <- function(v, mf_names) {
+  if (v %in% mf_names) {
+    return(v)
+  }
+  cand <- grep(paste0("(^|\\()", v, "(\\)|$)"), mf_names, value = TRUE)
+  if (length(cand) > 0L) cand[1L] else v
+}
+
+# Does `v` enter the design only as a bare column? Then the design is
+# linear in v, and one step of any size gives the exact slope.
+.ame_lm_enters_linearly <- function(fit, v) {
+  tt <- stats::delete.response(stats::terms(fit))
+  expr <- as.list(attr(tt, "variables"))[-1L]
+  uses <- vapply(expr, function(e) v %in% all.vars(e), logical(1))
+  bare <- vapply(expr, function(e) identical(e, as.name(v)), logical(1))
+  !any(uses & !bare)
+}
+
 # For one predictor `v`, return a list of contrast specs:
 #   list(term_id = "<coef_name>", vector = numeric of length p)
 # - numeric v (no interactions or with interactions): one contrast
 #   for "AME of v" averaged over the observed data.
 # - factor v: k-1 contrasts, one per non-reference level.
 build_ame_contrasts_for_predictor <- function(fit, v, ame_type = "slope") {
-  data <- stats::model.frame(fit)
+  data <- .ame_lm_raw_data(fit)
   if (!v %in% names(data)) {
     return(list())
   }
+  col <- .ame_lm_column(v, names(stats::model.frame(fit)))
+  mf <- .ame_lm_frame(fit, data)
 
-  if (is.numeric(data[[v]])) {
+  if (is.numeric(data[[v]]) && !is.factor(mf[[col]])) {
+    x <- data[[v]]
     # A 0/1 predictor is a contrast of its two values under every
     # `ame_type`, as marginaleffects reports it.
-    gap <- if (all(data[[v]] %in% c(0, 1))) {
-      1
-    } else {
-      .ame_gap_size(data[[v]], ame_type)
-    }
+    binary <- all(x %in% c(0, 1))
+    gap <- if (binary) 1 else .ame_gap_size(x, ame_type)
     return(list(list(
-      term_id = v,
-      vector = build_numeric_ame_contrast(fit, v, gap)
+      term_id = col,
+      vector = build_numeric_ame_contrast(
+        fit,
+        v,
+        gap,
+        slope = identical(ame_type, "slope"),
+        binary = binary
+      )
     )))
   }
-  if (is.factor(data[[v]])) {
-    lvls <- levels(droplevels(data[[v]]))
+  if (is.factor(mf[[col]])) {
+    lvls <- levels(droplevels(mf[[col]]))
     # Defensive: a factor predictor that survived as a model term always
     # has >= 2 used levels (lm/glm reject single-level factor terms with
     # "contrasts can be applied only to factors with 2 or more levels"),
@@ -388,7 +447,7 @@ build_ame_contrasts_for_predictor <- function(fit, v, ame_type = "slope") {
     out <- list()
     for (lvl in lvls[-1]) {
       out[[length(out) + 1L]] <- list(
-        term_id = paste0(v, lvl), # match the lm coef naming convention
+        term_id = paste0(col, lvl), # match the lm coef naming convention
         vector = build_factor_ame_contrast(fit, v, lvl, ref),
         # Carry factor metadata so extract_ame_satterthwaite() can
         # populate the row's factor_term / factor_level /
@@ -397,7 +456,7 @@ build_ame_contrasts_for_predictor <- function(fit, v, ame_type = "slope") {
         # factors (where coef names are .L / .Q and the AME term_id
         # is `paste0(v, lvl)`), causing the renderer to drop the
         # AME row out of its factor group header.
-        factor_term = v,
+        factor_term = col,
         factor_level = lvl,
         factor_level_pos = match(lvl, lvls)
       )
@@ -407,37 +466,61 @@ build_ame_contrasts_for_predictor <- function(fit, v, ame_type = "slope") {
   list()
 }
 
-# Numeric predictor: AME = dE[Y|X]/dv averaged over observations.
-# For lm linear, d(x_i'beta)/dv = sum over interaction terms involving
-# v of their coefficients x the corresponding moderator at obs i.
-# Closed form: c = colMeans(model.matrix(formula, data_h) -
-#                            model.matrix(formula, data_at)) where
-# data_h has v incremented by one unit. For linear formulas this
-# is exact (no derivative approximation needed because the design
-# matrix is linear in v), and the slope and the change for one unit are
-# the same number. `gap` is the step of `ame_type = "sd"`.
-build_numeric_ame_contrast <- function(fit, v, gap = 1) {
-  data <- stats::model.frame(fit)
-  mm_at <- stats::model.matrix(fit)
-  data_h <- data
-  data_h[[v]] <- data_h[[v]] + gap
-  mm_h <- stats::model.matrix(stats::formula(fit), data_h)
-  .ame_contrast_row_average(mm_h - mm_at, fit)
+# Numeric predictor: c = average over the observations of the change of
+# the design row when v moves, so that c'b is the AME.
+# * `gap` (`slope = FALSE`): the change from v to v + gap, the "unit"
+#   and "sd" quantities, and the slope of a v that enters the design
+#   linearly (one step of any size is then the exact derivative).
+# * `slope = TRUE` and v inside a transform: the derivative, by the
+#   centered difference with the step of marginaleffects' avg_slopes()
+#   (1e-4 times the range of v), exact for a polynomial of degree 2.
+# * `binary = TRUE`: the change from v = 0 to v = 1, the contrast
+#   marginaleffects reports for a 0/1 predictor.
+build_numeric_ame_contrast <- function(
+  fit,
+  v,
+  gap = 1,
+  slope = FALSE,
+  binary = FALSE
+) {
+  data <- .ame_lm_raw_data(fit)
+  x <- data[[v]]
+  design_at <- function(val) {
+    nd <- data
+    nd[[v]] <- val
+    .ame_lm_design(fit, .ame_lm_frame(fit, nd))
+  }
+  if (binary) {
+    d <- design_at(rep(1, length(x))) - design_at(rep(0, length(x)))
+  } else if (slope && !.ame_lm_enters_linearly(fit, v)) {
+    h <- 1e-4 * diff(range(x))
+    if (h == 0) {
+      h <- 1e-4 # nocov
+    }
+    d <- (design_at(x + h / 2) - design_at(x - h / 2)) / h
+  } else {
+    d <- design_at(x + gap) - design_at(x)
+  }
+  .ame_contrast_row_average(d, fit)
 }
 
 # Factor predictor at level `lvl` (vs reference): contrast =
 # average over observations of (design row at v = lvl) - (design row
 # at v = ref). Captures average effect of switching v from ref to
-# lvl while keeping other variables at their observed values.
+# lvl while keeping other variables at their observed values. The
+# factor is set in the model frame, where `factor(cyl)` is the column.
 build_factor_ame_contrast <- function(fit, v, lvl, ref) {
-  data <- stats::model.frame(fit)
-  data_ref <- data
-  data_ref[[v]] <- factor(ref, levels = levels(data[[v]]))
-  data_lvl <- data
-  data_lvl[[v]] <- factor(lvl, levels = levels(data[[v]]))
-  mm_ref <- stats::model.matrix(stats::formula(fit), data_ref)
-  mm_lvl <- stats::model.matrix(stats::formula(fit), data_lvl)
-  .ame_contrast_row_average(mm_lvl - mm_ref, fit)
+  mf <- .ame_lm_frame(fit, .ame_lm_raw_data(fit))
+  col <- .ame_lm_column(v, names(mf))
+  design_at <- function(level) {
+    nd <- mf
+    nd[[col]] <- factor(
+      rep(level, nrow(mf)),
+      levels = levels(mf[[col]])
+    )
+    .ame_lm_design(fit, nd)
+  }
+  .ame_contrast_row_average(design_at(lvl) - design_at(ref), fit)
 }
 
 # Row-averaging step of the closed-form contrasts: weighted by the
@@ -984,6 +1067,10 @@ extract_ame_glm <- function(
   }
   out$`.spicy_var` <- NULL
   out$`.spicy_lvl_pos` <- NULL
+  # The note names Satterthwaite only when a row took its df.
+  if (!is.null(df_satt_map) && any(out$term %in% names(df_satt_map))) {
+    attr(out, "ame_satterthwaite") <- TRUE
+  }
   out
 }
 

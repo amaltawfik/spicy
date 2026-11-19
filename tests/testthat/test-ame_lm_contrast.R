@@ -39,6 +39,194 @@
   )
 }
 
+test_that("the AME of an lm with I(x^2) under CR2 is the contrast c'b, with clubSandwich's SE and df", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  fit <- lm(y ~ x + I(x^2) + g, data = d)
+  # The contrast of x: 1 on x, twice the mean of x on the square.
+  cv <- spicy:::build_numeric_ame_contrast(fit, "x", slope = TRUE)
+  expect_equal(
+    unname(cv),
+    c(0, 1, 2 * mean(d$x), 0, 0),
+    tolerance = 1e-8
+  )
+  rows <- .ame_A(fit, d)
+  me <- as.data.frame(marginaleffects::avg_slopes(fit))
+  expect_equal(
+    rows$estimate[rows$term == "x"],
+    me$estimate[me$term == "x"],
+    tolerance = 1e-8
+  )
+  V <- clubSandwich::vcovCR(fit, cluster = d$cl, type = "CR2")
+  lc <- clubSandwich::linear_contrast(
+    fit,
+    vcov = V,
+    contrasts = rbind(x = cv),
+    test = "Satterthwaite"
+  )
+  expect_equal(
+    rows$se[rows$term == "x"],
+    sqrt(drop(t(cv) %*% as.matrix(V) %*% cv)),
+    tolerance = 1e-10
+  )
+  expect_equal(rows$df[rows$term == "x"], lc$df, tolerance = 1e-10)
+})
+
+test_that("table_regression() keeps the Satterthwaite path for an lm with I(x^2)", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  fit <- lm(y ~ x + I(x^2) + g, data = d)
+  expect_no_warning(
+    tb <- table_regression(
+      fit,
+      vcov = "CR2",
+      cluster = ~cl,
+      show_columns = c("b", "se", "p", "ame", "ame_p")
+    )
+  )
+  lo <- as.data.frame(broom::tidy(tb))
+  b <- lo[lo$estimate_type == "B" & lo$term == "gb", ]
+  a <- lo[lo$estimate_type == "ame" & lo$term == "gb", ]
+  # In an additive model the AME of a level is its coefficient: same
+  # test, same df, same p.
+  expect_equal(a$df, b$df, tolerance = 1e-10)
+  expect_equal(a$p.value, b$p.value, tolerance = 1e-10)
+  expect_match(
+    paste(capture.output(print(tb)), collapse = " "),
+    "AME inference: t-test with Satterthwaite df.",
+    fixed = TRUE
+  )
+})
+
+test_that("poly(), log(), factor() and interactions give the AME of avg_slopes()", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  fits <- list(
+    lm(y ~ poly(x, 2) + log(z) + g, data = d),
+    lm(y ~ poly(x, 3) * g + z, data = d),
+    lm(y ~ x * z + I(x^2) + b + factor(k), data = d)
+  )
+  ids <- list(
+    c(x = "x", z = "log(z)", gb = "gb"),
+    c(x = "x", z = "z", gc = "gc"),
+    c(x = "x", z = "z", b = "b", `6` = "factor(k)6")
+  )
+  for (i in seq_along(fits)) {
+    rows <- .ame_A(fits[[i]], d)
+    # marginaleffects warns that factor(k) is numeric in the data.
+    me <- as.data.frame(suppressWarnings(
+      marginaleffects::avg_slopes(fits[[i]])
+    ))
+    me$id <- ifelse(
+      grepl(" - ", me$contrast) & me$term %in% c("g", "k"),
+      sub(" - .*$", "", paste0(me$term, me$contrast)),
+      me$term
+    )
+    me$id <- sub("^k", "", me$id)
+    for (j in seq_along(ids[[i]])) {
+      expect_equal(
+        rows$estimate[rows$term == ids[[i]][[j]]],
+        me$estimate[me$id == names(ids[[i]])[j]],
+        tolerance = 1e-8
+      )
+    }
+    expect_true(all(is.finite(rows$df)))
+    expect_true(all(rows$df < stats::df.residual(fits[[i]])))
+  }
+})
+
+test_that("the unit and SD quantities of a transformed predictor match avg_comparisons()", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  fit <- lm(y ~ x + I(x^2) + g, data = d)
+  for (type in c("unit", "sd")) {
+    rows <- .ame_A(fit, d, type)
+    me <- as.data.frame(spicy:::.spicy_avg_ame(fit, type))
+    expect_equal(
+      rows$estimate[rows$term == "x"],
+      me$estimate[me$term == "x"],
+      tolerance = 1e-8
+    )
+  }
+})
+
+test_that("a weighted lm with I(x^2) averages the slopes with the fit's weights", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  fit <- lm(y ~ x + I(x^2) + g, data = d, weights = w)
+  rows <- .ame_A(fit, d)
+  me <- as.data.frame(marginaleffects::avg_slopes(fit, wts = d$w))
+  expect_equal(
+    rows$estimate[rows$term == "x"],
+    me$estimate[me$term == "x"],
+    tolerance = 1e-8
+  )
+})
+
+test_that("a model under another matrix in the table does not try the Satterthwaite path", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  f1 <- lm(y ~ x + g, data = d)
+  f2 <- lm(y ~ x + I(x^2) + g, data = d)
+  expect_no_warning(
+    tb <- table_regression(
+      list(f1, f2),
+      vcov = list("CR2", "HC3"),
+      cluster = list(~cl, NULL),
+      show_columns = c("b", "se", "p", "ame", "ame_p")
+    )
+  )
+  lo <- as.data.frame(broom::tidy(tb))
+  a2 <- lo[lo$estimate_type == "ame" & lo$model == unique(lo$model)[2], ]
+  expect_true(all(a2$df == stats::df.residual(f2), na.rm = TRUE))
+})
+
+test_that("the note names Satterthwaite only for the AME rows that took its df", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  d$yb <- as.integer(d$y > stats::median(d$y))
+  sc <- c("b", "se", "p", "ame", "ame_p")
+  note <- function(tb) paste(capture.output(print(tb)), collapse = " ")
+  f1 <- lm(y ~ x + g, data = d)
+  g1 <- glm(yb ~ x + g, family = binomial, data = d)
+  # lm under HC3, glm under CR2: the qualifier is the glm one alone.
+  tb <- table_regression(
+    list(f1, g1),
+    vcov = list("HC3", "CR2"),
+    cluster = list(NULL, ~cl),
+    show_columns = sc
+  )
+  # ...and it names the model it is about.
+  expect_match(
+    note(tb),
+    "Model 2: AME inference: t-test with Satterthwaite df (dominant-coefficient approximation).",
+    fixed = TRUE
+  )
+  # A Path A failure: the AME rows fall back, and the note says nothing
+  # of Satterthwaite.
+  testthat::local_mocked_bindings(
+    extract_ame_satterthwaite = function(...) stop("synthetic failure"),
+    .package = "spicy"
+  )
+  expect_warning(
+    tb <- table_regression(
+      f1,
+      vcov = "CR2",
+      cluster = ~cl,
+      show_columns = sc
+    ),
+    class = "spicy_fallback"
+  )
+  expect_no_match(note(tb), "Satterthwaite", fixed = TRUE)
+})
+
 test_that("an rlm fit gets its AME rows, on the fit's own variance", {
   skip_if_not_installed("marginaleffects")
   d <- .ame_lm_data()

@@ -164,25 +164,22 @@ test_that("extract_ame_satterthwaite – empty when formula has no main-effect p
   expect_equal(nrow(rows), 0L)
 })
 
-test_that("extract_ame_satterthwaite – errors with classed condition on function-call predictors", {
+test_that("extract_ame_satterthwaite – a function-call predictor gets its contrast", {
+  # poly() and the other transforms have their contrast too (the AME of
+  # an lm is linear in the coefficients); see test-ame_lm_contrast.R.
   skip_if_no_clubsandwich()
   df <- mk_clustered_data()
   fit <- lm(y ~ poly(x, 2), data = df)
-  err <- tryCatch(
-    spicy:::extract_ame_satterthwaite(
-      fit,
-      vcov_type = "CR2",
-      cluster = df$cluster,
-      ci_level = 0.95,
-      model_id = "M1",
-      outcome = "y"
-    ),
-    error = function(e) e
+  rows <- spicy:::extract_ame_satterthwaite(
+    fit,
+    vcov_type = "CR2",
+    cluster = df$cluster,
+    ci_level = 0.95,
+    model_id = "M1",
+    outcome = "y"
   )
-  expect_s3_class(err, "spicy_ame_satt_unsupported_formula")
-  expect_s3_class(err, "spicy_unsupported")
-  expect_s3_class(err, "spicy_error")
-  expect_match(conditionMessage(err), "function-call predictor")
+  expect_identical(rows$term, "x")
+  expect_true(is.finite(rows$df))
 })
 
 
@@ -212,24 +209,26 @@ test_that("extract_ame_rows – Path A taken when use_ame_satterthwaite = TRUE",
   expect_true(all(is.finite(rows$df)))
 })
 
-test_that("extract_ame_rows – Path A failure on poly() falls back to Path B", {
+test_that("extract_ame_rows – Path A serves poly() without a fallback", {
   skip_if_no_clubsandwich()
   skip_if_not_installed("marginaleffects")
   df <- mk_clustered_data()
   fit <- lm(y ~ poly(x, 2), data = df)
   vc <- clubSandwich::vcovCR(fit, type = "CR2", cluster = df$cluster)
-  # Should warn about Satterthwaite fallback then succeed via Path B
-  rows <- suppressWarnings(spicy:::extract_ame_rows(
-    fit,
-    vc = vc,
-    vcov_type = "CR2",
-    cluster = df$cluster,
-    ci_level = 0.95,
-    use_ame_satterthwaite = TRUE,
-    model_id = "M1",
-    outcome = "y"
-  ))
+  expect_no_warning(
+    rows <- spicy:::extract_ame_rows(
+      fit,
+      vc = vc,
+      vcov_type = "CR2",
+      cluster = df$cluster,
+      ci_level = 0.95,
+      use_ame_satterthwaite = TRUE,
+      model_id = "M1",
+      outcome = "y"
+    )
+  )
   expect_true(nrow(rows) > 0L)
+  expect_true(isTRUE(attr(rows, "ame_satterthwaite")))
 })
 
 test_that("extract_ame_marginaleffects – bare factor variable matches model.frame name directly", {
@@ -277,37 +276,9 @@ test_that("extract_ame_marginaleffects – handles inline factor(x) transform (P
   expect_true(any(grepl("^factor\\(cyl\\)", rows$term)))
 })
 
-test_that("extract_ame_rows – fallback wording differs by cause (Q14b)", {
-  skip_if_no_clubsandwich()
-  skip_if_not_installed("marginaleffects")
-  df <- mk_clustered_data()
-
-  # Cause 1: unsupported formula → "is not applicable to this formula"
-  fit_poly <- lm(y ~ poly(x, 2), data = df)
-  vc <- clubSandwich::vcovCR(fit_poly, type = "CR2", cluster = df$cluster)
-  w1 <- tryCatch(
-    withCallingHandlers(
-      spicy:::extract_ame_rows(
-        fit_poly,
-        vc = vc,
-        vcov_type = "CR2",
-        cluster = df$cluster,
-        ci_level = 0.95,
-        use_ame_satterthwaite = TRUE,
-        model_id = "M1",
-        outcome = "y"
-      ),
-      spicy_fallback = function(c) stop(conditionMessage(c))
-    ),
-    error = function(e) conditionMessage(e)
-  )
-  expect_match(w1, "is not applicable to this formula")
-  expect_match(w1, "function-call predictor")
-})
-
 test_that("extract_ame_rows – unexpected internal failure uses 'open an issue' wording", {
-  # Cause 2: any non-spicy_ame_satt_unsupported_formula error
-  # exits via the catch-all branch. We mock extract_ame_satterthwaite
+  # Every lm formula has its contrast, so any error of Path A is
+  # unexpected and exits via this branch. We mock extract_ame_satterthwaite
   # to throw a plain error and verify the fallback message routes
   # through the second branch with the GitHub issue hint.
   skip_if_not_installed("marginaleffects")

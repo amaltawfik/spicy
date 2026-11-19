@@ -1452,24 +1452,27 @@ build_ame_satterthwaite_footer_block_from_frames <- function(
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
-  any_satt <- any(vapply(
-    frames,
+  # The frames whose AME rows took Satterthwaite df: the flag is set
+  # per model from the rows actually computed, so a model under another
+  # matrix, or one whose AME fell back, is not named.
+  satt <- Filter(
     function(f) isTRUE(f$info$extras$use_ame_satterthwaite),
-    logical(1)
-  ))
-  if (!any_satt) {
+    frames
+  )
+  if (length(satt) == 0L) {
     return(NULL)
   }
-  any_lm <- any(vapply(
-    frames,
-    function(f) !identical(f$info$class, "glm"),
+  # A glm subclass (negbin) takes the glm route, whatever its class
+  # label.
+  is_glm <- vapply(
+    satt,
+    function(f) {
+      identical(f$info$class, "glm") || inherits(attr(f, "fit"), "glm")
+    },
     logical(1)
-  ))
-  any_glm <- any(vapply(
-    frames,
-    function(f) identical(f$info$class, "glm"),
-    logical(1)
-  ))
+  )
+  any_lm <- any(!is_glm)
+  any_glm <- any(is_glm)
   # Phase 7c22: trim the methodological detail. The Pustejovsky &
   # Tipton 2018 reference and the clubSandwich function name belong in
   # the help page (`?table_regression`), not in every table footer
@@ -1483,7 +1486,34 @@ build_ame_satterthwaite_footer_block_from_frames <- function(
   } else {
     ""
   }
-  spicy_fmt("note_ame_satterthwaite", qualifier)
+  text <- spicy_fmt("note_ame_satterthwaite", qualifier)
+  # Another model of the table has AME rows on another test: the
+  # sentence names the models it is about.
+  flagged <- vapply(
+    frames,
+    function(f) isTRUE(f$info$extras$use_ame_satterthwaite),
+    logical(1)
+  )
+  has_ame <- vapply(
+    frames,
+    function(f) {
+      any(f$coefs$estimate_type == "ame" & !is.na(f$coefs$estimate))
+    },
+    logical(1)
+  )
+  if (any(has_ame & !flagged)) {
+    refs <- vapply(
+      which(flagged),
+      function(i) .model_ref(frames, i),
+      character(1)
+    )
+    text <- spicy_fmt(
+      "note_model_line",
+      paste(refs, collapse = spicy_str("note_list_sep_comma")),
+      text
+    )
+  }
+  text
 }
 
 

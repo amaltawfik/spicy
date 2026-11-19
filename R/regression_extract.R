@@ -177,6 +177,9 @@ extract_lm_phase1 <- function(
   # were empty. After `expand_show_columns()`, the group token
   # `"all_ame"` is already expanded to the atomic set, so we only need
   # to check the atomic tokens here.
+  # The note names Satterthwaite for this model only when its AME rows
+  # took those df (extract_ame_rows() marks them).
+  ame_satt_used <- FALSE
   if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
     ame_rows <- extract_ame_rows(
       fit = fit,
@@ -188,6 +191,7 @@ extract_lm_phase1 <- function(
       model_id = model_id,
       outcome = outcome
     )
+    ame_satt_used <- isTRUE(attr(ame_rows, "ame_satterthwaite"))
     if (nrow(ame_rows) > 0L) {
       coefs_long <- rbind(coefs_long, ame_rows)
     }
@@ -233,7 +237,7 @@ extract_lm_phase1 <- function(
     fit_stats = fit_stats,
     vcov_type = vcov_type,
     cluster_name = cluster_name,
-    use_ame_satterthwaite = use_ame_satterthwaite,
+    use_ame_satterthwaite = ame_satt_used,
     has_singular = has_singular,
     singular_terms = if (has_singular) {
       names(cf)[is_singular_vec]

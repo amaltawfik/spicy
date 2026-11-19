@@ -262,11 +262,6 @@
 #'         marks or alignments, or under styles that format a cell
 #'         differently. Signaled together with
 #'         \code{spicy_invalid_input}.
-#'       \item \code{spicy_ame_satt_unsupported_formula} -- signaled
-#'         together with \code{spicy_unsupported} when AME
-#'         Satterthwaite degrees of freedom are unavailable for the
-#'         model's formula structure; normally caught internally and
-#'         surfaced as a \code{spicy_fallback} warning.
 #'       \item \code{spicy_unsupported_class} -- the model class has
 #'         no regression-frame method, so [table_regression()]
 #'         cannot render it.
