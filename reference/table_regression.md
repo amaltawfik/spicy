@@ -606,7 +606,10 @@ table_regression(
   class-appropriate change-stat tokens (e.g. `"r2_change"`, `"f_change"`
   for `lm`). See *Vocabulary tokens* (`show_fit_stats` subsection) and
   *Hierarchical (nested) model comparison* in the details for the full
-  vocabulary.
+  vocabulary. A token you name must have a value for at least one model
+  of the table, or the call is refused with an error that names it (a
+  change token also needs `nested = TRUE`). A token of the default that
+  no model has is left out.
 
 - fit_stats_layout:
 
@@ -676,18 +679,28 @@ table_regression(
   One of `"sd"` (default) or `"variance"`. Controls the display scale of
   the random-effects rows:
 
-  - `"sd"`: report the random-effect standard deviation \\\sigma\\
-    (Gelman 2005, *Technometrics*: "*directly interpretable as the size
-    of the variation across groups*"). Standard error and CI converted
-    via the Delta method: \\SE(\sigma) = SE(\sigma^2) / (2\sigma)\\;
-    \\CI(\sigma) = \sqrt{CI(\sigma^2)}\\.
+  - `"sd"`: report the random-effect standard deviation \\\sigma\\, in
+    the unit of the linear predictor (that of the response for a
+    Gaussian model).
 
-  - `"variance"`: report \\\sigma^2\\ (the canonical internal scale; SE
-    and CI come straight from the Hessian /
-    [`nlme::intervals()`](https://rdrr.io/pkg/nlme/man/intervals.html) /
-    `glmmTMB::confint()` without rescaling).
+  - `"variance"`: report \\\sigma^2\\, in squared units.
 
-  Correlation rows (\\\rho\\) are unitless and pass through either way.
+  The standard error is a delta-method one on the scale the engine
+  estimates on, and \\SE(\sigma) = SE(\sigma^2) / (2\sigma)\\. For
+  `lmer` and `glmer` it comes from the covariance matrix of the
+  variances (`merDeriv`). For `lme`, `glmmTMB` and `clmm` the engine
+  estimates \\\log\sigma\\ and the SE is \\\sigma\\SE(\log\sigma)\\. The
+  Wald CI of every engine is built on \\\log\sigma\\, \\\sigma\exp(\pm
+  z\\SE(\log\sigma))\\, and squared for \\\sigma^2\\: by spicy for
+  `lmer` and `glmer`, by the engine otherwise
+  ([`nlme::intervals()`](https://rdrr.io/pkg/nlme/man/intervals.html),
+  `glmmTMB::confint()`). Correlation rows (\\\rho\\) are unitless and
+  pass through either way. Their SE is a delta-method one too: from the
+  variances for `lmer` (CI \\\rho \pm z\\SE\\, clamped to \\\[-1,
+  1\]\\), from \\\mathrm{atanh}(\rho)\\ for `lme` and from glmmTMB's
+  \\\rho / \sqrt{1 - \rho^2}\\ in a two-term block, with the
+  engine's CI. In a glmmTMB block of three terms or more it is the width
+  of glmmTMB's interval divided by \\2z\\.
 
 - re_columns:
 
@@ -701,12 +714,14 @@ table_regression(
   [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md))
   always carries the full SE + CI.
 
-  Note. Under the default `re_ci = "wald"` the SE and CI are Wald
-  (`est ± z * SE`, clamped at 0 for variances). Wald can be optimistic
-  near the variance boundary (Self & Liang 1987 chi-bar-squared);
-  request boundary-respecting profile-likelihood intervals with
-  `re_ci = "profile"` when robustness is critical. See the
-  *Mixed-effects models* section of the [Publication-ready regression
+  Note. Under the default `re_ci = "wald"` the CI is Wald on the log of
+  the standard deviation (`sd * exp(± z * SE(log sd))`, see `re_scale`),
+  so it stays above 0, and on \\\rho\\ for `lmer` correlations. Wald can
+  be optimistic near the variance boundary (Self & Liang 1987
+  chi-bar-squared); request boundary-respecting profile-likelihood
+  intervals with `re_ci = "profile"` when robustness is critical. See
+  the *Mixed-effects models* section of the [Publication-ready
+  regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
   article.
 
@@ -763,9 +778,10 @@ table_regression(
   One of `"wald"` (default) or `"profile"`. Uncertainty route for the
   random-effect variance-component rows of `lmer` / `glmer` fits:
 
-  - `"wald"`: SE and symmetric CI from the observed information
-    (`merDeriv`), subject to the `options("spicy.re_se_max_n")` size cap
-    (see `re_columns`).
+  - `"wald"`: SE from the information matrix (`merDeriv`, expected
+    information by default) and a Wald CI symmetric on the log of the
+    standard deviation, which stays above 0 (see `re_scale`), subject to
+    the `options("spicy.re_se_max_n")` size cap (see `re_columns`).
 
   - `"profile"`: **profile-likelihood CIs** via
     `confint(fit, method = "profile")` – the route lme4 itself documents

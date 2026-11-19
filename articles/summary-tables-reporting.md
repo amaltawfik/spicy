@@ -749,25 +749,27 @@ guidelines:
 table_categorical(sochealth, select = smoking, by = sex, style = "jama")
 #> Categorical table by sex
 #> 
-#>                     Female          Male           Total                   
-#>                  ─────────────  ─────────────  ─────────────               
-#>  Variable      │   n      %       n      %       n      %       p      φ   
-#> ───────────────┼───────────────────────────────────────────────────────────
-#>  smoking       │                                               .71    .01  
-#>    No          │  475    78.4    451    79.3    926    78.8                
-#>    Yes         │  131    21.6    118    20.7    249    21.2                
-#>    (Missing)   │   14             11             25                        
+#>                Female (n = 620)  Male (n = 580)  Total (n = 1200)           
+#>                ────────────────  ──────────────  ────────────────           
+#>  Variable    │    n        %       n       %        n        %      p    φ  
+#> ─────────────┼──────────────────────────────────────────────────────────────
+#>  smoking     │                                                     .71  .01 
+#>    No        │   475     78.4     451     79.3     926     78.8             
+#>    Yes       │   131     21.6     118     20.7     249     21.2             
+#>    (Missing) │    14               11               25                      
 #> 
 #> Abbreviation: φ, phi coefficient.
-#> N = 1200: Female (n = 620), Male (n = 580). Percentages are column percentages. P-value: Pearson chi-squared test.
+#> N = 1200. Percentages are column percentages. P-value: Pearson chi-squared test.
 ```
 
-Three things change here. JAMA rounds *p* values to two decimals
-(`.71`), where the default reports three (`.713`), and the note opens
-without the word “Note.”, as the AMA manual sets table notes. Its first
-line defines the φ of the header, which the APA default leaves
-undefined. `spicy_style(note_label = )` chooses that word for any style:
-“Note.” (APA), “Note:” (Chicago), or none.
+Four things change here. JAMA rounds *p* values to two decimals (`.71`),
+where the default reports three (`.713`), and the note opens without the
+word “Note.”, as the AMA manual sets table notes. Its first line defines
+the φ of the header, which the APA default leaves undefined.
+`spicy_style(note_label = )` chooses that word for any style: “Note.”
+(APA), “Note:” (Chicago), or none. The n of each group heads its column,
+“Female (n = 620)”, as in JAMA’s model tables, and the note keeps the
+overall N; `spicy_style(sample_size = )` sets that place for any style.
 
 Two properties make styles safe to adopt. A style only moves *display*
 defaults — decimals, *p* notation, interval punctuation, the word that
@@ -1004,7 +1006,7 @@ tab |>
 
 [TABLE]
 
-Categorical table by education {#tinytable_mjk3qj6k0513o7h5s9iv .table
+Categorical table by education {#tinytable_14662kr9zvawrxg32lug .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

@@ -267,7 +267,9 @@ unweighted counts the note gives, for a survey design too. Without
 are rows, <code>"header"</code> is <code>"note"</code>. <code>"none"</code> leaves the sentence out of
 the note of every table that writes one, the survey tables included;
 the Base row of <code><a href="table_multiresponse.html">table_multiresponse()</a></code> stays. The data frames,
-<code>tidy()</code> and <code>glance()</code> do not change. No theme sets it.</p></dd>
+<code>tidy()</code> and <code>glance()</code> do not change. The <code>"jama"</code> and <code>"lancet"</code>
+themes set <code>"header"</code>; <code>spicy_style("jama", sample_size = "note")</code>
+restores the note.</p></dd>
 
 
 <dt id="arg-minus-sign">minus_sign<a class="anchor" aria-label="anchor" href="#arg-minus-sign"></a></dt>
@@ -323,8 +325,9 @@ name or as the object returned here, and by
     <div class="section level2">
     <h2 id="what-a-theme-claims-and-what-it-does-not">What a theme claims, and what it does not<a class="anchor" aria-label="anchor" href="#what-a-theme-claims-and-what-it-does-not"></a></h2>
     <p>A theme covers <strong>numeric formatting conformity</strong>, the word that opens
-the table note, the abbreviations that note defines and, in English,
-how the mean and the median are headed, <strong>only</strong> –
+the table note, the abbreviations that note defines, where the sample
+size goes and, in English, how the mean and the median are headed,
+<strong>only</strong> –
 not full editorial conformity. It does not check reporting
 guidelines, table structure, footnote symbols, units, or anything else
 a journal's instructions ask of a manuscript. Each theme below
@@ -431,6 +434,10 @@ writes <em>b</em> and \(\bar{x}\): it lists them as usable
 "without expansion except where noted".</p></li>
 <li><p>the mean and the median headed <code>Mean</code> and <code>Median</code>, not <code>M</code> and
 <code>Mdn</code> – section 4.1.5 writes "mean (SD)" and "median (IQR)" in full.</p></li>
+<li><p>the n of each group in its column header
+(<code>sample_size = "header"</code>), as the model Table 1 of the document
+heads its groups: "Intervention (n=200)", "Control (n=201)". spicy
+writes "(n = 200)", with its own spaces.</p></li>
 </ul><p>Not encoded: everything else in that document (percentages carrying
 their numerator and denominator, one datum per cell, footnote
 letters, SI conversion factors) is table <em>construction</em>, not number
@@ -509,6 +516,10 @@ published in 2025-2026, checked on 2026-10-20.</p></li>
 <li><p>the mean and the median headed <code>Mean</code> and <code>Median</code>, not <code>M</code> and
 <code>Mdn</code>, as the "median (IQR), mean (SD)" of the same model tables
 (not a written rule).</p></li>
+<li><p>the n of each group in its column header
+(<code>sample_size = "header"</code>), as the same model tables head their
+groups, "Drug A (n=500)" (not a written rule). spicy writes
+"(n = 500)", with its own spaces.</p></li>
 </ul><p>Not encoded: the empty-cell filler, the ban on p-values in a
 randomized trial's baseline table, and the absolute-rather-than-
 relative effect rule are content decisions, not number formats.</p>
@@ -756,6 +767,7 @@ mean inventing their rules.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - table note: no lead-in word (matches the journal's model tables and its published tables; not a written rule)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - table note: abbreviations spelled out at its end, one "HR=hazard ratio." sentence each, alphabetical; n, N, p, SD, SE, IQR and CI not (matches the journal's model tables and its published tables; not a written rule)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  - the mean and the median headed "Mean" and "Median" (matches the journal's model tables, "median (IQR), mean (SD)"; not a written rule)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - sample size: the n of each group in its column header (matches the journal's model tables, "Drug A (n=500)"; not a written rule)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Source: Information for Authors (April 2026); Randomised trials / Observational studies formatting guidelines (July 2025)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         https://www.thelancet.com/pb-assets/Lancet/authors/tl-info-for-authors-1690986041530.pdf</span>
@@ -769,6 +781,7 @@ mean inventing their rules.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   decimal_mark        ·</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   ci_sep              –</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   note_label          ""</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sample_size         header</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

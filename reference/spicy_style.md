@@ -179,8 +179,9 @@ spicy_style_names()
   sentence out of the note of every table that writes one, the survey
   tables included; the Base row of
   [`table_multiresponse()`](https://amaltawfik.github.io/spicy/reference/table_multiresponse.md)
-  stays. The data frames, `tidy()` and `glance()` do not change. No
-  theme sets it.
+  stays. The data frames, `tidy()` and `glance()` do not change. The
+  `"jama"` and `"lancet"` themes set `"header"`;
+  `spicy_style("jama", sample_size = "note")` restores the note.
 
 - minus_sign:
 
@@ -243,13 +244,13 @@ either as a theme name or as the object returned here, and by
 ## What a theme claims, and what it does not
 
 A theme covers **numeric formatting conformity**, the word that opens
-the table note, the abbreviations that note defines and, in English, how
-the mean and the median are headed, **only** – not full editorial
-conformity. It does not check reporting guidelines, table structure,
-footnote symbols, units, or anything else a journal's instructions ask
-of a manuscript. Each theme below lists the exact rules it encodes, with
-the sentence it encodes them from; anything not listed is spicy's own
-default, not the journal's rule.
+the table note, the abbreviations that note defines, where the sample
+size goes and, in English, how the mean and the median are headed,
+**only** – not full editorial conformity. It does not check reporting
+guidelines, table structure, footnote symbols, units, or anything else a
+journal's instructions ask of a manuscript. Each theme below lists the
+exact rules it encodes, with the sentence it encodes them from; anything
+not listed is spicy's own default, not the journal's rule.
 
 Themes only move **defaults**. An argument you type wins over the theme,
 always: `table_regression(fit, style = "lancet", digits = 3)` is a
@@ -355,6 +356,11 @@ Encoded:
 - the mean and the median headed `Mean` and `Median`, not `M` and `Mdn`
   – section 4.1.5 writes "mean (SD)" and "median (IQR)" in full.
 
+- the n of each group in its column header (`sample_size = "header"`),
+  as the model Table 1 of the document heads its groups: "Intervention
+  (n=200)", "Control (n=201)". spicy writes "(n = 200)", with its own
+  spaces.
+
 Not encoded: everything else in that document (percentages carrying
 their numerator and denominator, one datum per cell, footnote letters,
 SI conversion factors) is table *construction*, not number formatting.
@@ -436,6 +442,10 @@ Encoded:
 - the mean and the median headed `Mean` and `Median`, not `M` and `Mdn`,
   as the "median (IQR), mean (SD)" of the same model tables (not a
   written rule).
+
+- the n of each group in its column header (`sample_size = "header"`),
+  as the same model tables head their groups, "Drug A (n=500)" (not a
+  written rule). spicy writes "(n = 500)", with its own spaces.
 
 Not encoded: the empty-cell filler, the ban on p-values in a randomized
 trial's baseline table, and the absolute-rather-than- relative effect
@@ -688,6 +698,7 @@ spicy_style("lancet")
 #>  - table note: no lead-in word (matches the journal's model tables and its published tables; not a written rule)
 #>  - table note: abbreviations spelled out at its end, one "HR=hazard ratio." sentence each, alphabetical; n, N, p, SD, SE, IQR and CI not (matches the journal's model tables and its published tables; not a written rule)
 #>  - the mean and the median headed "Mean" and "Median" (matches the journal's model tables, "median (IQR), mean (SD)"; not a written rule)
+#>  - sample size: the n of each group in its column header (matches the journal's model tables, "Drug A (n=500)"; not a written rule)
 #> 
 #> Source: Information for Authors (April 2026); Randomised trials / Observational studies formatting guidelines (July 2025)
 #>         https://www.thelancet.com/pb-assets/Lancet/authors/tl-info-for-authors-1690986041530.pdf
@@ -701,4 +712,5 @@ spicy_style("lancet")
 #>   decimal_mark        ·
 #>   ci_sep              –
 #>   note_label          ""
+#>   sample_size         header
 ```

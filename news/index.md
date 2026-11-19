@@ -4,6 +4,20 @@
 
 ### Breaking changes
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  the random-effects rows follow one convention whatever the engine, so
+  the same model fitted with
+  [`lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html), `lme()` or
+  `glmmTMB()` shows the same standard error and interval. The standard
+  error of an `lme`, `glmmTMB` or `clmm` row is the delta-method one on
+  the scale the engine estimates on, as for `lmer`: it was the
+  half-width of the interval divided by z, about 2% larger on a
+  well-estimated variance and more on a poorly estimated one. The Wald
+  interval of an `lmer` or `glmer` standard deviation is symmetric on
+  the log scale, as `lme` and `glmmTMB` build theirs, and is no longer
+  clamped at 0. The residual row of a gaussian `glmmTMB` model gains its
+  standard error and interval.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
@@ -167,6 +181,17 @@
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   showed 0 for that group, and the survey tables failed.
 
+- The `jama` and `lancet` themes put the size of each group in its
+  column header, “Female (n = 620)”, as the journals’ model tables do,
+  in
+  [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
+  [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
+  and
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  under `by`. The note keeps the overall N.
+  `spicy_style("jama", sample_size = "note")` gives back the previous
+  table.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a `glmmTMB` beta, ordered beta or beta-binomial mixed model no longer
   reports the Nakagawa R2. The residual variance it relied on for these
@@ -277,15 +302,15 @@
   contrasts, or set the same `options(contrasts = )` again.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  refuses `show_fit_stats` tokens that a table’s models do not compute,
-  where the row used to be left out without a word:
-  `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"` and
-  `"pseudo_r2_tjur"` for a table of
-  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) or `bam()`
-  models, and `"deviance"`, `"bic"` and `"aicc"` for a table of
-  survey-design fits, with `"aic"` too when none of them is a
-  [`svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html). Beside other
-  models, the cell of such a model shows a dash.
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  refuse a `show_fit_stats` token named in the call that no model of the
+  table has a value for (`"icc"` without a mixed model, `"n_events"`
+  without a Cox model, a change token such as `"r2_change"` without
+  `nested = TRUE`), where the row used to be left out without a word.
+  The error names the token. Beside a model that has the value, the cell
+  of the others shows a dash, and a token of the default without a value
+  is still left out.
 
 ### New features
 

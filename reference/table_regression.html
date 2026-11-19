@@ -669,7 +669,11 @@ given model class).</p></li>
 class-appropriate change-stat tokens (e.g. <code>"r2_change"</code>,
 <code>"f_change"</code> for <code>lm</code>). See <em>Vocabulary tokens</em>
 (<code>show_fit_stats</code> subsection) and <em>Hierarchical (nested)
-model comparison</em> in the details for the full vocabulary.</p></dd>
+model comparison</em> in the details for the full vocabulary.
+A token you name must have a value for at least one model of the
+table, or the call is refused with an error that names it (a
+change token also needs <code>nested = TRUE</code>). A token of the default
+that no model has is left out.</p></dd>
 
 
 <dt id="arg-fit-stats-layout">fit_stats_layout<a class="anchor" aria-label="anchor" href="#arg-fit-stats-layout"></a></dt>
@@ -738,18 +742,25 @@ No effect on fits without random effects (<code>lm</code>, <code>glm</code>,
 <dt id="arg-re-scale">re_scale<a class="anchor" aria-label="anchor" href="#arg-re-scale"></a></dt>
 <dd><p>One of <code>"sd"</code> (default) or <code>"variance"</code>.
 Controls the display scale of the random-effects rows:</p><ul><li><p><code>"sd"</code>: report the random-effect standard
-deviation \(\sigma\) (Gelman 2005, <em>Technometrics</em>:
-"<em>directly interpretable as the size of the variation
-across groups</em>"). Standard error and CI converted via
-the Delta method:
-\(SE(\sigma) = SE(\sigma^2) / (2\sigma)\);
-\(CI(\sigma) = \sqrt{CI(\sigma^2)}\).</p></li>
-<li><p><code>"variance"</code>: report \(\sigma^2\) (the canonical
-internal scale; SE and CI come straight from the
-Hessian / <code><a href="https://rdrr.io/pkg/nlme/man/intervals.html" class="external-link">nlme::intervals()</a></code> / <code>glmmTMB::confint()</code>
-without rescaling).</p></li>
-</ul><p>Correlation rows (\(\rho\)) are unitless and pass through
-either way.</p></dd>
+deviation \(\sigma\), in the unit of the linear predictor
+(that of the response for a Gaussian model).</p></li>
+<li><p><code>"variance"</code>: report \(\sigma^2\), in squared units.</p></li>
+</ul><p>The standard error is a delta-method one on the scale the engine
+estimates on, and \(SE(\sigma) = SE(\sigma^2) / (2\sigma)\). For <code>lmer</code>
+and <code>glmer</code> it comes from the covariance matrix of the variances
+(<code>merDeriv</code>). For <code>lme</code>, <code>glmmTMB</code> and <code>clmm</code> the engine estimates
+\(\log\sigma\) and the SE is \(\sigma\,SE(\log\sigma)\). The Wald
+CI of every engine is built on \(\log\sigma\),
+\(\sigma\exp(\pm z\,SE(\log\sigma))\), and squared for
+\(\sigma^2\): by spicy for <code>lmer</code> and <code>glmer</code>, by the engine
+otherwise (<code><a href="https://rdrr.io/pkg/nlme/man/intervals.html" class="external-link">nlme::intervals()</a></code>, <code>glmmTMB::confint()</code>).
+Correlation rows (\(\rho\)) are unitless and pass through
+either way. Their SE is a delta-method one too: from the variances
+for <code>lmer</code> (CI \(\rho \pm z\,SE\), clamped to \([-1, 1]\)), from
+\(\mathrm{atanh}(\rho)\) for <code>lme</code> and from glmmTMB's
+\(\rho / \sqrt{1 - \rho^2}\) in a two-term block, with the engine's
+CI. In a glmmTMB block of three terms or more it is the width of
+glmmTMB's interval divided by \(2z\).</p></dd>
 
 
 <dt id="arg-re-columns">re_columns<a class="anchor" aria-label="anchor" href="#arg-re-columns"></a></dt>
@@ -762,8 +773,10 @@ for journals that want only standard errors
 (<code>re_columns = c("est", "se")</code>). Display-only: the underlying
 data (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code>, <code><a href="as_structured.html">as_structured()</a></code>) always carries the
 full SE + CI.</p>
-<p>Note. Under the default <code>re_ci = "wald"</code> the SE and CI are Wald
-(<code>est ± z * SE</code>, clamped at 0 for variances). Wald can be
+<p>Note. Under the default <code>re_ci = "wald"</code> the CI is Wald on the log
+of the standard deviation (<code>sd * exp(± z * SE(log sd))</code>, see
+<code>re_scale</code>), so it stays above 0, and on \(\rho\) for <code>lmer</code>
+correlations. Wald can be
 optimistic near the variance boundary (Self &amp; Liang 1987
 chi-bar-squared); request boundary-respecting profile-likelihood
 intervals with <code>re_ci = "profile"</code> when robustness is critical.
@@ -818,8 +831,10 @@ p-value alongside the table.</p></dd>
 <dt id="arg-re-ci">re_ci<a class="anchor" aria-label="anchor" href="#arg-re-ci"></a></dt>
 <dd><p>One of <code>"wald"</code> (default) or <code>"profile"</code>. Uncertainty
 route for the random-effect variance-component rows of <code>lmer</code> /
-<code>glmer</code> fits:</p><ul><li><p><code>"wald"</code>: SE and symmetric CI from the observed
-information (<code>merDeriv</code>), subject to the
+<code>glmer</code> fits:</p><ul><li><p><code>"wald"</code>: SE from the information matrix (<code>merDeriv</code>,
+expected information by default) and a Wald CI symmetric on
+the log of the standard deviation, which stays above 0 (see
+<code>re_scale</code>), subject to the
 <code>options("spicy.re_se_max_n")</code> size cap (see <code>re_columns</code>).</p></li>
 <li><p><code>"profile"</code>: <strong>profile-likelihood CIs</strong> via
 <code>confint(fit, method = "profile")</code> – the route lme4 itself
