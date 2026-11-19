@@ -223,3 +223,85 @@ test_that("a hierarchy holding a penalized ols or lrm fit has no change rows and
     expect_identical(tbl$variable[tbl$.row_role == "fit_stat"], "nobs")
   }
 })
+
+
+# ---- F6: a transformed term reads as in the formula -------------------------
+
+test_that("log(), sqrt() and I() terms of rms fits take the name of their lm twin", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("survival")
+  d <- rmsfx_data()
+  d$a <- runif(nrow(d), 20, 70)
+  rows <- function(models, ...) {
+    tbl <- table_regression(models, ..., output = "data.frame")
+    tbl[tbl$.row_role == "coef", ]
+  }
+  f <- yb ~ log(w) * sex + x1 + I(a^2)
+  tbl <- rows(
+    list(
+      glm = glm(f, data = d, family = binomial),
+      lrm = rms::lrm(f, data = d),
+      Glm = rms::Glm(f, data = d, family = binomial)
+    ),
+    show_columns = c("b", "ame")
+  )
+  expect_identical(
+    tbl$variable[tbl$level %in% NA],
+    c("(Intercept)", "log(w)", "x1", "I(a^2)", "log(w):sexm", "a")
+  )
+  # The three columns fill the same rows, the AME of w on the log(w) row.
+  for (col in c("lrm: B", "Glm: B", "lrm: AME", "Glm: AME")) {
+    expect_equal(tbl[[col]], tbl[[sub("^[^:]+", "glm", col)]], tolerance = 1e-6)
+  }
+  ame <- tbl[tbl$variable == "log(w)", c("glm: AME", "lrm: AME", "Glm: AME")]
+  expect_false(anyNA(unlist(ame)))
+
+  tbl <- rows(
+    list(
+      lm = lm(y ~ sqrt(w) + sex, data = d),
+      ols = rms::ols(y ~ sqrt(w) + rms::rcs(a, 3) + sex, data = d)
+    ),
+    show_columns = "b"
+  )
+  expect_identical(
+    tbl$variable[tbl$level %in% NA],
+    c("(Intercept)", "sqrt(w)", "a", "a'")
+  )
+
+  fs <- survival::Surv(time, status) ~ log(w) + sex + log(w):sex
+  tbl <- rows(
+    list(
+      coxph = survival::coxph(fs, data = d),
+      cph = rms::cph(fs, data = d)
+    ),
+    exponentiate = TRUE,
+    show_columns = "b"
+  )
+  expect_identical(
+    tbl$variable[tbl$level %in% NA],
+    c("log(w)", "log(w):sexm")
+  )
+  expect_equal(tbl[["cph: HR"]], tbl[["coxph: HR"]], tolerance = 1e-4)
+})
+
+test_that("keep, drop and labels take the formula's spelling of a transformed rms term", {
+  skip_if_not_installed("rms")
+  d <- rmsfx_data()
+  m <- rms::lrm(yb ~ log(w) * sex + x1, data = d)
+  kept <- function(...) {
+    tbl <- table_regression(m, ..., show_columns = "b", output = "data.frame")
+    tbl$variable[tbl$.row_role == "coef"]
+  }
+  expect_identical(
+    setdiff(kept(keep = "^log\\(w\\)$"), "(Intercept)"),
+    "log(w)"
+  )
+  expect_false("log(w):sexm" %in% kept(drop = "^log\\(w\\):"))
+  tbl <- table_regression(
+    m,
+    labels = c("log(w)" = "Weight (log)"),
+    show_columns = "b",
+    output = "data.frame"
+  )
+  expect_true("Weight (log)" %in% tbl$label)
+})

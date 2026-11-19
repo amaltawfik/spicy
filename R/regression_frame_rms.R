@@ -426,7 +426,7 @@ as_regression_frame.Glm <- function(
   # Each row takes the lm spelling of its term: "smokeyes" for rms's
   # "smoke=yes" (see the header). A row that is no factor level (a
   # numeric predictor, an interaction) is its own parent, as in lm.
-  nm <- .rms_row_terms(nm_raw, lgl)
+  nm <- .rms_row_terms(nm_raw, lgl, .rms_transformed_terms(fit))
   parent_var <- ifelse(is.na(ft), nm, ft)
   label <- ifelse(is.na(lvl), nm, lvl)
 
@@ -826,7 +826,12 @@ as_regression_frame.Glm <- function(
 # level spelled "" keeps rms's name, "f=": in lm's spelling it would be
 # its factor's own name. The rows of a table align on these terms, and
 # `labels` names them (.reg_label_keys()).
-.rms_row_terms <- function(nm, lgl = character(0)) {
+#
+# `trans` maps the rms name of a transformed term to its label in the
+# formula, "bili" to "log(bili)" (.rms_transformed_terms()): the row of
+# log(bili) reads "log(bili)", as in lm, and so does each part of an
+# interaction that names it ("log(bili):sexm").
+.rms_row_terms <- function(nm, lgl = character(0), trans = character(0)) {
   nm <- .rms_normalise_names(nm)
   parts <- strsplit(nm, " * ", fixed = TRUE)
   unname(vapply(
@@ -835,12 +840,43 @@ as_regression_frame.Glm <- function(
       p <- ifelse(
         grepl("=.", p),
         sub("=", "", p, fixed = TRUE),
-        ifelse(p %in% lgl, paste0(p, "TRUE"), p)
+        ifelse(
+          p %in% lgl,
+          paste0(p, "TRUE"),
+          ifelse(p %in% names(trans), unname(trans[p]), p)
+        )
       )
       paste(p, collapse = ":")
     },
     character(1)
   ))
+}
+
+
+# The terms rms names by their variable although the formula transforms
+# it: rms::Design() names a term by the variable inside its call, "bili"
+# for log(bili) and "age" for I(age^2), and keeps the formula's spelling
+# of each column in fit$Design$mmcolnames, parallel to the coefficient
+# names fit$Design$colnames. A named vector, rms name -> label, for the
+# terms rms takes as they are (assume "asis") whose label is a call on
+# that one variable. The transformations of rms itself (rcs, pol, lsp,
+# scored, catg, strat, matrx) keep rms's names, "age", "age'", "age''".
+.rms_transformed_terms <- function(fit) {
+  D <- fit$Design
+  cn <- D$colnames
+  mm <- D$mmcolnames
+  if (is.null(cn) || length(cn) != length(mm)) {
+    return(character(0))
+  }
+  asis <- cn %in% D$name[D$assume %in% "asis"] & cn != mm
+  out <- character(0)
+  for (i in which(asis)) {
+    v <- tryCatch(all.vars(str2lang(mm[i])), error = function(e) NULL)
+    if (identical(v, cn[i])) {
+      out[[cn[i]]] <- mm[i]
+    }
+  }
+  out
 }
 
 
@@ -860,7 +896,11 @@ as_regression_frame.Glm <- function(
 # level) keeps its term.
 .rms_term_keys <- function(coefs, fit) {
   raw <- names(stats::coef(fit))
-  rows <- .rms_row_terms(raw, .rms_logical_vars(fit))
+  rows <- .rms_row_terms(
+    raw,
+    .rms_logical_vars(fit),
+    .rms_transformed_terms(fit)
+  )
   key <- .rms_normalise_names(raw)[match(coefs$term, rows)]
   ifelse(is.na(key), coefs$term, key)
 }

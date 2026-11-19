@@ -4266,7 +4266,8 @@ validate_predictor_labels <- function(labels, call = rlang::caller_env()) {
   if (inherits(fit, "rms")) {
     nm <- .rms_row_terms(
       setdiff(nm, .lrm_cut_names(fit)),
-      .rms_logical_vars(fit)
+      .rms_logical_vars(fit),
+      .rms_transformed_terms(fit)
     )
   }
   nm
