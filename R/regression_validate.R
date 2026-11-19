@@ -4669,6 +4669,7 @@ validate_estimand_horizons <- function(
   show_columns,
   tau,
   at_time,
+  models = list(),
   call = rlang::caller_env()
 ) {
   wants_rmst <- any(
@@ -4699,8 +4700,18 @@ validate_estimand_horizons <- function(
       )
     }
   } else if (!is.null(tau)) {
+    # A quantreg user reads `tau` as the quantile.
+    rq_hint <- if (any(vapply(models, inherits, logical(1), "rq"))) {
+      c(
+        "i" = paste0(
+          "`tau` is the horizon of the RMST columns. The quantile of an ",
+          "`rq` fit is set in `quantreg::rq(tau = )`; a table of several ",
+          "quantiles takes a list of fits, one per quantile."
+        )
+      )
+    }
     spicy_abort(
-      "`tau` was supplied but no RMST column is requested.",
+      c("`tau` was supplied but no RMST column is requested.", rq_hint),
       class = "spicy_invalid_input",
       call = call
     )

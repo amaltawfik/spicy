@@ -2310,7 +2310,7 @@ table_regression <- function(
   }
   # Survival estimand horizons: the horizon defines the estimand, so
   # it is explicit and mandatory -- and refused when unused.
-  validate_estimand_horizons(show_columns, tau, at_time)
+  validate_estimand_horizons(show_columns, tau, at_time, models = models)
   # `ame_type` defines the AME columns; a table without one reaches nothing.
   if (
     !identical(ame_type, "slope") &&

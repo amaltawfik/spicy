@@ -224,3 +224,26 @@ test_that("a feols regressor really called fit_x keeps its name", {
     c("(Intercept)", "fit_x", "I(fit_x^2)")
   )
 })
+
+
+# ---- `tau` on an rq fit --------------------------------------------------
+
+test_that("tau on an rq fit says where the quantile is set", {
+  skip_if_not_installed("quantreg")
+  d <- .rf_wage_data()
+  q50 <- suppressWarnings(quantreg::rq(log(wage) ~ education, data = d))
+  err <- expect_error(
+    table_regression(q50, tau = 0.75),
+    class = "spicy_invalid_input"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "no RMST column is requested", fixed = TRUE)
+  expect_match(msg, "quantreg::rq(tau = )", fixed = TRUE)
+  expect_match(msg, "one per quantile", fixed = TRUE)
+  # Without an rq fit, the message keeps to the RMST horizon.
+  err <- expect_error(
+    table_regression(lm(log(wage) ~ education, d), tau = 0.75),
+    class = "spicy_invalid_input"
+  )
+  expect_no_match(conditionMessage(err), "quantreg", fixed = TRUE)
+})
