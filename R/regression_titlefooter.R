@@ -342,6 +342,13 @@ build_regression_footer_from_frames <- function(
   # columns). The standard errors are named only for the Wald change
   # tests, the one fit statistic they reach.
   coef_note <- !fit_only
+  # The notes that explain the SE and CI cells of the random-effect rows
+  # (why they are missing, how they were computed) speak only of cells the
+  # table shows: the rows are drawn (`show_re`) and the SE or CI column is
+  # both shown and kept for them (`re_columns`, see .vc_cell_undefined).
+  re_se_ci_shown <- coef_note &&
+    isTRUE(show_re) &&
+    any(c("se", "ci") %in% intersect(re_columns, show_columns))
   # Per-model footer lines cite the label the column spanners display,
   # so a table headed "Baseline / Adjusted" is not footnoted "Model 1 /
   # Model 2" -- names that appear nowhere in what the reader sees. The
@@ -422,7 +429,11 @@ build_regression_footer_from_frames <- function(
         show_intercept,
         intercept_label
       ),
-      build_singular_footer_block_from_frames(frames, fit_only = fit_only),
+      build_singular_footer_block_from_frames(
+        frames,
+        fit_only = fit_only,
+        re_se_ci_shown = re_se_ci_shown
+      ),
       build_icc_omitted_footer_block_from_frames(frames, show_fit_stats),
       if (coef_note) build_reference_outcome_footer_block_from_frames(frames),
       if (coef_note) {
@@ -470,9 +481,9 @@ build_regression_footer_from_frames <- function(
       ),
       build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
       build_p_adjust_footer_block_from_frames(frames, p_adjust, show_columns),
-      if (coef_note) build_re_se_skipped_footer_block_from_frames(frames),
-      if (coef_note) build_re_apvar_footer_block_from_frames(frames),
-      if (coef_note) build_re_profile_footer_block_from_frames(frames),
+      if (re_se_ci_shown) build_re_se_skipped_footer_block_from_frames(frames),
+      if (re_se_ci_shown) build_re_apvar_footer_block_from_frames(frames),
+      if (re_se_ci_shown) build_re_profile_footer_block_from_frames(frames),
       build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
       build_nested_footer_block(nested)
     ),
@@ -2786,7 +2797,11 @@ format_p_value_for_panel <- function(p, decimal_mark = ".") {
 }
 
 
-build_singular_footer_block_from_frames <- function(frames, fit_only = FALSE) {
+build_singular_footer_block_from_frames <- function(
+  frames,
+  fit_only = FALSE,
+  re_se_ci_shown = TRUE
+) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
@@ -2812,8 +2827,11 @@ build_singular_footer_block_from_frames <- function(frames, fit_only = FALSE) {
       return(NULL)
     }
   }
+  # Without an SE or CI cell on the random-effect rows, the mixed note
+  # keeps the fact and leaves the clause about the omitted cells.
+  fact_only <- fit_only || !isTRUE(re_se_ci_shown)
   if (length(frames) == 1L) {
-    return(.singular_msg_for_frame(frames[[affected]], is_mixed[1L], fit_only))
+    return(.singular_msg_for_frame(frames[[affected]], is_mixed[1L], fact_only))
   }
   per <- vapply(
     seq_along(affected),
@@ -2821,7 +2839,7 @@ build_singular_footer_block_from_frames <- function(frames, fit_only = FALSE) {
       .model_line(
         frames,
         affected[k],
-        .singular_msg_for_frame(frames[[affected[k]]], is_mixed[k], fit_only)
+        .singular_msg_for_frame(frames[[affected[k]]], is_mixed[k], fact_only)
       )
     },
     character(1)
