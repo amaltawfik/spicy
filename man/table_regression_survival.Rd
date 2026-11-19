@@ -209,8 +209,14 @@ practice.
 \code{flexsurvreg}.
 \item The RMST and risk-difference columns for \code{cph} and
 \code{flexsurvreg}, for a \code{coxph} fit with time-transform \code{tt()} terms,
-and for a stratified \code{survreg} fit, whose per-stratum scale
-parameters are not standardized (refit without \code{strata()}).
+for a stratified \code{survreg} fit, whose per-stratum scale
+parameters are not standardized (refit without \code{strata()}), and
+for a \code{coxph} fit with a \code{frailty()} term, whose random effect the
+estimand would ignore.
+\item The objects that inherit from \code{coxph} or \code{survreg} without
+being that model: \code{survival::clogit()} fits, multi-state \code{coxph}
+fits, \code{coxph} fits with a \code{pspline()} or a non-sparse \code{frailty()}
+term, and \code{survey::svysurvreg()} fits.
 \item \code{"rmst"} columns without \code{tau}, and \code{"risk_diff"} columns
 without \code{at_time}.
 \item \verb{HC*}, \code{"bootstrap"} and \code{"jackknife"} for every class, and

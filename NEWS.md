@@ -2,6 +2,17 @@
 
 ## Breaking changes
 
+* `table_regression()` refuses, with an error that names the class, the
+  objects that inherit from a supported class without being that model:
+  `survival::clogit()` fits, which were tabulated as a Cox model,
+  multi-state `coxph` fits, `coxph` fits with a `pspline()` or a
+  non-sparse `frailty()` term, which showed one row per spline basis or
+  per cluster, `survey::svysurvreg()` fits, whose design went unmentioned,
+  and `nlme::nlme()` and `nlme::gnls()` fits, tabulated as linear
+  models. A `coxph` fit with a sparse `frailty()` term keeps its table
+  but refuses the RMST and risk-difference columns, which would ignore
+  the random effect.
+
 * `table_regression()`: the random-effects rows follow one convention
   whatever the engine, so the same model fitted with `lmer()`, `lme()`
   or `glmmTMB()` shows the same standard error and interval. The
@@ -434,6 +445,10 @@
   (id)", "Newey-West (L = 2)").
 
 ## Improvements and bug fixes
+
+* `table_regression()` refuses by name an `lm()` fit with a matrix
+  response (`mlm`), an `aov()` fit and the `rms::Rq()` and `rms::Gls()`
+  wrappers. They stopped on an internal error.
 
 * `table_regression()` renders an intercept-only `glmmTMB()` model of
   the `ordinal()` family, alone or as the first model of `nested =

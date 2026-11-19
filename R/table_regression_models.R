@@ -835,6 +835,13 @@
 #' anyway -- unsupported classes error with a clear message naming the
 #' supported set. Feature requests are welcome on the issue tracker.
 #'
+#' A class listed here does not cover the objects that inherit from it
+#' without being that model. These are refused by name: `clogit`,
+#' multi-state `coxph`, `coxph` with a `pspline()` or a non-sparse
+#' `frailty()` term, `svysurvreg`, `mlm` (an `lm()` with a matrix
+#' response), `aov`, `nlme`, `gnls`, and the `rms::Rq()` and `rms::Gls()`
+#' wrappers.
+#'
 #' @section Supported classes:
 #'
 #' `r spicy:::.render_supported_models_md()`

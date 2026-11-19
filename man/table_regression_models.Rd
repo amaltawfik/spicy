@@ -33,6 +33,13 @@ refuses.
 If a class is not listed: fit the model and call \code{table_regression(fit)}
 anyway -- unsupported classes error with a clear message naming the
 supported set. Feature requests are welcome on the issue tracker.
+
+A class listed here does not cover the objects that inherit from it
+without being that model. These are refused by name: \code{clogit},
+multi-state \code{coxph}, \code{coxph} with a \code{pspline()} or a non-sparse
+\code{frailty()} term, \code{svysurvreg}, \code{mlm} (an \code{lm()} with a matrix
+response), \code{aov}, \code{nlme}, \code{gnls}, and the \code{rms::Rq()} and \code{rms::Gls()}
+wrappers.
 }
 \section{Supported classes}{
 \tabular{lllllll}{

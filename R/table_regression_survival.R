@@ -178,8 +178,14 @@
 #'     `flexsurvreg`.
 #'   \item The RMST and risk-difference columns for `cph` and
 #'     `flexsurvreg`, for a `coxph` fit with time-transform `tt()` terms,
-#'     and for a stratified `survreg` fit, whose per-stratum scale
-#'     parameters are not standardized (refit without `strata()`).
+#'     for a stratified `survreg` fit, whose per-stratum scale
+#'     parameters are not standardized (refit without `strata()`), and
+#'     for a `coxph` fit with a `frailty()` term, whose random effect the
+#'     estimand would ignore.
+#'   \item The objects that inherit from `coxph` or `survreg` without
+#'     being that model: `survival::clogit()` fits, multi-state `coxph`
+#'     fits, `coxph` fits with a `pspline()` or a non-sparse `frailty()`
+#'     term, and `survey::svysurvreg()` fits.
 #'   \item `"rmst"` columns without `tau`, and `"risk_diff"` columns
 #'     without `at_time`.
 #'   \item `HC*`, `"bootstrap"` and `"jackknife"` for every class, and
