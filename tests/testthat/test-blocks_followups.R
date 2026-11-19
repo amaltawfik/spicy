@@ -323,3 +323,51 @@ test_that("the error-term rows without a statistic have no test_type or df", {
     td$term %in% c("Error terms::sigma", "Error terms::rho")
   ])))
 })
+
+# ---- 8. A nested comparison with a GAM -----------------------------------
+
+test_that("the note says the change test of a GAM is approximate", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("MASS")
+  glm_fit <- stats::glm(
+    type ~ age + bmi + glu + npreg,
+    family = stats::binomial,
+    data = fu_pima()
+  )
+  en <- paste0(
+    "Change test of an additive model: approximate, on the difference ",
+    "in effective degrees of freedom."
+  )
+  out <- fu_print(table_regression(
+    list(GLM = glm_fit, GAM = fu_gam()),
+    nested = TRUE
+  ))
+  expect_match(out, en, fixed = TRUE)
+  # Side by side without nesting, or two glm fits nested: no sentence.
+  expect_no_match(
+    fu_print(table_regression(list(GLM = glm_fit, GAM = fu_gam()))),
+    "Change test of an additive model",
+    fixed = TRUE
+  )
+  glm0 <- stats::update(glm_fit, . ~ . - npreg)
+  expect_no_match(
+    fu_print(table_regression(list(glm0, glm_fit), nested = TRUE)),
+    "Change test of an additive model",
+    fixed = TRUE
+  )
+  out <- withr::with_options(
+    list(spicy.language = "fr"),
+    fu_print(table_regression(
+      list(GLM = glm_fit, GAM = fu_gam()),
+      nested = TRUE
+    ))
+  )
+  expect_match(
+    out,
+    paste0(
+      "Test de variation d'un modèle additif : approché, ",
+      "sur la différence des degrés de liberté effectifs."
+    ),
+    fixed = TRUE
+  )
+})

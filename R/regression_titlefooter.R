@@ -479,6 +479,7 @@ build_regression_footer_from_frames <- function(
         nested,
         show_fit_stats
       ),
+      build_nested_gam_footer_block_from_frames(frames, nested, show_fit_stats),
       build_random_effects_footer_block_from_frames(
         frames,
         show_re = show_re,
@@ -2337,30 +2338,7 @@ build_nested_ml_refit_footer_block_from_frames <- function(
   nested,
   show_fit_stats = character(0)
 ) {
-  if (!isTRUE(nested) || !is.list(frames) || length(frames) < 2L) {
-    return(NULL)
-  }
-  shown_change <- intersect(show_fit_stats, .NESTED_CHANGE_TOKENS)
-  has_change_row <- length(shown_change) > 0L &&
-    any(vapply(
-      frames,
-      function(f) {
-        fs <- f$info$fit_stats
-        if (!is.list(fs)) {
-          return(FALSE)
-        }
-        # Subset by NAME, not by [[: a list `[[` on an absent name is an
-        # error, and a frame that never went through
-        # attach_nested_stats_to_frames() carries none of these keys.
-        any(vapply(
-          fs[intersect(shown_change, names(fs))],
-          function(v) isTRUE(is.finite(scalar_or_na(v))),
-          logical(1)
-        ))
-      },
-      logical(1)
-    ))
-  if (!has_change_row) {
+  if (!.nested_change_row_shown(frames, nested, show_fit_stats)) {
     return(NULL)
   }
   is_lme4 <- vapply(
@@ -2383,6 +2361,58 @@ build_nested_ml_refit_footer_block_from_frames <- function(
     return(NULL)
   }
   spicy_str("note_nested_ml_refit")
+}
+
+# "Change test of an additive model: approximate, ...": a nested
+# comparison that holds a GAM. Its change test rests on mgcv's
+# approximation (anova.gam(): "p-values ... are approximate"), on a
+# difference of effective degrees of freedom, not an integer. Gated on a
+# change row shown, as the refit sentence above.
+build_nested_gam_footer_block_from_frames <- function(
+  frames,
+  nested,
+  show_fit_stats = character(0)
+) {
+  if (!.nested_change_row_shown(frames, nested, show_fit_stats)) {
+    return(NULL)
+  }
+  is_gam <- vapply(
+    frames,
+    function(f) identical(f$info$class, "gam"),
+    logical(1)
+  )
+  if (!any(is_gam)) {
+    return(NULL)
+  }
+  spicy_str("note_nested_gam")
+}
+
+# TRUE when a nested table shows a change row carrying a number
+# (condition (1) above).
+.nested_change_row_shown <- function(frames, nested, show_fit_stats) {
+  if (!isTRUE(nested) || !is.list(frames) || length(frames) < 2L) {
+    return(FALSE)
+  }
+  shown_change <- intersect(show_fit_stats, .NESTED_CHANGE_TOKENS)
+  length(shown_change) > 0L &&
+    any(vapply(
+      frames,
+      function(f) {
+        fs <- f$info$fit_stats
+        if (!is.list(fs)) {
+          return(FALSE)
+        }
+        # Subset by NAME, not by [[: a list `[[` on an absent name is an
+        # error, and a frame that never went through
+        # attach_nested_stats_to_frames() carries none of these keys.
+        any(vapply(
+          fs[intersect(shown_change, names(fs))],
+          function(v) isTRUE(is.finite(scalar_or_na(v))),
+          logical(1)
+        ))
+      },
+      logical(1)
+    ))
 }
 
 

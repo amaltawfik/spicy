@@ -572,6 +572,10 @@
   # equally affected; and it claims no reason beyond the refit, because
   # the same gap appears on a pair whose fixed effects never changed.
   note_nested_ml_refit = "Change statistics are computed from maximum-likelihood refits and need not match differences of the displayed REML criteria.",
+  # A nested comparison with a GAM: mgcv's anova.gam() calls its p-values
+  # approximate, and the df of the change are a difference of effective
+  # degrees of freedom, not an integer.
+  note_nested_gam = "Change test of an additive model: approximate, on the difference in effective degrees of freedom.",
   # Component-block glosses. One hole: the block caption. The
   # zero-inflation gloss is shared by glmmTMB and pscl - one component,
   # one sentence.

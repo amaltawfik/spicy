@@ -335,14 +335,25 @@
       stacked = TRUE
     )
   }
-  # The note sentence of a hierarchy refitted by maximum likelihood is a
-  # statement about the pairs, which no panel sees alone.
-  extra <- list(
-    inference = build_nested_ml_refit_footer_block_from_frames(
+  # The note sentences of a hierarchy refitted by maximum likelihood, and
+  # of one that holds a GAM, are statements about the pairs, which no
+  # panel sees alone.
+  change_notes <- c(
+    build_nested_ml_refit_footer_block_from_frames(
+      frames,
+      nested_on,
+      c(np$show_fit_stats, tokens)
+    ),
+    build_nested_gam_footer_block_from_frames(
       frames,
       nested_on,
       c(np$show_fit_stats, tokens)
     )
+  )
+  extra <- list(
+    inference = if (length(change_notes)) {
+      paste(change_notes, collapse = " ")
+    }
   )
 
   .table_stack_impl(
