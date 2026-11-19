@@ -115,7 +115,8 @@
 #' is tested by the Wald chi-square of the added coefficients on the
 #' robust matrix. The RMST and risk-difference columns of `survreg` are
 #' refused for it: a tobit models a censored response, not a time to
-#' event.
+#' event. Its AME is computed on the latent (uncensored) outcome, whose
+#' mean is the linear predictor, and the note says so.
 #'
 #' **Hierarchical comparison** (`nested = TRUE`). A quantile hierarchy
 #' gets `c("f_change", "p_change")`, the Wald-type test

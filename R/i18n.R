@@ -792,6 +792,9 @@
   note_ame_slope = "AME of a continuous predictor: average slope (dY/dX).",
   note_ame_unit = "AME of a continuous predictor: average change in the prediction for a one-unit increase.",
   note_ame_sd = "AME of a continuous predictor: average change in the prediction for a one-standard-deviation increase.",
+  # The scale of the AME of a tobit model: its prediction is the linear
+  # predictor, the mean of the latent outcome.
+  note_ame_tobit = "AME of a tobit model: computed on the latent (uncensored) outcome.",
   # The exponentiation note. The scope is the subject of the sentence:
   # every coefficient, or the models it names (one hole: the model
   # references, joined). The SE gloss names the mechanism behind the

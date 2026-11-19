@@ -38,7 +38,7 @@ models are listed below.
    \code{lm_robust} \tab \code{estimatr::lm_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    \code{iv_robust} \tab \code{estimatr::iv_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical \cr
-   \code{tobit} \tab \code{AER::tobit()} \tab yes \tab - \tab - \tab classical, CR1 \cr
+   \code{tobit} \tab \code{AER::tobit()} \tab yes (latent outcome) \tab - \tab - \tab classical, CR1 \cr
    \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
    \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects) \tab OR / IRR (link) \tab - \tab classical (the fit's own) \cr
 }
@@ -142,7 +142,8 @@ scaled by \eqn{G/(G-1)}{G/(G-1)}, \code{G} the number of clusters. The other
 is tested by the Wald chi-square of the added coefficients on the
 robust matrix. The RMST and risk-difference columns of \code{survreg} are
 refused for it: a tobit models a censored response, not a time to
-event.
+event. Its AME is computed on the latent (uncensored) outcome, whose
+mean is the linear predictor, and the note says so.
 
 \strong{Hierarchical comparison} (\code{nested = TRUE}). A quantile hierarchy
 gets \code{c("f_change", "p_change")}, the Wald-type test

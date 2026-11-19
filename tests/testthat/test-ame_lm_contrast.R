@@ -227,6 +227,31 @@ test_that("the note names Satterthwaite only for the AME rows that took its df",
   expect_no_match(note(tb), "Satterthwaite", fixed = TRUE)
 })
 
+test_that("the note says the AME of a tobit model is on the latent outcome", {
+  skip_if_not_installed("AER")
+  skip_if_not_installed("marginaleffects")
+  d <- .ame_lm_data()
+  d$yc <- pmax(d$y, stats::quantile(d$y, 0.3))
+  fit <- AER::tobit(yc ~ x + g, left = min(d$yc), data = d)
+  tb <- table_regression(fit, show_columns = c("b", "ame"))
+  txt <- paste(capture.output(print(tb)), collapse = " ")
+  expect_match(txt, spicy:::spicy_str("note_ame_tobit"), fixed = TRUE)
+  expect_match(txt, "latent (uncensored) outcome", fixed = TRUE)
+  withr::local_options(spicy.language = "fr")
+  tb_fr <- table_regression(fit, show_columns = c("b", "ame"))
+  txt_fr <- paste(capture.output(print(tb_fr)), collapse = " ")
+  expect_match(txt_fr, "variable latente (non censur\u00E9e)", fixed = TRUE)
+  # No AME column, no sentence.
+  withr::local_options(spicy.language = "en")
+  expect_no_match(
+    paste(capture.output(print(table_regression(fit))), collapse = " "),
+    "latent",
+    fixed = TRUE
+  )
+  reg <- table_regression_models()
+  expect_match(reg$ame[reg$class == "tobit"], "latent", fixed = TRUE)
+})
+
 test_that("an rlm fit gets its AME rows, on the fit's own variance", {
   skip_if_not_installed("marginaleffects")
   d <- .ame_lm_data()

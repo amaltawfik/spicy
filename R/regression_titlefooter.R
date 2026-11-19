@@ -585,10 +585,17 @@ build_ame_quantity_footer_block_from_frames <- function(
       is.na(cf$factor_level_pos)
     if (any(numeric_ame)) f$info$extras$ame_type %||% "slope"
   }))
-  if (length(types) == 0L) {
-    return(NULL)
-  }
-  vapply(
+  # A tobit AME is on the latent outcome (the prediction of a tobit fit
+  # is its linear predictor), for every predictor and every `ame_type`.
+  tobit <- any(vapply(
+    frames,
+    function(f) {
+      identical(f$info$class, "tobit") &&
+        any(f$coefs$estimate_type == "ame" & !is.na(f$coefs$estimate))
+    },
+    logical(1)
+  ))
+  out <- vapply(
     unique(types),
     function(t) {
       spicy_str(switch(
@@ -601,6 +608,13 @@ build_ame_quantity_footer_block_from_frames <- function(
     character(1),
     USE.NAMES = FALSE
   )
+  if (tobit) {
+    out <- c(out, spicy_str("note_ame_tobit"))
+  }
+  if (length(out) == 0L) {
+    return(NULL)
+  }
+  out
 }
 
 # The sentences of footer themes, ready for the paragraph of the general

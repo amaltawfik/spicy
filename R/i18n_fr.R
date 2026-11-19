@@ -392,6 +392,7 @@
   note_ame_slope = "AME d'un pr\u00E9dicteur continu\u00A0: pente moyenne (dY/dX).",
   note_ame_unit = "AME d'un pr\u00E9dicteur continu\u00A0: variation moyenne de la pr\u00E9diction pour une unit\u00E9 de plus.",
   note_ame_sd = "AME d'un pr\u00E9dicteur continu\u00A0: variation moyenne de la pr\u00E9diction pour un \u00E9cart-type de plus.",
+  note_ame_tobit = "AME d'un mod\u00E8le tobit\u00A0: calcul\u00E9 sur la variable latente (non censur\u00E9e).",
   note_exp_scope_partial = "%s\u00A0: coefficients",
   note_exp_se_gloss_delta = "m\u00E9thode delta",
   note_exp_se_gloss_bayes = "MAD SD a posteriori des tirages exponenti\u00E9s",

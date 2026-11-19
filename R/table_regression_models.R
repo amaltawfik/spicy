@@ -55,7 +55,14 @@
       "-"
     ),
     c("Robust, IV, quantile, panel", "ivreg", "AER::ivreg()", "yes", "-", "-"),
-    c("Robust, IV, quantile, panel", "tobit", "AER::tobit()", "yes", "-", "-"),
+    c(
+      "Robust, IV, quantile, panel",
+      "tobit",
+      "AER::tobit()",
+      "yes (latent outcome)",
+      "-",
+      "-"
+    ),
     c("Robust, IV, quantile, panel", "rq", "quantreg::rq()", "yes", "-", "-"),
     c(
       "Robust, IV, quantile, panel",
