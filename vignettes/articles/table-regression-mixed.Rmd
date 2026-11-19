@@ -17,7 +17,7 @@ output:
 ```{r, include = FALSE}
 have_mixed <- requireNamespace("lme4", quietly = TRUE) &&
   requireNamespace("lmerTest", quietly = TRUE) &&
-  requireNamespace("merDeriv", quietly = TRUE)
+  requireNamespace("numDeriv", quietly = TRUE)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -209,7 +209,6 @@ The multilevel analysis starts with a model containing *no predictors
 at all*, only a school random intercept. Its job is a single number:
 
 ```{r hsb-empty, eval = have_nlme, warning = FALSE}
-# (the accompanying console warning is suppressed in this rendering)
 m_empty <- lmer(MathAch ~ 1 + (1 | School), data = hsb)
 table_regression(m_empty)
 ```
@@ -223,18 +222,6 @@ comfortably above the roughly 50 groups Maas & Hox (2005) find
 necessary for reliable standard errors and interval coverage of the
 variance components — the point estimates themselves hold up with
 fewer.
-
-One display note, visible here for the first time: at this sample size
-`table_regression()` skips the Wald SE and CI of the variance
-components because their computation grows superlinearly with n. The
-table note states the omission, and the build-time warning names the
-override (`options(spicy.re_se_max_n = )`). Estimates, ICC, R², and the
-LR test are unaffected; the random-part inference below runs through
-`re_test`, and `re_ci = "profile"` restores boundary-respecting
-profile-likelihood CIs at any sample size (a couple of seconds per
-variance parameter — the route `lme4` itself recommends over SEs).
-The same note (and suppressed warning) accompanies every HSB table in
-this sequence.
 
 ### Step 2: a random intercept, next to the OLS
 
@@ -467,8 +454,8 @@ table_regression(fit_ri, re_test = "rlrt")
 Three arguments control the block without touching the estimates.
 `re_scale = "variance"` switches the rows from SD (`σ`) to variance
 (`σ²`); `re_columns` restricts which quantities the variance-component
-rows display (the SE and CI on a variance component come from
-`merDeriv` and are themselves boundary-fragile — dropping them is a
+rows display (the SE and CI on a variance component are Wald
+quantities and are themselves boundary-fragile — dropping them is a
 defensible editorial choice); `show_re = FALSE` removes the block and
 all random-effects footer lines, leaving a fixed-effects-only table
 (the per-factor `N (<factor>)` and R² fit-stat rows remain):
@@ -478,11 +465,11 @@ table_regression(fit, re_scale = "variance", re_columns = "est")
 ```
 
 Where those SEs come from depends on the engine: `lmer` / `glmer`
-rows use the `merDeriv` Hessian (Wang & Merkle 2018; the cells fall
-back to NA when the package is absent or the fit is singular),
-`glmmTMB` its native Wald `confint()`, and `nlme::lme` its
-`intervals()`. Correlation (`ρ`) rows carry a multivariate
-delta-method SE for `lmer`, native intervals elsewhere. Switching
+rows use the numerical Hessian of the deviance in the standard
+deviations and correlations (the cells fall back to NA when the fit is
+singular), `glmmTMB` its native Wald `confint()`, and `nlme::lme` its
+`intervals()`. The Wald interval of an `lmer` or `glmer` correlation
+(`ρ`) is built on atanh ρ and stays inside (−1, 1), as in `nlme`. Switching
 `re_scale` transports SE and CI between the SD and variance scales by
 the delta method (`SE(σ) = SE(σ²) / 2σ`), so the displayed values
 agree with `VarCorr()` on either scale up to rounding.
@@ -1038,6 +1025,3 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 * Stram, D. O., & Lee, J. W. (1994). Variance components testing in
   the longitudinal mixed effects model. *Biometrics*, 50(4),
   1171–1177.
-* Wang, T., & Merkle, E. C. (2018). merDeriv: Derivative computations
-  for linear mixed effects models with application to robust standard
-  errors. *Journal of Statistical Software*, 87(Code Snippet 1), 1-16.

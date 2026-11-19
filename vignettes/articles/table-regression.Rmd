@@ -1118,7 +1118,7 @@ coefficient columns. The number of groups — one
 (Nakagawa & Schielzeth 2013) join the fit-statistic rows, so
 they align per model in a comparison table:
 
-```{r mixed-basic, message = FALSE, eval = requireNamespace("lme4", quietly = TRUE) && requireNamespace("merDeriv", quietly = TRUE)}
+```{r mixed-basic, message = FALSE, eval = requireNamespace("lme4", quietly = TRUE) && requireNamespace("numDeriv", quietly = TRUE)}
 library(lme4)
 fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 table_regression(fit)

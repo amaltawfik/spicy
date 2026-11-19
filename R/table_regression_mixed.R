@@ -78,9 +78,16 @@
 #'     The standard error is a delta-method one on the scale the engine
 #'     estimates on, and
 #'     \eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)}{SE(sigma) = SE(sigma^2) / (2 sigma)}.
-#'     For `lmer` and `glmer` it comes from the covariance matrix of the
-#'     variances (\pkg{merDeriv}). For `lme`, `glmmTMB` and `clmm` the
-#'     engine estimates \eqn{\log\sigma}{log(sigma)} and the SE is
+#'     For `lmer` and `glmer` it comes from the numerical Hessian of the
+#'     deviance (the REML criterion for a REML fit) in the standard
+#'     deviations and correlations, i.e. the observed information; for a
+#'     `glmer` fit spicy uses the Hessian lme4 stores at the optimum when
+#'     there is one. The prior weights of an `lmer` fit are taken into
+#'     account. A negative-binomial `glmer`, a `glmer` family with a
+#'     scale parameter and an lme4 covariance structure other than the
+#'     unstructured one keep their rows without SE or CI, and a note under
+#'     the table says why. So does a Hessian that is not positive definite.
+#'     For `lme`, `glmmTMB` and `clmm` the engine estimates \eqn{\log\sigma}{log(sigma)} and the SE is
 #'     \eqn{\sigma \, SE(\log\sigma)}{sigma SE(log(sigma))}. The Wald CI of
 #'     every engine is built on \eqn{\log\sigma}{log(sigma)},
 #'     \eqn{\sigma \exp(\pm z \, SE(\log\sigma))}{sigma exp(+/- z SE(log(sigma)))},
@@ -88,10 +95,13 @@
 #'     `glmer`, by the engine otherwise (`nlme::intervals()`,
 #'     `glmmTMB::confint()`). The residual row of a Gaussian `glmmTMB` fit
 #'     has its SE and CI too. Correlation rows (\eqn{\rho}{rho}) have no unit and are unchanged.
-#'     Their SE is a delta-method one too: from the variances for `lmer`
-#'     (CI \eqn{\rho \pm z \, SE}{rho +/- z SE}, clamped to
-#'     \eqn{[-1, 1]}{[-1, 1]}), from \eqn{\mathrm{atanh}(\rho)}{atanh(rho)}
-#'     for `lme`, and from glmmTMB's
+#'     For `lmer` and `glmer` their SE comes from the same Hessian, and
+#'     the CI is the Wald interval on
+#'     \eqn{\mathrm{atanh}(\rho)}{atanh(rho)},
+#'     \eqn{\tanh(\mathrm{atanh}(\rho) \pm z \, SE / (1 - \rho^2))}{tanh(atanh(rho) +/- z SE / (1 - rho^2))},
+#'     which stays inside \eqn{(-1, 1)}{(-1, 1)}. For the other engines
+#'     the SE is a delta-method one: from
+#'     \eqn{\mathrm{atanh}(\rho)}{atanh(rho)} for `lme`, and from glmmTMB's
 #'     \eqn{\rho / \sqrt{1 - \rho^2}}{rho / sqrt(1 - rho^2)} in a two-term
 #'     block, with the engine's CI. In a `glmmTMB` block of three terms or
 #'     more it is the width of glmmTMB's interval divided by \eqn{2z}{2z}.
@@ -142,27 +152,30 @@
 #'   \item{`re_ci`}{`"wald"` (default) or `"profile"`: the uncertainty of
 #'     the random-effects rows of `lmer` and `glmer` fits.
 #'     \itemize{
-#'       \item `"wald"`: SE from the information matrix (\pkg{merDeriv},
-#'         expected information by default) and a Wald CI symmetric on the
-#'         log of the standard deviation, which stays above 0 (see
-#'         `re_scale`). Wald can be optimistic near the boundary of a
-#'         variance; `"profile"` respects it. Its cost grows faster than the
-#'         number of
-#'         observations (about a minute at n of roughly 2,700). Above
-#'         `options("spicy.re_se_max_n")` (default `1000`) the SE and CI
-#'         are skipped: the rows keep their estimates, the cells show an en
-#'         dash, a note states the omission and a `spicy_caveat` warning is
-#'         raised. Raise the cap (`options(spicy.re_se_max_n = Inf)`) to
-#'         force the computation, or use `re_ci = "profile"`.
+#'       \item `"wald"`: SE from the observed information (the Hessian
+#'         of the deviance, see `re_scale`) and a Wald CI symmetric on the
+#'         log of the standard deviation, which stays above 0, and on
+#'         \eqn{\mathrm{atanh}(\rho)}{atanh(rho)} for a correlation. Wald
+#'         can be optimistic near the boundary of a variance; `"profile"`
+#'         respects it. The Hessian takes a few dozen evaluations of the
+#'         deviance: under a second for an `lmer` fit of 20,000
+#'         observations. A `glmer` fit above 10,000 observations has no
+#'         Hessian stored by lme4, and its computation then takes about a
+#'         quarter of the time of the fit.
 #'       \item `"profile"`: profile-likelihood intervals from
 #'         `confint(fit, method = "profile")`, the route lme4 documents.
 #'         They are asymmetric and respect the boundary at 0. No SE is
 #'         shown, since a symmetric SE misdescribes the skewed sampling
-#'         distribution of a variance. There is no size cap (about two
-#'         seconds per variance parameter at n of 7,000; more for
-#'         `glmer`). The note names the method, and
+#'         distribution of a variance. It takes longer than `"wald"`
+#'         (about two seconds per variance parameter at n of 7,000; more
+#'         for `glmer`). lme4 profiles the ML deviance, also for a REML
+#'         fit: the interval of a REML fit is that of its ML refit, and
+#'         the note says so. The note names the method, and
 #'         `re_scale = "variance"` shows the profile interval of the
-#'         variance itself.
+#'         variance itself. A negative-binomial `glmer`, which has no Wald
+#'         SE, gets its profile interval this way. lme4 does not profile a
+#'         `glmer` whose scale is estimated (Gamma, inverse Gaussian): its
+#'         rows keep no interval and a warning says so.
 #'     }
 #'     `glmmTMB`, `lme` and `clmm` fits keep the intervals of their own
 #'     engine under `"wald"` (see `re_scale`) and refuse `"profile"`.}

@@ -369,7 +369,7 @@ the ICC and group sizes as fit statistics, and the likelihood-ratio
 test of the random part with the boundary-correct chi-bar-squared
 p-value:
 
-```{r eval=requireNamespace("lme4", quietly = TRUE) && requireNamespace("merDeriv", quietly = TRUE), message=FALSE, warning=FALSE}
+```{r eval=requireNamespace("lme4", quietly = TRUE) && requireNamespace("numDeriv", quietly = TRUE), message=FALSE, warning=FALSE}
 library(lme4)
 fit_mixed <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 table_regression(fit_mixed)
