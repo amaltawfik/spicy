@@ -776,6 +776,14 @@ afit <- lme4::glmer(y ~ x + cat + (1 | g), family = binomial)
 table_regression(afit, show_columns = c("b", "se", "p", "ame", "ame_p"))
 ```
 
+For a mixed model with a non-identity link, the AME averages the slopes
+of the conditional predictions: each observation is predicted with the
+estimated random effects of its groups. It is neither the effect for a
+typical group (random effects at zero) nor the population-averaged
+effect, which integrates over the distribution of the random effects.
+In a linear mixed model with random intercepts only, the three are
+equal.
+
 Factor predictors are handled level-by-level: AME rows align under the
 same factor header (`cat: A (ref.) / B / C`), each level sharing a row
 with its `B` coefficient — for a factor level the AME is the average

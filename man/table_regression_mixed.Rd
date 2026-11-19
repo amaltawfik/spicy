@@ -253,6 +253,14 @@ an \code{lmerTest} or \code{lme} fit, or of a \verb{CR*} variance, an identity-l
 AME can therefore carry another p-value than the B of the same row;
 read it as a large-sample approximation.
 
+For a mixed model with a non-identity link, the AME averages the slopes
+of the conditional predictions: each observation is predicted with the
+estimated random effects of its groups. It is neither the effect for a
+typical group (random effects at zero) nor the population-averaged
+effect, which integrates over the distribution of the random effects.
+In a linear mixed model with random intercepts only, the three are
+equal.
+
 Cluster-robust variance. \code{lmer} and \code{lme} fits take \code{"CR0"} to \code{"CR3"}
 from \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}}, with Satterthwaite degrees of freedom
 computed from the robust matrix. An \code{lme} fitted with other contrasts
