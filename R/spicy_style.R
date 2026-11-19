@@ -971,7 +971,7 @@ spicy_style <- function(
         "https://jamanetwork.com/DocumentLibrary/InstructionsForAuthors/",
         "InstructionsForTableCreation.pdf"
       ),
-      date = "2016-02-23, consulted 2026-08-14",
+      date = "undated (PDF file created 2016-02-23), consulted 2026-08-14",
       rules = c(
         "p-values: 2 decimals, 3 below .01, floor <.001, no leading zero",
         paste0(
