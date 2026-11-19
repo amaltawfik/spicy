@@ -45,6 +45,7 @@ Chrome (chromote), gt 1.4.0, note longue, largeur du tableau en px CSS dans une 
 ## Limites
 
 - La règle fixe la marge intérieure de la note : `tab_options(source_notes.padding = )` n'a plus d'effet sur un tableau de spicy.
+- Levée le 2026-11-19 : gt compile `opt_css()` avec Sass, ses options passées en variables. Les marges verticales de spicy ne s'appliquent que si `source_notes.padding` garde le défaut de gt (4px), et la marge latérale est laissée à `source_notes.padding.horizontal`. Avec `px(12)`, la cellule de la note porte 12px en haut et en bas, avec `padding.horizontal = px(20)` 20px sur les côtés. Le défaut ne change pas : PNG de `gtsave()` identiques sur quatre tableaux. Un `px(4)` donné par l'utilisateur se confond avec le défaut.
 - Non vérifié : Safari, les visionneuses de RStudio et de Positron, revealjs, les largeurs chiffrées dans Firefox.
 
 ## Conséquences

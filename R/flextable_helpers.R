@@ -90,20 +90,29 @@
 # The other rules set the note with an interline of 1.25 and the lines of
 # a note close together, as a single block; gt sets its size, 0.9 of the
 # table's. Its text starts 5px in, where the text of a body cell starts
-# (the side padding gt gives it). The rules are HTML only: gt writes `opt_css()` into no other
-# output.
+# (the side padding gt gives it, `source_notes.padding.horizontal`). The
+# rules are HTML only: gt writes `opt_css()` into no other output.
+#
+# gt compiles `opt_css()` with Sass, its options set as Sass variables:
+# the vertical padding of spicy applies only while
+# `source_notes.padding` keeps gt's default (4px), so that a value the
+# user sets with `gt::tab_options()` wins.
 .spicy_gt_note_css <- function(id) {
   paste0(
     "#",
     id,
-    " .gt_sourcenote { width: 1px; line-height: 1.25; ",
-    "padding: 0 5px; }\n",
+    " .gt_sourcenote { width: 1px; line-height: 1.25; }\n",
+    "@if $source_notes_padding == 4px {\n",
+    "#",
+    id,
+    " .gt_sourcenote { padding-top: 0; padding-bottom: 0; }\n",
     "#",
     id,
     " .gt_sourcenotes:first-child .gt_sourcenote { padding-top: 0.5rem; }\n",
     "#",
     id,
-    " .gt_sourcenotes:last-child .gt_sourcenote { padding-bottom: 0.2rem; }"
+    " .gt_sourcenotes:last-child .gt_sourcenote { padding-bottom: 0.2rem; }\n",
+    "}"
   )
 }
 

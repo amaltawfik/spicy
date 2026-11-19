@@ -59,6 +59,26 @@ test_that("the source notes of a gt table take a set width in its HTML", {
   }
 })
 
+test_that("a padding of the note set by tab_options() wins over spicy's", {
+  skip_if_not_installed("gt")
+  g <- .gtw_tables()$regression
+  cell <- function(x) {
+    inline <- as.character(gt::as_raw_html(x))
+    regmatches(inline, regexpr("<td class=\"gt_sourcenote\"[^>]*>", inline))
+  }
+  expect_match(
+    cell(g),
+    "padding-top: 0.5rem; padding-bottom: 0.2rem;",
+    fixed = TRUE
+  )
+  set <- cell(gt::tab_options(g, source_notes.padding = gt::px(12)))
+  expect_match(set, "padding-top: 12px; padding-bottom: 12px;", fixed = TRUE)
+  expect_no_match(set, "rem;", fixed = TRUE)
+  wide <- cell(gt::tab_options(g, source_notes.padding.horizontal = gt::px(20)))
+  expect_match(wide, "padding-left: 20px; padding-right: 20px;", fixed = TRUE)
+  expect_no_match(wide, "padding: 0", fixed = TRUE)
+})
+
 test_that("each gt table has an id of its own, drawn without the RNG", {
   skip_if_not_installed("gt")
   set.seed(1)
