@@ -38,7 +38,7 @@ models are listed below.
    \code{lm_robust} \tab \code{estimatr::lm_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    \code{iv_robust} \tab \code{estimatr::iv_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical \cr
-   \code{tobit} \tab \code{AER::tobit()} \tab yes \tab - \tab - \tab classical \cr
+   \code{tobit} \tab \code{AER::tobit()} \tab yes \tab - \tab - \tab classical, CR1 \cr
    \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
    \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects) \tab OR / IRR (link) \tab - \tab classical (the fit's own) \cr
 }
@@ -84,10 +84,11 @@ block is on by default (\code{"fixed_effects"} in \code{show_fit_stats}).
 \section{Values of the shared arguments}{
 
 \describe{
-\item{\code{vcov}, \code{cluster}}{\code{estimatr}, \code{fixest}, \code{ivreg} and \code{tobit}:
+\item{\code{vcov}, \code{cluster}}{\code{estimatr}, \code{fixest} and \code{ivreg}:
 \code{"classical"} only, which for \code{estimatr} and \code{fixest} is the variance
-the fit carries. \code{rq}: its own estimator family. See \emph{Standard
-errors, degrees of freedom and intervals}.}
+the fit carries. \code{tobit}: \code{"classical"} and \code{"CR1"}, as for
+\code{survreg}. \code{rq}: its own estimator family. See \emph{Standard errors,
+degrees of freedom and intervals}.}
 \item{\code{show_fit_stats}}{The defaults of each class, and the
 \code{"fixed_effects"}, \code{"within_r2"} and \code{"n_groups"} tokens; see \emph{Fit
 statistics}.}
@@ -133,6 +134,13 @@ With \verb{cluster =}, the wild gradient cluster bootstrap of Hagemann
 refuses it: the resamplers do not carry the weights.
 }
 \code{cluster} with any other \code{rq} estimator is refused.
+
+\strong{\code{AER::tobit}.} A \code{tobit} fit is a \code{survreg} model, and takes the
+same estimator: \code{"CR1"} from \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}, the CR0 sandwich
+scaled by \eqn{G/(G-1)}{G/(G-1)}, \code{G} the number of clusters. The other
+\verb{CR*} tokens and \verb{HC*} are refused. Under \code{"CR1"}, a nested hierarchy
+is tested by the Wald chi-square of the added coefficients on the
+robust matrix.
 
 \strong{Hierarchical comparison} (\code{nested = TRUE}). A quantile hierarchy
 gets \code{c("f_change", "p_change")}, the Wald-type test

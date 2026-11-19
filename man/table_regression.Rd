@@ -1189,7 +1189,9 @@ rule; Poisson, binomial and IV fits keep fixest's values. A lean
 fit (\code{lean = TRUE}) that lost what they need, its weights or the
 fitted values of a Gamma or inverse-Gaussian \code{feglm()}, shows no
 AIC, BIC or nested rows. A survey-design fit has no likelihood:
-\code{"deviance"} and \code{"bic"} are refused for a table of design fits.
+\code{"deviance"}, \code{"bic"}, \code{"aicc"}, the pseudo-R-squared tokens and
+\code{"r2_deviance"} are refused for a table of design fits, and \code{"aic"}
+when no model of the table is a \code{svyglm}.
 \item Log-likelihood: \code{"log_lik"}, the value of \code{\link[stats:logLik]{stats::logLik()}},
 from which the AIC row is computed. It is the restricted
 log-likelihood of a model fitted by REML, and for a binomial \code{glm()}
@@ -1480,7 +1482,7 @@ values each class accepts, the \code{vcov} column of
    Robust, IV, quantile, panel \tab \code{lm_robust} \tab classical (the fit's own) \cr
    Robust, IV, quantile, panel \tab \code{iv_robust} \tab classical (the fit's own) \cr
    Robust, IV, quantile, panel \tab \code{ivreg} \tab classical \cr
-   Robust, IV, quantile, panel \tab \code{tobit} \tab classical \cr
+   Robust, IV, quantile, panel \tab \code{tobit} \tab classical, CR1 \cr
    Robust, IV, quantile, panel \tab \code{rq} \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
    Robust, IV, quantile, panel \tab \code{fixest} \tab classical (the fit's own) \cr
    Mixed effects \tab \code{lmerMod} \tab classical, CR0-CR3 \cr
@@ -1544,7 +1546,7 @@ to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
 \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
 \code{lm}/\code{lme}/\code{lmer}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
 sandwich (identical to \code{coxph(..., cluster=)});
-\code{survreg}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} and the
+\code{survreg}/\code{tobit}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} and the
 Poisson and geometric \code{pscl} two-part fits use
 \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}. For \code{gam}/\code{bam}, spicy forms the sandwich
 itself, from the GLM score and the penalized covariance of the fit,
@@ -1737,7 +1739,7 @@ correction under \code{"CR0"}-\code{"CR3"} mitigates it.
 \code{show_columns}:
 \itemize{
 \item \code{"refit"} -- refit on z-scored data. For \code{lm} both X
-and Y are z-scored (Cohen et al. 2003 gold standard); for
+and Y are z-scored (Cohen et al. 2003); for
 \code{glm} only numeric X (Long & Freese 2014 Section 4.7.2
 "x-standardization").
 \item \code{"posthoc"} -- post-hoc scaling. lm:

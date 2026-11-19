@@ -341,7 +341,9 @@
 #'     fit (`lean = TRUE`) that lost what they need, its weights or the
 #'     fitted values of a Gamma or inverse-Gaussian `feglm()`, shows no
 #'     AIC, BIC or nested rows. A survey-design fit has no likelihood:
-#'     `"deviance"` and `"bic"` are refused for a table of design fits.
+#'     `"deviance"`, `"bic"`, `"aicc"`, the pseudo-R-squared tokens and
+#'     `"r2_deviance"` are refused for a table of design fits, and `"aic"`
+#'     when no model of the table is a `svyglm`.
 #'   \item Log-likelihood: `"log_lik"`, the value of [stats::logLik()],
 #'     from which the AIC row is computed. It is the restricted
 #'     log-likelihood of a model fitted by REML, and for a binomial `glm()`
@@ -657,7 +659,7 @@
 #' \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
 #' `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 #' sandwich (identical to `coxph(..., cluster=)`);
-#' `survreg`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
+#' `survreg`/`tobit`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
 #' Poisson and geometric `pscl` two-part fits use
 #' [sandwich::vcovCL()]. For `gam`/`bam`, spicy forms the sandwich
 #' itself, from the GLM score and the penalized covariance of the fit,
@@ -849,7 +851,7 @@
 #' `show_columns`:
 #' \itemize{
 #'   \item `"refit"` -- refit on z-scored data. For `lm` both X
-#'     and Y are z-scored (Cohen et al. 2003 gold standard); for
+#'     and Y are z-scored (Cohen et al. 2003); for
 #'     `glm` only numeric X (Long & Freese 2014 Section 4.7.2
 #'     "x-standardization").
 #'   \item `"posthoc"` -- post-hoc scaling. lm:

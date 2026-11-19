@@ -150,13 +150,18 @@ Hierarchical comparison (\code{nested = TRUE}). Nested Cox fits, and nested
 \code{c("lrt_change", "p_change")}. Under \code{"CR0"} (\code{coxph}, \code{cph}) or
 \code{"CR1"} (\code{survreg}), and for \code{survreg(robust = TRUE)}, the change test
 is the Wald chi-square of the added coefficients on the robust matrix.
-See \emph{Hierarchical (nested) model comparison} in \code{\link[=table_regression]{table_regression()}}.
+A Cox model without a coefficient (\code{~ 1}, or \code{strata()} alone) can be
+the first model of the hierarchy: its column shows the fit statistics,
+and the next model its likelihood-ratio test against it. Alone, it is
+refused, since it has no row to show. See \emph{Hierarchical (nested) model
+comparison} in \code{\link[=table_regression]{table_regression()}}.
 }
 
 \section{Fit statistics}{
 
 Cox fits default to \code{c("nobs", "n_events", "aic")}: the number of
-events is reported beside \code{n}. On request:
+events is reported beside \code{n}. \code{survreg} and \code{flexsurvreg} fits default
+to \code{c("nobs", "aic")}. On request:
 \itemize{
 \item \code{"concordance"}: Harrell's C of a \code{coxph} fit, the value
 \code{summary()} reports. When the row is shown, the concordance leaves

@@ -277,7 +277,7 @@
   lm_robust = "classical (the fit's own)",
   iv_robust = "classical (the fit's own)",
   ivreg = "classical",
-  tobit = "classical",
+  tobit = "classical, CR1",
   rq = "classical (= nid), nid, iid, ker, rank, bootstrap",
   fixest = "classical (the fit's own)",
   lmerMod = "classical, CR0-CR3",

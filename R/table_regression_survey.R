@@ -88,9 +88,11 @@
 #'     Taylor or replicate variance is already the robust variance for the
 #'     declared design. The way to change the estimator is to change the
 #'     design.
-#'   \item `"bic"`, `"deviance"` and `"log_lik"` for a table of design
-#'     fits, and every likelihood statistic (AIC, BIC, log-likelihood,
-#'     deviance, pseudo-R-squared) for `svyolr` and `svycoxph`. A
+#'   \item `"bic"`, `"aicc"`, `"deviance"`, `"log_lik"`, the
+#'     pseudo-R-squared tokens (`"pseudo_r2_mcfadden"`,
+#'     `"pseudo_r2_nagelkerke"`, `"pseudo_r2_tjur"`) and `"r2_deviance"`
+#'     for a table of design fits, and `"aic"` when no model of the table
+#'     is a `svyglm`. A
 #'     design-based fit is estimated without a likelihood, and survey's own
 #'     `deviance()` returns a sign-flipped likelihood-ratio statistic on
 #'     one Cox engine and a bare zero on the other. `BIC.svyglm` requires a

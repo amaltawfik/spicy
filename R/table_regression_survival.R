@@ -125,11 +125,16 @@
 #' `c("lrt_change", "p_change")`. Under `"CR0"` (`coxph`, `cph`) or
 #' `"CR1"` (`survreg`), and for `survreg(robust = TRUE)`, the change test
 #' is the Wald chi-square of the added coefficients on the robust matrix.
-#' See *Hierarchical (nested) model comparison* in [table_regression()].
+#' A Cox model without a coefficient (`~ 1`, or `strata()` alone) can be
+#' the first model of the hierarchy: its column shows the fit statistics,
+#' and the next model its likelihood-ratio test against it. Alone, it is
+#' refused, since it has no row to show. See *Hierarchical (nested) model
+#' comparison* in [table_regression()].
 #'
 #' @section Fit statistics:
 #' Cox fits default to `c("nobs", "n_events", "aic")`: the number of
-#' events is reported beside `n`. On request:
+#' events is reported beside `n`. `survreg` and `flexsurvreg` fits default
+#' to `c("nobs", "aic")`. On request:
 #' \itemize{
 #'   \item `"concordance"`: Harrell's C of a `coxph` fit, the value
 #'     `summary()` reports. When the row is shown, the concordance leaves

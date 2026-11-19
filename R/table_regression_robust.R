@@ -59,10 +59,11 @@
 #'
 #' @section Values of the shared arguments:
 #' \describe{
-#'   \item{`vcov`, `cluster`}{`estimatr`, `fixest`, `ivreg` and `tobit`:
+#'   \item{`vcov`, `cluster`}{`estimatr`, `fixest` and `ivreg`:
 #'     `"classical"` only, which for `estimatr` and `fixest` is the variance
-#'     the fit carries. `rq`: its own estimator family. See *Standard
-#'     errors, degrees of freedom and intervals*.}
+#'     the fit carries. `tobit`: `"classical"` and `"CR1"`, as for
+#'     `survreg`. `rq`: its own estimator family. See *Standard errors,
+#'     degrees of freedom and intervals*.}
 #'   \item{`show_fit_stats`}{The defaults of each class, and the
 #'     `"fixed_effects"`, `"within_r2"` and `"n_groups"` tokens; see *Fit
 #'     statistics*.}
@@ -106,6 +107,13 @@
 #'     refuses it: the resamplers do not carry the weights.
 #' }
 #' `cluster` with any other `rq` estimator is refused.
+#'
+#' **`AER::tobit`.** A `tobit` fit is a `survreg` model, and takes the
+#' same estimator: `"CR1"` from [sandwich::vcovCL()], the CR0 sandwich
+#' scaled by \eqn{G/(G-1)}{G/(G-1)}, `G` the number of clusters. The other
+#' `CR*` tokens and `HC*` are refused. Under `"CR1"`, a nested hierarchy
+#' is tested by the Wald chi-square of the added coefficients on the
+#' robust matrix.
 #'
 #' **Hierarchical comparison** (`nested = TRUE`). A quantile hierarchy
 #' gets `c("f_change", "p_change")`, the Wald-type test

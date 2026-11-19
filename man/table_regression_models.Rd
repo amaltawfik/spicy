@@ -39,7 +39,7 @@ supported set. Feature requests are welcome on the issue tracker.
    Robust, IV, quantile, panel \tab \code{lm_robust} \tab \code{estimatr::lm_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    Robust, IV, quantile, panel \tab \code{iv_robust} \tab \code{estimatr::iv_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    Robust, IV, quantile, panel \tab \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical \cr
-   Robust, IV, quantile, panel \tab \code{tobit} \tab \code{AER::tobit()} \tab yes \tab - \tab - \tab classical \cr
+   Robust, IV, quantile, panel \tab \code{tobit} \tab \code{AER::tobit()} \tab yes \tab - \tab - \tab classical, CR1 \cr
    Robust, IV, quantile, panel \tab \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
    Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects) \tab OR / IRR (link) \tab - \tab classical (the fit's own) \cr
    Mixed effects \tab \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 \cr
