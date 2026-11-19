@@ -3404,7 +3404,40 @@ table_regression <- function(
       fixest_names <- function(which) {
         paste(.model_display_names(models, panel_req)[which], collapse = ", ")
       }
-      hint_main <- if (any(classes == "coxph")) {
+      # A glmmTMB fit estimated by REML (supports$ame of its frame). Its
+      # reason is named after the model when the table has several.
+      reml <- vapply(
+        frames,
+        function(fr) is_reml_glmmTMB_fit(attr(fr, "fit")),
+        logical(1)
+      )
+      named <- function(which, txt) {
+        if (length(frames) > 1L) paste0(fixest_names(which), ": ", txt) else txt
+      }
+      headline <- if (all(reml)) {
+        "AME columns are not available for a `glmmTMB` fit estimated by REML."
+      } else {
+        sprintf(
+          "AME columns are not available for %s.",
+          paste0("`", classes, "`", collapse = " / ")
+        )
+      }
+      hint_reml <- if (any(reml)) {
+        c(
+          named(
+            reml,
+            paste0(
+              "Under REML, glmmTMB integrates the fixed effects out with ",
+              "the random effects, so the delta method of the AME cannot ",
+              "perturb them and the standard error comes out near zero."
+            )
+          ),
+          "Refit with `REML = FALSE` to report the AME."
+        )
+      }
+      hint_main <- if (all(reml)) {
+        NULL
+      } else if (any(classes == "coxph")) {
         paste0(
           "For a Cox model, the absolute-effect columns are the RMST ",
           "and risk differences: `show_columns = c(\"b\", \"rmst\")` ",
@@ -3432,12 +3465,10 @@ table_regression <- function(
           "(see ?table_regression_models, column AME)."
         )
       }
+      hint_main <- c(hint_reml, hint_main)
       spicy_abort(
         c(
-          sprintf(
-            "AME columns are not available for %s.",
-            paste0("`", classes, "`", collapse = " / ")
-          ),
+          headline,
           stats::setNames(hint_main, rep("i", length(hint_main))),
           "i" = "Drop the AME token(s) from `show_columns`."
         ),

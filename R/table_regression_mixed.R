@@ -198,7 +198,8 @@
 #'     is set. `"partial_f"` and the variance-explained partials
 #'     (`"partial_f2"`, `"partial_eta2"`, `"partial_omega2"`) are not
 #'     defined. The AME tokens are available for every engine of the table
-#'     above except `glmmTMB` with the ordinal family; no column token is
+#'     above except `glmmTMB` with the ordinal family or fitted by REML,
+#'     whose fixed effects the AME cannot perturb; no column token is
 #'     reserved to mixed models.}
 #'   \item{`show_fit_stats`}{Four tokens belong to this family:
 #'     `"n_groups"` (also used by GEE and `fixest` fits), `"icc"`,

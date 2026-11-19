@@ -39,7 +39,7 @@ they take for mixed models are listed below.
    Class \tab Engine \tab AME \tab Exponentiate \tab Blocks \tab vcov \cr
    \code{lmerMod} \tab \code{lme4::lmer()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 \cr
    \code{glmerMod} \tab \code{lme4::glmer()} \tab yes \tab OR / IRR (link) \tab Random effects \tab classical \cr
-   \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family) \tab classical, CR0, CR1 (classical only for REML or the ordinal family) \cr
+   \code{glmmTMB} \tab \code{glmmTMB::glmmTMB()} \tab yes (no for the ordinal family or a REML fit) \tab link-dependent (IRR for count families, OR for ordinal logit) \tab Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family) \tab classical, CR0, CR1 (classical only for REML or the ordinal family) \cr
    \code{lme} \tab \code{nlme::lme()} \tab yes \tab - \tab Random effects \tab classical, CR0-CR3 (classical only with contrasts other than the session's) \cr
    \code{gls} \tab \code{nlme::gls()} \tab yes \tab - \tab - \tab classical \cr
 }
@@ -225,7 +225,8 @@ model without interactions). It follows the robust \code{vcov} when one
 is set. \code{"partial_f"} and the variance-explained partials
 (\code{"partial_f2"}, \code{"partial_eta2"}, \code{"partial_omega2"}) are not
 defined. The AME tokens are available for every engine of the table
-above except \code{glmmTMB} with the ordinal family; no column token is
+above except \code{glmmTMB} with the ordinal family or fitted by REML,
+whose fixed effects the AME cannot perturb; no column token is
 reserved to mixed models.}
 \item{\code{show_fit_stats}}{Four tokens belong to this family:
 \code{"n_groups"} (also used by GEE and \code{fixest} fits), \code{"icc"},

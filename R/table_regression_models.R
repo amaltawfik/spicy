@@ -85,7 +85,7 @@
       "Mixed effects",
       "glmmTMB",
       "glmmTMB::glmmTMB()",
-      "yes (no for the ordinal family)",
+      "yes (no for the ordinal family or a REML fit)",
       "link-dependent (IRR for count families, OR for ordinal logit)",
       paste(
         c(

@@ -59,9 +59,12 @@ as_regression_frame.glmmTMB <- function(
   # marginaleffects answers on the expected category index (a mean of the
   # codes 1..k), not per category, and leaves some SEs NA. The AME tokens
   # never reach it; supports$ame = FALSE lets the orchestrator refuse or
-  # en-dash them.
+  # en-dash them. Nor has a REML fit: glmmTMB integrates its fixed
+  # effects out with the random effects, so marginaleffects, which
+  # perturbs the parameters it optimizes, leaves them unchanged and the
+  # SE comes out near zero (marginaleffects 1.0.0).
   is_ordinal <- .glmmTMB_is_ordinal(fit)
-  ame_columns <- if (is_ordinal) {
+  ame_columns <- if (is_ordinal || is_reml_glmmTMB_fit(fit)) {
     setdiff(show_columns, c("ame", "ame_se", "ame_ci", "ame_p"))
   } else {
     show_columns
@@ -471,7 +474,7 @@ as_regression_frame.glmmTMB <- function(
   # variance partition (classical_r2 stays FALSE). Read by
   # table_regression()'s capability guard, decision 41.
   supports <- list(
-    ame = !is_ordinal,
+    ame = !is_ordinal && !is_reml_glmmTMB_fit(fit),
     partial_effect_size = TRUE,
     classical_r2 = FALSE,
     nested_lrt = TRUE,

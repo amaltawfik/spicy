@@ -15,18 +15,27 @@ skip_if_no_ame_guard <- function() {
 # ---- What each fixture is expected to give ---------------------------------
 
 # The fixtures whose cell holds only under a condition, each with what the
-# parenthesis of the cell gives for it.
+# parenthesis of the cell gives for it and the words of the cell that say
+# so.
 ag_conditional <- list(
   fepois = list(
     expect = "refused",
+    cell = "no for a GLM with fixed effects",
     why = "marginaleffects refuses a fixest GLM with fixed effects"
   ),
   glmmTMB_ordinal = list(
     expect = "refused",
+    cell = "no for the ordinal family",
     why = "no AME backend for the ordinal family of glmmTMB"
+  ),
+  glmmTMB_reml = list(
+    expect = "refused",
+    cell = "or a REML fit",
+    why = "the delta method cannot perturb the fixed effects of a REML fit"
   ),
   lrm_ordinal = list(
     expect = "per",
+    cell = "per category for an ordinal outcome",
     why = "an lrm of an ordinal outcome gives one AME per category"
   )
 )
@@ -46,7 +55,8 @@ ag_refusal <- c(
   svycoxph = "error",
   selection = "error",
   fepois = "error",
-  glmmTMB_ordinal = "error"
+  glmmTMB_ordinal = "error",
+  glmmTMB_reml = "error"
 )
 
 # The predictors of a fixture when they are not `x` alone.
@@ -94,19 +104,11 @@ ag_known_rows <- list(
   )
 )
 
-# AME values that depart from the oracle, with the two numbers measured on
-# 2026-11-19. The test fails once spicy meets the oracle again.
-ag_known_values <- list(
-  glmmTMB_reml = list(
-    key = "x|NA",
-    spicy = c(est = 0.3613524, se = 5.33e-08),
-    oracle = c(est = 0.3613506, se = 0.05983928),
-    why = paste(
-      "under REML glmmTMB integrates the fixed effects out, so the",
-      "predictions marginaleffects perturbs do not move: SE near 0"
-    )
-  )
-)
+# AME values that depart from the oracle, each as list(key, spicy =
+# c(est, se), oracle = c(est, se), why). The test fails once spicy meets
+# the oracle again. Empty since the REML glmmTMB fit (SE 5.3e-08 against
+# 0.0598) is refused, 2026-11-19.
+ag_known_values <- list()
 
 # ---- The hand oracles -------------------------------------------------------
 
@@ -309,7 +311,6 @@ ag_oracles <- list(
     )
   },
   glmmTMB = ag_identity(~x, ag_fixef_tmb, ag_vcov_tmb),
-  glmmTMB_reml = ag_identity(~x, ag_fixef_tmb, ag_vcov_tmb),
   glmmTMB_zi = ag_glmmTMB_two_part(hurdle = FALSE),
   glmmTMB_hurdle = ag_glmmTMB_two_part(hurdle = TRUE),
   glmmTMB_disp = ag_identity(~x, ag_fixef_tmb, ag_vcov_tmb),
@@ -540,6 +541,10 @@ test_that("every fixture of an AME cell is checked against the oracle or named",
   for (id in names(ag_conditional)) {
     cell <- reg$ame[reg$class == fx_class[[id]]]
     expect_true(grepl("(", cell, fixed = TRUE), label = id)
+    expect_true(
+      grepl(ag_conditional[[id]]$cell, cell, fixed = TRUE),
+      label = id
+    )
     expect_true(nzchar(ag_conditional[[id]]$why))
   }
   for (id in c(names(ag_known_rows), names(ag_known_values))) {
@@ -634,3 +639,36 @@ for (id in names(.CLASS_FIXTURES)) {
     })
   })
 }
+
+# ---- The refusals of a class that otherwise has the AME ---------------------
+
+test_that("a glmmTMB fit estimated by REML refuses the AME with its reason", {
+  skip_if_no_ame_guard()
+  fit <- .class_fixture("glmmTMB_reml")
+  e <- expect_error(
+    table_regression(fit, show_columns = c("b", "ame")),
+    class = "spicy_invalid_input"
+  )
+  m <- conditionMessage(e)
+  expect_match(m, "fit estimated by REML", fixed = TRUE)
+  expect_match(m, "standard error comes out near zero", fixed = TRUE)
+  expect_match(m, "Refit with `REML = FALSE`", fixed = TRUE)
+  # Two such fits: the reason names them.
+  e2 <- expect_error(
+    table_regression(list(fit, fit), show_columns = c("b", "ame")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(e2),
+    "Model 1, Model 2: Under REML",
+    fixed = TRUE
+  )
+  # Beside a fit with the AME, its cells stay empty.
+  lo <- as.data.frame(suppressWarnings(table_regression(
+    list(.class_fixture("glmmTMB"), fit),
+    show_columns = c("b", "ame"),
+    output = "long"
+  )))
+  a <- lo[lo$estimate_type == "ame" & is.finite(lo$estimate), ]
+  expect_identical(unique(a$model_id), "M1")
+})
