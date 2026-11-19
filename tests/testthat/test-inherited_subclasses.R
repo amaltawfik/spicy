@@ -8,10 +8,14 @@
   stats::na.omit(survival::lung[, c("time", "status", "age", "inst", "sex")])
 }
 
-.expect_inherited_refusal <- function(fit, cls) {
+.expect_inherited_refusal <- function(
+  fit,
+  cls,
+  head = sprintf("`%s` fits are not supported", cls)
+) {
   expect_error(
     table_regression(fit),
-    regexp = sprintf("`%s` fits are not supported", cls),
+    regexp = head,
     fixed = TRUE,
     class = "spicy_unsupported_class"
   )
@@ -71,13 +75,20 @@ test_that("a coxph with a pspline() or a non-sparse frailty() term is refused", 
       survival::Surv(time, status) ~ pspline(age) + sex,
       data = d
     ),
-    "coxph.penal"
+    "coxph.penal",
+    head = "A `coxph` fit with the term `pspline(age)` is not supported"
   )
   fit <- suppressWarnings(survival::coxph(
     survival::Surv(time, status) ~ age + frailty(inst, sparse = FALSE),
     data = d
   ))
-  .expect_inherited_refusal(fit, "coxph.penal")
+  # The class is not named: a sparse frailty and a ridge() term are
+  # `coxph.penal` fits too, and they keep their table.
+  .expect_inherited_refusal(
+    fit,
+    "coxph.penal",
+    head = "A `coxph` fit with the term `frailty(inst, sparse = FALSE)` is not supported"
+  )
 })
 
 test_that("survey::svysurvreg() is refused", {

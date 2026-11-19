@@ -397,10 +397,14 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
   }
   spicy_abort(
     c(
-      sprintf(
-        "`%s` fits are not supported by `table_regression()`.",
-        what[["class"]]
-      ),
+      if (is.na(what[["head"]])) {
+        sprintf(
+          "`%s` fits are not supported by `table_regression()`.",
+          what[["class"]]
+        )
+      } else {
+        what[["head"]]
+      },
       "i" = what[["is"]],
       if (!is.na(what[["do"]])) c("i" = what[["do"]])
     ),
@@ -412,8 +416,10 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
 # the class to name, what the object is and, when there is one, the
 # supported way to fit it.
 .inherited_subclass_reason <- function(fit) {
-  out <- function(class, is, do = NA_character_) {
-    c(class = class, is = is, do = do)
+  # `head` replaces the first line when the class alone would say too
+  # much: only some `coxph.penal` fits are refused.
+  out <- function(class, is, do = NA_character_, head = NA_character_) {
+    c(class = class, is = is, do = do, head = head)
   }
   if (inherits(fit, "clogit")) {
     return(out(
@@ -447,11 +453,14 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
         "coxph.penal",
         sprintf(
           paste0(
-            "A `coxph` fit with the term `%s` has one coefficient per %s, ",
-            "where `summary()` reports one test for the term."
+            "Its coefficients are one per %s, where `summary()` reports ",
+            "one test for the term."
           ),
-          term,
           if (grepl("^frailty", term)) "cluster" else "spline basis"
+        ),
+        head = sprintf(
+          "A `coxph` fit with the term `%s` is not supported by `table_regression()`.",
+          term
         )
       ))
     }
