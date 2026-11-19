@@ -496,9 +496,8 @@
     "nobs, adj_r2,",
     "pseudo_r2_mcfadden (binomial, Poisson, negative binomial),",
     "pseudo_r2_nagelkerke (binomial, Poisson, negative binomial),",
-    "pseudo_r2_tjur (binomial), r2_deviance (glm families but the",
-    "binomial, negative binomial, Tweedie), sigma, aic, aicc, bic,",
-    "deviance, log_lik"
+    "pseudo_r2_tjur (binomial), r2_deviance (not binomial), sigma, aic,",
+    "aicc, bic, deviance, log_lik"
   ),
   betareg = "nobs, phi, aic, aicc, bic, log_lik",
   selection = "nobs, aic, aicc, bic, log_lik",

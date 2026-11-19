@@ -62,7 +62,7 @@ Défaut après le lot :
 
 ## Limites
 
-- Sous REML, un GAM `nb()` n'a pas le θ de `glm.nb()`. Ses R² sont ceux de son propre ajustement, comparé au modèle nul de la règle du `glm.nb`. L'aide le dit sans chiffrer l'écart.
+- Sous REML, un GAM `nb()` n'a pas le θ de `glm.nb()`. Ses R² sont ceux de son propre ajustement, comparé au modèle nul de la règle du `glm.nb`. L'aide le dit sans chiffrer l'écart. `nb()` reste dans la règle malgré cet écart, tranché à la relecture du lot : le calcul est le même, seul θ diffère, et l'accord avec le jumeau est exact sous ML.
 - Le modèle nul n'a pas de terme lisse. C'est le modèle de la seule constante, comme pour le jumeau, quel que soit le nombre de degrés de liberté effectifs du GAM. Aucun R² ne pénalise ces degrés de liberté.
 - `tw()` n'a ni McFadden ni Nagelkerke : c'est une famille continue, comme la Tweedie de `statmod`. Son R² de déviance reste la déviance expliquée de mgcv. Pour `tw()`, `bam()` garde l'offset dans le modèle nul : avec et sans offset et poids, `gam()` comme `bam()` s'accordent à 1e-10 avec `glm()` et la Tweedie de `statmod` à la puissance du GAM.
 - `bam()` avec `discrete = TRUE` n'a pas été mesuré.

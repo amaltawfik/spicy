@@ -210,13 +210,12 @@
 
 * `table_regression()`: an `mgcv::gam()` or `bam()` model shows the
   R-squared rows of the `glm()` of its family and link, computed the
-  same way, with the same defaults: Tjur's then McFadden's for a logit
-  on a binary outcome, McFadden's for the other binomial, Poisson and
-  `nb()` models, the deviance R-squared for the gaussian, Gamma,
+  same way and with the same defaults: Tjur's then McFadden's for a
+  logit on a binary outcome, McFadden's for the other binomial, Poisson
+  and `nb()` models, the deviance R-squared for the gaussian, Gamma,
   inverse Gaussian and Tweedie families. The default table of a GAM
-  showed no R-squared. `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke` and
-  `pseudo_r2_tjur` are no longer refused for these GAMs, and a
-  quasi-binomial GAM gets the deviance R-squared of its trials.
+  showed no R-squared, and `pseudo_r2_mcfadden`,
+  `pseudo_r2_nagelkerke` and `pseudo_r2_tjur` gave no row.
 
 * `table_regression()`: the partial chi-square (`partial_chi2`) takes
   its decimals from `digits`, as the other test statistics of the table

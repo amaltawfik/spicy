@@ -1278,8 +1278,10 @@ decrease when a predictor is added. For a gaussian \code{glm()} with the
 identity link it is the \eqn{R^2}{R^2} of \code{lm()}. For \code{mgcv::gam}
 and \code{bam} fits of the same families (and of mgcv's \code{nb()} and
 \code{tw()}), it is the deviance explained of their \code{summary()}, as a
-proportion. A quasi-binomial GAM is measured on its trials, as a
-quasi-binomial \code{glm()} is.
+proportion. Two exceptions follow the \code{glm()}: a quasi-binomial
+GAM is measured on its trials, and the null model of a \code{bam()}
+keeps its offset, which the null deviance of its \code{summary()}
+leaves out.
 }
 
 A GAM (\code{mgcv::gam} or \code{bam}) shows the \eqn{R^2}{R^2} rows of the
