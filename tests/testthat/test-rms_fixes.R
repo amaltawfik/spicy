@@ -224,6 +224,36 @@ test_that("a hierarchy holding a penalized ols or lrm fit has no change rows and
   }
 })
 
+test_that("the stacked layout drops the comparison of a penalized hierarchy too", {
+  skip_if_not_installed("rms")
+  d <- rmsfx_data()
+  pairs <- list(
+    ols = list(
+      rms::ols(y ~ x1, data = d),
+      rms::ols(y ~ x1 + x2, data = d, penalty = 5)
+    ),
+    lrm = list(
+      rms::lrm(yb ~ x1, data = d),
+      rms::lrm(yb ~ x1 + x2, data = d, penalty = 5)
+    )
+  )
+  for (m in pairs) {
+    expect_warning(
+      tbl <- table_regression(
+        m,
+        nested = TRUE,
+        layout = "stacked",
+        show_fit_stats = c("nobs", "lrt_change", "p_change"),
+        output = "data.frame"
+      ),
+      "`nested = TRUE` cannot compare penalized fits",
+      class = "spicy_ignored_arg"
+    )
+    expect_false(any(grepl("_change$", tbl$variable)))
+    expect_true("nobs" %in% tbl$variable)
+  }
+})
+
 
 # ---- F6: a transformed term reads as in the formula -------------------------
 

@@ -200,11 +200,16 @@ is_ols_pair <- function(fit_prev, fit_curr) {
 # 2026-11-19: an ols pair gave a chi-square on fractional df (main) or
 # a base error (the lm route, a penalized ols has no QR); an lrm pair
 # whose larger model is penalized fits "worse" and its change rows
-# vanished without a word. The models are rendered side by side, with
-# a warning in the form of the single-fit one (validate_nested_alignment()).
-nested_without_penalized <- function(models, nested) {
+# vanished without a word. The models are rendered without change
+# statistics, with a warning in the form of the single-fit one
+# (validate_nested_alignment()). Called by table_regression() and by the
+# driver of its stacked layout (.regression_stacked()). Returns `nested`
+# and `show_fit_stats`, from which the change tokens leave with the
+# comparison.
+nested_without_penalized <- function(models, nested, show_fit_stats) {
+  out <- list(nested = nested, show_fit_stats = show_fit_stats)
   if (!isTRUE(nested) || length(models) < 2L) {
-    return(nested)
+    return(out)
   }
   pen <- vapply(
     models,
@@ -212,13 +217,13 @@ nested_without_penalized <- function(models, nested) {
     logical(1)
   )
   if (!any(pen)) {
-    return(nested)
+    return(out)
   }
   spicy_warn(
     c(
       paste0(
         "`nested = TRUE` cannot compare penalized fits; the models were ",
-        "rendered side by side, without change statistics."
+        "rendered without change statistics."
       ),
       "x" = sprintf(
         "Fitted with a penalty: %s.",
@@ -233,7 +238,13 @@ nested_without_penalized <- function(models, nested) {
     ),
     class = "spicy_ignored_arg"
   )
-  FALSE
+  if (!is.null(show_fit_stats)) {
+    show_fit_stats <- setdiff(
+      show_fit_stats,
+      c(.NESTED_CHANGE_TOKENS, .NESTED_WALD_CHANGE_TOKENS)
+    )
+  }
+  list(nested = FALSE, show_fit_stats = show_fit_stats)
 }
 
 # TRUE when EVERY fit in a list rides the likelihood-ratio path, and so

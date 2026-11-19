@@ -2197,14 +2197,9 @@ table_regression <- function(
   # table checks the `vcov` and `cluster` of every model, and warns about
   # each in the words of the whole list: its panels do not again.
   validate_nested_alignment(models, nested)
-  nested_req <- nested
-  nested <- nested_without_penalized(models, nested)
-  if (!identical(nested, nested_req) && !is.null(show_fit_stats)) {
-    show_fit_stats <- setdiff(
-      show_fit_stats,
-      c(.NESTED_CHANGE_TOKENS, .NESTED_WALD_CHANGE_TOKENS)
-    )
-  }
+  np <- nested_without_penalized(models, nested, show_fit_stats)
+  nested <- np$nested
+  show_fit_stats <- np$show_fit_stats
   if (is.null(panel_req)) {
     validate_cluster_lists(vcov, cluster, models)
   }

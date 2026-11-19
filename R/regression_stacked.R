@@ -122,6 +122,11 @@
     call = env
   )
   validate_nested_alignment(models, nested, call = env)
+  # A penalized fit leaves the hierarchy without change statistics, in
+  # every panel (the check of table_regression()).
+  np <- nested_without_penalized(models, nested, arg("show_fit_stats"))
+  nested_typed <- nested
+  nested <- np$nested
   .warn_ignored_output_args(output, names(call))
   validate_output_resources(
     output,
@@ -141,6 +146,14 @@
   # ---- The arguments of each panel --------------------------------------
   typed <- setdiff(names(as.list(call))[-1L], .REG_STACKED_OWN_ARGS)
   args <- mget(typed, envir = env)
+  if (!identical(nested, nested_typed)) {
+    if ("nested" %in% names(args)) {
+      args$nested <- nested
+    }
+    if ("show_fit_stats" %in% names(args)) {
+      args["show_fit_stats"] <- list(np$show_fit_stats)
+    }
+  }
   per_model_cluster <- is.list(cluster) && identical(class(cluster), "list")
   # A cluster vector reaches each panel evaluated, which loses the name
   # the note gives it ("clusters by clinic_id"): the name is read off the
@@ -272,7 +285,7 @@
   .reg_emit_gathered(gathered, n, public_call)
   # A token the call names must give a row in one panel at least: the
   # stack is one table, as the side-by-side one is.
-  requested <- arg("show_fit_stats")
+  requested <- np$show_fit_stats
   if (is.character(requested)) {
     .reg_check_requested_rows(
       models,
@@ -326,7 +339,7 @@
     inference = build_nested_ml_refit_footer_block_from_frames(
       frames,
       nested_on,
-      c(arg("show_fit_stats"), tokens)
+      c(np$show_fit_stats, tokens)
     )
   )
 
