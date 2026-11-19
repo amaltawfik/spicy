@@ -16,13 +16,13 @@
 #     correction ranova leaves out (its plain chi-square p is conservative).
 #     Slopes are tested by removal from their bar; a bar's intercept is tested
 #     only when it is the bar's ONLY term (dropping the whole bar), matching
-#     ranova. Supported: lmer / glmer / glmmTMB.
+#     ranova. Supported: lmer / glmer / glmmTMB / lme.
 #
 #   * "rlrt" -- exact restricted likelihood-ratio test via RLRsim::exactRLRT()
 #     (Crainiceanu & Ruppert 2004; Scheipl, Greven & Kuchenhoff 2008), the
-#     finite-sample-exact test. Only defined for a Gaussian lmer fit with a
-#     SINGLE variance component; anything richer errors with a pointer to
-#     "lrt".
+#     finite-sample-exact test. Only defined for a Gaussian lmer or lme fit
+#     with a SINGLE variance component; anything richer errors with a
+#     pointer to "lrt".
 #
 # The whole-block significance signal (LR test vs the no-random-effects model,
 # chi-bar-squared) stays in the footer regardless of `re_test`.

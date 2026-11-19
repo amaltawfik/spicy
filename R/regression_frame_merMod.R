@@ -295,7 +295,7 @@ inform_lmertest_hint <- function() {
 # branches on family_z:
 #   * lmer (family_z = FALSE): use Satterthwaite df / p from
 #     summary(fit)$coefficients if available (lmerTest); else fall
-#     back to Wald with df.residual().
+#     back to Wald z (df = Inf).
 #   * glmer (family_z = TRUE): Wald z-asymptotic.
 .merMod_coefs <- function(fit, ci_level, family_z) {
   fixef <- lme4::fixef(fit)
