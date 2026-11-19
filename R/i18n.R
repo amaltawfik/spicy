@@ -502,6 +502,15 @@
   # The same fact in a table of fit statistics, which shows no variance
   # component (`show_columns = "none"`).
   note_singular_mixed_fit = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of \u00B11).",
+  # An rms fit estimated by penalized maximum likelihood (`penalty =`).
+  # One hole: the penalty, one number when every kind of term has the
+  # same, else the parts below joined by the list separator ("simple
+  # 1, nonlinear 4"). One hole in each part: the number.
+  note_penalized = "Penalized estimates (penalty: %s).",
+  note_penalty_simple = "simple %s",
+  note_penalty_nonlinear = "nonlinear %s",
+  note_penalty_interaction = "interaction %s",
+  note_penalty_nonlinear_interaction = "nonlinear interaction %s",
   # `nested = TRUE` over an lme4 hierarchy fitted by REML: anova.merMod
   # refits by ML before it compares, so the change rows and the per-model
   # criteria rows are two different criteria. No hole: the sentence names

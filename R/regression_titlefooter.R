@@ -430,6 +430,9 @@ build_regression_footer_from_frames <- function(
         show_intercept,
         intercept_label
       ),
+      if (coef_note) {
+        build_penalized_footer_block_from_frames(frames, decimal_mark)
+      },
       build_singular_footer_block_from_frames(
         frames,
         fit_only = fit_only,
@@ -3027,6 +3030,70 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
   per <- vapply(
     which(skipped),
     function(k) .model_line(frames, k, msg),
+    character(1)
+  )
+  paste(per, collapse = "\n")
+}
+
+
+# An rms fit estimated by penalized maximum likelihood
+# (extras$penalty, see .rms_penalty()): its coefficients and their
+# variance are those of the penalized fit, which the rows do not say.
+# "Penalized estimates (penalty: 2)." when every kind of term has the
+# same penalty, else the factors that differ ("simple 1, nonlinear 4"):
+# the interaction penalties are named only when they differ from the
+# nonlinear one, which rms gives them by default. Same layout as the
+# notes below: one shared line when one model or every model has the
+# same penalty, a line per penalized model otherwise.
+build_penalized_footer_block_from_frames <- function(
+  frames,
+  decimal_mark = "."
+) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  pen <- lapply(frames, function(f) f$info$extras$penalty)
+  affected <- which(!vapply(pen, is.null, logical(1)))
+  if (length(affected) == 0L) {
+    return(NULL)
+  }
+  num <- function(v) {
+    trimws(formatC(v, format = "fg", digits = 6L, decimal.mark = decimal_mark))
+  }
+  txt <- vapply(
+    pen[affected],
+    function(p) {
+      if (length(unique(p)) == 1L) {
+        return(spicy_fmt("note_penalized", num(p[[1L]])))
+      }
+      keys <- c(
+        simple = "note_penalty_simple",
+        nonlinear = "note_penalty_nonlinear",
+        interaction = "note_penalty_interaction",
+        nonlinear.interaction = "note_penalty_nonlinear_interaction"
+      )
+      p <- p[names(p) %in% names(keys)]
+      show <- names(p) %in%
+        c("simple", "nonlinear") |
+        p != unname(p["nonlinear"])
+      parts <- vapply(
+        names(p)[show %in% TRUE],
+        function(k) spicy_fmt(keys[[k]], num(p[[k]])),
+        character(1)
+      )
+      spicy_fmt("note_penalized", .join_note_vars(parts))
+    },
+    character(1)
+  )
+  if (
+    length(frames) == 1L ||
+      (length(affected) == length(frames) && length(unique(txt)) == 1L)
+  ) {
+    return(txt[[1L]])
+  }
+  per <- vapply(
+    seq_along(affected),
+    function(j) .model_line(frames, affected[[j]], txt[[j]]),
     character(1)
   )
   paste(per, collapse = "\n")

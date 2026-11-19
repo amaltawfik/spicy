@@ -649,6 +649,7 @@ as_regression_frame.Glm <- function(
     exp_applied = FALSE,
     exp_header = NA_character_,
     rms_stats = if (!is.null(fit$stats)) as.list(fit$stats) else NULL,
+    penalty = .rms_penalty(fit),
     # Phase 7c2: for cph, expose events count alongside the subject
     # count for the survival footer block. Mirrors survival::coxph
     # info$extras$n_events.
@@ -1021,6 +1022,20 @@ as_regression_frame.Glm <- function(
     conf.high = est + crit * se,
     stringsAsFactors = FALSE
   )
+}
+
+
+# The penalty of an ols or lrm fitted with `penalty =`, as rms stores it
+# and print() shows it under "Penalty factors": one factor per kind of
+# term, c(simple, nonlinear, interaction, nonlinear.interaction). rms
+# keeps a penalty matrix only for a penalty above zero. NULL for a fit by
+# maximum likelihood (or least squares).
+.rms_penalty <- function(fit) {
+  pen <- unlist(fit$penalty)
+  if (is.null(fit$penalty.matrix) || !is.numeric(pen) || !any(pen > 0)) {
+    return(NULL)
+  }
+  pen
 }
 
 

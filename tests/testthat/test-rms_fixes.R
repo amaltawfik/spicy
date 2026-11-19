@@ -327,3 +327,50 @@ test_that("orm, bj, npsurv and orm.fit fits are refused with a spicy condition",
     )
   }
 })
+
+
+# ---- F10: a penalized fit says so ------------------------------------------
+
+test_that("an lrm or ols fitted with a penalty says so in the note", {
+  skip_if_not_installed("rms")
+  d <- rmsfx_data()
+  note <- function(x) paste(capture.output(print(x)), collapse = " ")
+  m0 <- rms::lrm(yb ~ x1 + x2, data = d)
+  m1 <- rms::lrm(yb ~ x1 + x2, data = d, penalty = 2)
+  m2 <- rms::lrm(
+    yb ~ x1 + rms::rcs(x2, 4),
+    data = d,
+    penalty = list(simple = 0.5, nonlinear = 4)
+  )
+  expect_match(
+    note(table_regression(m1)),
+    "Logistic regression. Penalized estimates (penalty: 2).",
+    fixed = TRUE
+  )
+  expect_false(grepl("Penalized", note(table_regression(m0))))
+  # A penalty of 0 is a fit by maximum likelihood.
+  m00 <- rms::lrm(yb ~ x1 + x2, data = d, penalty = 0)
+  expect_false(grepl("Penalized", note(table_regression(m00))))
+  txt <- note(table_regression(list(MLE = m0, pen = m1, pen2 = m2)))
+  expect_match(txt, "pen: Penalized estimates (penalty: 2).", fixed = TRUE)
+  expect_match(
+    txt,
+    "pen2: Penalized estimates (penalty: simple 0.5, nonlinear 4).",
+    fixed = TRUE
+  )
+  expect_false(grepl("MLE: Penalized", txt, fixed = TRUE))
+  o <- rms::ols(y ~ x1 + x2, data = d, penalty = 2)
+  expect_match(
+    note(table_regression(o)),
+    "Penalized estimates (penalty: 2).",
+    fixed = TRUE
+  )
+
+  withr::local_options(spicy.language = "fr")
+  txt <- note(table_regression(m2))
+  expect_match(
+    txt,
+    "Estimations p\u00E9nalis\u00E9es (p\u00E9nalit\u00E9\u00A0: simple 0,5\u00A0; non lin\u00E9aire 4).",
+    fixed = TRUE
+  )
+})
