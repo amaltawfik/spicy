@@ -155,3 +155,41 @@ test_that("the AME of a svyglm with an offset includes the offset", {
     svyglm_oracle(f, ~ x + grp + z + offset(log(expo)), d, exp)
   )
 })
+
+
+# ---- rms -------------------------------------------------------------------
+
+# rcs() found where model.frame() evaluates the formula, as library(rms)
+# would make it.
+rms_formula <- function(fo) {
+  e <- new.env(parent = environment(fo))
+  e$rcs <- rms::rcs
+  environment(fo) <- e
+  fo
+}
+
+test_that("the AME of an rms::Glm with rcs() is the AME of the same lrm", {
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("rms")
+  skip_if_not_installed("numDeriv")
+  d <- ame_test_data()
+  fo <- rms_formula(yb ~ x + grp + rcs(z, 4))
+  f <- rms::Glm(fo, family = stats::binomial(), data = d)
+  L <- rms::lrm(fo, data = d)
+  prep <- function(nd) {
+    X <- stats::predict(f, nd, type = "x")
+    colnames(X) <- names(stats::coef(f))[-1L]
+    list(X = X, off = 0)
+  }
+  or <- ame_oracle(
+    prep,
+    function(b, D) stats::plogis(b[[1L]] + drop(D$X %*% b[colnames(D$X)])),
+    stats::coef(f),
+    stats::vcov(f),
+    d,
+    c("x", "grp", "z")
+  )
+  sp <- ame_spicy(f)
+  expect_ame_matches(sp, or)
+  expect_ame_matches(sp, ame_spicy(L))
+})

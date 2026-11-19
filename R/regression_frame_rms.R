@@ -933,8 +933,32 @@ as_regression_frame.Glm <- function(
 # A Glm as the stats::glm it also is, for what rms does not serve as glm
 # does: marginaleffects has no Glm method, and rms's logLik() is
 # -deviance / 2, the log-likelihood of a 0/1 outcome only.
+#
+# rms keeps the knots of rcs() in `fit$Design$parms`, not in the terms,
+# which carry no predvars: predict.glm() on new data placed the knots
+# again on those data, and the AME of an rcs() term was taken on another
+# basis than the fit's. The twin's terms get the predvars stats would
+# have written, each rcs() call given its fitted knots.
 .rms_as_glm <- function(fit) {
   class(fit) <- setdiff(class(fit), c("Glm", "rms"))
+  tt <- fit$terms
+  parms <- fit$Design$parms
+  if (!is.null(tt) && is.null(attr(tt, "predvars")) && length(parms)) {
+    vars <- attr(tt, "variables")
+    for (i in seq_along(vars)[-1L]) {
+      v <- vars[[i]]
+      fun <- if (is.call(v)) paste(deparse(v[[1L]]), collapse = "")
+      if (!isTRUE(fun %in% c("rcs", "rms::rcs")) || length(v) < 2L) {
+        next
+      }
+      knots <- parms[[paste(deparse(v[[2L]]), collapse = "")]]
+      if (is.numeric(knots) && length(knots) >= 3L) {
+        vars[[i]] <- as.call(list(quote(rms::rcs), v[[2L]], knots))
+      }
+    }
+    attr(tt, "predvars") <- vars
+    fit$terms <- tt
+  }
   fit
 }
 
