@@ -130,7 +130,9 @@ SE, t and p cells render as dashes, and the AME columns, which need
 a variance matrix, are refused.
 \item \code{"bootstrap"}: quantreg's native \code{boot.rq} (\code{bsmethod = "xy"}).
 With \verb{cluster =}, the wild gradient cluster bootstrap of Hagemann
-(2017), the one cluster-robust route for \code{rq}. A weighted \code{rq} fit
+(2017), the route available for clustered data with \code{rq}. With very
+few clusters, its standard errors read against normal critical
+values reject too often (Hagemann 2017). A weighted \code{rq} fit
 refuses it: the resamplers do not carry the weights.
 }
 \code{cluster} with any other \code{rq} estimator is refused.

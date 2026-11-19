@@ -312,3 +312,30 @@ test_that("the routes the ivreg refusal names give a table", {
   tbl <- as.data.frame(table_regression(fits))
   expect_identical(sum(tbl$variable == "education"), 1L)
 })
+
+
+# ---- The cluster bootstrap of rq, described plainly -----------------------
+
+test_that("the rq cluster refusals point at the bootstrap without a citation", {
+  skip_if_not_installed("quantreg")
+  d <- .rf_wage_data()
+  q50 <- suppressWarnings(quantreg::rq(log(wage) ~ education, data = d))
+  err <- expect_error(
+    table_regression(q50, vcov = "CR1", cluster = d$region),
+    class = "spicy_unsupported_vcov"
+  )
+  msg <- conditionMessage(err)
+  expect_match(msg, "the route available for clustered data", fixed = TRUE)
+  expect_no_match(msg, "defensible", fixed = TRUE)
+  expect_no_match(msg, "Hagemann", fixed = TRUE)
+  err <- expect_error(
+    table_regression(q50, vcov = "iid", cluster = d$region),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(
+    conditionMessage(err),
+    "wild gradient cluster bootstrap",
+    fixed = TRUE
+  )
+  expect_no_match(conditionMessage(err), "Hagemann", fixed = TRUE)
+})

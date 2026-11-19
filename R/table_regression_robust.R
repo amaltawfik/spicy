@@ -103,7 +103,9 @@
 #'     a variance matrix, are refused.
 #'   \item `"bootstrap"`: quantreg's native `boot.rq` (`bsmethod = "xy"`).
 #'     With `cluster =`, the wild gradient cluster bootstrap of Hagemann
-#'     (2017), the one cluster-robust route for `rq`. A weighted `rq` fit
+#'     (2017), the route available for clustered data with `rq`. With very
+#'     few clusters, its standard errors read against normal critical
+#'     values reject too often (Hagemann 2017). A weighted `rq` fit
 #'     refuses it: the resamplers do not carry the weights.
 #' }
 #' `cluster` with any other `rq` estimator is refused.

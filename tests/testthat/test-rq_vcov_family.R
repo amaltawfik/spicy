@@ -326,7 +326,7 @@ test_that("each rq refusal names its own reason, not a pending-wiring list", {
   # never the generic "set vcov to CR0-CR3" advice.
   cr <- msg("CR1", cl = rep(1:47, each = 5))
   expect_match(cr, "wild gradient cluster bootstrap", fixed = TRUE)
-  expect_match(cr, "Hagemann", fixed = TRUE)
+  expect_no_match(cr, "Hagemann", fixed = TRUE)
   # CR1S is an lm-only token but still a CR* request: same route.
   expect_match(
     msg("CR1S", cl = rep(1:47, each = 5)),

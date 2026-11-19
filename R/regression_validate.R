@@ -1204,8 +1204,8 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
       #     HC variant under another name -- it is a different estimator
       #     family (sparsity-based, Hendricks-Koenker), which happens to
       #     be the heteroskedasticity-robust choice for this class.
-      #   * CR*: no clubSandwich / estfun backend. The one defensible
-      #     cluster route is the wild gradient bootstrap, so point at it
+      #   * CR*: no clubSandwich / estfun backend. The cluster route
+      #     available is the wild gradient bootstrap, so point at it
       #     (the Step-8 carve-out below blesses that exact pair).
       #   * jackknife: leave-one-out is inconsistent for non-smooth
       #     estimators (Efron 1982; Shao & Wu 1989) -- the quantile
@@ -1234,9 +1234,9 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
               "no estimating functions are available to build one."
             ),
             "i" = paste0(
-              "Use `vcov = \"bootstrap\"` with `cluster =` -- the ",
-              "wild gradient cluster bootstrap (Hagemann 2017), the ",
-              "one defensible cluster route for this class."
+              "Use `vcov = \"bootstrap\"` with `cluster =`: the wild ",
+              "gradient cluster bootstrap, the route available for ",
+              "clustered data."
             )
           )
         } else {
@@ -1488,7 +1488,7 @@ validate_cluster_lists <- function(
             "i" = paste0(
               "rq has no analytic cluster-robust estimator; use ",
               "`vcov = \"bootstrap\"` with `cluster =` (wild gradient ",
-              "cluster bootstrap, Hagemann 2017)."
+              "cluster bootstrap)."
             )
           ),
           class = "spicy_unsupported_vcov",
