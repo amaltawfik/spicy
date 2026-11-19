@@ -136,7 +136,7 @@
 #'     `"n_events"` -- outcome event counts as `events/N`, per
 #'     factor level (reference row included) and model totals on
 #'     continuous rows, computed on each model's own estimation
-#'     sample (STROBE item 16's "data behind the association";
+#'     sample (STROBE item 16's "data behind the measures of association";
 #'     NEJM-style `no. of events/total no.`). Binary (binomial)
 #'     outcomes and right-censored `coxph` fits -- other models
 #'     raise `spicy_invalid_input`.
@@ -173,7 +173,8 @@
 #' `spicy_invalid_input`.
 #'
 #' **Default** (`show_columns = NULL`) is context-aware:
-#' `"all_b"` for a single model (APA-7 Section 6.46 publication layout),
+#' `"all_b"` for a single model (the layout of the APA Manual 7
+#' sample regression tables, Tables 7.16 and 7.17, pp. 219-220),
 #' `"all_b_compact"` for two or more models (CI dropped to fit the
 #' side-by-side layout; restore it explicitly when needed).
 #'
@@ -462,8 +463,9 @@
 #'     Gaussian, Tweedie): the deviance \eqn{R^2}{R^2}. McFadden's and
 #'     Nagelkerke's are refused for them: the log-likelihood of a density
 #'     changes with the unit of the outcome, so the same model gets other
-#'     values, even negative ones, when the outcome is rescaled (Cameron &
-#'     Windmeijer 1997).
+#'     values, even negative ones, when the outcome is rescaled. For a
+#'     continuous outcome, the likelihood-ratio index can take large
+#'     values, positive or negative (Cameron & Windmeijer 1997, p. 333).
 #'   \item The quasi families have no likelihood and no default row.
 #' }
 #'
@@ -497,7 +499,8 @@
 #' but a fixed offset can make it negative, and it is shown with its sign.
 #' On request it is also computed for the other links, as the same
 #' difference of means, although the mean predicted probability equals
-#' the proportion of events only under the logit link (Tjur 2009).
+#' the proportion of events for a logit with an intercept (Tjur 2009,
+#' p. 366), and not in general under the other links.
 #'
 #' # Multi-model semantics
 #'
@@ -714,7 +717,7 @@
 #' # Hierarchical (nested) model comparison
 #'
 #' `nested = TRUE` adds **per-pair change statistics as in-table
-#' rows** (APA Table 7.13 / Stata `esttab` / SPSS Model Summary
+#' rows** (APA Manual 7 Table 7.15, p. 219 / Stata `esttab` / SPSS Model Summary
 #' convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...)
 #' contributes one column of change stats; the FIRST model column
 #' gets en-dashes (no previous model to compare to). Validation
@@ -750,8 +753,9 @@
 #' \itemize{
 #'   \item All-lm (and `nls`): `c("r2_change", "f_change",
 #'     "p_change")` -- APA hierarchical regression standard.
-#'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer &
-#'     Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
+#'   \item All-glm: `c("lrt_change", "p_change")` -- Hosmer,
+#'     Lemeshow & Sturdivant 2013 Section 2.4; Long & Freese 2014
+#'     Section 3.2.4.
 #'   \item All-glm whose dispersion is estimated (gaussian, Gamma,
 #'     inverse Gaussian, Tweedie, quasi families), and the `feglm`
 #'     fits of these families: `c("f_change", "p_change")`, the F test
@@ -872,7 +876,7 @@
 #' **Interactions and transforms.** Under `"refit"`, an interaction's
 #' \eqn{\beta}{beta} is the coefficient of the product of the z-scored
 #' components -- the recommended treatment for such models (Cohen et
-#' al. 2003 Section 7.7; Aiken & West 1991; Friedrich 1982). Under
+#' al. 2003 Section 7.5; Aiken & West 1991; Friedrich 1982). Under
 #' `"posthoc"`, `"basic"`, and `"smart"`, the product / transformed
 #' design column is treated as a single numeric column and scaled by
 #' its own SD (under `"smart"`, by `2 * SD` when the product column is
@@ -897,8 +901,7 @@
 #' regression model is **not** the standard convention. Each
 #' coefficient tests a distinct hypothesis on a distinct
 #' predictor -- not the situation multiple-testing procedures
-#' were designed for (Rothman 1990; Greenland 2017; APA Manual 7
-#' Section 6.46; Harrell *Regression Modeling Strategies* Section 5.4; Gelman,
+#' were designed for (Rothman 1990; Greenland 2017; see also Gelman,
 #' Hill & Yajima 2012). Hence the default `p_adjust = "none"`.
 #'
 #' Adjustment is appropriate for: mass screening with no prior
@@ -1062,7 +1065,8 @@
 #'   profile-likelihood CI from [stats::confint()] --
 #'   [MASS::confint.glm()] for `glm`, `confint.polr()` / `confint.clm()`
 #'   for ordinal fits -- asymmetric, exact for likelihood-based
-#'   inference (Venables & Ripley 2002, Section 7.2). Only the CI bounds
+#'   inference (Venables & Ripley 2002, Section 7.2, p. 198, and Section
+#'   8.4, pp. 220-221). Only the CI bounds
 #'   change; estimate, SE, statistic and p-value remain Wald. For ordinal
 #'   fits, see [table_regression_ordinal].
 #'   `"profile"` with `lm` raises `spicy_invalid_input`.
@@ -1371,7 +1375,7 @@
 #'       FIRST numeric sub-column of each model (typically `B`);
 #'       the model's remaining sub-columns (`SE`, `LL`, `UL`, `p`,
 #'       ...) are left empty for that row. The APA Manual 7
-#'       Table 7.13 layout.
+#'       Table 7.15 layout (p. 219).
 #'     \item `"merged"`: the model's numeric sub-columns are
 #'       merged into a single wide cell containing the fit-stat
 #'       value, centered under the model spanner. Stata `esttab`
@@ -1450,8 +1454,8 @@
 #'   column of the model, so a long label widens that column.
 #'   For a single multinomial model, the labels of the category
 #'   spanners; see [table_regression_categorical].
-#' @param stars Significance asterisks. `FALSE` (default, APA 7
-#'   Section 6.46) -- no stars. `TRUE` -- APA cutoffs
+#' @param stars Significance asterisks. `FALSE` (default; the APA
+#'   Manual 7, Section 7.14, p. 204, prefers exact p-values) -- no stars. `TRUE` -- APA cutoffs
 #'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric
 #'   vector specifies custom thresholds, e.g.
 #'   `c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)`.
@@ -1832,8 +1836,9 @@
 #' }
 #'
 #' @references
-#' APA Manual 7 (American Psychological Association, 2020),
-#' Tables 7.13-7.15.
+#' American Psychological Association (2020). *Publication manual of the
+#' American Psychological Association* (7th ed.). American Psychological
+#' Association. \doi{10.1037/0000165-000}
 #'
 #' Aiken, L.S. & West, S.G. (1991). *Multiple regression: Testing
 #' and interpreting interactions*.
@@ -1888,6 +1893,9 @@
 #' regression: Deriving sample-sensitive benchmarks. *Sociological
 #' Methods & Research*, 47(3), 507-531. \doi{10.1177/0049124116638107}
 #'
+#' Hosmer, D.W., Lemeshow, S. & Sturdivant, R.X. (2013). *Applied
+#' logistic regression* (3rd ed.). Wiley. \doi{10.1002/9781118548387}
+#'
 #' Long, J.S. & Freese, J. (2014). *Regression models for categorical
 #' dependent variables using Stata* (3rd ed.). Stata Press.
 #'
@@ -1938,16 +1946,18 @@
 #' discrimination. *The American Statistician*, 63(4), 366-372.
 #' \doi{10.1198/tast.2009.08210}
 #'
+#' Vandenbroucke, J.P., von Elm, E., Altman, D.G., Gøtzsche, P.C.,
+#' Mulrow, C.D., Pocock, S.J., Poole, C., Schlesselman, J.J. & Egger, M.
+#' (2007). Strengthening the reporting of observational studies in
+#' epidemiology (STROBE): Explanation and elaboration. *PLoS Medicine*,
+#' 4(10), e297. \doi{10.1371/journal.pmed.0040297}
+#'
 #' Vehtari, A., Gelman, A. & Gabry, J. (2017). Practical Bayesian model
 #' evaluation using leave-one-out cross-validation and WAIC. *Statistics
 #' and Computing*, 27(5), 1413-1432. \doi{10.1007/s11222-016-9696-4}
 #'
 #' Venables, W.N. & Ripley, B.D. (2002). *Modern applied statistics with
 #' S* (4th ed.). Springer. \doi{10.1007/978-0-387-21706-2}
-#'
-#' Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving
-#' to a world beyond "p < 0.05". *The American Statistician*,
-#' 73(sup1), 1-19.
 #'
 #' @export
 table_regression <- function(

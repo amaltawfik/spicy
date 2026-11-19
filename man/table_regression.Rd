@@ -126,7 +126,8 @@ AME, partial effect sizes). Default \code{0.95}.}
 profile-likelihood CI from \code{\link[stats:confint]{stats::confint()}} --
 \code{\link[MASS:confint.glm]{MASS::confint.glm()}} for \code{glm}, \code{confint.polr()} / \code{confint.clm()}
 for ordinal fits -- asymmetric, exact for likelihood-based
-inference (Venables & Ripley 2002, Section 7.2). Only the CI bounds
+inference (Venables & Ripley 2002, Section 7.2, p. 198, and Section
+8.4, pp. 220-221). Only the CI bounds
 change; estimate, SE, statistic and p-value remain Wald. For ordinal
 fits, see \link{table_regression_ordinal}.
 \code{"profile"} with \code{lm} raises \code{spicy_invalid_input}.
@@ -462,7 +463,7 @@ that no model has is left out.}
 FIRST numeric sub-column of each model (typically \code{B});
 the model's remaining sub-columns (\code{SE}, \code{LL}, \code{UL}, \code{p},
 ...) are left empty for that row. The APA Manual 7
-Table 7.13 layout.
+Table 7.15 layout (p. 219).
 \item \code{"merged"}: the model's numeric sub-columns are
 merged into a single wide cell containing the fit-stat
 value, centered under the model spanner. Stata \code{esttab}
@@ -550,8 +551,8 @@ column of the model, so a long label widens that column.
 For a single multinomial model, the labels of the category
 spanners; see \link{table_regression_categorical}.}
 
-\item{stars}{Significance asterisks. \code{FALSE} (default, APA 7
-Section 6.46) -- no stars. \code{TRUE} -- APA cutoffs
+\item{stars}{Significance asterisks. \code{FALSE} (default; the APA
+Manual 7, Section 7.14, p. 204, prefers exact p-values) -- no stars. \code{TRUE} -- APA cutoffs
 \code{c("*" = 0.05, "**" = 0.01, "***" = 0.001)}. A named numeric
 vector specifies custom thresholds, e.g.
 \code{c("+" = 0.10, "*" = 0.05, "**" = 0.01, "***" = 0.001)}.
@@ -809,8 +810,10 @@ body. Useful for institutional templates with pre-set headers
 tagged with the Word named style \code{"Table Caption"}. The visual
 rendering (italic / bold / color / font) follows whatever that
 style is set to in the docx template. The stock Word template
-renders \code{"Table Caption"} in italic -- the APA Manual 7 section 7.10
-condensed convention. For a different appearance (Nature-style
+renders \code{"Table Caption"} in italic, the type of the APA table
+title (APA Manual 7 section 7.11, p. 201), where the APA puts the
+bold table number on its own line above it (section 7.10,
+p. 200). For a different appearance (Nature-style
 bold non-italic, APA-strict 2-line bold-number / italic-title,
 etc.), edit the \code{"Table Caption"} style in a docx template and
 pass it via \code{word_template = "your_template.docx"}. Style-based
@@ -982,7 +985,7 @@ own fit); models without per-row N data drop the column.
 \code{"n_events"} -- outcome event counts as \code{events/N}, per
 factor level (reference row included) and model totals on
 continuous rows, computed on each model's own estimation
-sample (STROBE item 16's "data behind the association";
+sample (STROBE item 16's "data behind the measures of association";
 NEJM-style \verb{no. of events/total no.}). Binary (binomial)
 outcomes and right-censored \code{coxph} fits -- other models
 raise \code{spicy_invalid_input}.
@@ -1019,7 +1022,8 @@ order of the displayed columns. If \code{standardized != "none"} and
 \code{spicy_invalid_input}.
 
 \strong{Default} (\code{show_columns = NULL}) is context-aware:
-\code{"all_b"} for a single model (APA-7 Section 6.46 publication layout),
+\code{"all_b"} for a single model (the layout of the APA Manual 7
+sample regression tables, Tables 7.16 and 7.17, pp. 219-220),
 \code{"all_b_compact"} for two or more models (CI dropped to fit the
 side-by-side layout; restore it explicitly when needed).
 
@@ -1308,8 +1312,9 @@ estimation output (Long & Freese 2014, p. 126).
 Gaussian, Tweedie): the deviance \eqn{R^2}{R^2}. McFadden's and
 Nagelkerke's are refused for them: the log-likelihood of a density
 changes with the unit of the outcome, so the same model gets other
-values, even negative ones, when the outcome is rescaled (Cameron &
-Windmeijer 1997).
+values, even negative ones, when the outcome is rescaled. For a
+continuous outcome, the likelihood-ratio index can take large
+values, positive or negative (Cameron & Windmeijer 1997, p. 333).
 \item The quasi families have no likelihood and no default row.
 }
 
@@ -1343,7 +1348,8 @@ p. 370; Allison 2014). It is at least 0 for a logit with an intercept,
 but a fixed offset can make it negative, and it is shown with its sign.
 On request it is also computed for the other links, as the same
 difference of means, although the mean predicted probability equals
-the proportion of events only under the logit link (Tjur 2009).
+the proportion of events for a logit with an intercept (Tjur 2009,
+p. 366), and not in general under the other links.
 }
 
 \section{Multi-model semantics}{
@@ -1600,7 +1606,7 @@ For multi-model use, mix forms freely:
 
 \section{Hierarchical (nested) model comparison}{
 \code{nested = TRUE} adds \strong{per-pair change statistics as in-table
-rows} (APA Table 7.13 / Stata \code{esttab} / SPSS Model Summary
+rows} (APA Manual 7 Table 7.15, p. 219 / Stata \code{esttab} / SPSS Model Summary
 convention). Each adjacent pair (M2 vs M1, M3 vs M2, ...)
 contributes one column of change stats; the FIRST model column
 gets en-dashes (no previous model to compare to). Validation
@@ -1635,8 +1641,9 @@ Default change tokens auto-injected when \code{show_fit_stats} is
 \code{NULL}:
 \itemize{
 \item All-lm (and \code{nls}): \code{c("r2_change", "f_change", "p_change")} -- APA hierarchical regression standard.
-\item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer &
-Lemeshow Section 3.5; Long & Freese 2014 Section 3.2.4.
+\item All-glm: \code{c("lrt_change", "p_change")} -- Hosmer,
+Lemeshow & Sturdivant 2013 Section 2.4; Long & Freese 2014
+Section 3.2.4.
 \item All-glm whose dispersion is estimated (gaussian, Gamma,
 inverse Gaussian, Tweedie, quasi families), and the \code{feglm}
 fits of these families: \code{c("f_change", "p_change")}, the F test
@@ -1757,7 +1764,7 @@ non-binomial returns NA with a \code{spicy_caveat}.
 \strong{Interactions and transforms.} Under \code{"refit"}, an interaction's
 \eqn{\beta}{beta} is the coefficient of the product of the z-scored
 components -- the recommended treatment for such models (Cohen et
-al. 2003 Section 7.7; Aiken & West 1991; Friedrich 1982). Under
+al. 2003 Section 7.5; Aiken & West 1991; Friedrich 1982). Under
 \code{"posthoc"}, \code{"basic"}, and \code{"smart"}, the product / transformed
 design column is treated as a single numeric column and scaled by
 its own SD (under \code{"smart"}, by \code{2 * SD} when the product column is
@@ -1782,8 +1789,7 @@ Adjusting the p-values of all coefficients of a single
 regression model is \strong{not} the standard convention. Each
 coefficient tests a distinct hypothesis on a distinct
 predictor -- not the situation multiple-testing procedures
-were designed for (Rothman 1990; Greenland 2017; APA Manual 7
-Section 6.46; Harrell \emph{Regression Modeling Strategies} Section 5.4; Gelman,
+were designed for (Rothman 1990; Greenland 2017; see also Gelman,
 Hill & Yajima 2012). Hence the default \code{p_adjust = "none"}.
 
 Adjustment is appropriate for: mass screening with no prior
@@ -2012,8 +2018,9 @@ table_regression(fit, output = "clipboard")
 
 }
 \references{
-APA Manual 7 (American Psychological Association, 2020),
-Tables 7.13-7.15.
+American Psychological Association (2020). \emph{Publication manual of the
+American Psychological Association} (7th ed.). American Psychological
+Association. \doi{10.1037/0000165-000}
 
 Aiken, L.S. & West, S.G. (1991). \emph{Multiple regression: Testing
 and interpreting interactions}.
@@ -2068,6 +2075,9 @@ Hemmert, G.A.J., Schons, L.M., Wieseke, J., & Schimmelpfennig, H.
 regression: Deriving sample-sensitive benchmarks. \emph{Sociological
 Methods & Research}, 47(3), 507-531. \doi{10.1177/0049124116638107}
 
+Hosmer, D.W., Lemeshow, S. & Sturdivant, R.X. (2013). \emph{Applied
+logistic regression} (3rd ed.). Wiley. \doi{10.1002/9781118548387}
+
 Long, J.S. & Freese, J. (2014). \emph{Regression models for categorical
 dependent variables using Stata} (3rd ed.). Stata Press.
 
@@ -2118,16 +2128,18 @@ regression models -- A new proposal: The coefficient of
 discrimination. \emph{The American Statistician}, 63(4), 366-372.
 \doi{10.1198/tast.2009.08210}
 
+Vandenbroucke, J.P., von Elm, E., Altman, D.G., Gøtzsche, P.C.,
+Mulrow, C.D., Pocock, S.J., Poole, C., Schlesselman, J.J. & Egger, M.
+(2007). Strengthening the reporting of observational studies in
+epidemiology (STROBE): Explanation and elaboration. \emph{PLoS Medicine},
+4(10), e297. \doi{10.1371/journal.pmed.0040297}
+
 Vehtari, A., Gelman, A. & Gabry, J. (2017). Practical Bayesian model
 evaluation using leave-one-out cross-validation and WAIC. \emph{Statistics
 and Computing}, 27(5), 1413-1432. \doi{10.1007/s11222-016-9696-4}
 
 Venables, W.N. & Ripley, B.D. (2002). \emph{Modern applied statistics with
 S} (4th ed.). Springer. \doi{10.1007/978-0-387-21706-2}
-
-Wasserstein, R.L., Schirm, A.L., & Lazar, N.A. (2019). Moving
-to a world beyond "p < 0.05". \emph{The American Statistician},
-73(sup1), 1-19.
 }
 \seealso{
 \code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported model

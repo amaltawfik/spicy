@@ -99,10 +99,11 @@
 #' interval of `ci_method`.
 #'
 #' @section Diagnostics:
-#' Every table is backed by an automatic check of the sampler (R-hat >=
+#' Every table is backed by an automatic check of the sampler: R-hat >=
 #' 1.01, ESS below 100 per chain, floored at 400 so that fewer chains
-#' never weaken the bar, divergent transitions, E-BFMI < 0.2, per Vehtari
-#' et al. 2021). A problem adds a line to the note and raises a warning of
+#' never weaken the bar, divergent transitions, E-BFMI < 0.2. The R-hat
+#' and ESS bars of 1.01 and 400 are those of Vehtari et al. (2021,
+#' pp. 671-672). A problem adds a line to the note and raises a warning of
 #' class `spicy_bayes_diagnostics`, nested under `spicy_caveat`, so
 #' `withCallingHandlers(spicy_bayes_diagnostics = ...)` mutes the check
 #' alone. A clean fit prints nothing.

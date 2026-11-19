@@ -263,7 +263,8 @@ within one cluster, so crossed random effects need a \code{cluster} that
 contains them all. It keeps the standard errors valid when the
 random-effects distribution or the conditional variance is
 misspecified, provided the estimates stay consistent (Liang & Zeger
-1986; Verbeke & Lesaffre 1997). With few clusters it understates the
+1986 for a misspecified variance and correlation, Verbeke & Lesaffre
+1997 for the random-effects distribution). With few clusters it understates the
 variance, which the factor of \code{"CR1"} offsets only in part: this class
 has no bias-reduced correction (Cameron & Miller 2015).
 
