@@ -741,10 +741,12 @@ test_that("Wald change, rms fits: robcov() matrix, F for ols, chi-square for lrm
     if (nm == "ols") {
       expect_equal(got$wald_f_change, w / 2, tolerance = 1e-8, label = nm)
       expect_equal(got$wald_df2, p[[2]]$df.residual, label = nm)
+      # As for its lm twin, the Wald F replaces the partial F.
+      expect_true(is.na(got$f_change), label = nm)
     } else {
       expect_equal(got$wald_chi2_change, w, tolerance = 1e-8, label = nm)
+      expect_true(is.na(got$lrt_change), label = nm)
     }
-    expect_true(is.na(got$lrt_change), label = nm)
   }
   # A fit passed through robcov() reports its robust variance under the
   # classical token: the change test follows it.
