@@ -270,3 +270,33 @@ test_that("the smooth-terms sentence promises no test under a robust variance", 
     fixed = TRUE
   )
 })
+
+# ---- 6. A selection model with a binary outcome --------------------------
+
+test_that("the note says the outcome equation of a binary outcome is a probit", {
+  skip_if_not_installed("sampleSelection")
+  d <- fu_mroz()
+  d$high_wage <- d$wage > stats::median(d$wage[d$lfp == 1])
+  fit <- sampleSelection::selection(
+    lfp ~ age + I(age^2) + faminc + kids + educ,
+    high_wage ~ exper + educ + city,
+    data = d
+  )
+  out <- fu_print(table_regression(fit))
+  expect_match(
+    out,
+    "Outcome observed for 428 of 753. Outcome equation: probit.",
+    fixed = TRUE
+  )
+  # A continuous outcome has no such sentence.
+  expect_no_match(
+    fu_print(table_regression(fu_selection())),
+    "Outcome equation",
+    fixed = TRUE
+  )
+  out <- withr::with_options(
+    list(spicy.language = "fr"),
+    fu_print(table_regression(fit))
+  )
+  expect_match(out, "Équation de résultat : probit.", fixed = TRUE)
+})

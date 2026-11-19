@@ -453,6 +453,8 @@
   # The cases of the outcome equation of a selection model, then all the
   # cases (the n row).
   note_outcome_observed = "Outcome observed for %s of %s.",
+  # A selection model with a binary outcome, after the sentence above.
+  note_outcome_equation_probit = "Outcome equation: probit.",
   # The smooth terms of a GAM. No hole: the caption already carries
   # "(edf)", which the gloss spells out.
   note_smooth_terms_gloss = "Smooth terms: effective degrees of freedom (edf) and approximate test of each term.",

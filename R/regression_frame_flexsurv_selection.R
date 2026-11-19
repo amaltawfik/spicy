@@ -632,6 +632,9 @@ as_regression_frame.selection <- function(
     selection_two_step = !is_ml,
     selection_df = .selection_df(fit),
     n_outcome_observed = n_outcome_observed,
+    # A binary outcome: the outcome equation is a probit, which the note
+    # says.
+    selection_binary_outcome = identical(fit$outcomeVar, "binary"),
     # The "Error terms" block, appended by table_regression() after
     # exponentiate and p_adjust (as the Scale effects of a clm).
     error_terms = .selection_error_rows(est_mat, fit, ci_level)
@@ -731,7 +734,8 @@ as_regression_frame.selection <- function(
 
 
 # "Outcome observed for 428 of 753.": the cases of the outcome equation,
-# beside the n row that counts every case.
+# beside the n row that counts every case, then, for a binary outcome,
+# "Outcome equation: probit.".
 build_selection_outcome_n_footer_block_from_frames <- function(
   frames,
   decimal_mark = "."
@@ -750,10 +754,18 @@ build_selection_outcome_n_footer_block_from_frames <- function(
     idx <- c(idx, i)
     texts <- c(
       texts,
-      spicy_fmt(
-        "note_outcome_observed",
-        format_number(n1, digits = 0L, decimal_mark = decimal_mark),
-        format_number(n, digits = 0L, decimal_mark = decimal_mark)
+      paste(
+        c(
+          spicy_fmt(
+            "note_outcome_observed",
+            format_number(n1, digits = 0L, decimal_mark = decimal_mark),
+            format_number(n, digits = 0L, decimal_mark = decimal_mark)
+          ),
+          if (isTRUE(frames[[i]]$info$extras$selection_binary_outcome)) {
+            spicy_str("note_outcome_equation_probit")
+          }
+        ),
+        collapse = " "
       )
     )
   }
