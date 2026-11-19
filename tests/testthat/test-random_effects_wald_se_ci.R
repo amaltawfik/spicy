@@ -97,16 +97,13 @@ test_that("lmer (random intercept): SE + CI are finite for all rows", {
   expect_true(all(is.finite(vc$ci_lower)))
   expect_true(all(is.finite(vc$ci_upper)))
   expect_true(all(vc$ci_method == "wald"))
-  # Algebraic identity of the Wald mapping (default ci_level = 0.95):
-  # ci_upper = variance + z * SE and ci_lower = max(0, variance - z * SE),
-  # so the SE must be recoverable from the upper half-width exactly.
+  # Algebraic identity of the Wald mapping (default ci_level = 0.95),
+  # on log(sd): ci = variance * exp(+/- 2 z s), s = SE / (2 variance),
+  # so s must be recoverable from the log-ratio of the bounds exactly.
   z <- qnorm(0.975)
-  expect_equal((vc$ci_upper - vc$variance) / z, vc$std_error, tolerance = 1e-12)
-  expect_equal(
-    vc$ci_lower,
-    pmax(0, vc$variance - z * vc$std_error),
-    tolerance = 1e-12
-  )
+  s <- vc$std_error / (2 * vc$variance)
+  expect_equal(log(vc$ci_upper / vc$ci_lower) / (4 * z), s, tolerance = 1e-12)
+  expect_equal(vc$ci_lower, vc$variance * exp(-2 * z * s), tolerance = 1e-12)
 })
 
 test_that("lmer (random intercept): SE matches merDeriv direct output", {
@@ -152,14 +149,15 @@ test_that("lmer (random slope): SE/CI populated for intercept + slope + residual
   expect_identical(var_rows$term, c("(Intercept)", "Days", ""))
   expect_equal(var_rows$std_error, re_se[c(1L, 3L, 4L)], tolerance = 1e-10)
   z <- qnorm(0.975)
+  s_log <- re_se[c(1L, 3L, 4L)] / (2 * var_rows$variance)
   expect_equal(
     var_rows$ci_lower,
-    pmax(0, var_rows$variance - z * re_se[c(1L, 3L, 4L)]),
+    var_rows$variance * exp(-2 * z * s_log),
     tolerance = 1e-10
   )
   expect_equal(
     var_rows$ci_upper,
-    var_rows$variance + z * re_se[c(1L, 3L, 4L)],
+    var_rows$variance * exp(2 * z * s_log),
     tolerance = 1e-10
   )
 
@@ -189,17 +187,18 @@ test_that("lmer Wald CI brackets the point estimate", {
   vc <- fr$info$random_effects$variance_components
   expect_true(all(vc$ci_lower <= vc$variance))
   expect_true(all(vc$variance <= vc$ci_upper))
-  # Pin the exact bounds on top of the bracket check: Wald CI is
-  # variance +/- qnorm(0.975) * SE, with SE the merDeriv observed-
-  # information diagonal (RE variance then residual after the fixed
-  # effects) and the lower bound clamped at 0.
+  # Pin the exact bounds on top of the bracket check: Wald CI on
+  # log(sd), squared, variance * exp(+/- 2 z s), s = SE / (2 variance),
+  # with SE the merDeriv diagonal (RE variance then residual after the
+  # fixed effects). No clamp: the bounds stay above 0.
   v <- as.matrix(merDeriv::vcov.lmerMod(fit, full = TRUE, ranpar = "var"))
   n_fixed <- length(lme4::fixef(fit))
   se_or <- unname(sqrt(diag(v))[n_fixed + c(1L, 2L)])
   z <- qnorm(0.975)
+  s <- se_or / (2 * vc$variance)
   expect_identical(vc$group, c("Subject", "Residual"))
-  expect_equal(vc$ci_lower, pmax(0, vc$variance - z * se_or), tolerance = 1e-10)
-  expect_equal(vc$ci_upper, vc$variance + z * se_or, tolerance = 1e-10)
+  expect_equal(vc$ci_lower, vc$variance * exp(-2 * z * s), tolerance = 1e-10)
+  expect_equal(vc$ci_upper, vc$variance * exp(2 * z * s), tolerance = 1e-10)
 })
 
 

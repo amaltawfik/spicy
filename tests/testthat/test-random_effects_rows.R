@@ -570,11 +570,11 @@ test_that("ci_level is honored by the vc CI paths of all mixed engines", {
   trm <- "re::Subject::(Intercept)"
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
 
-  # merDeriv Wald path: on the variance scale the interval is symmetric,
-  # so the 90/95 half-width ratio must be exactly z_.95 / z_.975.
+  # merDeriv Wald path: on log(sd) the interval is symmetric, so the
+  # 90/95 ratio of log-widths must be exactly z_.95 / z_.975.
   skip_if_not_installed("merDeriv")
-  v95 <- vc_ci(table_regression(fit), trm)^2
-  v90 <- vc_ci(table_regression(fit, ci_level = 0.90), trm)^2
+  v95 <- log(vc_ci(table_regression(fit), trm))
+  v90 <- log(vc_ci(table_regression(fit, ci_level = 0.90), trm))
   expect_equal(
     (v90[2] - v90[1]) / (v95[2] - v95[1]),
     qnorm(0.95) / qnorm(0.975),

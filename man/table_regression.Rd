@@ -606,12 +606,12 @@ deviation \eqn{\sigma}, in the unit of the linear predictor
 The standard error is a delta-method one on the scale the engine
 estimates on, and \eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)}. For \code{lmer}
 and \code{glmer} it comes from the covariance matrix of the variances
-(\code{merDeriv}), and the Wald CI is \eqn{\sigma^2 \pm z\,SE(\sigma^2)},
-clamped at 0, then its square root for \eqn{\sigma}. For \code{lme},
-\code{glmmTMB} and \code{clmm} the engine estimates \eqn{\log\sigma}: the SE is
-\eqn{\sigma\,SE(\log\sigma)} and the CI is the engine's
-(\code{nlme::intervals()}, \code{glmmTMB::confint()}),
-\eqn{\sigma\exp(\pm z\,SE(\log\sigma))}, squared for \eqn{\sigma^2}.
+(\code{merDeriv}). For \code{lme}, \code{glmmTMB} and \code{clmm} the engine estimates
+\eqn{\log\sigma} and the SE is \eqn{\sigma\,SE(\log\sigma)}. The Wald
+CI of every engine is built on \eqn{\log\sigma},
+\eqn{\sigma\exp(\pm z\,SE(\log\sigma))}, and squared for
+\eqn{\sigma^2}: by spicy for \code{lmer} and \code{glmer}, by the engine
+otherwise (\code{nlme::intervals()}, \code{glmmTMB::confint()}).
 Correlation rows (\eqn{\rho}) are unitless and pass through
 either way. Their SE is a delta-method one too: from the variances
 for \code{lmer} (CI \eqn{\rho \pm z\,SE}, clamped to \eqn{[-1, 1]}), from
@@ -630,8 +630,10 @@ for journals that want only standard errors
 data (\code{broom::tidy()}, \code{\link[=as_structured]{as_structured()}}) always carries the
 full SE + CI.
 
-Note. Under the default \code{re_ci = "wald"} the SE and CI are Wald
-(\verb{est ± z * SE}, clamped at 0 for variances). Wald can be
+Note. Under the default \code{re_ci = "wald"} the CI is Wald on the log
+of the standard deviation (\verb{sd * exp(± z * SE(log sd))}, see
+\code{re_scale}), so it stays above 0, and on \eqn{\rho} for \code{lmer}
+correlations. Wald can be
 optimistic near the variance boundary (Self & Liang 1987
 chi-bar-squared); request boundary-respecting profile-likelihood
 intervals with \code{re_ci = "profile"} when robustness is critical.
@@ -688,8 +690,10 @@ p-value alongside the table.}
 route for the random-effect variance-component rows of \code{lmer} /
 \code{glmer} fits:
 \itemize{
-\item \code{"wald"}: SE and symmetric CI from the observed
-information (\code{merDeriv}), subject to the
+\item \code{"wald"}: SE from the information matrix (\code{merDeriv},
+expected information by default) and a Wald CI symmetric on
+the log of the standard deviation, which stays above 0 (see
+\code{re_scale}), subject to the
 \code{options("spicy.re_se_max_n")} size cap (see \code{re_columns}).
 \item \code{"profile"}: \strong{profile-likelihood CIs} via
 \code{confint(fit, method = "profile")} -- the route lme4 itself

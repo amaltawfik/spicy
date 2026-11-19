@@ -1160,9 +1160,17 @@ inform_lmertest_hint <- function() {
   vc_df$ci_upper <- NA_real_
   vc_df$ci_method <- NA_character_
   vc_df$std_error[var_rows] <- as.numeric(se_diag)
-  vc_df$ci_lower[var_rows] <- pmax(0, vc_df$variance[var_rows] - z * se_diag)
-  vc_df$ci_upper[var_rows] <- vc_df$variance[var_rows] + z * se_diag
-  vc_df$ci_method[var_rows] <- "wald"
+  # Wald interval on log(sd), the scale nlme and glmmTMB build theirs on:
+  # sd * exp(+/- z s), s = SE(log sd) = SE(sd^2) / (2 sd^2), stored
+  # squared. A symmetric interval on sd^2 ran below 0 and was clamped
+  # there (decision 2026-11-19, dev/decisions/2026-11-19-re-se-delta.md).
+  var_est <- vc_df$variance[var_rows]
+  s_log <- as.numeric(se_diag) / (2 * var_est)
+  ok <- is.finite(s_log) & var_est > 0
+  vc_df$ci_lower[var_rows] <- ifelse(ok, var_est * exp(-2 * z * s_log), NA)
+  vc_df$ci_upper[var_rows] <- ifelse(ok, var_est * exp(2 * z * s_log), NA)
+  vc_df$std_error[var_rows][!ok] <- NA_real_
+  vc_df$ci_method[var_rows] <- ifelse(ok, "wald", NA_character_)
 
   # Phase 7c17: Wald SE + 95% CI for the correlation rows via the
   # multivariate Delta method on the 3 x 3 sub-vcov of

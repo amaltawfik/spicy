@@ -1691,12 +1691,12 @@
 #'   The standard error is a delta-method one on the scale the engine
 #'   estimates on, and \eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)}. For `lmer`
 #'   and `glmer` it comes from the covariance matrix of the variances
-#'   (`merDeriv`), and the Wald CI is \eqn{\sigma^2 \pm z\,SE(\sigma^2)},
-#'   clamped at 0, then its square root for \eqn{\sigma}. For `lme`,
-#'   `glmmTMB` and `clmm` the engine estimates \eqn{\log\sigma}: the SE is
-#'   \eqn{\sigma\,SE(\log\sigma)} and the CI is the engine's
-#'   (`nlme::intervals()`, `glmmTMB::confint()`),
-#'   \eqn{\sigma\exp(\pm z\,SE(\log\sigma))}, squared for \eqn{\sigma^2}.
+#'   (`merDeriv`). For `lme`, `glmmTMB` and `clmm` the engine estimates
+#'   \eqn{\log\sigma} and the SE is \eqn{\sigma\,SE(\log\sigma)}. The Wald
+#'   CI of every engine is built on \eqn{\log\sigma},
+#'   \eqn{\sigma\exp(\pm z\,SE(\log\sigma))}, and squared for
+#'   \eqn{\sigma^2}: by spicy for `lmer` and `glmer`, by the engine
+#'   otherwise (`nlme::intervals()`, `glmmTMB::confint()`).
 #'   Correlation rows (\eqn{\rho}) are unitless and pass through
 #'   either way. Their SE is a delta-method one too: from the variances
 #'   for `lmer` (CI \eqn{\rho \pm z\,SE}, clamped to \eqn{[-1, 1]}), from
@@ -1714,8 +1714,10 @@
 #'   data (`broom::tidy()`, [as_structured()]) always carries the
 #'   full SE + CI.
 #'
-#'   Note. Under the default `re_ci = "wald"` the SE and CI are Wald
-#'   (`est ± z * SE`, clamped at 0 for variances). Wald can be
+#'   Note. Under the default `re_ci = "wald"` the CI is Wald on the log
+#'   of the standard deviation (`sd * exp(± z * SE(log sd))`, see
+#'   `re_scale`), so it stays above 0, and on \eqn{\rho} for `lmer`
+#'   correlations. Wald can be
 #'   optimistic near the variance boundary (Self & Liang 1987
 #'   chi-bar-squared); request boundary-respecting profile-likelihood
 #'   intervals with `re_ci = "profile"` when robustness is critical.
@@ -1770,8 +1772,10 @@
 #'   route for the random-effect variance-component rows of `lmer` /
 #'   `glmer` fits:
 #'   \itemize{
-#'     \item `"wald"`: SE and symmetric CI from the observed
-#'       information (`merDeriv`), subject to the
+#'     \item `"wald"`: SE from the information matrix (`merDeriv`,
+#'       expected information by default) and a Wald CI symmetric on
+#'       the log of the standard deviation, which stays above 0 (see
+#'       `re_scale`), subject to the
 #'       `options("spicy.re_se_max_n")` size cap (see `re_columns`).
 #'     \item `"profile"`: **profile-likelihood CIs** via
 #'       `confint(fit, method = "profile")` -- the route lme4 itself

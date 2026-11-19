@@ -7,9 +7,12 @@
   estimates on (log SD, and the transformed correlation), as for
   `lmer`. They were the half-width of the interval divided by z, which
   overstated them: on `Reaction ~ Days + (1 | Subject)` the SE of the
-  intercept SD drops from 6.96 to 6.81, the `lmer` value. The intervals
-  do not change. The residual row of a Gaussian `glmmTMB` now has its
-  SE and CI.
+  intercept SD drops from 6.96 to 6.81, the `lmer` value. The Wald
+  interval of a random-effect SD of `lmer` and `glmer` is now symmetric
+  on the log of the SD, as `lme` and `glmmTMB` build theirs, instead of
+  on the variance clamped at 0: 25.91 to 53.19 on that model, where it
+  was 19.67 to 48.68. The residual row of a Gaussian `glmmTMB` now has
+  its SE and CI.
 
 * `table_regression()` and `table_regression_uv()` test the terms of a
   `glm()` whose dispersion is estimated (gaussian, Gamma, inverse

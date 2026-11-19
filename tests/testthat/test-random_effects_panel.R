@@ -42,12 +42,12 @@ test_that("lmer random-intercept output has structured 'Random effects' panel", 
   expect_match(combined, " Random effects:         │", fixed = TRUE)
   expect_match(
     combined,
-    "   σ Subject (Intercept) │   37.12  6.81  [ 19.67,  48.68]   –",
+    "   σ Subject (Intercept) │   37.12  6.81  [ 25.91,  53.19]   –",
     fixed = TRUE
   )
   expect_match(
     combined,
-    "   σ (Residual)          │   30.99  1.73  [ 27.40,  34.21]   –",
+    "   σ (Residual)          │   30.99  1.73  [ 27.78,  34.57]   –",
     fixed = TRUE
   )
   expect_match(combined, " ICC                     │    0.59", fixed = TRUE)
@@ -77,12 +77,12 @@ test_that("lmer random-slope output includes ρ row", {
   # Pin the complete σ / ρ rows (label + estimate + SE + CI + dash).
   expect_match(
     combined,
-    "   σ Subject (Intercept)         │   24.74  5.84  [  6.79,  34.32]   –",
+    "   σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –",
     fixed = TRUE
   )
   expect_match(
     combined,
-    "   σ Subject Days                │    5.92  1.25  [  2.47,   8.00]   –",
+    "   σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –",
     fixed = TRUE
   )
   expect_match(
