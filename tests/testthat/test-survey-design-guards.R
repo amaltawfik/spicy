@@ -1,9 +1,9 @@
 # ---------------------------------------------------------------------------
 # Guards for survey-design fits: the design is the variance authority, and
-# a design-weighted Cox fit is refused by class instead of dying inside the
+# a design-weighted Cox fit has its own frame instead of dying inside the
 # coxph extractor.
 #
-# Both guards close routes that produced a WRONG or an unusable answer:
+# Both close routes that produced a WRONG or an unusable answer:
 #   * compute_model_vcov() returned a silently wrong matrix for every
 #     model-derived estimator on svyglm / svrepglm (HC3: SE 51864 against
 #     26.90 design-correct; jackknife: 10.89 -- the first ~1900x too big,
@@ -147,9 +147,9 @@ test_that("the design refusal of `vcov` comes before the lookup of `cluster`", {
 })
 
 test_that("svyolr and svycoxph are design fits too, on the same terms", {
-  # These two never reach a spicy table (both are refused by class at the
-  # frame), but they DO reach compute_model_vcov() from a direct or
-  # internal caller, and each had its own way of going wrong:
+  # Both have their own frame (R/regression_frame_svyolr.R,
+  # R/regression_frame_svycoxph.R), and both reach compute_model_vcov()
+  # from a table or a direct caller. Each had its own way of going wrong:
   #   * svyolr HC3 / svycoxph HC3 -> sandwich::vcovHC() errors, the
   #     fallback catches it and returns stats::vcov(fit) -- i.e. the
   #     DESIGN variance, handed back under an "HC3" label;
