@@ -251,3 +251,19 @@ fits of the count, continuous and quasi families: it is mgcv's
 cell is blank (mgcv's `r.sq` is adjusted, the `adj_r2` row). McFadden,
 Nagelkerke and Tjur are refused for a table of GAMs, deviance and BIC for
 a table of design fits: they used to render nothing.
+
+## Addendum 2026-11-19: no silent token
+
+Decided in `dev/decisions/2026-11-19-fit-stats-requested-rows.md`. A
+token named in `show_fit_stats` must give a row for at least one model of
+the table, or the call is refused (`spicy_invalid_input`). One check runs
+after the frames are built and the change statistics attached
+(`.reg_check_requested_rows()`, R/table_regression.R; the stack checks
+its panels together); the class gates above keep their own messages and
+run first. The token columns of the matrices in this file therefore read
+"refused" wherever they used to read "skipped" for a table of one class.
+Tokens of the class-aware default are not checked: a default token
+without a value is still left out, and a dash still fills the cell of a
+model beside one that has the value. Change tokens need `nested = TRUE`.
+`tests/testthat/test-fit_stats_requested_rows.R` sweeps every token over
+one fit per class.

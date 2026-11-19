@@ -212,13 +212,14 @@
   to no coding of the model. Refit with the default contrasts, or set
   the same `options(contrasts = )` again.
 
-* `table_regression()` refuses `show_fit_stats` tokens that a table's
-  models do not compute, where the row used to be left out without a
-  word: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"` and
-  `"pseudo_r2_tjur"` for a table of `mgcv::gam()` or `bam()` models,
-  and `"deviance"`, `"bic"` and `"aicc"` for a table of survey-design
-  fits, with `"aic"` too when none of them is a `svyglm()`. Beside
-  other models, the cell of such a model shows a dash.
+* `table_regression()` and `table_regression_uv()` refuse a
+  `show_fit_stats` token named in the call that no model of the table
+  has a value for (`"icc"` without a mixed model, `"n_events"` without
+  a Cox model, a change token such as `"r2_change"` without `nested =
+  TRUE`), where the row used to be left out without a word. The error
+  names the token. Beside a model that has the value, the cell of the
+  others shows a dash, and a token of the default without a value is
+  still left out.
 
 ## New features
 
