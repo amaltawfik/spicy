@@ -1898,6 +1898,22 @@ test_that("the random-effects notes follow the language", {
       "asym\u00E9triques)."
     )
   )
+  expect_identical(
+    spicy:::build_re_profile_footer_block_from_frames(
+      list(list(
+        info = list(
+          extras = list(re_ci = "profile"),
+          random_effects = list(method = "REML")
+        )
+      ))
+    ),
+    paste0(
+      "Composantes de la variance des effets al\u00E9atoires",
+      "\u00A0: IC par vraisemblance profil\u00E9e\u00A0; pas d'erreur ",
+      "standard (intervalles asym\u00E9triques). Pour un ajustement REML, ",
+      "le profil est celui du crit\u00E8re ML."
+    )
+  )
 })
 
 test_that("the reference-level, survival and AME notes follow the language", {

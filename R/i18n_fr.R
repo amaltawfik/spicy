@@ -272,6 +272,7 @@
   note_re_test_lrt = "Valeurs p des effets al\u00E9atoires\u00A0: test du rapport de vraisemblance contre la structure al\u00E9atoire r\u00E9duite, loi de r\u00E9f\u00E9rence \u03C7\u0304\u00B2 (m\u00E9lange de khi-deux).",
   note_re_test_rlrt = "Valeur p des effets al\u00E9atoires\u00A0: test exact du rapport de vraisemblance restreinte (distribution nulle simul\u00E9e).",
   note_re_profile_ci = "Composantes de la variance des effets al\u00E9atoires\u00A0: IC par vraisemblance profil\u00E9e\u00A0; pas d'erreur standard (intervalles asym\u00E9triques).",
+  note_re_profile_reml = "Pour un ajustement REML, le profil est celui du crit\u00E8re ML.",
   note_re_apvar_not_pd = "Erreur standard et IC des composantes de la variance des effets al\u00E9atoires indisponibles\u00A0: la matrice de covariance approch\u00E9e des param\u00E8tres de variance n'est pas d\u00E9finie positive.",
   note_re_se_unavailable_dispersion = "Erreur standard et IC des composantes de la variance des effets al\u00E9atoires indisponibles\u00A0: le mod\u00E8le a un param\u00E8tre de dispersion estim\u00E9.",
   note_re_se_unavailable_hessian = "Erreur standard et IC des composantes de la variance des effets al\u00E9atoires indisponibles\u00A0: la hessienne de la d\u00E9viance n'est pas d\u00E9finie positive.",

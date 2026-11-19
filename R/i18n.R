@@ -527,6 +527,9 @@
   note_re_test_rlrt = "Random-effect p-value: exact restricted LRT (simulated null distribution).",
   # `re_ci = "profile"`: what the interval cells of those rows are.
   note_re_profile_ci = "Random-effect variance components: profile likelihood CIs; no SE (asymmetric intervals).",
+  # Appended to it when a REML lmer is profiled: lme4 profiles the ML
+  # deviance whatever the fitting criterion.
+  note_re_profile_reml = "For a REML fit, the profile is that of the ML criterion.",
   note_re_apvar_not_pd = "SE and CI of the random-effect variance components unavailable: the approximate covariance matrix of the variance parameters is not positive definite.",
   # The same cells of an lmer / glmer fit, by reason (see
   # .merMod_re_sdcor_vcov).

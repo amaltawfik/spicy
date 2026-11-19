@@ -3024,6 +3024,20 @@ build_re_profile_footer_block_from_frames <- function(frames) {
   }
   # `re_ci` is a single table-wide argument and only mixed frames carry
   # variance-component rows, so one shared line is always unambiguous.
+  # lme4 profiles the ML deviance even for a REML fit (devfun2() calls
+  # refitML(), lme4 2.1-0 R/profile.R line 511): when a profiled model
+  # was fitted by REML the line says so.
+  reml <- vapply(
+    frames[flags],
+    function(f) identical(f$info$random_effects$method, "REML"),
+    logical(1)
+  )
+  if (any(reml)) {
+    return(paste(
+      spicy_str("note_re_profile_ci"),
+      spicy_str("note_re_profile_reml")
+    ))
+  }
   spicy_str("note_re_profile_ci")
 }
 

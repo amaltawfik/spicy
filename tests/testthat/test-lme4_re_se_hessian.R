@@ -571,6 +571,32 @@ test_that("a negative-binomial glmer keeps its rows without SE", {
 })
 
 
+# ---- 6. Profile of a REML fit ----------------------------------------------
+
+test_that("re_ci = 'profile' on a REML lmer says the profile is the ML one", {
+  skip_if_not_installed("lme4")
+  flat <- function(tr) {
+    gsub("[[:space:]]+", " ", paste(capture.output(print(tr)), collapse = " "))
+  }
+  fit <- lme4::lmer(Yield ~ 1 + (1 | Batch), lme4::Dyestuff)
+  out <- flat(table_regression(fit, re_ci = "profile"))
+  expect_match(
+    out,
+    "For a REML fit, the profile is that of the ML criterion.",
+    fixed = TRUE
+  )
+  # lme4 profiles the ML deviance: the interval of the REML fit is the
+  # one of the ML refit.
+  fit_ml <- lme4::refitML(fit)
+  ci <- function(f) {
+    td <- broom::tidy(table_regression(f, re_ci = "profile"))
+    unlist(td[td$estimate_type == "vc", c("conf.low", "conf.high")])
+  }
+  expect_equal(ci(fit), ci(fit_ml), tolerance = 1e-6)
+  out_ml <- flat(table_regression(fit_ml, re_ci = "profile"))
+  expect_no_match(out_ml, "REML fit", fixed = TRUE)
+})
+
 # ---- 7. Empty Wald cells say why -------------------------------------------
 
 .flat_out <- function(tr) {
