@@ -4601,6 +4601,14 @@ table_regression <- function(
       character(1)
     ))
     dist_txt <- paste0("`dist = \"", dists, "\"`", collapse = " / ")
+    # A selection model has a probit selection equation and a linear (or
+    # probit) outcome equation: no link of it is an identity alone, and no
+    # coefficient of it is a ratio.
+    sel <- vapply(
+      frames,
+      function(fr) identical(fr$info$class, "selection"),
+      logical(1)
+    )
     spicy_warn(
       c(
         if (all(raw_time)) {
@@ -4610,8 +4618,18 @@ table_regression <- function(
             dist_txt,
             "."
           )
+        } else if (all(sel)) {
+          "`exponentiate = TRUE` has no effect on a sample-selection model."
         } else {
           "`exponentiate = TRUE` has no effect on identity-link fits."
+        },
+        "i" = if (any(sel)) {
+          paste0(
+            "The selection equation of a sample-selection model is a probit ",
+            "and its outcome equation is linear (a probit for a binary ",
+            "outcome): exp(B) is no ratio on either, so its coefficients ",
+            "stay on their own scale."
+          )
         },
         "i" = if (any(raw_time)) {
           paste0(
@@ -4623,7 +4641,7 @@ table_regression <- function(
             "(\"weibull\", \"lognormal\", \"loglogistic\")."
           )
         },
-        "i" = if (!all(raw_time)) {
+        "i" = if (!all(raw_time) && !all(sel)) {
           paste0(
             "exp() is only applied to fits whose coefficients are on a log / ",
             "logit scale (odds, rate, risk, hazard, or time ratios). Drop the ",
