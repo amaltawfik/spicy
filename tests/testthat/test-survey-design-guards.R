@@ -125,6 +125,27 @@ test_that("CR* on a design fit is refused by the design guard, cluster or not", 
   }
 })
 
+test_that("the design refusal of `vcov` comes before the lookup of `cluster`", {
+  # A design fit refuses every robust vcov whatever the cluster; a
+  # cluster variable absent from the model frame used to answer first
+  # ("unknown variable").
+  skip_if_not_installed("MASS")
+  d <- .svy_guard_designs()
+  fits <- list(
+    survey::svyglm(api00 ~ ell, design = d$taylor),
+    survey::svyolr(as.factor(stype) ~ ell + meals, design = d$taylor),
+    .svycoxph_guard_fit()
+  )
+  for (fit in fits) {
+    err <- expect_error(
+      table_regression(fit, vcov = "CR1", cluster = ~not_a_variable),
+      class = "spicy_unsupported_vcov",
+      info = class(fit)[1L]
+    )
+    expect_match(conditionMessage(err), "design-based", fixed = TRUE)
+  }
+})
+
 test_that("svyolr and svycoxph are design fits too, on the same terms", {
   # These two never reach a spicy table (both are refused by class at the
   # frame), but they DO reach compute_model_vcov() from a direct or

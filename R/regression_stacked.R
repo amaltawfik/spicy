@@ -114,7 +114,8 @@
     call = env
   )
   .reg_warn_both_labels(model_labels, models)
-  validate_vcov_cluster_lists(
+  validate_vcov_arg(vcov, models, call = env)
+  validate_cluster_lists(
     vcov,
     resolve_cluster_arg(cluster, models, call = env),
     models,

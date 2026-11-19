@@ -294,6 +294,19 @@ test_that("selection advertises no AME and refuses the ame column", {
   )
 })
 
+test_that("selection refuses a robust vcov before it looks up `cluster`", {
+  # Even a variable of the data: the cluster lookup does not find it
+  # through a selection fit, and used to answer first.
+  fit <- .fit_selection_heckman()
+  for (cl in list(~age, ~not_a_variable)) {
+    err <- expect_error(
+      table_regression(fit, vcov = "CR1", cluster = cl),
+      class = "spicy_unsupported_vcov"
+    )
+    expect_match(conditionMessage(err), "`selection` models", fixed = TRUE)
+  }
+})
+
 
 # ---- Label overrides (register 55) ---------------------------------------
 

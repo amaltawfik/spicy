@@ -57,6 +57,17 @@ test_that("a robust `vcov` on a Bayesian fit is refused on principle", {
 })
 
 
+test_that("the Bayesian refusal of `vcov` comes before the lookup of `cluster`", {
+  for (fit in list(fake_stanreg(), fake_brmsfit())) {
+    err <- expect_error(
+      table_regression(fit, vcov = "CR1", cluster = ~g),
+      class = "spicy_unsupported_vcov"
+    )
+    expect_match(conditionMessage(err), "no sandwich analog", fixed = TRUE)
+  }
+})
+
+
 test_that("`vcov = \"classical\"` passes the Bayesian gate", {
   # The refusal is scoped to robust types: "classical" is supported by
   # every class, so a default call must never trip this arm.

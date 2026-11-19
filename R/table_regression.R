@@ -2528,7 +2528,11 @@ table_regression <- function(
   # (`df$region`), a list of any of these (per-model), or NULL.
   # Vectors flow through unchanged; formulas / strings are looked
   # up in `model.frame(fit)`. See `?table_regression` @param
-  # cluster for the full spec.
+  # cluster for the full spec. A class that refuses `vcov` says so
+  # first, before a cluster variable it would not use is looked up.
+  if (is.null(panel_req)) {
+    validate_vcov_arg(vcov, models)
+  }
   cluster <- resolve_cluster_arg(cluster, models)
 
   # Phase B -- multi-model alignment (steps 4-8). The driver of a stacked
@@ -2536,7 +2540,7 @@ table_regression <- function(
   # each in the words of the whole list: its panels do not again.
   validate_nested_alignment(models, nested)
   if (is.null(panel_req)) {
-    validate_vcov_cluster_lists(vcov, cluster, models)
+    validate_cluster_lists(vcov, cluster, models)
   }
 
   # Multinomial outcome-as-columns gate (single nnet::multinom model,

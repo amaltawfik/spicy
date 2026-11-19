@@ -429,6 +429,11 @@
   likelihood-ratio test against it. Alone, such a model is refused with
   a message that says why. Both stopped on a base R error.
 
+* `table_regression()`: a robust `vcov` with `cluster` on a survey-design,
+  `selection()`, `stanreg` or `brmsfit` model is refused with the reason
+  of the class (the variance comes from the design or the posterior).
+  An error about the cluster variable came first.
+
 * `table_regression()`: beside an `lm()` model, the R² row of an
   `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
   number of the adjusted R² row below it.

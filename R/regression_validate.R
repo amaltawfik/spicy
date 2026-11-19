@@ -658,6 +658,15 @@ validate_vcov_cluster_lists <- function(
   models,
   call = rlang::caller_env()
 ) {
+  validate_vcov_arg(vcov, models, call = call)
+  validate_cluster_lists(vcov, cluster, models, call = call)
+}
+
+# Steps 6-6c: `vcov` alone, its form and each model's capability. Run
+# before `cluster` is resolved too, so that a class that refuses the
+# estimator (a design fit, a posterior, selection) says why before a
+# cluster variable it would not use is looked up.
+validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
   n_models <- length(models)
 
   # Forgot `list()`? `table_regression(m1, m2)` binds the second model
@@ -1139,6 +1148,17 @@ validate_vcov_cluster_lists <- function(
       )
     }
   }
+  invisible(NULL)
+}
+
+# Steps 7-8: the resolved `cluster` against `vcov` and the models.
+validate_cluster_lists <- function(
+  vcov,
+  cluster,
+  models,
+  call = rlang::caller_env()
+) {
+  n_models <- length(models)
 
   # Step 7: cluster list length (only when an actual list, not an atomic vector)
   if (is.list(cluster) && !is.atomic(cluster)) {
