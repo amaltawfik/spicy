@@ -74,23 +74,17 @@ ag_terms <- list(
   gam = c("x", "z"),
   gam_logit = c("x", "z"),
   bam = c("x", "z"),
+  clm_nominal = c("x", "z"),
   stanreg = "Days",
   brmsfit = "Days"
 )
 
-# Rows of spicy's AME that depart from the contract, each with the rows
-# spicy gives (est = NA for a predictor without AME) and the reason.
-# Found on 2026-11-19; the test fails once a row is mended, so that the
-# entry is removed with the fix.
-ag_known_rows <- list(
-  clm_nominal = list(
-    rows = list("z|lo" = c(est = NA, se = NA)),
-    why = paste(
-      "a nominal effect gets no AME: marginaleffects lists the location",
-      "predictors only"
-    )
-  )
-)
+# Rows of spicy's AME that depart from the contract, each as list(rows =
+# list("term|category" = c(est, se)), why), est = NA for a predictor
+# without AME. The test fails once a row is mended, so that the entry is
+# removed with the fix. Empty since the four found on 2026-11-19 were
+# mended (an IV fixest fit, strata(), the nominal effects of a clm).
+ag_known_rows <- list()
 
 # AME values that depart from the oracle, each as list(key, spicy =
 # c(est, se), oracle = c(est, se), why). The test fails once spicy meets
@@ -359,7 +353,7 @@ ag_oracles <- list(
       stats::coef(fit),
       stats::vcov(fit),
       d,
-      "x"
+      vars
     )
   },
   multinom = function(fit, d, vars) {

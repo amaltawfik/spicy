@@ -70,7 +70,7 @@
   # and evaluates them in its caller, so each argument is bound to its
   # own name where the call runs.
   run <- function(fun, more = list()) {
-    a <- c(args, more)
+    a <- c(args[setdiff(names(args), names(more))], more)
     cl <- as.call(c(
       list(fun, quote(model)),
       stats::setNames(lapply(names(a), as.name), names(a))
@@ -1111,6 +1111,18 @@ extract_ame_glm <- function(
   setdiff(off, rest)
 }
 
+# The predictors of a clm fit with nominal effects, NULL for any other
+# fit. avg_slopes() takes the location and scale predictors on its own
+# but a nominal one only when it is named (marginaleffects 1.0.0); its
+# AME per category then meets the hand oracle of the tests.
+.clm_nominal_ame_vars <- function(fit) {
+  if (!inherits(fit, "clm") || is.null(fit$call$nominal)) {
+    return(NULL)
+  }
+  fv <- insight::find_variables(fit)
+  unique(unlist(fv[setdiff(names(fv), "response")], use.names = FALSE))
+}
+
 # A variable that enters the model only through offset() or strata() has
 # no fitted effect, but avg_slopes() reports a slope or a contrast (0,
 # without SE) for it: that row goes.
@@ -1662,7 +1674,8 @@ extract_ame_glm <- function(
           # Weighted fit: the AME is the weighted average of the
           # unit-level slopes (Rd Weights section) -- the fit's prior
           # weights, or the sampling weights of a design fit.
-          wts = .spicy_ame_fit_wts(fit) %||% FALSE
+          wts = .spicy_ame_fit_wts(fit) %||% FALSE,
+          variables = .clm_nominal_ame_vars(fit)
         )
       ))
     }
