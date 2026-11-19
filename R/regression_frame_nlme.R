@@ -403,6 +403,10 @@ as_regression_frame.gls <- function(
     # model-level, not per-coefficient.
     has_singular = .lme_is_singular(fit),
     singular_terms = character(0),
+    # nlme's approximate covariance matrix of the variance parameters is
+    # not positive definite: the block has no SE and no CI, and a footer
+    # note says why (.lme_apvar_not_pd).
+    re_apvar_not_pd = .lme_apvar_not_pd(fit),
     # Data that .nlme_get_data() cannot find: table_regression() warns
     # once per table of what it leaves out.
     data_not_found = is.null(.nlme_get_data(fit)),
@@ -784,6 +788,13 @@ as_regression_frame.gls <- function(
 # more than one level, and intervals()$reStruct holds one entry per level.
 # It is NAMED by the displayed label and VALUED by nlme's bare name (see
 # .lme_group_labels), because reStruct is keyed on the bare one.
+#
+# The ESTIMATE comes from the fit (.lme_re_natural_coefs), not from
+# intervals(): intervals() errors whenever fit$apVar is not a matrix,
+# which used to drop the correlation row of a fit whose approximate
+# covariance matrix is not positive definite. When intervals() answers,
+# it still decides WHICH rows exist (it lists no "cor(" row under
+# lmeControl(natural = FALSE)), so the table is unchanged there.
 .lme_append_correlation_rows <- function(vc_df, fit, groups) {
   # Ensure schema columns even if no correlations are appended.
   if (!"is_correlation" %in% colnames(vc_df)) {
@@ -793,23 +804,28 @@ as_regression_frame.gls <- function(
     nlme::intervals(fit, which = "var-cov"),
     error = function(e) NULL
   )
-  if (is.null(ci_obj) || is.null(ci_obj$reStruct)) {
-    return(vc_df)
-  }
+  ci_re <- if (is.null(ci_obj)) NULL else ci_obj$reStruct
+  natural <- .lme_re_natural_coefs(fit)
 
   rows_extra <- list()
   for (k in seq_along(groups)) {
     group_nm <- names(groups)[k] # displayed label, what vc_df carries
-    group_ci <- ci_obj$reStruct[[unname(groups[k])]] # nlme's bare name
-    if (is.null(group_ci)) {
+    group_est <- natural[[unname(groups[k])]] # nlme's bare name
+    if (is.null(group_est)) {
       next # nocov
     }
-    cor_rows <- grep("^cor\\(", rownames(group_ci), value = TRUE)
+    cor_rows <- grep("^cor\\(", names(group_est), value = TRUE)
+    if (!is.null(ci_re)) {
+      cor_rows <- intersect(
+        cor_rows,
+        rownames(ci_re[[unname(groups[k])]])
+      )
+    }
     if (length(cor_rows) == 0L) {
       next
     }
     for (rn in cor_rows) {
-      est <- group_ci[rn, "est."]
+      est <- unname(group_est[[rn]])
       pair <- sub("^cor\\((.+)\\)$", "\\1", rn)
       # Normalize "(Intercept),age" (nlme's comma-only join) to the canonical
       # "(Intercept), age" (lme4's ", " join, VarCorr term order) so identical
@@ -854,6 +870,56 @@ as_regression_frame.gls <- function(
     extra_df,
     vc_df[is_resid, , drop = FALSE]
   )
+}
+
+
+# The random-effect parameters of an lme fit on nlme's natural scale,
+# one named vector per level, keyed by nlme's bare level name. A pdSymm
+# block (pdLogChol included), alone or inside a pdBlocked one, is read
+# through nlme::pdNatural(), whose coefficients are named "sd(<term>)" and
+# "cor(<t1>,<t2>)", the rownames intervals() gives the same block: this
+# is the conversion nlme:::intervals.lme() applies. The blocks hold the
+# covariance relative to sigma^2, so only the correlations are on their
+# final scale, and only they are read here.
+.lme_re_natural_coefs <- function(fit) {
+  re <- fit$modelStruct$reStruct
+  out <- lapply(names(re), function(nm) {
+    b <- re[[nm]]
+    if (inherits(b, "pdSymm")) {
+      b <- nlme::pdNatural(b)
+    } else if (inherits(b, "pdBlocked")) {
+      for (j in seq_along(b)) {
+        if (inherits(b[[j]], "pdSymm")) {
+          b[[j]] <- nlme::pdNatural(b[[j]])
+        }
+      }
+    }
+    tryCatch(
+      stats::coef(b, unconstrained = FALSE),
+      error = function(e) NULL # nocov
+    )
+  })
+  setNames(out, names(re))
+}
+
+
+# Whether the SE and CI of the variance components are missing because
+# nlme's approximate covariance matrix of the variance parameters is not
+# positive definite. fit$apVar is a matrix when nlme computed it, and a
+# character string otherwise (nlme:::lmeApVar, lme.formula):
+#   * "Non-positive definite approximate variance-covariance": the
+#     finite-difference Hessian is not negative definite. TRUE here.
+#   * "Approximate variance-covariance matrix not available": the user
+#     asked for lmeControl(apVar = FALSE). FALSE: a choice, not a defect.
+# intervals() refuses both strings, so the block has no SE and no CI in
+# either case. A boundary fit keeps its own note (.lme_is_singular), which
+# already says why the SE and CI are omitted.
+.lme_apvar_not_pd <- function(fit) {
+  av <- fit$apVar
+  is.character(av) &&
+    length(av) == 1L &&
+    startsWith(av, "Non-positive definite") &&
+    !.lme_is_singular(fit)
 }
 
 

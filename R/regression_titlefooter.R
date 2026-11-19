@@ -471,6 +471,7 @@ build_regression_footer_from_frames <- function(
       build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
       build_p_adjust_footer_block_from_frames(frames, p_adjust, show_columns),
       if (coef_note) build_re_se_skipped_footer_block_from_frames(frames),
+      if (coef_note) build_re_apvar_footer_block_from_frames(frames),
       if (coef_note) build_re_profile_footer_block_from_frames(frames),
       build_loo_footer_block_from_frames(frames, decimal_mark = decimal_mark),
       build_nested_footer_block(nested)
@@ -2924,6 +2925,36 @@ build_re_se_skipped_footer_block_from_frames <- function(frames) {
   }
   per <- vapply(
     which(skipped),
+    function(k) .model_line(frames, k, msg),
+    character(1)
+  )
+  paste(per, collapse = "\n")
+}
+
+
+# Variance-component SE / CI missing because the approximate covariance
+# matrix of the variance parameters is not positive definite
+# (extras$re_apvar_not_pd, see .lme_apvar_not_pd). Same layout as the
+# size note above: one shared line when one model or every model is
+# affected, a prefixed line per affected model otherwise.
+build_re_apvar_footer_block_from_frames <- function(frames) {
+  if (!is.list(frames) || length(frames) == 0L) {
+    return(NULL)
+  }
+  affected <- vapply(
+    frames,
+    function(f) isTRUE(f$info$extras$re_apvar_not_pd),
+    logical(1)
+  )
+  if (!any(affected)) {
+    return(NULL)
+  }
+  msg <- spicy_str("note_re_apvar_not_pd")
+  if (length(frames) == 1L || all(affected)) {
+    return(msg)
+  }
+  per <- vapply(
+    which(affected),
     function(k) .model_line(frames, k, msg),
     character(1)
   )

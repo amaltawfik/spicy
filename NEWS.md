@@ -458,6 +458,12 @@
   response (`mlm`), an `aov()` fit and the `rms::Rq()` and `rms::Gls()`
   wrappers. They stopped on an internal error.
 
+* `table_regression()` keeps the random-effect correlation row of an
+  `lme()` model whose approximate covariance matrix of the variance
+  parameters is not positive definite, and a note under the table says
+  why the block has no standard error and no interval. The row was
+  dropped without a word.
+
 * `table_regression()` renders an intercept-only `glmmTMB()` model of
   the `ordinal()` family, alone or as the first model of `nested =
   TRUE`. It stopped on an internal error.

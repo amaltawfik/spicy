@@ -496,6 +496,7 @@
   note_re_profile_ci = "Random-effect variance components: profile likelihood CIs; no SE (asymmetric intervals).",
   # Their SE and CI skipped for size. One hole: the sample size.
   note_re_se_skipped = "SE and CI of the random-effect variance components not computed for n above %s.",
+  note_re_apvar_not_pd = "SE and CI of the random-effect variance components unavailable: the approximate covariance matrix of the variance parameters is not positive definite.",
   # A mixed fit on the boundary of its parameter space.
   note_singular_mixed = "Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of \u00B11); the Wald SE and CI of the variance components are omitted.",
   # The same fact in a table of fit statistics, which shows no variance
