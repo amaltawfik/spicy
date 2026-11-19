@@ -531,17 +531,25 @@ as_regression_frame.glmmTMB <- function(
   )
   has_disp_model <- !is.null(disp_form) && length(all.vars(disp_form)) > 0L
   if (has_disp_model && length(ff_all$disp) > 0L) {
+    # The dispersion parameter of beta_family() is the precision phi
+    # (Var = mu (1 - mu) / (1 + phi)): its model is betareg's precision
+    # sub-model, and takes the same block.
+    is_beta <- identical(fam$family, "beta")
     component_blocks[[length(component_blocks) + 1L]] <-
       .glmmTMB_component_block(
         fit,
         component = "disp",
-        label = .REG_BLOCK_DISP,
+        label = if (is_beta) .REG_BLOCK_PREC else .REG_BLOCK_DISP,
         link = "log",
         exp_ok = FALSE,
-        gloss = spicy_fmt(
-          "note_component_gloss_dispersion",
-          spicy_str("label_block_dispersion")
-        ),
+        gloss = if (is_beta) {
+          .precision_gloss("log")
+        } else {
+          spicy_fmt(
+            "note_component_gloss_dispersion",
+            spicy_str("label_block_dispersion")
+          )
+        },
         ci_level = ci_level,
         vc = vc
       )

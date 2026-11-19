@@ -325,3 +325,32 @@ test_that("the French table names the block and its scale", {
     fixed = TRUE
   )
 })
+
+test_that("a glmmTMB beta_family dispersion formula is a Precision block", {
+  skip_if_not_installed("glmmTMB")
+  skip_if_not_installed("broom")
+  d <- food_data()
+  tm <- glmmTMB::glmmTMB(
+    share ~ income + persons,
+    dispformula = ~persons,
+    family = glmmTMB::beta_family(),
+    data = d
+  )
+  b2 <- betareg::betareg(share ~ income + persons | persons, data = d)
+  pt <- prec_rows(table_regression(tm))
+  expect_equal(
+    pt$estimate,
+    unname(summary(tm)$coefficients$disp[, "Estimate"]),
+    tolerance = 1e-10
+  )
+  # The same model as betareg's precision sub-model, in the same rows.
+  expect_equal(
+    pt$estimate,
+    prec_rows(table_regression(b2))$estimate,
+    tolerance = 1e-4
+  )
+  td <- broom::tidy(table_regression(tm))
+  expect_false(any(td$factor_term %in% "Dispersion"))
+  out <- paste(capture.output(print(table_regression(tm))), collapse = "\n")
+  expect_match(out, "Precision component: log scale.", fixed = TRUE)
+})

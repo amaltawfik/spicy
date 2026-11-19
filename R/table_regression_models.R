@@ -96,6 +96,7 @@
             " for a zero-truncated family, ziGamma, lognormal or beta_family"
           ),
           .REG_BLOCK_DISP,
+          paste0(.REG_BLOCK_PREC, " (dispformula of beta_family)"),
           paste0(.REG_BLOCK_THRESH, " (ordinal family)")
         ),
         collapse = "; "

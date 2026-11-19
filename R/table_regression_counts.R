@@ -46,7 +46,9 @@
 #'     `lognormal()` or `beta_family()` with `ziformula`): a
 #'     `Zero hurdle, Pr(y = 0)` block, the probability of a zero.
 #'   \item `glmmTMB` with covariates in `dispformula`: a `Dispersion`
-#'     block, on the log scale, never exponentiated.
+#'     block, on the log scale, never exponentiated. Under `beta_family()`
+#'     the dispersion parameter is the precision phi, and the block is a
+#'     `Precision` block, as for a `betareg` `y ~ x | z`.
 #' }
 #' The component rows carry Wald inference (B, SE, z, p, CI), join the
 #' `p_adjust` family and take significance stars.
