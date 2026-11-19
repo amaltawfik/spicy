@@ -2,6 +2,15 @@
 
 ## Breaking changes
 
+* The standard errors of the random-effect rows of `lme`, `glmmTMB` and
+  `clmm` fits are now delta-method ones on the scale the engine
+  estimates on (log SD, and the transformed correlation), as for
+  `lmer`. They were the half-width of the interval divided by z, which
+  overstated them: on `Reaction ~ Days + (1 | Subject)` the SE of the
+  intercept SD drops from 6.96 to 6.81, the `lmer` value. The intervals
+  do not change. The residual row of a Gaussian `glmmTMB` now has its
+  SE and CI.
+
 * `table_regression()` and `table_regression_uv()` test the terms of a
   `glm()` whose dispersion is estimated (gaussian, Gamma, inverse
   Gaussian, Tweedie, `negative.binomial(theta)`, the quasi families)

@@ -599,19 +599,26 @@ No effect on fits without random effects (\code{lm}, \code{glm},
 Controls the display scale of the random-effects rows:
 \itemize{
 \item \code{"sd"}: report the random-effect standard
-deviation \eqn{\sigma} (Gelman 2005, \emph{Technometrics}:
-"\emph{directly interpretable as the size of the variation
-across groups}"). Standard error and CI converted via
-the Delta method:
-\eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)};
-\eqn{CI(\sigma) = \sqrt{CI(\sigma^2)}}.
-\item \code{"variance"}: report \eqn{\sigma^2} (the canonical
-internal scale; SE and CI come straight from the
-Hessian / \code{nlme::intervals()} / \code{glmmTMB::confint()}
-without rescaling).
+deviation \eqn{\sigma}, in the unit of the linear predictor
+(that of the response for a Gaussian model).
+\item \code{"variance"}: report \eqn{\sigma^2}, in squared units.
 }
+The standard error is a delta-method one on the scale the engine
+estimates on, and \eqn{SE(\sigma) = SE(\sigma^2) / (2\sigma)}. For \code{lmer}
+and \code{glmer} it comes from the covariance matrix of the variances
+(\code{merDeriv}), and the Wald CI is \eqn{\sigma^2 \pm z\,SE(\sigma^2)},
+clamped at 0, then its square root for \eqn{\sigma}. For \code{lme},
+\code{glmmTMB} and \code{clmm} the engine estimates \eqn{\log\sigma}: the SE is
+\eqn{\sigma\,SE(\log\sigma)} and the CI is the engine's
+(\code{nlme::intervals()}, \code{glmmTMB::confint()}),
+\eqn{\sigma\exp(\pm z\,SE(\log\sigma))}, squared for \eqn{\sigma^2}.
 Correlation rows (\eqn{\rho}) are unitless and pass through
-either way.}
+either way. Their SE is a delta-method one too: from the variances
+for \code{lmer} (CI \eqn{\rho \pm z\,SE}, clamped to \eqn{[-1, 1]}), from
+\eqn{\mathrm{atanh}(\rho)} for \code{lme} and from glmmTMB's
+\eqn{\rho / \sqrt{1 - \rho^2}} in a two-term block, with the engine's
+CI. In a glmmTMB block of three terms or more it is the width of
+glmmTMB's interval divided by \eqn{2z}.}
 
 \item{re_columns}{Character vector. Subset of
 \code{c("est", "se", "ci")} controlling which cells of the
