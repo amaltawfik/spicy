@@ -810,8 +810,8 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
     supported <- .robust_vcov_support(models[[i]])
     if (!vt %in% supported) {
       # Bayesian fits are refused on principle, not because support is
-      # pending: a posterior has no sandwich analog. The generic
-      # "being added" wording below would misdescribe the design.
+      # pending: a posterior has no sandwich analog. The generic list
+      # of supported estimators below would not say so.
       if (inherits(models[[i]], c("stanreg", "brmsfit"))) {
         spicy_abort(
           c(
@@ -956,8 +956,8 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
         )
       }
       # quantreg::rq: every refusal here is STATISTICAL, so each names
-      # its own reason rather than the generic "being added" list, which
-      # would promise a wiring job that is never coming. The three
+      # its own reason rather than the generic list of supported
+      # estimators, which gives none. The three
       # families fail for three different reasons, and two of them have
       # an actionable route:
       #   * HC*: no working residuals and no hat values, so the meat
@@ -1063,10 +1063,10 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
       # estimatr bakes se_type into the fit object, and fixest owns its
       # own vcov interface (IID unless the user asked otherwise at
       # estimation or in summary()). spicy never overwrites either.
-      # The refusal is a settled policy, so it must not inherit
-      # the generic "being added" wording below, which would promise a
-      # wiring job that is never coming and hide the one thing the user
-      # can actually do: choose the estimator at fit time.
+      # The refusal is a settled policy, so it gives its own reason
+      # rather than the generic list of supported estimators below, which
+      # would hide the one thing the user can actually do: choose the
+      # estimator at fit time.
       if (inherits(models[[i]], c("lm_robust", "iv_robust"))) {
         # Name the fit's OWN estimatr function. Pointing an iv_robust
         # user at lm_robust() would swap the estimator (2SLS -> OLS) to
@@ -1139,7 +1139,7 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
             class(models[[i]])[1L]
           ),
           "i" = sprintf(
-            "This class supports: %s. Robust standard errors for more model classes are being added; see ?table_regression.",
+            "This class supports: %s. See ?table_regression.",
             paste(supported, collapse = ", ")
           )
         ),
@@ -2929,7 +2929,7 @@ validate_class_appropriate_tokens <- function(
           ),
           "i" = paste0(
             "Variance-explained partials do not apply to mixed models. For a ",
-            "partial likelihood-ratio test use `\"partial_chi2\"`."
+            "partial Wald chi-square test of each term, use `\"partial_chi2\"`."
           )
         ),
         class = "spicy_invalid_input",

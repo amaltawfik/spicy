@@ -291,6 +291,26 @@ test_that("standardized = 'posthoc' on mixed warns + falls back to refit", {
     fixed = TRUE
   )
   expect_true("beta" %in% fr$coefs$estimate_type)
+  # The fallback states what refit does, without praising it.
+  w <- tryCatch(
+    as_regression_frame(
+      fit,
+      show_columns = c("b", "beta"),
+      standardized = "basic"
+    ),
+    spicy_fallback = function(w) w
+  )
+  expect_match(conditionMessage(w), "sd(Y) decomposition", fixed = TRUE)
+  expect_no_match(conditionMessage(w), "gold standard", fixed = TRUE)
+})
+
+test_that("standardized = 'pseudo' on an lm: the hint does not praise refit", {
+  err <- expect_error(
+    table_regression(lm(mpg ~ wt, mtcars), standardized = "pseudo"),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "z-scored data", fixed = TRUE)
+  expect_no_match(conditionMessage(err), "gold standard", fixed = TRUE)
 })
 
 test_that("M1: beta rows inherit the B rows' Satterthwaite reference (lmerTest)", {

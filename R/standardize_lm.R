@@ -899,9 +899,9 @@ extract_beta_rows <- function(
           standardized
         ),
         "i" = paste0(
-          "Refit is the Cohen et al. 2003 / Gelman 2008 gold standard ",
-          "and avoids the ambiguous sd(Y) decomposition that the ",
-          "algebraic methods rely on."
+          "Refit standardizes the variables and refits the model, which ",
+          "avoids the ambiguous sd(Y) decomposition that the algebraic ",
+          "methods rely on."
         )
       ),
       class = "spicy_fallback"

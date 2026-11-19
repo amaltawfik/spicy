@@ -3147,8 +3147,8 @@ table_regression <- function(
             "standardized) is defined for `glm` only."
           ),
           "i" = paste0(
-            "Use `standardized = \"refit\"` for `lm` (Cohen et al. ",
-            "2003 gold standard) or one of `\"posthoc\"` / ",
+            "Use `standardized = \"refit\"` for `lm` (refit on ",
+            "z-scored data, Cohen et al. 2003) or one of `\"posthoc\"` / ",
             "`\"basic\"` / `\"smart\"` (algebraic scaling on the ",
             "fitted model)."
           )

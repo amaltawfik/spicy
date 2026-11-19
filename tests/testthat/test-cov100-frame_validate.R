@@ -228,7 +228,7 @@ test_that("variance-explained partial columns are rejected for mixed models", {
   )
   expect_s3_class(err, "spicy_invalid_input")
   # Both offending tokens are named, and the remediation points at the
-  # LRT-based partial_chi2 (which stays allowed for mixed fits).
+  # Wald partial_chi2 (which stays allowed for mixed fits).
   expect_match(conditionMessage(err), "partial_eta2", fixed = TRUE)
   expect_match(conditionMessage(err), "partial_omega2_ci", fixed = TRUE)
   expect_match(
@@ -237,4 +237,7 @@ test_that("variance-explained partial columns are rejected for mixed models", {
     fixed = TRUE
   )
   expect_match(conditionMessage(err), "partial_chi2", fixed = TRUE)
+  # For a mixed model that column is a Wald chi-square, not an LR test.
+  expect_match(conditionMessage(err), "Wald chi-square", fixed = TRUE)
+  expect_no_match(conditionMessage(err), "likelihood-ratio", fixed = TRUE)
 })

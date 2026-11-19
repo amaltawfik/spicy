@@ -440,6 +440,11 @@
   of the class (the variance comes from the design or the posterior).
   An error about the cluster variable came first.
 
+* `table_regression()`: when it refuses `partial_f2`, `partial_eta2` or
+  `partial_omega2` for a mixed model, the error points at
+  `"partial_chi2"` as a Wald chi-square test, which it is for these
+  models. It called it a likelihood-ratio test.
+
 * `table_regression()`: beside an `lm()` model, the R² row of an
   `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
   number of the adjusted R² row below it.

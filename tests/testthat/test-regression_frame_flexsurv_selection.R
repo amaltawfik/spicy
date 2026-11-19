@@ -305,6 +305,13 @@ test_that("selection refuses a robust vcov before it looks up `cluster`", {
     )
     expect_match(conditionMessage(err), "`selection` models", fixed = TRUE)
   }
+  # The refusal lists what the class supports and promises nothing.
+  expect_match(
+    conditionMessage(err),
+    "This class supports: classical.",
+    fixed = TRUE
+  )
+  expect_no_match(conditionMessage(err), "being added", fixed = TRUE)
 })
 
 
