@@ -469,6 +469,22 @@
 
 ## Improvements and bug fixes
 
+* `table_regression()`: the standard errors of the average marginal
+  effects of a `survey::svyolr()` model are now correct. They paired each
+  coefficient with the variance of another and were several times too
+  large or too small.
+
+* `table_regression()`: the average marginal effects of a
+  `survey::svyglm()` model with `ns()`, `poly()`, `scale()` or an offset
+  are computed on the fitted basis and with the offset, and those of an
+  `rms::Glm()` model with `rcs()` on the fitted knots. They were taken on
+  a basis rebuilt from the data, or without the offset.
+
+* `table_regression()` leaves the AME cells of a survey or rms model
+  empty, with a warning, when the model cannot reproduce its fitted
+  values on new data, as an `lrm()` or `ols()` model with `ns()` or
+  `poly()`: rms rebuilds such a basis on the data it predicts from.
+
 * `table_regression()` shows the average marginal effects of a
   `MASS::rlm()` model. The columns were left empty.
 
