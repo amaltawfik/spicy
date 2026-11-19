@@ -305,3 +305,25 @@ test_that("keep, drop and labels take the formula's spelling of a transformed rm
   )
   expect_true("Weight (log)" %in% tbl$label)
 })
+
+
+# ---- F9: the rms fitters outside the registry are refused by spicy ----------
+
+test_that("orm, bj, npsurv and orm.fit fits are refused with a spicy condition", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("survival")
+  d <- rmsfx_data()
+  fits <- list(
+    rms::orm(y ~ x1, data = d),
+    rms::orm.fit(d$x1, d$y),
+    rms::bj(survival::Surv(time, status) ~ x1, data = d, x = TRUE, y = TRUE),
+    rms::npsurv(survival::Surv(time, status) ~ 1, data = d)
+  )
+  for (fit in fits) {
+    expect_error(
+      table_regression(fit),
+      "not a supported model class",
+      class = "spicy_unsupported"
+    )
+  }
+})
