@@ -300,3 +300,26 @@ test_that("the note says the outcome equation of a binary outcome is a probit", 
   )
   expect_match(out, "Équation de résultat : probit.", fixed = TRUE)
 })
+
+# ---- 7. tidy(): a row without a test has no test type and no df ----------
+
+test_that("the error-term rows without a statistic have no test_type or df", {
+  skip_if_not_installed("sampleSelection")
+  skip_if_not_installed("broom")
+  for (two_step in c(FALSE, TRUE)) {
+    td <- broom::tidy(table_regression(fu_selection(two_step)))
+    none <- is.na(td$statistic)
+    expect_true(any(none))
+    expect_true(all(is.na(td$test_type[none])))
+    expect_true(all(is.na(td$df[none])))
+    # The tested rows keep their t on the residual df.
+    expect_true(all(td$test_type[!none] == "t"))
+    expect_true(all(td$df[!none] == 740))
+  }
+  td <- broom::tidy(table_regression(fu_selection()))
+  expect_true(is.na(td$df[td$term == "Error terms::sigma"]))
+  td <- broom::tidy(table_regression(fu_selection(TRUE)))
+  expect_true(all(is.na(td$df[
+    td$term %in% c("Error terms::sigma", "Error terms::rho")
+  ])))
+})

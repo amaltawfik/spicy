@@ -687,7 +687,9 @@ as_regression_frame.selection <- function(
   se <- unname(mat[, "Std. Error"])
   stat <- unname(mat[, "t value"])
   p <- unname(mat[, "Pr(>|t|)"])
-  untested <- nm == "sigma"
+  # A row without a test (sigma; sigma and rho of a two-step fit, which
+  # have no standard error) has no test type and no df either.
+  untested <- nm == "sigma" | is.na(stat)
   stat[untested] <- NA_real_
   p[untested] <- NA_real_
   df <- .selection_df(fit)
@@ -701,12 +703,12 @@ as_regression_frame.selection <- function(
     estimate_type = "B",
     estimate = est,
     std_error = se,
-    df = df,
+    df = ifelse(untested, NA_real_, df),
     statistic = stat,
     p_value = p,
     ci_lower = est - t_crit * se,
     ci_upper = est + t_crit * se,
-    test_type = "t",
+    test_type = ifelse(untested, NA_character_, "t"),
     stringsAsFactors = FALSE
   )
 }
