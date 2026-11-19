@@ -581,7 +581,7 @@
 * `table_regression()`: a note says that an `lrm()` or `ols()` model
   fitted with `penalty =` is penalized, and gives the penalty.
 
-* `table_regression()`: in a table of several models, the concordance
+* `table_regression()`: beside another survival model, the concordance
   note of a Cox model names its model.
 
 * `table_regression()`: the notes on the standard errors and intervals
