@@ -1382,10 +1382,10 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
             "i" = "This class supports: classical.",
             "i" = paste0(
               "For robust or clustered standard errors, refit the same ",
-              "model with estimatr::iv_robust(..., se_type = \"HC1\") or ",
-              "`clusters =`, or with ",
-              "fixest::feols(y ~ x | endo ~ inst, vcov = \"hetero\") or ",
-              "vcov = ~g."
+              "model with `estimatr::iv_robust(..., se_type = \"HC1\")` ",
+              "(or `clusters =`), or with ",
+              "`fixest::feols(y ~ x | endo ~ inst, vcov = \"hetero\")` ",
+              "(or `vcov = ~g`)."
             )
           ),
           class = "spicy_unsupported_vcov",
