@@ -460,6 +460,11 @@
   class accepts are a column of `table_regression_models()`, shown on
   `?table_regression` and on each family page.
 
+* The sources cited in the help pages and the articles were checked
+  against the documents, and their sections, pages and quotations
+  corrected where they were wrong. Each help page lists the references
+  it cites.
+
 * `table_regression()`: beside an `lm()` model, the R² row of an
   `mgcv::gam()` model is a dash. It showed mgcv's adjusted R², the
   number of the adjusted R² row below it.
