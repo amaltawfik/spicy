@@ -465,6 +465,25 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
       ))
     }
   }
+  # A tobit-5 fit has two outcome equations (`betaO1`, `betaO2`); the
+  # selection table reads one (`betaO`) and printed 2 of its 10 rows.
+  if (
+    inherits(fit, "selection") &&
+      identical(as.character(fit$tobitType), "5")
+  ) {
+    return(out(
+      "selection",
+      paste0(
+        "A tobit-5 (switching regression) fit has two outcome equations, ",
+        "one per regime; the table shows the sample-selection (tobit-2) ",
+        "model and the treatment-effects model of `treatReg()`."
+      ),
+      head = paste0(
+        "A tobit-5 `selection` fit is not supported by ",
+        "`table_regression()`."
+      )
+    ))
+  }
   if (inherits(fit, "svysurvreg")) {
     return(out(
       "svysurvreg",

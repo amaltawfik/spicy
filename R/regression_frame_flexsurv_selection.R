@@ -381,6 +381,7 @@ as_regression_frame.selection <- function(
   ...
 ) {
   .check_sampleSelection_available()
+  .refuse_inherited_subclass(fit)
 
   coefs <- .selection_coefs(fit, ci_level = ci_level)
   info <- .selection_info(
