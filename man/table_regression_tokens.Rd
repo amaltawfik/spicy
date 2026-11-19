@@ -172,8 +172,9 @@ models: number of events, reported alongside \code{n} per the
 field convention; blank for other classes). \code{"nobs"} and the
 BIC follow the engine's \code{\link[stats:nobs]{stats::nobs()}}, which for a weighted
 \code{polr} or \code{clm} fit is the sum of the weights.
-\item Variance explained (\code{lm} only): \code{"r2"}, \code{"adj_r2"},
-\code{"omega2"}.
+\item Variance explained: \code{"r2"} and \code{"adj_r2"} (least-squares fits:
+linear, robust, instrumental-variable and \code{feols}; \code{"r2"} alone
+for \code{rms::ols}, \code{"adj_r2"} alone for GAMs), \code{"omega2"} (\code{lm} only).
 \item \eqn{R^2}{R^2} outside least squares (\code{glm}, \code{polr}, \code{clm},
 \code{multinom} and \code{rms::lrm} fits): \code{"pseudo_r2_tjur"} (Tjur 2009;
 binomial models only), \code{"pseudo_r2_mcfadden"} (McFadden 1974),
@@ -350,8 +351,10 @@ Default (resolved when \code{NULL}) is class-aware: lm and
 \code{multinom}, \code{rms::lrm} and \code{rms::Glm} fits get \code{"nobs"}, the \eqn{R^2}{R^2} rows of their family
 (see \emph{R-squared of glm and categorical models}) and \code{"aic"};
 mixed lm + glm sets union both groups (the renderer per-row
-en-dashes the inappropriate cell); Cox fits get
-\code{c("nobs", "n_events", "aic")}; GEE fits get
+en-dashes the inappropriate cell); \code{coxph} and \code{cph} fits get
+\code{c("nobs", "n_events", "aic")}, and a \code{svycoxph} fit gets
+\code{c("nobs", "weighted_nobs", "n_events")}, since a design-based fit has
+no AIC; GEE fits get
 \code{c("nobs", "n_groups", "max_cluster_size")} (the cluster
 structure, Stata \code{xtgee}-header style). When \code{nested = TRUE}, the
 class-aware default is extended with change tokens

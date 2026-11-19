@@ -928,7 +928,9 @@
 #' The linear and generalized linear models are documented on
 #' [table_regression()] itself. GEE fits are described below. The
 #' additive, beta-regression, sample-selection and `rms` fits follow the
-#' rules of [table_regression()] and the table above.
+#' rules of [table_regression()] and the table above. The tokens of
+#' `show_columns` and `show_fit_stats`, and the fit statistics of each
+#' class, are on [table_regression_tokens].
 #'
 #' A sample-selection fit (`sampleSelection::selection()`, `heckit()`,
 #' `treatReg()`) shows each variable with its `selection` and `outcome`
@@ -994,7 +996,8 @@
 #'   gives the fits an item is limited to.
 #'
 #' @seealso [table_regression()]; the family pages listed under *Pages by
-#'   model family*; the
+#'   model family*; [table_regression_tokens] for the tokens of
+#'   `show_columns` and `show_fit_stats`; the
 #'   [Supported models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
 #'   and
 #'   [Publication-ready regression tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)

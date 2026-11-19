@@ -174,8 +174,9 @@
 #'     field convention; blank for other classes). `"nobs"` and the
 #'     BIC follow the engine's [stats::nobs()], which for a weighted
 #'     `polr` or `clm` fit is the sum of the weights.
-#'   \item Variance explained (`lm` only): `"r2"`, `"adj_r2"`,
-#'     `"omega2"`.
+#'   \item Variance explained: `"r2"` and `"adj_r2"` (least-squares fits:
+#'     linear, robust, instrumental-variable and `feols`; `"r2"` alone
+#'     for `rms::ols`, `"adj_r2"` alone for GAMs), `"omega2"` (`lm` only).
 #'   \item \eqn{R^2}{R^2} outside least squares (`glm`, `polr`, `clm`,
 #'     `multinom` and `rms::lrm` fits): `"pseudo_r2_tjur"` (Tjur 2009;
 #'     binomial models only), `"pseudo_r2_mcfadden"` (McFadden 1974),
@@ -352,8 +353,10 @@
 #' `multinom`, `rms::lrm` and `rms::Glm` fits get `"nobs"`, the \eqn{R^2}{R^2} rows of their family
 #' (see *R-squared of glm and categorical models*) and `"aic"`;
 #' mixed lm + glm sets union both groups (the renderer per-row
-#' en-dashes the inappropriate cell); Cox fits get
-#' `c("nobs", "n_events", "aic")`; GEE fits get
+#' en-dashes the inappropriate cell); `coxph` and `cph` fits get
+#' `c("nobs", "n_events", "aic")`, and a `svycoxph` fit gets
+#' `c("nobs", "weighted_nobs", "n_events")`, since a design-based fit has
+#' no AIC; GEE fits get
 #' `c("nobs", "n_groups", "max_cluster_size")` (the cluster
 #' structure, Stata `xtgee`-header style). When `nested = TRUE`, the
 #' class-aware default is extended with change tokens

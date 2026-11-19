@@ -115,7 +115,9 @@ fits.
 The linear and generalized linear models are documented on
 \code{\link[=table_regression]{table_regression()}} itself. GEE fits are described below. The
 additive, beta-regression, sample-selection and \code{rms} fits follow the
-rules of \code{\link[=table_regression]{table_regression()}} and the table above.
+rules of \code{\link[=table_regression]{table_regression()}} and the table above. The tokens of
+\code{show_columns} and \code{show_fit_stats}, and the fit statistics of each
+class, are on \link{table_regression_tokens}.
 
 A sample-selection fit (\code{sampleSelection::selection()}, \code{heckit()},
 \code{treatReg()}) shows each variable with its \code{selection} and \code{outcome}
@@ -184,7 +186,8 @@ estimating equations. \emph{Biometrics}, 57(1), 120-125.
 }
 \seealso{
 \code{\link[=table_regression]{table_regression()}}; the family pages listed under \emph{Pages by
-model family}; the
+model family}; \link{table_regression_tokens} for the tokens of
+\code{show_columns} and \code{show_fit_stats}; the
 \href{https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html}{Supported models}
 and
 \href{https://amaltawfik.github.io/spicy/articles/table-regression.html}{Publication-ready regression tables}
