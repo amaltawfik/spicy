@@ -371,3 +371,29 @@ test_that("the note says the change test of a GAM is approximate", {
     fixed = TRUE
   )
 })
+
+# ---- 9. The gam part of a gamm() fit -------------------------------------
+
+test_that("the gam part of a gamm() fit is refused", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("nlme")
+  set.seed(1)
+  d <- data.frame(x = stats::runif(120), g = factor(rep(1:12, 10)))
+  d$y <- sin(2 * pi * d$x) + stats::rnorm(12)[d$g] + stats::rnorm(120, sd = 0.3)
+  fit <- mgcv::gamm(y ~ s(x), random = list(g = ~1), data = d)
+  expect_error(
+    table_regression(fit$gam),
+    "`gam` part of a `mgcv::gamm()` fit",
+    fixed = TRUE,
+    class = "spicy_unsupported_class"
+  )
+  expect_error(
+    as_regression_frame(fit$gam, model_id = "M1"),
+    class = "spicy_unsupported_class"
+  )
+  # A gam() fit is not caught.
+  expect_s3_class(
+    table_regression(mgcv::gam(y ~ s(x) + s(g, bs = "re"), data = d)),
+    "spicy_regression_table"
+  )
+})

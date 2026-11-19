@@ -38,8 +38,8 @@ A class listed here does not cover the objects that inherit from it
 without being that model. These are refused by name: \code{clogit},
 multi-state \code{coxph}, \code{coxph} with a \code{pspline()} or a non-sparse
 \code{frailty()} term, \code{svysurvreg}, \code{mlm} (an \code{lm()} with a matrix
-response), \code{aov}, \code{nlme}, \code{gnls}, and the \code{rms::Rq()} and \code{rms::Gls()}
-wrappers.
+response), \code{aov}, \code{nlme}, \code{gnls}, the \code{lme} and \code{gam} parts of a
+\code{mgcv::gamm()} fit, and the \code{rms::Rq()} and \code{rms::Gls()} wrappers.
 }
 \section{Supported classes}{
 \tabular{lllllll}{

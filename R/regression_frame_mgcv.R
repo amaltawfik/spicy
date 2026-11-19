@@ -47,6 +47,7 @@ as_regression_frame.gam <- function(
   ...
 ) {
   .check_mgcv_available()
+  .refuse_inherited_subclass(fit)
   .gam_refuse_multi_formula(fit)
 
   fam <- stats::family(fit)

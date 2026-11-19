@@ -901,8 +901,8 @@
 #' without being that model. These are refused by name: `clogit`,
 #' multi-state `coxph`, `coxph` with a `pspline()` or a non-sparse
 #' `frailty()` term, `svysurvreg`, `mlm` (an `lm()` with a matrix
-#' response), `aov`, `nlme`, `gnls`, and the `rms::Rq()` and `rms::Gls()`
-#' wrappers.
+#' response), `aov`, `nlme`, `gnls`, the `lme` and `gam` parts of a
+#' `mgcv::gamm()` fit, and the `rms::Rq()` and `rms::Gls()` wrappers.
 #'
 #' @section Supported classes:
 #'

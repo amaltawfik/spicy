@@ -540,6 +540,28 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
       )
     ))
   }
+  # The `gam` part of a gamm() (or gamm4()) fit is a "gam" object that no
+  # longer inherits from "glm": its standard errors come from the `lme`
+  # part, and its likelihood is not that of the model.
+  if (inherits(fit, "gam") && !inherits(fit, "glm")) {
+    return(out(
+      "gam",
+      paste0(
+        "Its standard errors come from the mixed model of the `lme` part, ",
+        "and its likelihood and information criteria are not those of the ",
+        "model."
+      ),
+      paste0(
+        "Fit the model with `mgcv::gam()`, a random intercept written as ",
+        "`s(g, bs = \"re\")`, which is supported, or report ",
+        "`summary(fit$gam)`."
+      ),
+      head = paste0(
+        "The `gam` part of a `mgcv::gamm()` fit is not supported by ",
+        "`table_regression()`."
+      )
+    ))
+  }
   if (inherits(fit, "gnls")) {
     return(out(
       "gnls",
