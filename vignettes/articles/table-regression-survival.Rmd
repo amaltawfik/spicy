@@ -116,8 +116,8 @@ Reading the table:
   n) sits next to `n` as its own row. The footer adds the
   **concordance** C = 0.64: the probability that, of
   two comparable patients, the one predicted to fail earlier actually
-  does. 0.5 is a coin flip; 0.64 is modest discrimination
-  (Harrell 2015). `show_fit_stats = c("nobs", "n_events",
+  does. 0.5 is a coin flip (Harrell 2015, p. 505); 0.64 is modest
+  discrimination. `show_fit_stats = c("nobs", "n_events",
   "concordance", "aic")` moves it into the fit block as a row, and out
   of the footer. The `n_events` token also renders as a per-level
   *column* — `show_columns = c("n_events", "b", "ci", "p")` gives
@@ -273,16 +273,17 @@ And Efron is the better default, not the correct answer. All the
 approximations are biased at finite sample size and agree
 asymptotically; Efron's virtue is a much smaller small-sample bias,
 and it is why the simulation literature recommends it (Hertz-Picciotto
-& Rockhill 1997). Efron himself, quoting Peto, put the practical case
-as "it probably doesn't make much difference" (Efron 1977). Change
+& Rockhill 1997). Efron himself, following Peto, put the practical case
+as "it probably doesn't make much difference" (Efron 1977, p. 563). Change
 the convention when you have a reason, not on principle.
 
 ## Multi-center data: cluster-robust variance
 
 The `lung` patients were enrolled by 18 institutions, and outcomes
 within an institution may correlate. `vcov = "CR0"` requests the
-**Lin & Wei (1989)** robust variance — the grouped score (dfbeta)
-sandwich that `coxph(..., cluster = )` and Stata `stcox, vce(cluster)`
+**Lin & Wei (1989)** robust variance summed over the institutions —
+the grouped score (dfbeta) sandwich, a grouped jackknife (Therneau &
+Grambsch 2000, §8.2.1, pp. 170–171), that `coxph(..., cluster = )` and Stata `stcox, vce(cluster)`
 use. It has no small-sample factor, hence its token, and the other
 `CR*` tokens are refused:
 
