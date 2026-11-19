@@ -504,6 +504,23 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
       )
     ))
   }
+  if (inherits(fit, "lme") && .is_gamm_lme(fit)) {
+    return(out(
+      "lme",
+      paste0(
+        "Its random-effect rows are the smooth terms of the GAM, written as ",
+        "random effects, and its coefficients are those of the spline basis."
+      ),
+      paste0(
+        "Fit the model with `mgcv::gam()`, a random intercept written as ",
+        "`s(g, bs = \"re\")`, which is supported."
+      ),
+      head = paste0(
+        "The `lme` part of a `mgcv::gamm()` fit is not supported by ",
+        "`table_regression()`."
+      )
+    ))
+  }
   if (inherits(fit, "gnls")) {
     return(out(
       "gnls",
@@ -528,6 +545,21 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
     ))
   }
   NULL
+}
+
+# The `lme` part of a mgcv::gamm() fit is a plain "lme" object. Two marks
+# set by mgcv alone (mgcv 1.9-5, gamm() and gammPQL()): a random-effect
+# block of class pdIdnot or pdTens, mgcv's own pdMat classes, which carry
+# its smooth terms; and, for a Gaussian gamm, the call gamm() builds,
+# `data = strip.offset(mf)`, which also marks a gamm without smooths.
+.is_gamm_lme <- function(fit) {
+  re <- fit$modelStruct$reStruct
+  smooth_block <- any(vapply(
+    re,
+    function(b) inherits(b, c("pdIdnot", "pdTens")),
+    logical(1)
+  ))
+  smooth_block || identical(fit$call$data, quote(strip.offset(mf)))
 }
 
 # Per-fit class classifier: NULL if OK, message string otherwise.

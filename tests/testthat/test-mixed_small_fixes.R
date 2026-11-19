@@ -208,3 +208,38 @@ test_that("a pdCompSymm interval off nlme's scale leaves the cells empty", {
     tolerance = 1e-12
   )
 })
+
+
+# ---- 3. The lme part of a gamm() fit --------------------------------------
+
+test_that("the lme part of a gamm() fit is refused", {
+  skip_if_not_installed("mgcv")
+  skip_if_not_installed("nlme")
+  set.seed(1)
+  d <- data.frame(x = stats::runif(120), g = factor(rep(1:12, 10)))
+  d$y <- sin(2 * pi * d$x) + stats::rnorm(12)[d$g] + stats::rnorm(120, sd = 0.3)
+  smooth <- mgcv::gamm(y ~ s(x), random = list(g = ~1), data = d)
+  no_smooth <- mgcv::gamm(y ~ x, random = list(g = ~1), data = d)
+  for (m in list(smooth$lme, no_smooth$lme)) {
+    expect_s3_class(m, "lme")
+    expect_error(
+      table_regression(m),
+      "`lme` part of a `mgcv::gamm()` fit",
+      fixed = TRUE,
+      class = "spicy_unsupported_class"
+    )
+    expect_error(
+      as_regression_frame(m, model_id = "M1"),
+      class = "spicy_unsupported_class"
+    )
+  }
+  # The supported route the message names.
+  g2 <- mgcv::gam(y ~ s(x) + s(g, bs = "re"), data = d, method = "REML")
+  expect_s3_class(table_regression(g2), "spicy_regression_table")
+  # An lme fitted by the user is not caught.
+  expect_false(spicy:::.is_gamm_lme(nlme::lme(
+    y ~ x,
+    random = ~ 1 | g,
+    data = d
+  )))
+})
