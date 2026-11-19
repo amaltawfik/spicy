@@ -1957,10 +1957,11 @@ build_survival_footer_block_from_frames <- function(
     return(NULL)
   }
 
-  # Prefix with "Model k:" only when MORE THAN ONE frame contributes
-  # content; a single contributing model gets the line bare (no
-  # misleading "Model 1:" when its peers are silent on this block).
-  if (length(per_model) == 1L) {
+  # The line is bare in a one-model table only. In a table of several
+  # models it names its model, even when the others are silent on this
+  # block: a coxph fit beside a cph fit, which carries no concordance,
+  # gave "Concordance C = 0.84" with nothing to say whose it was.
+  if (length(frames) == 1L) {
     return(per_model[[1L]]$text)
   }
   lines <- vapply(
@@ -2211,7 +2212,7 @@ build_random_effects_footer_block_from_frames <- function(
   )
 
   # Prefix with "Model k:" only when more than one frame contributes
-  # content (parity with the survival footer's convention).
+  # content.
   if (length(per_model) == 1L) {
     return(paste(c(per_model[[1L]]$text, test_line), collapse = "\n"))
   }

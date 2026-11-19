@@ -374,3 +374,22 @@ test_that("an lrm or ols fitted with a penalty says so in the note", {
     fixed = TRUE
   )
 })
+
+
+# ---- The concordance note names its model in a table of several ------------
+
+test_that("the concordance of a coxph fit beside a cph fit names its model", {
+  skip_if_not_installed("rms")
+  skip_if_not_installed("survival")
+  d <- rmsfx_data()
+  f <- survival::Surv(time, status) ~ x1
+  note <- function(x) paste(capture.output(print(x)), collapse = " ")
+  txt <- note(table_regression(list(
+    coxph = survival::coxph(f, data = d),
+    cph = rms::cph(f, data = d)
+  )))
+  expect_match(txt, "coxph: Concordance C = ", fixed = TRUE)
+  # One model: the line stays bare.
+  txt <- note(table_regression(survival::coxph(f, data = d)))
+  expect_match(txt, "regression. Concordance C = ", fixed = TRUE)
+})
