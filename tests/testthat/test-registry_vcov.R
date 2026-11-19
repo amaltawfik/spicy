@@ -53,6 +53,10 @@ vc_refused <- list(
   rms_Glm = list(
     vcov = "CR0",
     why = "rms::robcov() needs a fit with x = TRUE, y = TRUE"
+  ),
+  rms_Glm_logit = list(
+    vcov = "CR0",
+    why = "rms::robcov() needs a fit with x = TRUE, y = TRUE"
   )
 )
 

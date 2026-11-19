@@ -385,7 +385,7 @@
 #' Default (resolved when `NULL`) is class-aware: lm and
 #' `lm_robust` fits get
 #' `c("nobs", "r2", "adj_r2")`; glm, `mgcv::gam`, `polr`, `clm`,
-#' `multinom` and `rms::lrm` fits get `"nobs"`, the \eqn{R^2}{R^2} rows of their family
+#' `multinom`, `rms::lrm` and `rms::Glm` fits get `"nobs"`, the \eqn{R^2}{R^2} rows of their family
 #' (see *R-squared of glm and categorical models*) and `"aic"`;
 #' mixed lm + glm sets union both groups (the renderer per-row
 #' en-dashes the inappropriate cell); Cox fits get
@@ -461,7 +461,7 @@
 #'
 #' \itemize{
 #'   \item A logit on a binary outcome (0/1, a factor or a logical), a
-#'     `glm()` or a binary `rms::lrm()`: Tjur's \eqn{R^2}{R^2}, then
+#'     `glm()` or `rms::Glm()`, or a binary `rms::lrm()`: Tjur's \eqn{R^2}{R^2}, then
 #'     McFadden's. Tjur's reads on the scale of the predicted
 #'     probabilities; McFadden's cannot decrease when a predictor is
 #'     added. An `lrm` fitted without `y = TRUE` reads its outcome from

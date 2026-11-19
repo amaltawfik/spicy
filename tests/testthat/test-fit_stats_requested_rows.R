@@ -148,6 +148,21 @@ rr_absent <- list(
     rows = "pseudo_r2_tjur",
     default = "pseudo_r2_tjur",
     why = "Tjur's R-squared needs a binary outcome"
+  ),
+  rms_Glm = list(
+    rows = "pseudo_r2_tjur",
+    default = c("pseudo_r2_tjur", "r2_deviance"),
+    why = "a Poisson Glm defaults to McFadden's R-squared, as its glm twin"
+  ),
+  rms_Glm_xy = list(
+    rows = "pseudo_r2_tjur",
+    default = c("pseudo_r2_tjur", "r2_deviance"),
+    why = "a Poisson Glm defaults to McFadden's R-squared, as its glm twin"
+  ),
+  rms_Glm_logit = list(
+    rows = "r2_deviance",
+    default = "r2_deviance",
+    why = "a binomial Glm has the pseudo-R-squared of its glm twin instead"
   )
 )
 

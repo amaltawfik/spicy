@@ -378,6 +378,13 @@
     function(d) rms::Glm(cnt ~ x, family = poisson, data = d),
     "rms"
   ),
+  # A binomial Glm has the R-squared rows of its glm twin, Tjur's by
+  # default (as gam_logit for the GAM).
+  rms_Glm_logit = .cf(
+    "Glm",
+    function(d) rms::Glm(yb ~ x, family = binomial, data = d),
+    "rms"
+  ),
   # rms::robcov() needs the model matrices: the same fits with x and y.
   ols_xy = .cf(
     "ols",

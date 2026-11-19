@@ -412,7 +412,11 @@
   lrm = paste(
     "nobs, pseudo_r2_tjur (binary outcome), pseudo_r2_mcfadden, aic"
   ),
-  Glm = "nobs, pseudo_r2_mcfadden, aic",
+  Glm = paste(
+    "nobs, pseudo_r2_tjur (binomial logit, binary outcome),",
+    "pseudo_r2_mcfadden (binomial, Poisson), r2_deviance (Gaussian, Gamma),",
+    "aic"
+  ),
   stanreg = "nobs, r2_bayes",
   brmsfit = "nobs, r2_bayes"
 )
@@ -514,8 +518,9 @@
     "pseudo_r2_tjur (binary outcome), aic, aicc, bic, deviance, log_lik"
   ),
   Glm = paste(
-    "nobs, pseudo_r2_mcfadden, pseudo_r2_nagelkerke, r2_deviance, aic,",
-    "aicc, bic, deviance, log_lik"
+    "nobs, pseudo_r2_mcfadden (binomial, Poisson),",
+    "pseudo_r2_nagelkerke (binomial, Poisson), pseudo_r2_tjur (binomial),",
+    "r2_deviance (not binomial), aic, aicc, bic, deviance, log_lik"
   ),
   stanreg = "nobs, r2_bayes, elpd_loo, looic, waic",
   brmsfit = "nobs, r2_bayes, elpd_loo, looic, waic"
