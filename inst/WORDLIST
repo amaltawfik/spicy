@@ -4,6 +4,7 @@ AER
 AIC's
 AICc
 AME
+AME's
 AMEs
 APA
 APA's
@@ -379,6 +380,7 @@ appliquée
 atanh
 autoscaled
 backtick
+betar
 betareg
 biliary
 biserial
@@ -512,6 +514,7 @@ multiframe
 multivariable
 myfam
 natively
+nb
 nd
 ndf
 nid
@@ -591,6 +594,7 @@ tinytable
 tobit
 toolchain
 toujours
+tw
 uncentered
 unclustered
 underpredicts
