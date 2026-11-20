@@ -646,8 +646,33 @@
 
 * `table_regression()`: the refusal of `nested = TRUE` for a
   survey-design model points to `survey::regTermTest()` and `anova()`.
-  RMST and risk-difference columns asked of a `svycoxph()` model are
-  refused for the design before a horizon is asked for.
+  RMST and risk-difference columns asked of a class that has none are
+  refused for the class before a horizon is asked for.
+
+* The errors of `table_regression()` write a token as it is typed
+  (`"aic"`), agree in number, point to the help page of the model
+  family, and suggest only the statistics and columns the model accepts.
+
+* `table_regression(nested = TRUE)` compares two instrumental-variables
+  `feols()` models of the same outcome, which it took for models of
+  different outcomes. A model without a predictor can open a hierarchy
+  for `lm_robust()` with fixed effects, `svycoxph()` and `flexsurvreg()`
+  models; alone it gets a plain error, where it stopped on an internal
+  one.
+
+* `table_regression()`: `cluster` passed with a survey-design model is
+  ignored with a warning, also when it names a variable of the design
+  that is not in the model, which gave an unrelated error.
+
+* `table_regression(re_test = "rlrt")` on an `lme()` model keeps its
+  test when a column the model does not use has missing values. The
+  test came out empty, without a word.
+
+* A table with a β, η² or χ² column no longer warns "unable to
+  translate" in a locale that is not UTF-8.
+
+* The design line of a survey table reads "31 PSUs", and "1 PSU" in the
+  singular.
 
 * `table_regression()`: the note of an rms model passed through
   `robcov()` or `bootcov()` names that variance, where it said "Wald
