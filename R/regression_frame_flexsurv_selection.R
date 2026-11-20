@@ -774,7 +774,8 @@ build_selection_error_terms_footer_block_from_frames <- function(frames) {
   for (f in frames) {
     cf <- f$coefs
     if (is.null(cf$parent_var)) {
-      next
+      # parent_var is a required column of every validated frame.
+      next # nocov
     }
     # The rows left by `keep` / `drop` (recorded by table_regression()),
     # else every row of the block.

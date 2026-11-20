@@ -515,7 +515,8 @@ as_regression_frame.gam <- function(
 # and loses the test; the note says so.
 .append_smooth_term_rows <- function(coefs, st, robust = FALSE) {
   if (!is.data.frame(st) || nrow(st) == 0L) {
-    return(coefs)
+    # table_regression(), the one caller, appends a non-empty table only.
+    return(coefs) # nocov
   }
   test_type <- ifelse(st$stat_type == "F", "F", "X2")
   stat <- st$statistic
