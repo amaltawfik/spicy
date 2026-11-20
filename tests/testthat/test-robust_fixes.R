@@ -268,7 +268,11 @@ test_that("the refusal of HC3 on an ivreg fit names the route", {
     "estimatr::iv_robust(..., se_type = \"HC2\")",
     fixed = TRUE
   )
-  expect_match(msg, "\"CR0\"-\"CR3\" and \"CR1S\"", fixed = TRUE)
+  expect_match(
+    msg,
+    "CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.",
+    fixed = TRUE
+  )
 })
 
 test_that("the routes the ivreg refusal names give a table", {

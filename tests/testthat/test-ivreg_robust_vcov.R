@@ -199,7 +199,7 @@ test_that("HC2-HC5 and the resamplers stay refused, with their reason", {
     )
     msg <- conditionMessage(err)
     expect_match(msg, "leverage", fixed = TRUE, info = ty)
-    expect_match(msg, "\"HC0\", \"HC1\"", fixed = TRUE, info = ty)
+    expect_match(msg, "classical, HC0, HC1", fixed = TRUE, info = ty)
   }
   for (ty in c("bootstrap", "jackknife")) {
     err <- expect_error(
