@@ -119,8 +119,12 @@
 #' composes the interval with the style's brackets and separator, and
 #' so does every other interval token the table carries (`"med_ci"`,
 #' `"ame_ci"`, `"assoc_ci"`): each addresses its own bounds.
-#' `"partial_chi2"` and `"partial_f"` cite the statistic alone, without
-#' the degrees of freedom the table prints beside it.
+#' A statistic the table prints with its degrees of freedom has a token
+#' for each of them: `"<token>_df"` for one (`"partial_chi2_df"`),
+#' `"<token>_df_num"` and `"<token>_df_den"` for the numerator and the
+#' denominator of an F. They are formatted as the table prints them:
+#' `inline(tbl, sex, column = "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}")`
+#' quotes the whole test.
 #'
 #' # Patterns
 #'
@@ -241,6 +245,9 @@ inline <- function(
 
   s <- as_structured(x)
   formatted <- .format_structured_to_string_body(.inline_bare_change_tests(s))
+  df_view <- .inline_df_tokens(s, formatted)
+  s <- df_view$s
+  formatted <- df_view$formatted
 
   var_chr <- .inline_variable_chr(rlang::enquo(variable))
   # Two stages, and the order matters. The variable is resolved FIRST,
@@ -1183,22 +1190,38 @@ inline <- function(
   s
 }
 
+# The degrees of freedom printed beside a partial chi-squared ("1.10
+# (1)") or a partial F ("3.45 (2, 28)") are columns of the typed body
+# flagged `is_df`, under the statistic's token. They are cited by tokens
+# of their own: `partial_chi2_df`, and `partial_f_df_num` /
+# `partial_f_df_den` (under a cluster-robust vcov the denominator is not
+# a residual df). Each cell is formatted as the table prints it between
+# the parentheses, by the same formatter (`.format_df_number()`).
+.inline_df_tokens <- function(s, formatted) {
+  for (nm in .reg_test_stat_cols(s$col_meta)) {
+    dfc <- intersect(.reg_df_sub_names(nm), names(s$col_meta))
+    sfx <- if (length(dfc) == 2L) c("_df_num", "_df_den") else "_df"
+    for (k in seq_along(dfc)) {
+      v <- s$body[[dfc[[k]]]]
+      formatted[[dfc[[k]]]] <- vapply(
+        v,
+        function(d) {
+          if (is.na(d)) "" else .format_df_number(d, s$format_spec$decimal_mark)
+        },
+        character(1)
+      )
+      s$col_meta[[dfc[[k]]]]$token <- paste0(s$col_meta[[nm]]$token, sfx[[k]])
+      s$col_meta[[dfc[[k]]]]$is_df <- FALSE
+    }
+  }
+  list(s = s, formatted = formatted)
+}
+
 # The candidate columns after the `model` filter: NULL model on a
 # single-model table keeps every column; on a multi-model table the
 # choice is required as soon as a token is ambiguous across models.
-#
-# The degrees of freedom printed beside a partial chi-squared ("1.10
-# (1)") or a partial F ("3.45 (2, 28)") are columns of their own carrying
-# the same token, flagged `is_df`. They are not a cited cell: `column =
-# "partial_chi2"` (or `"partial_f"`) quotes
-# the statistic, as `column = "statistic"` does in the descriptive
-# tables. Left among the candidates, the pair read as two columns and
-# the token was refused on every table, `model` or not.
 .inline_model_cols <- function(s, model, call = rlang::caller_env()) {
   all_cols <- setdiff(names(s$col_meta), .REG_KEY_VARIABLE)
-  all_cols <- all_cols[
-    !vapply(all_cols, function(nm) isTRUE(s$col_meta[[nm]]$is_df), logical(1))
-  ]
   spans <- s$spanners
   if (is.null(model)) {
     return(all_cols)

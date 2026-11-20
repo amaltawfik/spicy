@@ -141,8 +141,12 @@ The column is a \strong{token} of the typed contract (\code{"b"}, \code{"se"},
 composes the interval with the style's brackets and separator, and
 so does every other interval token the table carries (\code{"med_ci"},
 \code{"ame_ci"}, \code{"assoc_ci"}): each addresses its own bounds.
-\code{"partial_chi2"} and \code{"partial_f"} cite the statistic alone, without
-the degrees of freedom the table prints beside it.
+A statistic the table prints with its degrees of freedom has a token
+for each of them: \code{"<token>_df"} for one (\code{"partial_chi2_df"}),
+\code{"<token>_df_num"} and \code{"<token>_df_den"} for the numerator and the
+denominator of an F. They are formatted as the table prints them:
+\code{inline(tbl, sex, column = "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}")}
+quotes the whole test.
 }
 
 \section{Patterns}{

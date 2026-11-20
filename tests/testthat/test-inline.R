@@ -254,6 +254,100 @@ test_that("a partial chi-squared or F is cited without its degrees of freedom", 
   expect_no_match(conditionMessage(err), "Available")
 })
 
+test_that("the degrees of freedom of a partial F or chi-squared have tokens", {
+  skip_on_cran()
+  # The cell prints "18.94 (1, 1197)": `partial_f` cites 18.94, the df
+  # tokens cite the numbers between the parentheses.
+  tb <- .il_quiet(table_regression(
+    .il_fit(),
+    show_columns = c("b", "partial_f")
+  ))
+  expect_identical(inline(tb, sex, "Male", "partial_f"), "18.94")
+  expect_identical(inline(tb, sex, "Male", "partial_f_df_num"), "1")
+  expect_identical(inline(tb, sex, "Male", "partial_f_df_den"), "1197")
+  expect_identical(
+    inline(
+      tb,
+      sex,
+      "Male",
+      "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}"
+    ),
+    "F(1, 1197) = 18.94"
+  )
+  # One df for a chi-squared.
+  g <- .il_quiet(table_regression(
+    glm(smoking ~ age + sex, data = sochealth, family = binomial),
+    show_columns = c("b", "partial_chi2")
+  ))
+  expect_identical(inline(g, age, column = "partial_chi2_df"), "1")
+  # A row without the test: the cell is empty, and refused.
+  err <- tryCatch(
+    inline(tb, "(Intercept)", column = "partial_f_df_num"),
+    error = identity
+  )
+  expect_s3_class(err, "spicy_invalid_input")
+  expect_match(conditionMessage(err), "\"partial_f_df_num\" cell")
+  # The tokens exist only where the test does: the list of a refusal
+  # names those of the table.
+  err <- tryCatch(inline(tb, age, column = "partial_f_df"), error = identity)
+  expect_match(
+    conditionMessage(err),
+    "\"partial_f_df_den\", \"partial_f_df_num\""
+  )
+  err <- tryCatch(inline(g, age, column = "partial_f_df_num"), error = identity)
+  expect_match(
+    conditionMessage(err),
+    "Available: \"b\", \"partial_chi2\", \"partial_chi2_df\".",
+    fixed = TRUE
+  )
+  expect_error(
+    inline(
+      .il_quiet(table_regression(.il_fit())),
+      age,
+      column = "partial_chi2_df"
+    ),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("a fractional df is cited with the decimal the table prints", {
+  skip_on_cran()
+  # No term-level test of spicy has a fractional df today: one is set in
+  # the typed body, and its token goes through the cell's formatter.
+  for (mark in c(".", ",")) {
+    tb <- .il_quiet(table_regression(
+      .il_fit(),
+      show_columns = c("b", "partial_f"),
+      decimal_mark = mark
+    ))
+    s <- as_structured(tb)
+    i <- which(s$body$.variable == "age")
+    s$body[["F: residual df"]][i] <- 6.84
+    v <- spicy:::.inline_df_tokens(
+      s,
+      spicy:::.format_structured_to_string_body(s)
+    )
+    expect_identical(v$formatted[["F: residual df"]][i], paste0("6", mark, "8"))
+    expect_identical(v$s$col_meta[["F: residual df"]]$token, "partial_f_df_den")
+  }
+  # The French table writes the decimal comma in the cited statistic.
+  withr::local_options(spicy.language = "fr")
+  tb <- .il_quiet(table_regression(
+    .il_fit(),
+    show_columns = c("b", "partial_f"),
+    decimal_mark = ","
+  ))
+  expect_identical(
+    inline(
+      tb,
+      sex,
+      "Male",
+      "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}"
+    ),
+    "F(1, 1197) = 18,94"
+  )
+})
+
 test_that("`model = k` addresses the k-th model, by identity", {
   skip_on_cran()
   # `model = k` used to resolve to `names(spans)[[k]]` and then re-enter
