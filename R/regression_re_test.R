@@ -353,6 +353,24 @@
       class = "spicy_unsupported"
     )
   }
+  # RLRsim builds the design of an lme fit from `fit$data`, the whole data
+  # frame given to lme(), and drops every row with a missing value in ANY
+  # of its columns, with a warning. A column the model does not use then
+  # takes rows out of the random-effects design and leaves the response
+  # whole, so the two disagree. Keep the variables of the model only, on
+  # the rows lme() used.
+  if (is_lme && is.data.frame(fit$data)) {
+    used <- intersect(
+      names(fit$data),
+      c(
+        all.vars(stats::formula(fit)),
+        unlist(lapply(stats::formula(fit$modelStruct$reStruct), all.vars)),
+        names(fit$groups)
+      )
+    )
+    keep <- stats::complete.cases(fit$data[used])
+    fit$data <- fit$data[keep, used, drop = FALSE]
+  }
   res <- tryCatch(RLRsim::exactRLRT(fit), error = function(e) NULL)
   if (is.null(res)) {
     return(NULL) # nocov

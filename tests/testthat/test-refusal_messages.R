@@ -115,9 +115,7 @@ rm_swept <- function(id, key) {
 
 # The conditions that are not spicy's, each named (fixture, call key):
 # defects to fix, and a list that may not grow.
-rm_unclassed <- list(
-  c("lme", "re_test = \"rlrt\"")
-)
+rm_unclassed <- list()
 
 # In a locale that is not UTF-8, base R warns "unable to translate '<U+03B2>'
 # to native encoding" when build_body_row() makes a data frame whose column

@@ -322,3 +322,20 @@ test_that("the whole-block footer LR test is unaffected by re_test", {
   expect_match(note_lrt, "Random-effect p-values", fixed = TRUE)
   expect_no_match(note_none, "Random-effect p-values", fixed = TRUE)
 })
+
+test_that("rlrt on an lme ignores the missing values of a column the model does not use", {
+  skip_if_not_installed("RLRsim")
+  skip_if_not_installed("nlme")
+  set.seed(11)
+  d <- data.frame(g = factor(rep(1:12, each = 8)), x = rnorm(96))
+  d$y <- d$x + rep(rnorm(12), each = 8) + rnorm(96)
+  d$unused <- ifelse(d$x > 0, NA, 1)
+  fit <- nlme::lme(y ~ x, random = ~ 1 | g, data = d)
+  ref <- RLRsim::exactRLRT(nlme::lme(
+    y ~ x,
+    random = ~ 1 | g,
+    data = d[c("y", "x", "g")]
+  ))
+  expect_no_warning(res <- .compute_re_term_tests(fit, "rlrt"))
+  expect_equal(res$statistic, unname(ref$statistic))
+})
