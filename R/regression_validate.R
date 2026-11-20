@@ -3684,10 +3684,11 @@ validate_class_appropriate_tokens <- function(
   # (Cameron & Windmeijer 1997, p. 333 and 337): refused there rather
   # than printed twice under two names. ANY-gate, like Tjur's above. An
   # mgcv GAM follows its glm twin: a binomial GAM is pointed at McFadden.
+  # The registry says which models carry it (.reg_offers()).
   if (
     "r2_deviance" %in%
       show_fit_stats &&
-      !any(vapply(eff_models, .glm_carries_r2_deviance, logical(1)))
+      !.reg_any_offers(eff_models, "r2_deviance")
   ) {
     categorical <- any(vapply(
       eff_models,
