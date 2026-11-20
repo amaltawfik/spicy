@@ -964,7 +964,9 @@
   6 pt to the right. A table knitted to LaTeX or to Typst loses the empty
   line between its column labels and the rule under them. Knitted to
   Typst, a table of several models draws the rule under the name of each
-  model, which was missing.
+  model, which was missing, and the columns take a width in proportion
+  to their content: they all had the same, and "(Intercept)" was
+  hyphenated.
 
 * In HTML, a tinytable or flextable table wider than the page scrolls
   within its frame. In a reveal.js slide a tinytable table takes 16 px,
