@@ -1355,6 +1355,11 @@
   # `note_design_degf` there would name a number the table does not use
   # (197 where the t has 193).
   note_design_degf_resid = "%d residual degrees of freedom",
+  # Every model of a table on one design, at different residual df: the
+  # df of each model after the scheme they share. One hole: the items,
+  # "%d (%s)" each, the df and the name of the model.
+  note_design_degf_resid_models = "residual degrees of freedom: %s",
+  note_design_degf_resid_item = "%d (%s)",
   # Same disclosure when the sampling scheme cannot be described: a
   # two-phase design has no single PSU or stratum variable to name, and
   # the degrees of freedom are the part that makes the table

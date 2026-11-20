@@ -667,6 +667,37 @@ capitalize_first <- function(s) {
   spicy_fmt("note_model_line", .model_ref(frames, idx), text)
 }
 
+# A sentence of the inference or of the description of the models, said by
+# the models `idx` (`texts[k]` by model `idx[k]`). Bare when every model of
+# the table says the same thing; otherwise each distinct sentence opens
+# with the models it holds for ("Model 1, Model 3: P-values: ..."), the
+# convention of the AME and selection notes. A sentence that holds for one
+# model of two must say which: printed bare beside an lm, the Wald z line
+# of an lmer read as the test of the lm column too.
+.note_lines_by_model <- function(frames, idx, texts) {
+  if (length(idx) == length(frames) && length(unique(texts)) == 1L) {
+    return(texts[[1L]])
+  }
+  lines <- vapply(
+    unique(texts),
+    function(t) {
+      refs <- vapply(
+        idx[texts == t],
+        function(i) .model_ref(frames, i),
+        character(1)
+      )
+      spicy_fmt(
+        "note_model_line",
+        paste(refs, collapse = spicy_str("note_list_sep_comma")),
+        t
+      )
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+  paste(lines, collapse = "\n")
+}
+
 
 # Frame-aware sibling of build_regression_type_footer_block().
 # Reads from frame$info$extras$title_prefix instead of extract$title_prefix.
@@ -982,42 +1013,80 @@ build_design_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
-  per_model <- lapply(seq_along(frames), function(i) {
-    txt <- .format_design_for_frame(frames[[i]])
-    if (is.null(txt)) NULL else list(idx = i, text = txt)
-  })
-  per_model <- Filter(Negate(is.null), per_model)
-  if (length(per_model) == 0L) {
+  parts <- lapply(frames, .design_parts_for_frame)
+  idx <- which(!vapply(parts, is.null, logical(1)))
+  if (length(idx) == 0L) {
     return(NULL)
   }
-  texts <- vapply(per_model, function(pm) pm$text, character(1))
-  # One line when every design fit says the same thing -- the common case
-  # of a single model, and of two models on one design.
-  if (length(unique(texts)) == 1L) {
-    return(texts[1L])
-  }
-  paste(
-    vapply(
-      per_model,
-      function(pm) .model_line(frames, pm$idx, pm$text),
-      character(1)
-    ),
-    collapse = "\n"
+  texts <- vapply(parts[idx], .format_design_parts, character(1))
+  schemes <- vapply(
+    parts[idx],
+    function(p) p$scheme %||% NA_character_,
+    character(1)
   )
+  # Every model of the table on one design, tested at different residual
+  # df (two models with different predictors): one sentence, the df of
+  # each model after the scheme they share, "...; residual degrees of
+  # freedom: 12 (Model 1), 9 (Model 2).".
+  if (
+    length(idx) == length(frames) &&
+      length(idx) > 1L &&
+      length(unique(texts)) > 1L &&
+      !anyNA(schemes) &&
+      length(unique(schemes)) == 1L
+  ) {
+    items <- vapply(
+      idx,
+      function(i) {
+        spicy_fmt(
+          "note_design_degf_resid_item",
+          parts[[i]]$df,
+          .model_ref(frames, i)
+        )
+      },
+      character(1)
+    )
+    return(spicy_fmt(
+      "note_design_line",
+      schemes[[1L]],
+      spicy_fmt(
+        "note_design_degf_resid_models",
+        paste(items, collapse = spicy_str("note_list_sep_comma"))
+      )
+    ))
+  }
+  # One bare line when every model says the same thing (one model, or
+  # several on one design at the same df); otherwise each line names the
+  # models it holds for, so the design of a svyglm is not read as that of
+  # the glm beside it.
+  .note_lines_by_model(frames, idx, texts)
 }
 
 
-.format_design_for_frame <- function(frame) {
+# The design of a fit as the note describes it: the scheme (NULL when the
+# design cannot be read, as a two-phase design) and the residual df its
+# tests use. NULL for a fit without a design.
+.design_parts_for_frame <- function(frame) {
   df <- frame$info$extras$design_degf_resid
   if (is.null(df) || length(df) != 1L || !is.finite(df)) {
     return(NULL)
   }
   meta <- frame$info$extras$design_meta
-  df_clause <- spicy_fmt("note_design_degf_resid", as.integer(df))
-  if (is.null(meta)) {
-    return(spicy_fmt("note_design_degf_resid_only", as.integer(df)))
+  list(
+    scheme = if (!is.null(meta)) .design_scheme_parts(meta),
+    df = as.integer(df)
+  )
+}
+
+.format_design_parts <- function(p) {
+  if (is.null(p$scheme)) {
+    return(spicy_fmt("note_design_degf_resid_only", p$df))
   }
-  spicy_fmt("note_design_line", .design_scheme_parts(meta), df_clause)
+  spicy_fmt(
+    "note_design_line",
+    p$scheme,
+    spicy_fmt("note_design_degf_resid", p$df)
+  )
 }
 
 
@@ -1096,10 +1165,19 @@ build_ci_method_footer_block_from_frames <- function(
     },
     logical(1)
   )
+  # Each sentence names the models it holds for when another model of the
+  # table has intervals of another kind (`.note_lines_by_model()`).
   if (any(is_profile)) {
     lines <- c(
       lines,
-      spicy_fmt("note_ci_profile", .pct(which(is_profile)[1]))
+      .note_lines_by_model(
+        frames,
+        which(is_profile),
+        rep(
+          spicy_fmt("note_ci_profile", .pct(which(is_profile)[1])),
+          sum(is_profile)
+        )
+      )
     )
   }
   # Percentile bootstrap CIs (G5): a CI-only refinement of the bootstrap
@@ -1115,7 +1193,14 @@ build_ci_method_footer_block_from_frames <- function(
   if (any(is_bperc)) {
     lines <- c(
       lines,
-      spicy_fmt("note_ci_bootstrap_percentile", .pct(which(is_bperc)[1]))
+      .note_lines_by_model(
+        frames,
+        which(is_bperc),
+        rep(
+          spicy_fmt("note_ci_bootstrap_percentile", .pct(which(is_bperc)[1])),
+          sum(is_bperc)
+        )
+      )
     )
   }
   # Bayesian credible intervals in a MIXED table: the shared column
@@ -2275,33 +2360,16 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
     return(NULL)
   }
 
-  # The t of a selection model beside models without this line is named
-  # by its model: the line holds for its rows only.
-  sel_among_others <- length(per_model) < length(frames) &&
-    any(vapply(
-      per_model,
-      function(pm) identical(frames[[pm$idx]]$info$class, "selection"),
-      logical(1)
-    ))
-  if (length(per_model) == 1L && !sel_among_others) {
-    return(per_model[[1L]]$text)
-  }
-  # Consolidate when every model produced the SAME annotation -- avoids
-  # printing three identical "P-values: Wald z-test, ..." lines when the
-  # whole list is, say, lme4::lmer without lmerTest. Mirrors the
-  # consolidation done by build_regression_type_footer_block_from_frames().
-  texts <- vapply(per_model, function(pm) pm$text, character(1))
-  if (length(unique(texts)) == 1L && !sel_among_others) {
-    return(texts[1L])
-  }
-  lines <- vapply(
-    per_model,
-    function(pm) {
-      .model_line(frames, pm$idx, pm$text)
-    },
-    character(1)
+  # One bare line when every model of the table is tested the same way
+  # (three lmer fits without lmerTest); otherwise each line names the
+  # models it holds for, so the Wald z of an lmer is not read as the test
+  # of the lm beside it, nor the t of a selection model as that of the
+  # other models.
+  .note_lines_by_model(
+    frames,
+    vapply(per_model, function(pm) pm$idx, integer(1)),
+    vapply(per_model, function(pm) pm$text, character(1))
   )
-  paste(lines, collapse = "\n")
 }
 
 
