@@ -13,21 +13,19 @@ knitr::opts_chunk$set(eval = survey_ok)
 cat("The **survey** package is not installed, so the examples below are not run.\n")
 ```
 
-When a sample is not a simple random sample -- when it is stratified,
-clustered, weighted to a population, or carried by replicate weights --
-the mean is still a weighted mean, but everything around it changes.
-The standard error depends on the strata and the clusters, the
-degrees of freedom are a count of sampling units rather than of rows,
-and the tests are corrected for the design. None of that can be
-recovered from a column of weights.
+A sample that is stratified, clustered, weighted to a population or
+carried by replicate weights is not a simple random sample. Its mean is
+still a weighted mean. The standard error depends on the strata and the
+clusters, the degrees of freedom count sampling units and not rows, and
+the tests are corrected for the design. A column of weights does not
+carry that information.
 
-spicy has three functions for that case, and they compute nothing
-themselves: `table_continuous_svy()`, `table_categorical_svy()` and
-`table_battery_svy()` delegate every number to the **survey** package (Lumley, 2004, 2010)
-and put spicy's
-restitution layer around it -- the same columns, the same nine output
-routes, the same typed view, plus a footer that says what design
-produced the numbers.
+spicy has three functions for these samples: `table_continuous_svy()`,
+`table_categorical_svy()` and `table_battery_svy()`. They compute
+nothing themselves. Every number comes from the survey package (Lumley,
+2004, 2010), and spicy adds what its other tables have: the same
+columns, the same outputs and the same typed view, with a note that
+says which design produced the numbers.
 
 ```{r setup, message = FALSE}
 library(spicy)
@@ -51,15 +49,14 @@ rclus1 <- as.svrepdesign(dclus1)
 table_continuous_svy(dclus1, select = c(api00, api99))
 ```
 
-After the sample size, three sentences of the note describe the design,
-and each is there because the number above it cannot be read without
-them. The design is a one-stage cluster sample of 15 school districts
-with a finite population correction; the standard errors come from
-Taylor linearization; the interval is a *t* interval on 14 degrees of
-freedom -- the number of clusters minus one, not the 183 schools.
+After the sample size, three sentences of the note describe the design.
+It is a one-stage cluster sample of 15 school districts with a finite
+population correction. The standard errors come from Taylor
+linearization. The interval is a *t* interval on 14 degrees of freedom,
+the number of clusters minus one. The 183 schools do not enter that
+count.
 
-That last point is worth dwelling on. `confint()` on a survey object
-uses the *normal* distribution by default:
+`confint()` on a survey object uses the normal distribution by default:
 
 ```{r cont-df}
 m <- svymean(~api00, dclus1)
@@ -67,19 +64,18 @@ confint(m)                    # survey's default: normal
 confint(m, df = degf(dclus1)) # what the table reports
 ```
 
-`svyciprop()`, `svyquantile()`, `svyttest()` and `regTermTest()` all
-take their degrees of freedom from the design, not from the row
-count, and so do the tables -- everywhere. (Each spends them as its
-statistic requires: `svyttest()` uses one on the estimated
-difference, so its *t* sits on `degf(design) - 1` -- 13 here.) The
-footer says so rather than leaving the reader to find out.
+`svyciprop()`, `svyquantile()`, `svyttest()` and `regTermTest()` take
+their degrees of freedom from the design, and so do the tables. Each
+spends them as its statistic requires: `svyttest()` uses one on the
+estimated difference, so its *t* has `degf(design) - 1` degrees of
+freedom, 13 here. The note gives the number.
 
 ### Choosing the statistics
 
-`show_columns` takes the tokens of `table_continuous()`, plus `"se"`
-(the design-based standard error) and `"deff"` (the design effect),
-and minus `"med_ci"`. As there, the columns follow the order the
-tokens are written in:
+`show_columns` takes the tokens of `table_continuous()`, with `"se"`
+(the design-based standard error) and `"deff"` (the design effect)
+added and `"med_ci"` removed. The columns follow the order of the
+tokens:
 
 ```{r cont-columns}
 table_continuous_svy(
@@ -90,45 +86,39 @@ table_continuous_svy(
 )
 ```
 
-The design effect of 9.35 is the point of the whole exercise: the
-variance of this cluster sample is nine times what a simple random
-sample of 183 schools would have given. A table that ignored the
-design would report a standard error three times too small.
+The design effect is 9.35: the variance of this cluster sample is nine
+times that of a simple random sample of 183 schools. A table that
+ignored the design would report a standard error three times too small.
 
-`"med_ci"` is refused rather than approximated. The exact interval
-`table_continuous()` reports inverts a binomial sign test, and its
-coverage guarantee rests on independent observations -- which a
-clustered or stratified sample is not. The estimand (the population
-median) is not the problem; the interval construction is. For a
-design-based interval on that same estimand, call
-`survey::svyquantile(interval.type = )` on the design itself.
+`"med_ci"` is refused. The exact interval of `table_continuous()`
+inverts a binomial sign test, and its coverage rests on independent
+observations, which a clustered or stratified sample does not have. For
+a design-based interval on the population median, call
+`survey::svyquantile(interval.type = )` on the design.
 
 ### Groups
 
 `by = ` cuts one domain per group. survey recomputes the degrees of
 freedom on the sampling units each domain retains, so a grouped table
-generally carries a different *df* per row, and the footer gives the
-span:
+generally carries a different *df* per row, and the note gives their
+range:
 
 ```{r cont-by}
 table_continuous_svy(dclus1, select = api00, by = stype, statistic = TRUE)
 ```
 
-The comparison is one design-based test on the whole design, not a set
-of pairwise ones: `svyttest()` with two observed groups, the Wald *F*
-of `regTermTest()` with three or more, and `svyranktest()` under
-`test = "nonparametric"`. Under a design there is no Welch / Student
-distinction -- the variance is the design's -- so `test = "student"`
-warns and behaves like the default.
+The comparison is a single design-based test on the whole design:
+`svyttest()` with two observed groups, the Wald *F* of `regTermTest()`
+with three or more, and `svyranktest()` under
+`test = "nonparametric"`. Under a design the variance is that of the
+design, and the distinction between the Welch and the Student test
+does not exist. `test = "student"` warns and behaves like the default.
 
-The intervals are referred to those degrees of freedom, which is worth
-saying because survey's own shortcut is not: `svyby(vartype = "ci")`
-builds its interval with `confint.default`, i.e. a normal quantile, and
-so returns a slightly narrower interval than the tables here. The two
-differ by the ratio of `qnorm(0.975)` to `qt(0.975, degf(design))` --
-about 3% on the 14 degrees of freedom of `dclus1`. Neither is a
-mistake; they answer to different reference distributions, and this
-family answers to the design's.
+The intervals use those degrees of freedom. `svyby(vartype = "ci")`
+builds its interval with `confint.default()`, on a normal quantile, and
+returns a narrower interval than the tables here. The two differ by the
+ratio of `qt(0.975, degf(design))` to `qnorm(0.975)`: the interval of
+the table is 9% wider on the 14 degrees of freedom of `dclus1`.
 
 ## Categorical variables
 
@@ -136,11 +126,10 @@ family answers to the design's.
 table_categorical_svy(dclus1, select = c(stype, awards))
 ```
 
-`n` is the *observed* count: 144 schools of type E were sampled. The
-`78.7%` beside it is an *estimate* of the population share, and the two
-answer different questions -- which is why the table shows both and
-the footer gives the estimated population (6194) beside the sample
-size (183).
+`n` is the observed count: 144 schools of type E were sampled. The
+`78.7%` beside it is an estimate of the share in the population. The
+table shows both, and the note gives the estimated population (6194)
+beside the sample size (183).
 
 ```{r cat-ci}
 table_categorical_svy(
@@ -151,11 +140,11 @@ table_categorical_svy(
 )
 ```
 
-The percentage always comes from `svymean()` and the interval from
-`svyciprop()`. That is deliberate: `svyciprop()` estimates on the
-transformed scale its method names, so a percentage taken from there
-would move -- in the thirteenth decimal -- with `ci_method`, which is
-a property of the interval and not of the proportion.
+The percentage comes from `svymean()` and the interval from
+`svyciprop()`. `svyciprop()` estimates on the transformed scale of its
+method, and a percentage taken from it would change with `ci_method`,
+in the thirteenth decimal. `ci_method` is a property of the interval,
+and the proportion should not depend on it.
 
 ```{r cat-by}
 table_categorical_svy(dclus1, select = stype, by = sch.wide)
@@ -169,13 +158,12 @@ second-order correction, referred to *F*(ndf, `degf(design)`).
 failing when the upper tail approaches machine epsilon, and
 `"wls-score"`, which has no reporting convention here.
 
-Association measures -- Cramér's *V*, phi, tau-b/c, gamma, Somers'
-*D*, lambda -- are absent, and that absence is a decision. None has an
-established design-based variance, and the intervals
+The association measures of `table_categorical()` (Cramér's *V*, phi,
+tau-b and tau-c, gamma, Somers' *D*, lambda) are not offered. None has
+an established design-based variance, and the intervals
 `table_categorical()` gives them assume simple random sampling. The
-design-based measure of association is the test in the `p` column; for
-an effect size, model it:
-`table_regression(survey::svyglm(...))`.
+table reports the design-based test in the `p` column. For an effect
+size, fit a model: `table_regression(survey::svyglm(...))`.
 
 ## Item batteries
 
@@ -226,8 +214,8 @@ with the number of times survey raised it.
 ## Replicate weights
 
 A replicate-weights design goes through the same functions. The point
-estimates depend on the weights alone and are therefore identical; the
-standard errors are not, and should not be:
+estimates depend on the weights alone and are identical. The standard
+errors come from the replicates and differ:
 
 ```{r rep}
 table_continuous_svy(rclus1, select = api00)
@@ -235,22 +223,22 @@ table_continuous_svy(rclus1, select = api00)
 
 ## Weights, or a design?
 
-This is the question the two families answer differently, and the
-difference is an estimand rather than an approximation.
+`table_continuous(weights = )` and `table_continuous_svy()` read a
+weight differently, and they do not estimate the same standard
+deviation.
 
-`table_continuous(weights = )` implements the
-**frequency-expansion** convention of decision 17: a weight is a
-number of copies, and `SD` has denominator `sum(w) - 1`. With integer
-weights the statistics are exactly those of the data repeated that
-many times.
+`table_continuous(weights = )` follows the frequency-expansion
+convention: a weight is a number of copies, and `SD` has denominator
+`sum(w) - 1`. With integer weights the statistics are those of the data
+repeated that many times.
 
-`table_continuous_svy()` implements the **sampling-weight**
-convention: a weight is a number of units represented, and `SD` is
+`table_continuous_svy()` follows the sampling-weight convention: a
+weight is a number of units represented, and `SD` is
 `sqrt(survey::svyvar())`, whose denominator is `n - 1` on weights
 normalized to sum to `n`.
 
-`rescale = TRUE` is the bridge between them, and it is an identity.
-Writing `w' = w * n / sum(w)`, so that `sum(w') = n`:
+`rescale = TRUE` makes the two agree, by an identity. With
+`w' = w * n / sum(w)`, so that `sum(w') = n`:
 
 ```
 sum(w' (x - xbar)^2) / (sum(w') - 1)
@@ -258,7 +246,7 @@ sum(w' (x - xbar)^2) / (sum(w') - 1)
   = n / (n - 1) * sum(w (x - xbar)^2) / sum(w)
 ```
 
-and the right-hand side is what `survey::svyvar()` computes. So on a
+and the right-hand side is what `survey::svyvar()` computes. On a
 design that declares nothing but weights, the two tables agree:
 
 ```{r bridge}
@@ -271,8 +259,8 @@ wtd <- table_continuous(
 c(svy = svy$sd, weighted_rescaled = wtd$sd)
 ```
 
-Under the default `rescale = FALSE` they do not, and that is the
-estimand boundary, not a bug:
+Under the default `rescale = FALSE` they differ, each following its
+convention:
 
 ```{r bridge-default}
 expanded <- table_continuous(
@@ -281,12 +269,11 @@ expanded <- table_continuous(
 c(svy = svy$sd, weighted_default = expanded$sd)
 ```
 
-The *mean* is continuous across both regimes: `sum(w x) / sum(w)` does
-not move when the weights are rescaled.
+The mean is the same under both conventions: `sum(w x) / sum(w)` does
+not change when the weights are rescaled.
 
-And the whole point of the design functions is that a design carries
-more than weights. On the real cluster design, the same mean has a
-standard error the weights alone cannot produce:
+A design carries more than weights. On the cluster design, the same
+mean has a standard error that the weights alone do not give:
 
 ```{r bridge-se}
 c(
@@ -296,137 +283,39 @@ c(
 ```
 
 Passing a design to `table_continuous()`, or a data frame to
-`table_continuous_svy()`, is an error naming the other function. There
-is no silent coercion in either direction.
+`table_continuous_svy()`, is an error that names the other function.
 
 ## Regression under a design
 
-`table_regression()` reads a design-based fit the same way, and
-delegates the same way: the coefficients, the variance and the degrees
-of freedom all come from survey.
-
-Three model classes are supported, on a linearized and on a
-replicate-weights design alike: `survey::svyglm()`, `survey::svyolr()`
-for a cumulative-link model, and `survey::svycoxph()` for a
-design-weighted Cox model.
+`table_regression()` reads a fit of `survey::svyglm()`,
+`survey::svyolr()` or `survey::svycoxph()`, on a linearized or a
+replicate-weights design. The coefficients, the variance and the
+degrees of freedom all come from survey.
 
 ```{r reg-glm}
 gl <- svyglm(api00 ~ ell + meals + stype, design = dstrat)
 table_regression(gl)
 ```
 
-Three things in that footer are worth naming.
+The note states the design and the residual degrees of freedom of the
+tests, and it names the variance estimator. The fit statistics give the
+observed `n` and the `Weighted n` the estimates describe, the pair the
+descriptive tables print in their note.
 
-The design line says what the design is and how many degrees of freedom
-the table's own tests use. That number is the *model's* residual df --
-what survey writes on the fit, and what `survey::regTermTest()` takes as
-its denominator -- not the design's own. It is read, never re-derived:
-the engines of survey do not share one expression, and a Cox fit ends
-one degree of freedom above what the same arithmetic would give for a
-`svyglm`. For this linear fit:
-
-```{r reg-df}
-c(design = degf(dstrat), model = df.residual(gl))
-```
-
-The variance label names the estimator the design actually uses. On a
-replicate design there is no linearization anywhere, and the footer says
-so:
-
-```{r reg-rep}
-table_regression(
-  svyglm(api00 ~ ell, design = rclus1),
-  show_columns = c("b", "ci", "p")
-)
-```
-
-And the counts are both there: the observed `n` and the `Weighted n`
-the estimates describe, the same pair the descriptive tables print in
-their note.
-
-### Ordinal and Cox fits
-
-A `svyolr()` fit gets its cut-points as a Thresholds block, and its
-average marginal effects one column per response category -- averaged
-over the population, not over the sample:
-
-```{r reg-olr}
-apistrat$grade <- ordered(cut(apistrat$api00, c(0, 600, 700, 1000)))
-dg <- svydesign(
-  id = ~1, strata = ~stype, weights = ~pw, data = apistrat, fpc = ~fpc
-)
-table_regression(svyolr(grade ~ ell + stype, design = dg))
-```
-
-A `svycoxph()` fit reports hazard ratios, the events, and the
-concordance:
-
-```{r reg-cox}
-data(pbc, package = "survival")
-pbc$randomized <- with(pbc, !is.na(trt) & trt > 0)
-bias <- glm(randomized ~ age * edema, data = pbc, family = binomial)
-pbc$randprob <- fitted(bias)
-dpbc <- svydesign(
-  id = ~1, prob = ~randprob, strata = ~edema, data = subset(pbc, randomized)
-)
-cx <- svycoxph(
-  survival::Surv(time, status > 0) ~ log(bili) + protime + albumin,
-  design = dpbc
-)
-table_regression(cx, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
-```
-
-### What a design fit refuses
-
-Statistics that need a likelihood are absent rather than approximated:
-`AIC()`, `BIC()`, `logLik()` and the pseudo-R-squared family are not
-defined for a design-weighted fit, and asking for them by token stops
-with an error rather than print a number without an interpretation. The one
-exception is `svyglm`, whose `AIC` row is the design-based criterion of
-Lumley & Scott -- and `show_fit_stats = "eff_p"` reports the effective
-number of parameters of the design beside it.
-
-A robust variance is refused for every design class: the design is the
-variance authority, and the way to change the estimator is to change the
-design.
-
-```{r reg-refuse, error = TRUE}
-table_regression(gl, vcov = "HC3")
-```
-
-The RMST and risk-difference columns are refused for a design-based Cox
-fit. The estimands are not what is in question -- they are validated
-against exact oracles for an unweighted Cox model -- but their
-uncertainty comes from resampling subjects, and a row bootstrap ignores
-the strata and the clusters the design declares.
-
-How much that costs depends on the design and on the contrast, so no
-single figure describes it. Measured over five designs and three data
-seeds: a contrast **between** clusters has its standard error
-understated by roughly 1.5x-6x depending on cluster count and size
-(~3x on a 30 x 25 design with moderate intra-cluster correlation),
-while a contrast **within** clusters, and any design without
-clustering, come out about right. Nothing here is peculiar to these
-columns -- the estimand-level ratios track the coefficient-level ones
-design by design, so this is the ordinary design effect of the Cox
-coefficient carried onto them.
-
-Putting the design's own replicate weights in place of the row
-bootstrap is on the roadmap. Until then, use `survey::svykm()` for a
-marginal survival curve, and `survey::regTermTest()` to test a term.
-
-Average marginal effects are refused for a Cox fit, design-based or not:
-a proportional-hazards model has no natural response scale to average an
-effect on.
+[*Regression tables for survey designs*](table-regression-survey.html)
+covers these models: the degrees of freedom, weights compared with a
+declared design, odds ratios and average marginal effects, the tests of
+a term, subpopulations, replicate weights, ordinal and Cox fits, and
+what a design-based fit refuses.
 
 ## Quantiles
 
-`qrule` chooses the rule, and the footer always names the one in
-force. The default `"math"` estimates the quantile of the *population*,
-`inf{x : F(x) >= p}`. `"spicy"` switches to the type-7 interpolation
-`table_continuous()` uses, for a reader who needs the two tables to
-agree cell for cell; anything else -- including a function -- is
-handed to `survey::svyquantile()` untouched.
+`qrule` chooses the rule, and the note names the one in force. The
+default `"math"` estimates the quantile of the population,
+`inf{x : F(x) >= p}`. `"spicy"` switches to the type-7 interpolation of
+`table_continuous()`, for a reader who needs the two tables to agree
+cell for cell. Any other value, a function included, is passed to
+`survey::svyquantile()` as it is.
 
 ```{r qrule}
 q <- function(rule) {
@@ -474,12 +363,10 @@ table_continuous_svy(
 ## What is not here yet
 
 Two-phase, pps, database-backed and multiframe designs are refused
-with a classed error rather than approximated: the delegation map was
-measured on `svydesign()` and `as.svrepdesign()` designs, and a
-plausible wrong number is worse than a refusal. Call survey directly
-for those -- and if one of them matters for your work, an issue on the
-package's tracker saying which design you need is the fastest way to
-move it up the roadmap.
+with a classed error. The delegation to survey was verified on
+`svydesign()` and `as.svrepdesign()` designs only. Call survey directly
+for the others. If one of them matters for your work, open an issue on
+the tracker of the package and name the design.
 
 ## References
 
@@ -487,6 +374,3 @@ move it up the roadmap.
   Statistical Software*, 9(8), 1--19.
 * Lumley, T. (2010). *Complex surveys: A guide to analysis using R*.
   John Wiley & Sons.
-* Lumley, T., & Scott, A. (2015). AIC and BIC for modeling with complex
-  survey data. *Journal of Survey Statistics and Methodology*, 3(1),
-  1--18.
