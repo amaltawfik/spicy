@@ -485,7 +485,7 @@
   test_lm_f = "test F issu du mod\u00E8le lin\u00E9aire",
   test_lm_chi2 = "test du khi-deux de Wald issu du mod\u00E8le lin\u00E9aire",
   test_lm_t_satterthwaite_cr = "test t de Satterthwaite, degr\u00E9s de libert\u00E9 robustes aux grappes",
-  test_lm_f_htz_cr = "test F de Hotelling T\u00B2 approch\u00E9 (HTZ), degr\u00E9s de libert\u00E9 robustes aux grappes",
+  test_lm_f_htz_cr = "test F du T\u00B2 de Hotelling approch\u00E9, degr\u00E9s de libert\u00E9 robustes aux grappes",
   note_slope_test = "Test de la pente\u00A0: %s.",
   test_pearson_chisq = "test du khi-deux de Pearson",
   test_fisher_exact = "test exact de Fisher",

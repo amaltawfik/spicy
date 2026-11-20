@@ -270,7 +270,7 @@ test_that("a CR vcov names the Satterthwaite df of its tests", {
   }
   expect_match(
     note_of("education", "CR2"),
-    "approximate Hotelling T² F-test (HTZ), cluster-robust df.",
+    "approximate Hotelling's T² F-test, cluster-robust df.",
     fixed = TRUE
   )
   expect_match(

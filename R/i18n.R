@@ -1071,9 +1071,10 @@
   test_lm_chi2 = "Wald chi-squared test from the linear model",
   # Under `vcov = "CR0"` to `"CR3"`: the t on Satterthwaite df, in the
   # words of table_regression() (`note_pvalues_satterthwaite_cr`), and the
-  # HTZ F of clubSandwich::Wald_test().
+  # HTZ F of clubSandwich::Wald_test(), under the name of its method (the
+  # approximate Hotelling's T-squared test of Pustejovsky and Tipton).
   test_lm_t_satterthwaite_cr = "Satterthwaite t-test, cluster-robust df",
-  test_lm_f_htz_cr = "approximate Hotelling T\u00B2 F-test (HTZ), cluster-robust df",
+  test_lm_f_htz_cr = "approximate Hotelling's T\u00B2 F-test, cluster-robust df",
   note_slope_test = "Slope test: %s.",
   # The order of the subtraction of the contrast column, whose header,
   # the increment glyph alone, no longer states it: a definition of the
