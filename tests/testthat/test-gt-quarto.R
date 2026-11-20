@@ -219,6 +219,37 @@ test_that("a knit to Typst rules each model spanner, and only there", {
   expect_identical(out, g)
 })
 
+test_that("a knit to Typst sizes the columns on their content", {
+  skip_if_not_installed("gt")
+  cols <- function(html) {
+    w <- regmatches(html, gregexpr("<col style=\"width:[0-9.]+%;\"/>", html))
+    as.numeric(gsub("[^0-9.]", "", w[[1L]]))
+  }
+  for (g in .gtq_tables()) {
+    w <- cols(.gtq_knit(g, "typst"))
+    expect_length(w, nrow(g[["_boxhead"]]))
+    expect_equal(sum(w), 100, tolerance = 0.001)
+    # The column of labels is the widest: "(Intercept)", "Variable".
+    expect_identical(which.max(w), 1L)
+    # HTML and LaTeX keep their own widths.
+    expect_length(cols(.gtq_knit(g, "html")), 0L)
+    expect_no_match(.gtq_knit(g, "latex"), "%;", fixed = TRUE)
+  }
+  # The widest text of a column, plus two characters of insets; a label
+  # lifted into a spanner over the column alone counts.
+  g <- gt::tab_spanner(
+    gt::gt(data.frame(a = c("x", "y"), b = c("1", "22"))),
+    "Variable",
+    columns = "a"
+  )
+  w <- .spicy_gt_typst_widths(g)[["_boxhead"]]$column_width
+  expect_identical(unlist(w), c("71.43%", "28.57%"))
+  # A call of gt that fails or warns: the table as it came, silently.
+  local_mocked_bindings(cols_width = function(...) stop("gt"), .package = "gt")
+  expect_no_condition(out <- .spicy_gt_typst_widths(g))
+  expect_identical(out, g)
+})
+
 test_that("a knit to Typst leaves the table to Quarto's processing", {
   skip_if_not_installed("gt")
   for (g in .gtq_tables()) {

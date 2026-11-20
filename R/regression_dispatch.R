@@ -1457,6 +1457,46 @@ output_gt <- function(rendered) {
   if (inherits(out, "gt_tbl")) out else x
 }
 
+# The widths of the columns of a gt table knitted to Typst. gt writes the
+# label of a spanner in a `<div>`, and pandoc's HTML reader gives every
+# column of a table with a block in a cell the same share of the line:
+# a regression table of seven columns had seven of 14.29%, and
+# "(Intercept)" was hyphenated while the numbers had room. Left to
+# Typst (`auto`), the columns are sized on their content, but the note
+# and the title, which span the table, widen its last column. Each
+# column gets a share of the line in proportion to its widest text
+# (cells, column label, or the label of a spanner over it alone, where
+# spicy lifts "Variable"), as tinytable's natural widths are; the shares
+# still sum to the line. A call of gt that fails or warns gives the
+# table back as it came.
+.spicy_gt_typst_widths <- function(x) {
+  out <- tryCatch(
+    {
+      bh <- x[["_boxhead"]]
+      vars <- bh$var[bh$type %in% c("default", "stub")]
+      sp <- x[["_spanners"]]
+      text <- function(v) {
+        lab <- as.character(bh$column_label[[match(v, bh$var)]])
+        own <- vapply(sp$vars, identical, NA, v)
+        c(as.character(x[["_data"]][[v]]), lab, unlist(sp$spanner_label[own]))
+      }
+      widest <- function(v) max(1, nchar(text(v), "width"), na.rm = TRUE)
+      # Two characters for the insets of the cell.
+      w <- vapply(vars, widest, 1) + 2
+      share <- sprintf("%.2f%%", 100 * w / sum(w))
+      gt::cols_width(
+        x,
+        .list = lapply(seq_along(vars), function(j) {
+          rlang::new_formula(rlang::sym(vars[[j]]), share[[j]])
+        })
+      )
+    },
+    error = function(e) NULL,
+    warning = function(w) NULL
+  )
+  if (inherits(out, "gt_tbl")) out else x
+}
+
 .spicy_gt_typst_relabel <- function(x) {
   bh <- x[["_boxhead"]]
   sp <- x[["_spanners"]]
@@ -1581,6 +1621,7 @@ knit_print.spicy_gt <- function(x, ...) {
     x <- gt::tab_options(x, quarto.disable_processing = FALSE)
     if (identical(pandoc_to, "typst")) {
       x <- .spicy_gt_typst_spanner_rules(.spicy_gt_typst_labels(x))
+      x <- .spicy_gt_typst_widths(x)
     }
     latex <- isTRUE(knitr::is_latex_output())
     if (latex) {
