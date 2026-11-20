@@ -676,16 +676,21 @@
   `iv_robust()` model under `CR2`, say in the note that their p-values
   use Satterthwaite degrees of freedom. `table_continuous_lm()` says it
   too under `"CR0"` to `"CR3"`, and names its F test "approximate
-  Hotelling's T² F-test". A weighted `lm()` is labeled "classical
-  (WLS)". A clustered `lm_robust()` model and the cluster bootstrap of
-  `rq()` name their cluster variable.
+  Hotelling's T² F-test". Under `CR0`, the note of a clustered
+  `lm_robust()` or `iv_robust()` model gives the degrees of freedom of
+  its t tests, the number of clusters minus one. A weighted `lm()` is
+  labeled "classical (WLS)". A clustered `lm_robust()` model and the
+  cluster bootstrap of `rq()` name their cluster variable.
 
 * `table_regression()`: in a table of several models, a sentence on
   p-values, on the design or on intervals that holds for some models
-  only names them. Models on the same survey design give their residual
-  degrees of freedom in one sentence, and so do selection models tested
-  on t distributions with different degrees of freedom. Model names are
-  separated by a semicolon when one of them holds a comma.
+  only names them. The sentences on the type of the models and on their
+  standard errors name together the models that say the same: "Std.
+  errors: A, B, C: classical (model-based); D: classical (OLS)". Models
+  on the same survey design give their residual degrees of freedom in
+  one sentence, and so do models tested on t distributions with
+  different degrees of freedom. Model names are separated by a semicolon
+  when one of them holds a comma.
 
 * `table_regression()`: a comparison of beta regressions, or of binomial
   `glm()` models, with different links is titled "Beta regression
@@ -1139,8 +1144,9 @@
   titles it, instead of "Regression".
 
 * `table_regression()`: an `estimatr` model (`lm_robust()`,
-  `iv_robust()`) with `clusters` and `se_type = "stata"` is labeled
-  "Cluster-robust (Stata CR1)" instead of "Robust (Stata HC1)".
+  `iv_robust()`) with `clusters` and `se_type = "stata"` takes the label
+  of `vcov = "CR1S"`, "cluster-robust (CR1S, Stata vce(cluster),
+  t(G−1))", instead of "Robust (Stata HC1)".
 
 * `table_regression()` refuses with a clear error an mgcv model fitted
   from a list of formulas (`gaulss()`, `ziplss()`, `twlss()`,
