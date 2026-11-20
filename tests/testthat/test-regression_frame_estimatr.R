@@ -191,7 +191,9 @@ test_that("lm_robust under clustered CR2 names its Satterthwaite df", {
   )
   expect_match(note, sat, fixed = TRUE)
   expect_no_match(note, "LM: P-values", fixed = TRUE)
-  # Under CR0 and "stata" estimatr tests on G - 1: no sentence.
+  # Under CR0 and "stata" estimatr tests on G - 1: no Satterthwaite
+  # sentence. CR0 says its t, "stata" has it in its label (CR1S).
+  t_df <- "P-values and CIs: t distribution with 2 df."
   for (st in c("CR0", "stata")) {
     f0 <- estimatr::lm_robust(
       mpg ~ wt,
@@ -200,12 +202,55 @@ test_that("lm_robust under clustered CR2 names its Satterthwaite df", {
       se_type = st
     )
     expect_identical(unique(f0$df), 2)
-    expect_no_match(
-      attr(table_regression(f0, output = "data.frame"), "note"),
-      sat,
-      fixed = TRUE
-    )
+    note0 <- attr(table_regression(f0, output = "data.frame"), "note")
+    expect_no_match(note0, sat, fixed = TRUE)
+    if (st == "CR0") {
+      expect_match(note0, t_df, fixed = TRUE)
+    } else {
+      expect_no_match(note0, "t distribution", fixed = TRUE)
+      expect_match(note0, "(CR1S, Stata vce(cluster), t(G", fixed = TRUE)
+    }
   }
+})
+
+test_that("lm_robust and iv_robust under clustered CR0 name their t(G - 1)", {
+  skip_if_not_installed("estimatr")
+  set.seed(3)
+  d <- data.frame(g = rep(1:20, each = 15), h = rep(1:10, each = 30))
+  d$x <- rnorm(300) + rnorm(20)[d$g]
+  d$z <- rnorm(300) + 0.5 * d$x
+  d$y <- 1 + 0.5 * d$x + rnorm(20)[d$g] + rnorm(300)
+  a <- estimatr::lm_robust(y ~ x, data = d, clusters = g, se_type = "CR0")
+  b <- estimatr::iv_robust(y ~ x | z, data = d, clusters = g, se_type = "CR0")
+  c10 <- estimatr::lm_robust(y ~ x, data = d, clusters = h, se_type = "CR0")
+  expect_identical(unique(a$df), 19)
+  expect_identical(unique(b$df), 19)
+  t19 <- "P-values and CIs: t distribution with 19 df."
+  expect_match(attr(table_regression(b), "note"), t19, fixed = TRUE)
+  # Two models on the same t: one bare sentence.
+  expect_match(
+    attr(table_regression(list(A = a, B = b)), "note"),
+    paste("Std. errors: cluster-robust (CR0), clusters by g.", t19),
+    fixed = TRUE
+  )
+  # On two t: the df of each model, merged as for selection models.
+  expect_match(
+    attr(table_regression(list(A = a, B = c10)), "note"),
+    "t distribution; residual degrees of freedom: 19 (A), 9 (B).",
+    fixed = TRUE
+  )
+  # Beside an lm, the sentence names its model.
+  expect_match(
+    attr(table_regression(list(A = a, B = lm(y ~ x, data = d))), "note"),
+    paste0("A: ", t19),
+    fixed = TRUE
+  )
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    attr(table_regression(a), "note"),
+    "Valeurs p et IC\u00a0: loi t \u00e0 19 degr\u00e9s de libert\u00e9.",
+    fixed = TRUE
+  )
 })
 
 
@@ -659,7 +704,7 @@ test_that("se_type = 'classical' / 'HC3' name themselves in the note", {
   )
 })
 
-test_that("se_type = 'stata' with clusters is labeled cluster-robust (CR1)", {
+test_that("se_type = 'stata' with clusters is labeled as vcov = 'CR1S'", {
   skip_if_not_installed("estimatr")
   skip_if_not_installed("sandwich")
   fit <- estimatr::lm_robust(
@@ -673,15 +718,78 @@ test_that("se_type = 'stata' with clusters is labeled cluster-robust (CR1)", {
   ols <- stats::lm(mpg ~ wt, data = mtcars)
   cr1 <- sqrt(diag(sandwich::vcovCL(ols, cluster = ~cyl, type = "HC1")))
   expect_equal(unname(fit$std.error), unname(cr1), tolerance = 1e-8)
+  # The CR1S of an lm: same SEs, same t(G - 1), same label.
+  se_line <- function(x) {
+    sub(
+      "^.*((Std\\. errors|Erreurs standards)[^.]*)\\..*$",
+      "\\1",
+      attr(x, "note")
+    )
+  }
+  cols <- c("b", "se", "df", "ci", "p")
+  t_est <- table_regression(fit, show_columns = cols)
+  t_lm <- table_regression(
+    ols,
+    vcov = "CR1S",
+    cluster = ~cyl,
+    show_columns = cols
+  )
+  b_est <- broom::tidy(t_est)
+  b_lm <- broom::tidy(t_lm)
+  expect_equal(b_est$std.error, b_lm$std.error, tolerance = 1e-10)
+  expect_equal(b_est$df, b_lm$df)
+  expect_equal(b_est$p.value, b_lm$p.value, tolerance = 1e-10)
+  expect_identical(se_line(t_est), se_line(t_lm))
   expect_match(
-    attr(table_regression(fit), "note"),
-    "Std. errors: cluster-robust (Stata CR1), clusters by cyl",
+    se_line(t_est),
+    "Std. errors: cluster-robust (CR1S, Stata vce(cluster), t(G",
+    fixed = TRUE
+  )
+  # iv_robust beside the CR1S of an ivreg: the same again.
+  if (requireNamespace("AER", quietly = TRUE)) {
+    iv_est <- table_regression(
+      estimatr::iv_robust(
+        mpg ~ wt | hp,
+        data = mtcars,
+        clusters = cyl,
+        se_type = "stata"
+      ),
+      show_columns = cols
+    )
+    iv_cr1s <- table_regression(
+      AER::ivreg(mpg ~ wt | hp, data = mtcars),
+      vcov = "CR1S",
+      cluster = ~cyl,
+      show_columns = cols
+    )
+    expect_equal(
+      broom::tidy(iv_est)$std.error,
+      broom::tidy(iv_cr1s)$std.error,
+      tolerance = 1e-10
+    )
+    expect_equal(broom::tidy(iv_est)$df, broom::tidy(iv_cr1s)$df)
+    expect_identical(se_line(iv_est), se_line(iv_cr1s))
+  }
+  # A cluster passed as a vector: the label of an lm given one.
+  fit_v <- estimatr::lm_robust(
+    mpg ~ wt,
+    data = mtcars,
+    clusters = mtcars$cyl,
+    se_type = "stata"
+  )
+  expect_match(
+    attr(table_regression(fit_v), "note"),
+    "cluster vector supplied",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
+  expect_identical(
+    se_line(table_regression(fit)),
+    se_line(table_regression(ols, vcov = "CR1S", cluster = ~cyl))
+  )
   expect_match(
     attr(table_regression(fit), "note"),
-    "Erreurs standards\u00a0: robustes aux grappes (Stata CR1), grappes",
+    "Erreurs standards\u00a0: robustes aux grappes (CR1S, Stata vce(cluster)",
     fixed = TRUE
   )
   # Without clusters, "stata" is HC1, which estimatr records as such.

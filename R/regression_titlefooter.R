@@ -2563,14 +2563,20 @@ build_nested_gam_footer_block_from_frames <- function(
   }
   # estimatr computes the same df under its CR2 (Bell-McCaffrey, per
   # coefficient: `fit$df` fractional); under CR0 and "stata" it tests on
-  # G - 1.
+  # G - 1, which the sentence of a t gives under CR0 (`t_df`, merged as
+  # for selection models) and the CR1S label under "stata".
   if (
-    cls %in%
-      c("lm_robust", "iv_robust") &&
-      identical(frame$info$extras$se_type, "CR2") &&
-      isTRUE(frame$info$extras$clustered)
+    cls %in% c("lm_robust", "iv_robust") && isTRUE(frame$info$extras$clustered)
   ) {
-    return(spicy_str("note_pvalues_satterthwaite_cr"))
+    se_type <- frame$info$extras$se_type
+    if (identical(se_type, "CR2")) {
+      return(spicy_str("note_pvalues_satterthwaite_cr"))
+    }
+    df <- unique(frame$coefs$df[is.finite(frame$coefs$df)])
+    if (identical(se_type, "CR0") && length(df) == 1L) {
+      df <- format(df, scientific = FALSE)
+      return(structure(spicy_fmt("note_pvalues_t_df", df), t_df = df))
+    }
   }
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
     return(spicy_str("note_pvalues_satterthwaite"))

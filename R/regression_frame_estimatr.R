@@ -398,14 +398,26 @@ as_regression_frame.iv_robust <- function(
 # under the names the lm and glm fits use for the same estimators. The
 # cluster-robust labels name the cluster variable when the call names it
 # (`clusters = state`), not when it passes an expression. se_type =
-# "stata" is Stata's cluster-robust CR1: estimatr stores an unclustered
-# "stata" fit as "HC1".
+# "stata" is Stata's vce(cluster), the CR1S of `vcov = "CR1S"` (same
+# SEs, same t(G - 1)), and takes its label: estimatr stores an
+# unclustered "stata" fit as "HC1".
 .estimatr_vcov_label <- function(
   se_type,
   is_iv = FALSE,
   weighted = FALSE,
   cluster_name = NULL
 ) {
+  named <- length(cluster_name) == 1L && nzchar(cluster_name)
+  if (identical(se_type, "stata")) {
+    return(spicy_fmt(
+      "note_vcov_cr1s",
+      if (named) {
+        spicy_fmt("note_vcov_cluster_named", cluster_name)
+      } else {
+        spicy_str("note_vcov_cluster_vector")
+      }
+    ))
+  }
   if (identical(se_type, "classical")) {
     return(spicy_str(
       if (is_iv) {
@@ -420,12 +432,9 @@ as_regression_frame.iv_robust <- function(
   if (identical(se_type, "none")) {
     return(spicy_str("note_vcov_none_plain"))
   }
-  if (se_type %in% c("stata", "CR0", "CR2")) {
-    label <- spicy_fmt(
-      "note_vcov_cr_bare",
-      if (identical(se_type, "stata")) "Stata CR1" else se_type
-    )
-    if (length(cluster_name) == 1L && nzchar(cluster_name)) {
+  if (se_type %in% c("CR0", "CR2")) {
+    label <- spicy_fmt("note_vcov_cr_bare", se_type)
+    if (named) {
       label <- paste0(label, spicy_fmt("note_vcov_cluster_by", cluster_name))
     }
     return(label)
