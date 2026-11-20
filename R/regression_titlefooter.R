@@ -992,18 +992,23 @@ build_vcov_footer_block_from_frames <- function(frames) {
   if (all(labels == labels[1])) {
     return(spicy_fmt("note_std_errors_single", labels[1]))
   }
-  # Models with different estimators: one sentence still, the estimator
-  # of each model in the order of the columns ("Std. errors: Model 1:
-  # classical (OLS), Model 2: heteroskedasticity-robust (HC3)."), so the
-  # general note stays one paragraph. The items take a semicolon when
-  # one of them holds a comma (`.join_note_vars()`). The labels are stored
-  # in their final case, a lowercase initial unless they open on a proper
-  # name ("Bayesian", "Newey-West"), so they read the same alone and after
-  # a model's name.
+  # Models with different estimators: one sentence still, each estimator
+  # after the models it holds for, in the order of the columns ("Std.
+  # errors: Model 1, Model 3: classical (OLS); Model 2:
+  # heteroskedasticity-robust (HC3)."), as the p-value sentences group
+  # their models (`.note_lines_by_model()`), so the general note stays
+  # one paragraph. The names and the items take a semicolon when one of
+  # them holds a comma (`.join_note_vars()`). The labels are stored in
+  # their final case, a lowercase initial unless they open on a proper
+  # name ("Bayesian", "Newey-West"), so they read the same alone and
+  # after a model's name.
   per <- vapply(
-    seq_along(labels),
-    function(i) spicy_fmt("note_model_line", refs[[i]], labels[[i]]),
-    character(1)
+    unique(labels),
+    function(l) {
+      spicy_fmt("note_model_line", .join_note_vars(refs[labels == l]), l)
+    },
+    character(1),
+    USE.NAMES = FALSE
   )
   spicy_fmt("note_std_errors_single", .join_note_vars(per))
 }

@@ -853,8 +853,8 @@ test_that("the standard-error note writes each estimatr label as lm writes it", 
     note,
     paste0(
       "Std. errors: Model 1: heteroskedasticity-robust (HC1); ",
-      "Model 2: classical (OLS); Model 3: cluster-robust (CR2), ",
-      "clusters by cyl; Model 4: classical (OLS)."
+      "Model 2, Model 4: classical (OLS); Model 3: cluster-robust (CR2), ",
+      "clusters by cyl."
     ),
     fixed = TRUE
   )

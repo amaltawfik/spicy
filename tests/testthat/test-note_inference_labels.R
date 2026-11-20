@@ -216,6 +216,39 @@ test_that("an inference sentence of some models only names them", {
   expect_no_match(note, "(^|\\. )Design: ")
 })
 
+test_that("the standard-error sentence groups the models of one label", {
+  skip_if_not_installed("lme4")
+  ss <- lme4::sleepstudy
+  models <- list(
+    A = lme4::lmer(Reaction ~ Days + (1 | Subject), ss),
+    B = lme4::lmer(Reaction ~ Days + (Days | Subject), ss),
+    C = lme4::lmer(Reaction ~ 1 + (1 | Subject), ss),
+    D = lm(Reaction ~ Days, ss)
+  )
+  out <- function(lang) {
+    withr::local_options(spicy.language = lang)
+    gsub(
+      "\u00a0",
+      " ",
+      attr(suppressMessages(table_regression(models)), "note"),
+      fixed = TRUE
+    )
+  }
+  expect_match(
+    out("en"),
+    "Std. errors: A, B, C: classical (model-based); D: classical (OLS).",
+    fixed = TRUE
+  )
+  expect_match(
+    out("fr"),
+    paste0(
+      "Erreurs standards : A, B, C : classiques (fond\u00e9es sur le ",
+      "mod\u00e8le) ; D : classiques (MCO)."
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("an lm under a CR vcov names its Satterthwaite df", {
   skip_on_cran()
   fit <- .class_fixture("lm")

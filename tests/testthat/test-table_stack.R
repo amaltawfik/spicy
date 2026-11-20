@@ -3454,8 +3454,8 @@ test_that("each panel's standard-error label reads as it does alone, after its n
     fixed = TRUE
   )
   want <- paste0(
-    "Std. errors: A: classical (OLS), B: heteroskedasticity-robust (HC1), ",
-    "C: classical (OLS)."
+    "Std. errors: A, C: classical (OLS); ",
+    "B: heteroskedasticity-robust (HC1)."
   )
   models <- list(A = fe, B = rb, C = ols)
   expect_match(attr(table_regression(models), "note"), want, fixed = TRUE)

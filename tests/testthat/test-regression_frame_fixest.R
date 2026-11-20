@@ -1076,9 +1076,9 @@ test_that("the standard-error note writes each fixest label as lm writes the sam
   expect_match(
     note,
     paste0(
-      "Std. errors: IID: classical (OLS); Hetero: heteroskedasticity-robust; ",
-      "Cluster: cluster-robust, clusters by Month; NW: Newey-West (L=2); ",
-      "OLS: classical (OLS)."
+      "Std. errors: IID, OLS: classical (OLS); ",
+      "Hetero: heteroskedasticity-robust; ",
+      "Cluster: cluster-robust, clusters by Month; NW: Newey-West (L=2)."
     ),
     fixed = TRUE
   )
