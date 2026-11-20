@@ -2685,6 +2685,11 @@ test_that("the notes merge as the note of the models side by side", {
     note3,
     .st_side_note(list(A = .st_lm(), B = .st_glm(), C = f_glm2))
   )
+  expect_match(
+    note3,
+    "Note. A: linear regression; B, C: logistic regression.",
+    fixed = TRUE
+  )
 
   # Any other sentence: the ones every panel carries first, then the
   # others with the labels of their panels, panel after panel. Two Cox

@@ -796,31 +796,39 @@ build_regression_type_footer_block_from_frames <- function(
   # Decision 42, amended 2026-11-14: the rest of the note is in the
   # language of the table, so a mixed list is too when every type has a
   # translation ("Modele 1 : regression lineaire ; ..."). One type
-  # without keeps the list English wholesale, below.
-  disps <- lapply(types, .title_prefix_display, decimal_mark = decimal_mark)
-  if (!any(vapply(disps, is.null, logical(1)))) {
-    per <- vapply(
-      seq_along(types),
-      function(i) .model_line(frames, i, lowercase_first(disps[[i]])),
+  # without keeps the list English wholesale, below. Models of one type
+  # share an item, after their names, in the order of the first column of
+  # each ("A, B, C: linear mixed-effects regression; D: linear
+  # regression."), as the standard-errors sentence groups them.
+  by_type <- function(texts, fmt, str) {
+    refs <- vapply(
+      seq_along(texts),
+      function(i) .model_ref(frames, i, fmt),
       character(1)
     )
-    return(paste0(
-      paste(per, collapse = spicy_str("note_type_models_sep")),
-      "."
+    per <- vapply(
+      unique(texts),
+      function(t) {
+        fmt("note_model_line", .join_note_vars(refs[texts == t], str), t)
+      },
+      character(1),
+      USE.NAMES = FALSE
+    )
+    paste0(paste(per, collapse = str("note_type_models_sep")), ".")
+  }
+  disps <- lapply(types, .title_prefix_display, decimal_mark = decimal_mark)
+  if (!any(vapply(disps, is.null, logical(1)))) {
+    return(by_type(
+      vapply(disps, lowercase_first, character(1)),
+      spicy_fmt,
+      spicy_str
     ))
   }
-  per <- vapply(
-    seq_along(types),
-    function(i) {
-      .spicy_fmt_en(
-        "note_model_line",
-        .model_ref(frames, i, .spicy_fmt_en),
-        lowercase_first(types_en[i])
-      )
-    },
-    character(1)
+  by_type(
+    vapply(types_en, lowercase_first, character(1), USE.NAMES = FALSE),
+    .spicy_fmt_en,
+    .spicy_str_en
   )
-  paste0(paste(per, collapse = .spicy_str_en("note_type_models_sep")), ".")
 }
 
 

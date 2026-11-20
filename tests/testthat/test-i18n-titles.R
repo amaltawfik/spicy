@@ -132,6 +132,44 @@ test_that("the mixed-family separator is a key, read with the language bypassed"
   )
 })
 
+test_that("the type sentence names the models of one type together", {
+  f1 <- .tf_lm_frame()
+  f3 <- .tf_lm_frame(mpg ~ wt + hp)
+  lg <- as_regression_frame(glm(am ~ wt, data = mtcars, family = binomial))
+  made <- .tf_lm_frame()
+  made$info$extras$title_prefix <- "Made-up model"
+  type_note <- function(frames) {
+    gsub(
+      " ",
+      " ",
+      build_regression_type_footer_block_from_frames(frames),
+      fixed = TRUE
+    )
+  }
+  # Each type once, after its models, in the order of its first column.
+  expect_identical(
+    type_note(list(f1, lg, f3)),
+    "Model 1, Model 3: linear regression; Model 2: logistic regression."
+  )
+  # Names that hold a comma take a semicolon.
+  named <- list(f1, made, f3)
+  named[[1L]]$info$model_label <- "A, x"
+  named[[2L]]$info$model_label <- "B"
+  named[[3L]]$info$model_label <- "C, z"
+  want <- "A, x; C, z: linear regression; B: made-up model."
+  expect_identical(type_note(named), want)
+  withr::local_options(spicy.language = "fr")
+  expect_identical(
+    type_note(list(f1, lg, f3)),
+    paste0(
+      "Modèle 1, Modèle 3 : régression linéaire ; ",
+      "Modèle 2 : régression logistique."
+    )
+  )
+  # The list English wholesale keeps its English separators.
+  expect_identical(build_regression_type_footer_block_from_frames(named), want)
+})
+
 test_that("a title that already names a model has a plural of its own", {
   # "Models of generalized additive model (GAM)" would name the model
   # twice, in either language.

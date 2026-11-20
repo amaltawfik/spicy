@@ -325,13 +325,14 @@ resolve_variable_labels <- function(data, cols, labels) {
 # that list then take a semicolon, so the reader can still tell where
 # each one ends (Chicago Manual of Style 6.60). Both separators come from
 # the registry, which gives the French semicolon its no-break space.
-.join_note_vars <- function(items) {
+# `str = .spicy_str_en` keeps them English, for a sentence that stays so.
+.join_note_vars <- function(items, str = spicy_str) {
   key <- if (any(grepl(",", items, fixed = TRUE))) {
     "note_list_sep_semicolon"
   } else {
     "note_list_sep_comma"
   }
-  paste(items, collapse = spicy_str(key))
+  paste(items, collapse = str(key))
 }
 
 # Internal: the sample-size sentence, the first sentence of the general
