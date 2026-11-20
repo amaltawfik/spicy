@@ -79,6 +79,32 @@ test_that("a mean link other than logit is named in the title", {
   )
 })
 
+test_that("beta regressions of different links are compared under the family title", {
+  d <- food_data()
+  fl <- betareg::betareg(share ~ income + persons, data = d)
+  fp <- update(fl, link = "probit")
+  out <- table_regression(list(Logit = fl, Probit = fp))
+  expect_identical(attr(out, "title"), "Beta regression comparison: share")
+  # The note still names the link of each model.
+  expect_match(
+    attr(out, "note"),
+    "Logit: beta regression; Probit: probit beta regression.",
+    fixed = TRUE
+  )
+  # A binomial glm of each link likewise; a family that is not shared
+  # keeps the generic title.
+  g1 <- stats::glm(am ~ wt, data = mtcars, family = binomial)
+  g2 <- update(g1, family = binomial("probit"))
+  expect_identical(
+    attr(table_regression(list(g1, g2)), "title"),
+    "Binomial regression comparison: am"
+  )
+  expect_identical(
+    attr(table_regression(list(fl, g1)), "title"),
+    "Regression comparison"
+  )
+})
+
 
 # ---- Precision block ---------------------------------------------------------
 

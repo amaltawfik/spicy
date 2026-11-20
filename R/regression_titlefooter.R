@@ -199,6 +199,19 @@
   prefixes
 }
 
+# The title of the family of a fit whose title names its link: a beta
+# regression, a binomial glm. NA for the other fits.
+.family_title <- function(frame) {
+  cls <- frame$info$class %||% ""
+  if (identical(cls, "betareg")) {
+    return("Beta regression")
+  }
+  if (identical(cls, "glm") && identical(frame$info$family$family, "binomial")) {
+    return("Binomial regression")
+  }
+  NA_character_
+}
+
 # `stacked = TRUE`: the title of a stacked table (`layout = "stacked"`),
 # whose note gives the type of each panel in the sentence of its panel,
 # in the language of the table: a mixed-family stack translates its
@@ -236,6 +249,16 @@ build_regression_title_from_frames <- function(
 
   prefixes <- .table_title_prefixes(frames)
   mixed <- length(unique(prefixes)) > 1L
+  # Fits of one family with different links (a logit and a probit beta
+  # regression) take the title of the family; the note names the link of
+  # each model.
+  if (mixed) {
+    fam <- vapply(frames, .family_title, character(1))
+    if (!anyNA(fam) && length(unique(fam)) == 1L) {
+      prefixes <- fam
+      mixed <- FALSE
+    }
+  }
   prefix <- if (mixed) "Regression" else prefixes[1L]
 
   # Decision 42: a translatable prefix routes through the registry
