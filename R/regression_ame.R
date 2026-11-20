@@ -376,8 +376,8 @@ extract_ame_satterthwaite <- function(
   if (nrow(raw) == nrow(mf)) {
     return(raw)
   }
+  # nocov start: the data check refuses the AME first
   spicy_abort(
-    # nocov start: the data check refuses the AME first
     paste0(
       "the data of the fit are no longer those it was fitted on ",
       "(",

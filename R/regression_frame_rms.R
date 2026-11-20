@@ -1134,7 +1134,13 @@ as_regression_frame.Glm <- function(
     dev <- c(NA_real_, NA_real_, fit$deviance)
     dev_null <- dev[[length(dev) - 1L]]
     ll <- .lrm_loglik(fit, dev_null)
-    dev_fit <- if (is.null(ll)) dev[[length(dev)]] else -2 * as.numeric(ll)
+    dev_fit <- if (is.null(ll)) {
+      # Defensive: logLik() of rms reads fit$stats and fit$deviance,
+      # which every lrm fit carries.
+      dev[[length(dev)]] # nocov
+    } else {
+      -2 * as.numeric(ll)
+    }
     # rms's R2 takes n as the sum of the weights, as polr and the glm
     # twin do (`compute_pseudo_r2_glm()`), so a weighted lrm gives the
     # values of its expanded data.

@@ -2324,7 +2324,8 @@ absorbs_fixed_effects <- function(model) {
           ) %||%
             NA_real_
         ),
-      FALSE
+      # Defensive: every remedy asks only for the tokens read above.
+      FALSE # nocov
     )
   }
   tokens[vapply(

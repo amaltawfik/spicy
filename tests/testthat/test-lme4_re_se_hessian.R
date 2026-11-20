@@ -632,12 +632,29 @@ test_that("a Gamma glmer: the note names the estimated dispersion", {
   )
 })
 
+test_that("a saddle or a flat direction of the Hessian has no inverse", {
+  # 2 H^-1 of a positive definite H; NULL when an eigenvalue is <= 0.
+  H <- matrix(c(4, 1, 1, 3), 2)
+  expect_equal(spicy:::.merMod_inverse_half_hessian(H), 2 * solve(H))
+  expect_null(spicy:::.merMod_inverse_half_hessian(diag(c(1, -1))))
+  expect_null(spicy:::.merMod_inverse_half_hessian(diag(c(1, 0))))
+  expect_null(spicy:::.merMod_inverse_half_hessian(diag(c(1, NA))))
+})
+
 test_that("a Hessian that is not positive definite: its own note", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("numDeriv")
   fit <- lme4::lmer(Reaction ~ Days + (1 | Subject), lme4::sleepstudy)
   local_mocked_bindings(.merMod_inverse_half_hessian = function(H) NULL)
   expect_identical(spicy:::.merMod_re_sdcor_vcov(fit), "hessian")
+  # A glmer reads the Hessian lme4 stores at the optimum: same answer.
+  gfit <- lme4::glmer(
+    cbind(incidence, size - incidence) ~ period + (1 | herd),
+    data = lme4::cbpp,
+    family = stats::binomial
+  )
+  expect_true(is.matrix(gfit@optinfo$derivs$Hessian))
+  expect_identical(spicy:::.merMod_re_sdcor_vcov(gfit), "hessian")
   tr <- table_regression(fit)
   td <- broom::tidy(tr)
   expect_true(all(is.na(td$std.error[td$estimate_type == "vc"])))

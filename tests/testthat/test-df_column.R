@@ -138,6 +138,18 @@ test_that("a table of z tests refuses the token with a classed error", {
     table_regression(list(g, update(g, . ~ . + hp)), show_columns = .dfc_cols),
     class = "spicy_invalid_input"
   )
+  # A table of posteriors gives its own reason (the fits are not
+  # refitted here: the check reads only their class and their frames).
+  post <- list(coefs = data.frame(estimate_type = "B", df = NA_real_))
+  expect_error(
+    spicy:::.reg_check_df_column(
+      list(structure(list(), class = "stanreg")),
+      list(post),
+      "df"
+    ),
+    "a posterior has no test",
+    class = "spicy_invalid_input"
+  )
   # A Gamma glm estimates its dispersion: t tests.
   gg <- glm(mpg ~ wt, data = mtcars, family = Gamma)
   expect_equal(

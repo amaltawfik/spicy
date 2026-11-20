@@ -721,6 +721,22 @@ test_that("the standard-error note writes each estimatr label as lm writes it", 
     "Std. errors: classical (OLS).",
     fixed = TRUE
   )
+  # A weighted fit is least squares weighted, as for lm(weights = ).
+  for (wls in list(
+    estimatr::lm_robust(
+      mpg ~ wt,
+      data = mtcars,
+      weights = qsec,
+      se_type = "classical"
+    ),
+    stats::lm(mpg ~ wt, data = mtcars, weights = qsec)
+  )) {
+    expect_match(
+      attr(table_regression(wls), "note"),
+      "Std. errors: classical (WLS).",
+      fixed = TRUE
+    )
+  }
   note <- attr(
     table_regression(list(hc1, cl, cr, stats::lm(mpg ~ wt, data = mtcars))),
     "note"

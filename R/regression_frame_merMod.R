@@ -1101,7 +1101,9 @@ inform_lmertest_hint <- function() {
   for (r in which(!is.na(pos))) {
     s <- se_par[pos[r]]
     if (!is.finite(s)) {
-      next
+      # Defensive: vv is 2 H^-1 of a positive definite H (or J V J' of
+      # such a V), whose diagonal is finite and not negative.
+      next # nocov
     }
     if (is_corr[r]) {
       rho <- vc_df$corr[r]

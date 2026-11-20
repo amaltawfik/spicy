@@ -103,6 +103,14 @@ test_that("a term name that is no regular expression selects its term", {
     class = "spicy_invalid_input"
   )
   expect_identical(rlang::call_name(conditionCall(err)), "table_regression")
+  expect_match(conditionMessage(err), "\"(\" is neither", fixed = TRUE)
+  # Two of them, in `drop`: one sentence, in the plural.
+  expect_error(
+    table_regression(fit, drop = c("(", "[")),
+    "`drop` must hold term names or regular expressions; \"(\", \"[\" are neither.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
 })
 
 # ---- 2. `labels` renames the rows of a block -----------------------------
@@ -128,6 +136,14 @@ test_that("labels renames a smooth term, and its warning lists keep's terms", {
   ))
   expect_true("Age (smooth)" %in% fu_rows(tb))
   expect_false("s(age)" %in% fu_rows(tb))
+  # The flat layout names it too, without the indent of a block row.
+  flat <- table_regression(
+    fit,
+    labels = c("s(age)" = "Age (smooth)"),
+    factor_layout = "flat"
+  )
+  expect_true("Age (smooth)" %in% flat$Variable)
+  expect_true("  Age (smooth)" %in% tb$Variable)
   # One list of terms for the two warnings.
   w_lab <- expect_warning(
     table_regression(fit, labels = c(nope = "x")),

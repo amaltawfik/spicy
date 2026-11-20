@@ -1693,13 +1693,11 @@ format_term_label <- function(
     # A multinomial row under the header of its term ("age:",
     # "(Intercept):") is named by its outcome category alone; a factor
     # level keeps "category: level", which tells the levels apart.
+    # `labels` cannot name such a row: "Student: age" is no term label
+    # or coefficient name of the fit (`.reg_variable_labels()`).
     ol <- term_row$outcome_prefix %||% NA_character_
     if ((is.na(lvl) || !nzchar(lvl)) && !is.na(ol)) {
-      lbl <- resolve_label(term, labels)
-      return(paste0(
-        "  ",
-        if (identical(lbl, term)) .reg_equation_display(ol) else lbl
-      ))
+      return(paste0("  ", .reg_equation_display(ol)))
     }
     if (is.na(lvl) || !nzchar(lvl)) {
       lvl <- term

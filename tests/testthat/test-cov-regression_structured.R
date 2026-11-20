@@ -370,6 +370,19 @@ test_that(".excel_numfmt clamps NA / negative precision to integer format", {
   expect_identical(spicy:::.excel_numfmt(3L, "apa"), "#.000")
 })
 
+test_that(".excel_numfmt groups a count, with its decimals if it has any", {
+  expect_identical(spicy:::.excel_numfmt(0L, NULL, group = TRUE), "#,##0")
+  expect_identical(
+    spicy:::.excel_numfmt(NA_integer_, NULL, group = TRUE),
+    "#,##0"
+  )
+  # .xl_cell() passes the decimals the text of the cell shows.
+  expect_identical(
+    spicy:::.excel_numfmt(2L, NULL, group = TRUE),
+    "#,##0.00"
+  )
+})
+
 
 # ============================================================================
 # .below_threshold_text – guard + digits floor (697, 700)
