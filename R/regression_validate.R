@@ -860,7 +860,9 @@ validate_nested_alignment <- function(
       if (inherits(fit, "selection")) {
         return(deparse1(fit$termsO[[2L]]))
       }
-      deparse1(stats::formula(fit)[[2]])
+      # The response as the title reads it: a fixest IV formula is
+      # `y ~ x | fe | endo ~ inst`, whose second element is not `y`.
+      .fit_dv(fit)
     },
     character(1)
   )

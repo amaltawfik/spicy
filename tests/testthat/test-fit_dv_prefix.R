@@ -52,3 +52,23 @@ test_that("svycoxph is titled without the prefix", {
   expect_match(out[1L], ": Surv(time, status > 1)", fixed = TRUE)
   expect_false(any(grepl("survival::", out, fixed = TRUE)))
 })
+
+test_that("nested = TRUE reads the response of a fixest IV fit, not its formula", {
+  skip_if_not_installed("fixest")
+  set.seed(2)
+  n <- 200
+  d <- data.frame(z = rnorm(n), x = rnorm(n))
+  d$xen <- d$z + rnorm(n)
+  d$yiv <- d$xen + d$x + rnorm(n)
+  d$y2 <- d$yiv + rnorm(n)
+  m1 <- fixest::feols(yiv ~ 1 | xen ~ z, data = d)
+  m2 <- fixest::feols(yiv ~ x | xen ~ z, data = d)
+  expect_no_error(validate_nested_alignment(list(m1, m2), TRUE))
+  m3 <- fixest::feols(y2 ~ x | xen ~ z, data = d)
+  expect_error(
+    validate_nested_alignment(list(m1, m3), TRUE),
+    "Models have different response variables: yiv, y2.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})

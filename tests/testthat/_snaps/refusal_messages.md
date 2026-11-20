@@ -91,12 +91,6 @@
         show_columns = "ame_se": selection
       ----
       error: spicy_invalid_input, spicy_error
-        Models have different response variables: yiv ~ 1 - x | xen, yiv ~ 1 | xen.
-        i Hierarchical comparison requires the same DV across all models. For side-by-side multi-DV display, use `nested = FALSE`.
-      Received by 1:
-        nested = TRUE: feols_iv
-      ----
-      error: spicy_invalid_input, spicy_error
         Partial effect-size columns are not available for `Glm`.
         i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
         i Drop the partial effect-size token(s) from `show_columns`.
