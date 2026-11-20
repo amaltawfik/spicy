@@ -23,6 +23,11 @@ ag_conditional <- list(
     cell = "no for a GLM with fixed effects",
     why = "marginaleffects refuses a fixest GLM with fixed effects"
   ),
+  fenegbin = list(
+    expect = "refused",
+    cell = "no for a GLM with fixed effects",
+    why = "marginaleffects refuses a fixest GLM with fixed effects"
+  ),
   glmmTMB_ordinal = list(
     expect = "refused",
     cell = "no for the ordinal family",
@@ -60,6 +65,7 @@ ag_refusal <- c(
   svycoxph = "error",
   selection = "error",
   fepois = "error",
+  fenegbin = "error",
   glmmTMB_ordinal = "error",
   glmmTMB_reml = "error",
   feols_iv = "error"
@@ -74,6 +80,8 @@ ag_terms <- list(
   gam = c("x", "z"),
   gam_logit = c("x", "z"),
   bam = c("x", "z"),
+  gam_nb = c("x", "z"),
+  gam_betar = c("x", "z"),
   clm_nominal = c("x", "z"),
   stanreg = "Days",
   brmsfit = "Days"
@@ -91,6 +99,15 @@ ag_known_rows <- list()
 # the oracle again. Empty since the REML glmmTMB fit (SE 5.3e-08 against
 # 0.0598) is refused, 2026-11-19.
 ag_known_values <- list()
+
+# AME estimates held to a wider tolerance than 1e-6, each with its reason.
+# glmmTMB NB fits: the predictions marginaleffects takes from the fit
+# depart from predict() by up to 1.7e-4 (relative), so the slope departs
+# from the derivative of predict() whatever the step (nbinom2: 0.48366588
+# at the default step and at 1e-7, against 0.48366774 for the oracle and
+# for a centered difference of predict(); nbinom1: 0.3830045 against
+# 0.3830088). Measured 2026-11-20, glmmTMB 1.1.15, marginaleffects 1.0.0.
+ag_est_tolerance <- c(glmmTMB_nbinom2 = 1e-4, glmmTMB_nbinom1 = 1e-4)
 
 # ---- The hand oracles -------------------------------------------------------
 
@@ -253,6 +270,25 @@ ag_vcov_merMod <- function(fit) as.matrix(stats::vcov(fit))
 ag_fixef_tmb <- function(fit) glmmTMB::fixef(fit)$cond
 ag_vcov_tmb <- function(fit) stats::vcov(fit)$cond
 
+# The conditional predictions of a mixed model with a random intercept in
+# `g` through its inverse link: the estimated intercepts enter as an
+# offset, held fixed.
+ag_re_link <- function(linkinv, beta, V, u) {
+  function(fit, d, vars) {
+    off <- u(fit)[as.character(d$g), 1L]
+    ame_oracle(
+      function(nd) list(X = cbind("(Intercept)" = 1, x = nd$x), off = off),
+      ame_pf_link(linkinv),
+      beta(fit),
+      V(fit),
+      d,
+      vars
+    )
+  }
+}
+ag_ranef_merMod <- function(fit) lme4::ranef(fit)$g
+ag_ranef_tmb <- function(fit) glmmTMB::ranef(fit)$cond$g
+
 ag_oracles <- list(
   lm = ag_identity(~x),
   lm_weighted = ag_identity(~x),
@@ -292,7 +328,16 @@ ag_oracles <- list(
       vars
     )
   },
+  glmer_nb = ag_re_link(exp, ag_fixef_merMod, ag_vcov_merMod, ag_ranef_merMod),
   glmmTMB = ag_identity(~x, ag_fixef_tmb, ag_vcov_tmb),
+  glmmTMB_nbinom2 = ag_re_link(exp, ag_fixef_tmb, ag_vcov_tmb, ag_ranef_tmb),
+  glmmTMB_nbinom1 = ag_re_link(exp, ag_fixef_tmb, ag_vcov_tmb, ag_ranef_tmb),
+  glmmTMB_beta = ag_re_link(
+    stats::plogis,
+    ag_fixef_tmb,
+    ag_vcov_tmb,
+    ag_ranef_tmb
+  ),
   glmmTMB_zi = ag_glmmTMB_two_part(hurdle = FALSE),
   glmmTMB_hurdle = ag_glmmTMB_two_part(hurdle = TRUE),
   glmmTMB_disp = ag_identity(~x, ag_fixef_tmb, ag_vcov_tmb),
@@ -395,6 +440,8 @@ ag_oracles <- list(
   gam = ag_gam,
   gam_logit = ag_gam,
   bam = ag_gam,
+  gam_nb = ag_gam,
+  gam_betar = ag_gam,
   betareg = function(fit, d, v) ag_link(~x, stats::plogis)(fit, d, v),
   ols = ag_identity(~x),
   ols_xy = ag_identity(~x),
@@ -520,6 +567,7 @@ test_that("every fixture of an AME cell is checked against the oracle or named",
   expect_length(intersect(names(ag_oracles), names(ag_no_oracle)), 0L)
   # The list of fixtures without a value oracle may not grow.
   expect_lte(length(ag_no_oracle), 2L)
+  expect_true(all(names(ag_est_tolerance) %in% names(ag_oracles)))
   # A conditional expectation names a fixture whose cell has a condition.
   for (id in names(ag_conditional)) {
     cell <- reg$ame[reg$class == fx_class[[id]]]
@@ -606,7 +654,16 @@ for (id in names(.CLASS_FIXTURES)) {
       i <- match(or$key, sp$key)
       expect_false(anyNA(i), label = paste(id, "oracle keys"))
       if (is.null(kv)) {
-        expect_equal(sp$est[i], or$est, tolerance = 1e-6, label = id)
+        expect_equal(
+          sp$est[i],
+          or$est,
+          tolerance = if (id %in% names(ag_est_tolerance)) {
+            ag_est_tolerance[[id]]
+          } else {
+            1e-6
+          },
+          label = id
+        )
         expect_equal(sp$se[i], or$se, tolerance = 1e-4, label = id)
       } else {
         j <- match(kv$key, or$key)

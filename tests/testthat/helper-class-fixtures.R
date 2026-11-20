@@ -113,6 +113,11 @@
   ),
   fepois = .cf("fixest", function(d) fixest::fepois(cnt ~ x | g, d), "fixest"),
   fepois_nofe = .cf("fixest", function(d) fixest::fepois(cnt ~ x, d), "fixest"),
+  fenegbin = .cf(
+    "fixest",
+    function(d) fixest::fenegbin(cnb ~ x | g, d),
+    "fixest"
+  ),
   lmer = .cf(
     "lmerMod",
     function(d) lme4::lmer(y ~ x + (1 | g), d),
@@ -128,6 +133,12 @@
   glmer = .cf(
     "glmerMod",
     function(d) lme4::glmer(yb ~ x + (1 | g), family = binomial, data = d),
+    "lme4",
+    "g"
+  ),
+  glmer_nb = .cf(
+    "glmerMod",
+    function(d) lme4::glmer.nb(cnb ~ x + (1 | g), data = d),
     "lme4",
     "g"
   ),
@@ -180,6 +191,30 @@
   glmmTMB_disp = .cf(
     "glmmTMB",
     function(d) glmmTMB::glmmTMB(y ~ x + (1 | g), d, dispformula = ~z),
+    "glmmTMB",
+    "g"
+  ),
+  glmmTMB_nbinom2 = .cf(
+    "glmmTMB",
+    function(d) {
+      glmmTMB::glmmTMB(cnb ~ x + (1 | g), d, family = glmmTMB::nbinom2())
+    },
+    "glmmTMB",
+    "g"
+  ),
+  glmmTMB_nbinom1 = .cf(
+    "glmmTMB",
+    function(d) {
+      glmmTMB::glmmTMB(cnb ~ x + (1 | g), d, family = glmmTMB::nbinom1())
+    },
+    "glmmTMB",
+    "g"
+  ),
+  glmmTMB_beta = .cf(
+    "glmmTMB",
+    function(d) {
+      glmmTMB::glmmTMB(prop ~ x + (1 | g), d, family = glmmTMB::beta_family())
+    },
     "glmmTMB",
     "g"
   ),
@@ -358,6 +393,16 @@
   bam = .cf(
     "gam",
     function(d) mgcv::bam(cnt ~ x + s(z), family = poisson, data = d),
+    "mgcv"
+  ),
+  gam_nb = .cf(
+    "gam",
+    function(d) mgcv::gam(cnb ~ x + s(z), family = mgcv::nb(), data = d),
+    "mgcv"
+  ),
+  gam_betar = .cf(
+    "gam",
+    function(d) mgcv::gam(prop ~ x + s(z), family = mgcv::betar(), data = d),
     "mgcv"
   ),
   betareg = .cf(

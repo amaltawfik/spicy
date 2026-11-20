@@ -416,7 +416,10 @@
     "pseudo_r2_mcfadden (GLM family), aic (not IV)"
   ),
   lmerMod = "nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic",
-  glmerMod = "nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic",
+  glmerMod = paste(
+    "nobs, n_groups, icc (binomial, Poisson), r2_marginal, r2_conditional,",
+    "aic, bic"
+  ),
   glmmTMB = paste(
     "nobs, n_groups,",
     "icc (Gaussian, no zero-inflation or dispersion formula),",
@@ -488,20 +491,25 @@
   rq = "nobs, aic, aicc, log_lik",
   fixest = paste(
     "nobs, r2 (feols), adj_r2 (feols), pseudo_r2_mcfadden (GLM family),",
+    "theta (negative binomial), alpha (negative binomial),",
     "fixed_effects (with fixed effects),",
     "within_r2 (feols with fixed effects), n_groups (with fixed effects),",
-    "sigma, aic, aicc, bic, deviance, log_lik"
+    "sigma (not negative binomial), aic, aicc, bic, deviance, log_lik"
   ),
   lmerMod = paste(
     "nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc,",
     "bic, deviance, log_lik"
   ),
   glmerMod = paste(
-    "nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc,",
-    "bic, deviance, log_lik"
+    "nobs, theta (negative binomial), alpha (negative binomial),",
+    "r2_marginal, r2_conditional, n_groups, icc (binomial, Poisson),",
+    "sigma (not negative binomial), aic, aicc, bic, deviance, log_lik"
   ),
   glmmTMB = paste(
-    "nobs,",
+    "nobs, theta (NB2 family, no dispersion formula),",
+    "alpha (NB2 family, no dispersion formula),",
+    "delta (NB1 family, no dispersion formula),",
+    "phi (beta family, no dispersion formula),",
     "r2_marginal (no ordinal family, zero-inflation or dispersion formula),",
     "r2_conditional (Gaussian, no zero-inflation or dispersion formula),",
     "n_groups, icc (Gaussian, no zero-inflation or dispersion formula),",
@@ -528,11 +536,11 @@
   ),
   mlogit = "nobs, aic, aicc, bic, log_lik",
   zeroinfl = paste(
-    "nobs, theta (negative-binomial), alpha (negative-binomial), aic, aicc,",
+    "nobs, theta (negative binomial), alpha (negative binomial), aic, aicc,",
     "bic, log_lik"
   ),
   hurdle = paste(
-    "nobs, theta (negative-binomial), alpha (negative-binomial), aic, aicc,",
+    "nobs, theta (negative binomial), alpha (negative binomial), aic, aicc,",
     "bic, log_lik"
   ),
   coxph = "nobs, n_events, aic, aicc, bic, log_lik, concordance",
@@ -547,8 +555,9 @@
     "nobs, adj_r2,",
     "pseudo_r2_mcfadden (binomial, Poisson, negative binomial),",
     "pseudo_r2_nagelkerke (binomial, Poisson, negative binomial),",
-    "pseudo_r2_tjur (binomial), r2_deviance (not binomial), sigma, aic,",
-    "aicc, bic, deviance, log_lik"
+    "pseudo_r2_tjur (binomial), r2_deviance (not binomial), theta (nb()),",
+    "alpha (nb()), phi (betar()), sigma (glm family or tw()), aic, aicc,",
+    "bic, deviance, log_lik"
   ),
   betareg = "nobs, pseudo_r2_ferrari, phi, aic, aicc, bic, log_lik",
   selection = "nobs, aic, aicc, bic, log_lik",

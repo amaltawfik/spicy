@@ -205,15 +205,15 @@
       error: spicy_invalid_input, spicy_error
         RMST / risk-difference columns are not available for this model class (`gam`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
-      Received by 16:
-        show_columns = "risk_diff": gam, gam_logit
-        show_columns = "risk_diff_ci": gam, gam_logit
-        show_columns = "risk_diff_p": gam, gam_logit
-        show_columns = "risk_diff_se": gam, gam_logit
-        show_columns = "rmst": gam, gam_logit
-        show_columns = "rmst_ci": gam, gam_logit
-        show_columns = "rmst_p": gam, gam_logit
-        show_columns = "rmst_se": gam, gam_logit
+      Received by 32:
+        show_columns = "risk_diff": gam, gam_betar, gam_logit, gam_nb
+        show_columns = "risk_diff_ci": gam, gam_betar, gam_logit, gam_nb
+        show_columns = "risk_diff_p": gam, gam_betar, gam_logit, gam_nb
+        show_columns = "risk_diff_se": gam, gam_betar, gam_logit, gam_nb
+        show_columns = "rmst": gam, gam_betar, gam_logit, gam_nb
+        show_columns = "rmst_ci": gam, gam_betar, gam_logit, gam_nb
+        show_columns = "rmst_p": gam, gam_betar, gam_logit, gam_nb
+        show_columns = "rmst_se": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         RMST / risk-difference columns are not available for this model class (`geeglm`).
@@ -644,9 +644,9 @@
         Term-level columns (`partial_*`) are not available for `gam`.
         i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
         i Drop the `partial_*` token(s) from `show_columns`.
-      Received by 6:
-        show_columns = "partial_chi2": bam, gam, gam_logit
-        show_columns = "partial_f": bam, gam, gam_logit
+      Received by 10:
+        show_columns = "partial_chi2": bam, gam, gam_betar, gam_logit, gam_nb
+        show_columns = "partial_f": bam, gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Term-level columns (`partial_*`) are not available for `gls`.
@@ -1063,8 +1063,8 @@
         Token `"adj_r2"` in `show_columns` is not defined for `mgcv` GAMs.
         i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
         i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`, `"r2_deviance"`.
-      Received by 1:
-        show_columns = "adj_r2": bam
+      Received by 2:
+        show_columns = "adj_r2": bam, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"adj_r2"` in `show_columns` is not defined for `mgcv` GAMs.
@@ -1079,6 +1079,13 @@
         i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"r2_deviance"`.
       Received by 1:
         show_columns = "adj_r2": gam
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `mgcv` GAMs.
+        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
+        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`.
+      Received by 1:
+        show_columns = "adj_r2": gam_betar
       ----
       error: spicy_invalid_input, spicy_error
         Token `"adj_r2"` in `show_columns` is not defined for `mlogit` models.
@@ -1278,44 +1285,47 @@
       error: spicy_invalid_input, spicy_error
         Token `"df"` in `show_columns` has no value for any model in the table: its tests are z tests, which have no degrees of freedom.
         i The column gives the degrees of freedom of t tests (`lm`, a `glm` whose dispersion is estimated, `nlme::lme`, a survey design, a cluster-robust `vcov = "CR2"`, ...).
-      Received by 27:
+      Received by 29:
         show_columns = "df": bam, betareg, clm, clmm, coxph, cph, fepois,
-            flexsurvreg, gam_logit, geeglm, glm.nb, glm_logit, glm_poisson,
-            glm_probit, glmer, glmmTMB, hurdle, lmer, lrm, mlogit, multinom,
-            polr, rlm, rms_Glm, survreg, tobit, zeroinfl
+            flexsurvreg, gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_logit,
+            glm_poisson, glm_probit, glmer, glmmTMB, hurdle, lmer, lrm, mlogit,
+            multinom, polr, rlm, rms_Glm, survreg, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"ess_bulk"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
-      Received by 39:
+      Received by 41:
         show_columns = "ess_bulk": bam, betareg, clm, clmm, coxph, cph, feols,
-            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
-            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
-            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+            flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
+            glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
+            lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
+            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
+            zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"ess_tail"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
-      Received by 39:
+      Received by 41:
         show_columns = "ess_tail": bam, betareg, clm, clmm, coxph, cph, feols,
-            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
-            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
-            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+            flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
+            glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
+            lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
+            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
+            zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"mcse"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
-      Received by 39:
+      Received by 41:
         show_columns = "mcse": bam, betareg, clm, clmm, coxph, cph, feols,
-            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
-            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
-            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+            flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
+            glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
+            lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
+            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
+            zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_chi2"` in `show_columns` is not defined for GEE fits (`geeglm`).
@@ -1388,8 +1398,8 @@
       error: spicy_invalid_input, spicy_error
         Token `"partial_eta2"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
-      Received by 3:
-        show_columns = "partial_eta2": bam, gam, gam_logit
+      Received by 5:
+        show_columns = "partial_eta2": bam, gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_eta2"` in `show_columns` is not defined for `negbin` models.
@@ -1455,8 +1465,8 @@
       error: spicy_invalid_input, spicy_error
         Token `"partial_eta2_ci"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
-      Received by 3:
-        show_columns = "partial_eta2_ci": bam, gam, gam_logit
+      Received by 5:
+        show_columns = "partial_eta2_ci": bam, gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_eta2_ci"` in `show_columns` is not defined for `negbin` models.
@@ -1577,8 +1587,8 @@
       error: spicy_invalid_input, spicy_error
         Token `"partial_f2"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
-      Received by 3:
-        show_columns = "partial_f2": bam, gam, gam_logit
+      Received by 5:
+        show_columns = "partial_f2": bam, gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_f2"` in `show_columns` is not defined for `negbin` models.
@@ -1644,8 +1654,8 @@
       error: spicy_invalid_input, spicy_error
         Token `"partial_f2_ci"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
-      Received by 3:
-        show_columns = "partial_f2_ci": bam, gam, gam_logit
+      Received by 5:
+        show_columns = "partial_f2_ci": bam, gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_f2_ci"` in `show_columns` is not defined for `negbin` models.
@@ -1711,8 +1721,8 @@
       error: spicy_invalid_input, spicy_error
         Token `"partial_omega2"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
-      Received by 3:
-        show_columns = "partial_omega2": bam, gam, gam_logit
+      Received by 5:
+        show_columns = "partial_omega2": bam, gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_omega2"` in `show_columns` is not defined for `negbin` models.
@@ -1778,8 +1788,9 @@
       error: spicy_invalid_input, spicy_error
         Token `"partial_omega2_ci"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
-      Received by 3:
-        show_columns = "partial_omega2_ci": bam, gam, gam_logit
+      Received by 5:
+        show_columns = "partial_omega2_ci": bam, gam, gam_betar, gam_logit,
+            gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_omega2_ci"` in `show_columns` is not defined for `negbin` models.
@@ -1811,12 +1822,13 @@
       error: spicy_invalid_input, spicy_error
         Token `"pd"` in `show_columns` is defined only for Bayesian fits.
         i The probability of direction is a posterior-draw summary (share of draws on the dominant side of zero); frequentist fits have none.
-      Received by 39:
+      Received by 41:
         show_columns = "pd": bam, betareg, clm, clmm, coxph, cph, feols,
-            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
-            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
-            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+            flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
+            glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
+            lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
+            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
+            zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2"` in `show_columns` is not defined for `Glm` models.
@@ -1962,8 +1974,8 @@
         Token `"r2"` in `show_columns` is not defined for `mgcv` GAMs.
         i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
         i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`, `"r2_deviance"`.
-      Received by 1:
-        show_columns = "r2": bam
+      Received by 2:
+        show_columns = "r2": bam, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2"` in `show_columns` is not defined for `mgcv` GAMs.
@@ -1978,6 +1990,13 @@
         i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"r2_deviance"`.
       Received by 1:
         show_columns = "r2": gam
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"r2"` in `show_columns` is not defined for `mgcv` GAMs.
+        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
+        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`.
+      Received by 1:
+        show_columns = "r2": gam_betar
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2"` in `show_columns` is not defined for `mlogit` models.
@@ -2074,12 +2093,13 @@
         Token `"rhat"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
-      Received by 39:
+      Received by 41:
         show_columns = "rhat": bam, betareg, clm, clmm, coxph, cph, feols,
-            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
-            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
-            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+            flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
+            glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
+            lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
+            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
+            zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Tokens `"r2_change"`, `"f_change"` and `"p_change"` in `show_fit_stats` are not defined for `rlm` models.
@@ -2092,25 +2112,27 @@
         `"beta"` is in `show_columns` but `standardized = "none"`.
         i Set `standardized` to one of: "refit", "posthoc", "basic", "smart", "pseudo" ("pseudo" is `glm` only).
         i Or remove `"beta"` from `show_columns`.
-      Received by 39:
+      Received by 41:
         show_columns = "beta": bam, betareg, clm, clmm, coxph, cph, feols,
-            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
-            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
-            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+            flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
+            glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
+            lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
+            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
+            zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "boot_percentile"` requires `vcov = "bootstrap"` for every model.
         i Percentile CIs are quantiles of the bootstrap replicates; they reuse the same resamples as the bootstrap SEs (no second resampling pass).
         i Set `vcov = "bootstrap"` (tune with `boot_n`), or drop `ci_method = "boot_percentile"`.
-      Received by 71:
+      Received by 78:
         ci_method = "boot_percentile": bam, betareg, clm, clm_nominal, clm_scale,
-            clmm, coxph, coxph_strata, cph, cph_xy, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_logit, geeglm, glm.nb,
-            glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
-            glm_quasi, glmer, glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            clmm, coxph, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
             lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
             rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
@@ -2170,8 +2192,9 @@
         `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
         x `fixest` has no posterior draws to take a highest-density interval of.
         i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
-      Received by 5:
-        ci_method = "hdi": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        ci_method = "hdi": fenegbin, feols, feols_iv, feols_nofe, fepois,
+            fepois_nofe
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
@@ -2184,8 +2207,8 @@
         `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
         x `gam` has no posterior draws to take a highest-density interval of.
         i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
-      Received by 2:
-        ci_method = "hdi": gam, gam_logit
+      Received by 4:
+        ci_method = "hdi": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
@@ -2206,16 +2229,17 @@
         `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
         x `glmerMod` has no posterior draws to take a highest-density interval of.
         i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
-      Received by 1:
-        ci_method = "hdi": glmer
+      Received by 2:
+        ci_method = "hdi": glmer, glmer_nb
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
         x `glmmTMB` has no posterior draws to take a highest-density interval of.
         i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
-      Received by 6:
-        ci_method = "hdi": glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi
+      Received by 9:
+        ci_method = "hdi": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml,
+            glmmTMB_zi
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
@@ -2431,8 +2455,9 @@
         `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
         x `fixest` has no profile-likelihood path; its CIs would silently fall back to Wald.
         i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
-      Received by 5:
-        ci_method = "profile": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        ci_method = "profile": fenegbin, feols, feols_iv, feols_nofe, fepois,
+            fepois_nofe
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
@@ -2445,8 +2470,8 @@
         `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
         x `gam` has no profile-likelihood path; its CIs would silently fall back to Wald.
         i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
-      Received by 2:
-        ci_method = "profile": gam, gam_logit
+      Received by 4:
+        ci_method = "profile": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
@@ -2459,16 +2484,17 @@
         `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
         x `glmerMod` has no profile-likelihood path; its CIs would silently fall back to Wald.
         i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
-      Received by 1:
-        ci_method = "profile": glmer
+      Received by 2:
+        ci_method = "profile": glmer, glmer_nb
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
         x `glmmTMB` has no profile-likelihood path; its CIs would silently fall back to Wald.
         i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
-      Received by 6:
-        ci_method = "profile": glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi
+      Received by 9:
+        ci_method = "profile": glmmTMB, glmmTMB_beta, glmmTMB_disp,
+            glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
+            glmmTMB_reml, glmmTMB_zi
       ----
       error: spicy_invalid_input, spicy_error
         `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
@@ -2773,8 +2799,8 @@
         `show_columns = "n_events"` is not available for this model class (`gam`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
-      Received by 2:
-        show_columns = "n_events": gam, gam_logit
+      Received by 4:
+        show_columns = "n_events": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         `show_columns = "n_events"` is not available for this model class (`geeglm`).
@@ -3061,8 +3087,8 @@
         `standardized = "basic"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
         i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
-      Received by 2:
-        standardized = "basic" (with beta): gam, gam_logit
+      Received by 4:
+        standardized = "basic" (with beta): gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_standardized, spicy_error
         `standardized = "basic"` is not supported for this model class (`gls`).
@@ -3276,8 +3302,8 @@
         `standardized = "posthoc"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
         i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
-      Received by 2:
-        standardized = "posthoc" (with beta): gam, gam_logit
+      Received by 4:
+        standardized = "posthoc" (with beta): gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_standardized, spicy_error
         `standardized = "posthoc"` is not supported for this model class (`gls`).
@@ -3491,8 +3517,8 @@
         `standardized = "pseudo"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
         i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
-      Received by 2:
-        standardized = "pseudo" (with beta): gam, gam_logit
+      Received by 4:
+        standardized = "pseudo" (with beta): gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_standardized, spicy_error
         `standardized = "pseudo"` is not supported for this model class (`gls`).
@@ -3692,8 +3718,8 @@
         `standardized = "refit"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
         i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
-      Received by 2:
-        standardized = "refit" (with beta): gam, gam_logit
+      Received by 4:
+        standardized = "refit" (with beta): gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_standardized, spicy_error
         `standardized = "refit"` is not supported for this model class (`gls`).
@@ -3907,8 +3933,8 @@
         `standardized = "smart"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
         i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
-      Received by 2:
-        standardized = "smart" (with beta): gam, gam_logit
+      Received by 4:
+        standardized = "smart" (with beta): gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_standardized, spicy_error
         `standardized = "smart"` is not supported for this model class (`gls`).
@@ -4055,8 +4081,8 @@
       warning: spicy_caveat, spicy_warning
         Singular fit (Model 1, Model 2): the random-effect structure is estimated at or near the boundary of the parameter space -- a variance of 0, or a correlation of <U+00B1>1.
         i Consider simplifying the random structure (drop the offending term), or test whether it belongs with `re_test = "lrt"`.
-      Received by 1:
-        nested = TRUE: glmmTMB_zi
+      Received by 2:
+        nested = TRUE: glmmTMB_beta, glmmTMB_zi
       ----
       warning: spicy_caveat, spicy_warning
         Singular fit (Model 1, Model 2): the random-effect structure is estimated at or near the boundary of the parameter space -- a variance of 0, or a correlation of <U+00B1>1.
@@ -4145,32 +4171,32 @@
       warning: spicy_ignored_arg, spicy_warning
         `re_ci = "profile"` has no effect: no model in the table has random effects.
         i The `re_*` arguments act on the random-effects rows of mixed models. Drop it for this table.
-      Received by 34:
+      Received by 36:
         re_ci = "profile": bam, betareg, clm, coxph, cph, feols, flexsurvreg,
-            gam, gam_logit, geeglm, glm.nb, glm_gaussian, gls, hurdle, iv_robust,
-            ivreg, lm, lm_robust, lrm, mlogit, multinom, nls, ols, polr, rlm,
-            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
-            zeroinfl
+            gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_gaussian, gls,
+            hurdle, iv_robust, ivreg, lm, lm_robust, lrm, mlogit, multinom, nls,
+            ols, polr, rlm, rms_Glm, rq, selection, survreg, svycoxph, svyglm,
+            svyolr, tobit, zeroinfl
       ----
       warning: spicy_ignored_arg, spicy_warning
         `re_test = "lrt"` has no effect: no model in the table has random effects.
         i The `re_*` arguments act on the random-effects rows of mixed models. Drop it for this table.
-      Received by 34:
+      Received by 36:
         re_test = "lrt": bam, betareg, clm, coxph, cph, feols, flexsurvreg, gam,
-            gam_logit, geeglm, glm.nb, glm_gaussian, gls, hurdle, iv_robust,
-            ivreg, lm, lm_robust, lrm, mlogit, multinom, nls, ols, polr, rlm,
-            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
-            zeroinfl
+            gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_gaussian, gls,
+            hurdle, iv_robust, ivreg, lm, lm_robust, lrm, mlogit, multinom, nls,
+            ols, polr, rlm, rms_Glm, rq, selection, survreg, svycoxph, svyglm,
+            svyolr, tobit, zeroinfl
       ----
       warning: spicy_ignored_arg, spicy_warning
         `re_test = "rlrt"` has no effect: no model in the table has random effects.
         i The `re_*` arguments act on the random-effects rows of mixed models. Drop it for this table.
-      Received by 34:
+      Received by 36:
         re_test = "rlrt": bam, betareg, clm, coxph, cph, feols, flexsurvreg, gam,
-            gam_logit, geeglm, glm.nb, glm_gaussian, gls, hurdle, iv_robust,
-            ivreg, lm, lm_robust, lrm, mlogit, multinom, nls, ols, polr, rlm,
-            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
-            zeroinfl
+            gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_gaussian, gls,
+            hurdle, iv_robust, ivreg, lm, lm_robust, lrm, mlogit, multinom, nls,
+            ols, polr, rlm, rms_Glm, rq, selection, survreg, svycoxph, svyglm,
+            svyolr, tobit, zeroinfl
 
 # the refusals and warnings of the argument sweep keep their text and class: Stan
 

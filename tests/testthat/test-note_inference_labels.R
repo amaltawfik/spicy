@@ -20,7 +20,8 @@ nl_refused <- list(
   lrm = "CR0",
   lrm_ordinal = "CR0",
   rms_Glm = "CR0",
-  rms_Glm_logit = "CR0"
+  rms_Glm_logit = "CR0",
+  gam_betar = "CR1"
 )
 
 # One robust value per family keeps the sweep short: HC1 and HC3 stand for

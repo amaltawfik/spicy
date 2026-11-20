@@ -69,17 +69,31 @@ rr_absent <- list(
     why = "the fit absorbs no fixed effects"
   ),
   feols = list(
-    rows = "pseudo_r2_mcfadden",
+    rows = c("pseudo_r2_mcfadden", "theta", "alpha"),
     default = "pseudo_r2_mcfadden",
     why = "McFadden's R-squared is for the GLM families of fixest"
   ),
   feols_nofe = list(
-    rows = c("pseudo_r2_mcfadden", "fixed_effects", "within_r2", "n_groups"),
+    rows = c(
+      "pseudo_r2_mcfadden",
+      "theta",
+      "alpha",
+      "fixed_effects",
+      "within_r2",
+      "n_groups"
+    ),
     default = c("fixed_effects", "within_r2", "pseudo_r2_mcfadden"),
     why = "a linear fit without fixed effects"
   ),
   feols_iv = list(
-    rows = c("pseudo_r2_mcfadden", "fixed_effects", "within_r2", "n_groups"),
+    rows = c(
+      "pseudo_r2_mcfadden",
+      "theta",
+      "alpha",
+      "fixed_effects",
+      "within_r2",
+      "n_groups"
+    ),
     default = c(
       "fixed_effects",
       "r2",
@@ -90,34 +104,123 @@ rr_absent <- list(
     why = "an IV fit without fixed effects: no R-squared or AIC by default"
   ),
   fepois = list(
-    rows = c("r2", "adj_r2", "within_r2"),
+    rows = c("r2", "adj_r2", "theta", "alpha", "within_r2"),
     default = c("r2", "within_r2"),
     why = "a GLM-family fit has McFadden's R-squared instead"
   ),
   fepois_nofe = list(
-    rows = c("r2", "adj_r2", "fixed_effects", "within_r2", "n_groups"),
+    rows = c(
+      "r2",
+      "adj_r2",
+      "theta",
+      "alpha",
+      "fixed_effects",
+      "within_r2",
+      "n_groups"
+    ),
     default = c("fixed_effects", "r2", "within_r2"),
     why = "a GLM-family fit without fixed effects"
   ),
+  fenegbin = list(
+    rows = c("r2", "adj_r2", "within_r2", "sigma"),
+    default = c("r2", "within_r2"),
+    why = "a negative-binomial fit has McFadden's R-squared and theta instead"
+  ),
+  glmer = list(
+    rows = c("theta", "alpha"),
+    why = "a binomial glmer has no dispersion"
+  ),
+  glmer_nb = list(
+    rows = c("icc", "sigma"),
+    default = "icc",
+    why = "a negative-binomial glmer has theta instead of a residual scale"
+  ),
+  glmmTMB = list(
+    rows = c("theta", "alpha", "delta", "phi"),
+    why = "a Gaussian family has sigma as its dispersion"
+  ),
+  glmmTMB_reml = list(
+    rows = c("theta", "alpha", "delta", "phi"),
+    why = "a Gaussian family has sigma as its dispersion"
+  ),
   glmmTMB_ordinal = list(
-    rows = c("r2_marginal", "r2_conditional", "icc", "sigma", "deviance"),
+    rows = c(
+      "theta",
+      "alpha",
+      "delta",
+      "phi",
+      "r2_marginal",
+      "r2_conditional",
+      "icc",
+      "sigma",
+      "deviance"
+    ),
     default = c("icc", "r2_marginal", "r2_conditional"),
     why = "the ordinal family has no residual variance and no deviance"
   ),
   glmmTMB_zi = list(
-    rows = c("r2_marginal", "r2_conditional", "icc"),
+    rows = c(
+      "theta",
+      "alpha",
+      "delta",
+      "phi",
+      "r2_marginal",
+      "r2_conditional",
+      "icc"
+    ),
     default = c("icc", "r2_marginal", "r2_conditional"),
     why = "a zero-inflated fit has no R-squared or ICC"
   ),
   glmmTMB_hurdle = list(
-    rows = c("r2_conditional", "icc", "deviance"),
+    rows = c(
+      "theta",
+      "alpha",
+      "delta",
+      "phi",
+      "r2_conditional",
+      "icc",
+      "deviance"
+    ),
     default = c("icc", "r2_conditional"),
     why = "a truncated family has a marginal R-squared only, and no deviance"
   ),
   glmmTMB_disp = list(
-    rows = c("r2_marginal", "r2_conditional", "icc", "sigma"),
+    rows = c(
+      "theta",
+      "alpha",
+      "delta",
+      "phi",
+      "r2_marginal",
+      "r2_conditional",
+      "icc",
+      "sigma"
+    ),
     default = c("icc", "r2_marginal", "r2_conditional"),
     why = "a dispersion formula gives no single residual variance"
+  ),
+  glmmTMB_nbinom2 = list(
+    rows = c("delta", "phi", "icc", "sigma"),
+    default = "icc",
+    why = "an NB2 family has theta as its dispersion, and no ICC"
+  ),
+  glmmTMB_nbinom1 = list(
+    rows = c("theta", "alpha", "phi", "icc", "sigma"),
+    default = "icc",
+    why = "an NB1 family has delta as its dispersion, and no ICC"
+  ),
+  glmmTMB_beta = list(
+    rows = c(
+      "theta",
+      "alpha",
+      "delta",
+      "r2_marginal",
+      "r2_conditional",
+      "icc",
+      "sigma",
+      "deviance"
+    ),
+    default = c("icc", "r2_marginal", "r2_conditional"),
+    why = "a beta family has phi as its dispersion, no R-squared and no deviance"
   ),
   zeroinfl = list(
     rows = c("theta", "alpha"),
@@ -128,19 +231,44 @@ rr_absent <- list(
     why = "a Poisson count part has no dispersion"
   ),
   gam = list(
-    rows = c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur"),
+    rows = c(
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "theta",
+      "alpha",
+      "phi"
+    ),
     default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden"),
     why = "a Gaussian GAM has the deviance R-squared of its glm twin"
   ),
   gam_logit = list(
-    rows = "r2_deviance",
+    rows = c("r2_deviance", "theta", "alpha", "phi"),
     default = "r2_deviance",
     why = "a binomial GAM has the pseudo-R-squared of its glm twin instead"
   ),
   bam = list(
-    rows = "pseudo_r2_tjur",
+    rows = c("pseudo_r2_tjur", "theta", "alpha", "phi"),
     default = c("pseudo_r2_tjur", "r2_deviance"),
     why = "a Poisson GAM defaults to McFadden's R-squared, as its glm twin"
+  ),
+  gam_nb = list(
+    rows = c("pseudo_r2_tjur", "phi", "sigma"),
+    default = c("pseudo_r2_tjur", "r2_deviance"),
+    why = "an nb() GAM has theta instead of a residual scale"
+  ),
+  gam_betar = list(
+    rows = c(
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "r2_deviance",
+      "theta",
+      "alpha",
+      "sigma"
+    ),
+    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden", "r2_deviance"),
+    why = "a betar() GAM has phi instead of a residual scale, and no R-squared"
   ),
   survreg_strata = list(
     rows = "sigma",

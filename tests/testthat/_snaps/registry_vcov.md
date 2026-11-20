@@ -57,6 +57,13 @@
         vcov = "CR3": lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
+        A robust variance is not available for `gam` fits with the `Beta regression` family.
+        i spicy forms the sandwich of mgcv fits from the GLM score, which covers the exponential families, the quasi families and nb() only.
+        i Use `vcov = "classical"` for this fit.
+      Received by 1:
+        vcov = "CR1": gam_betar
+      ----
+      error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `bam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
@@ -87,8 +94,8 @@
         `vcov = "CR0"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "CR0": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "CR0": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `flexsurvreg` models.
@@ -100,8 +107,8 @@
         `vcov = "CR0"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR0": gam, gam_logit
+      Received by 4:
+        vcov = "CR0": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `geeglm` models.
@@ -113,8 +120,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "CR0": glmer
+      Received by 2:
+        vcov = "CR0": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `gls` models.
@@ -310,8 +317,8 @@
         `vcov = "CR1"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "CR1": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "CR1": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `flexsurvreg` models.
@@ -329,8 +336,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "CR1": glmer
+      Received by 2:
+        vcov = "CR1": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `gls` models.
@@ -534,8 +541,8 @@
         `vcov = "CR1S"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "CR1S": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "CR1S": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `flexsurvreg` models.
@@ -547,8 +554,8 @@
         `vcov = "CR1S"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR1S": gam, gam_logit
+      Received by 4:
+        vcov = "CR1S": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `geeglm` models.
@@ -560,8 +567,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "CR1S": glmer
+      Received by 2:
+        vcov = "CR1S": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `gls` models.
@@ -748,8 +755,9 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for this `glmmTMB` fit.
         i This class supports `vcov = "classical"`, `"CR0"` and `"CR1"`.
-      Received by 4:
-        vcov = "CR1S": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "CR1S": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for this `glmmTMB` fit.
@@ -830,8 +838,8 @@
         `vcov = "CR2"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "CR2": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "CR2": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `flexsurvreg` models.
@@ -843,8 +851,8 @@
         `vcov = "CR2"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR2": gam, gam_logit
+      Received by 4:
+        vcov = "CR2": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `geeglm` models.
@@ -856,8 +864,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "CR2": glmer
+      Received by 2:
+        vcov = "CR2": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `gls` models.
@@ -1033,8 +1041,9 @@
         `vcov = "CR2"` is not available for this `glmmTMB` fit.
         i glmmTMB's sandwich has one score per cluster, the gradient of the cluster's marginal log-likelihood: with no residuals and no hat values, the CR2 and CR3 corrections cannot be formed.
         i Use `vcov = "CR0"` or `"CR1"`.
-      Received by 4:
-        vcov = "CR2": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "CR2": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for this `glmmTMB` fit.
@@ -1109,8 +1118,8 @@
         `vcov = "CR3"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "CR3": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "CR3": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `flexsurvreg` models.
@@ -1122,8 +1131,8 @@
         `vcov = "CR3"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR3": gam, gam_logit
+      Received by 4:
+        vcov = "CR3": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `geeglm` models.
@@ -1135,8 +1144,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "CR3": glmer
+      Received by 2:
+        vcov = "CR3": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `gls` models.
@@ -1312,8 +1321,9 @@
         `vcov = "CR3"` is not available for this `glmmTMB` fit.
         i glmmTMB's sandwich has one score per cluster, the gradient of the cluster's marginal log-likelihood: with no residuals and no hat values, the CR2 and CR3 corrections cannot be formed.
         i Use `vcov = "CR0"` or `"CR1"`.
-      Received by 4:
-        vcov = "CR3": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "CR3": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for this `glmmTMB` fit.
@@ -1380,8 +1390,8 @@
         `vcov = "HC0"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "HC0": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "HC0": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `flexsurvreg` models.
@@ -1392,8 +1402,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "HC0": gam, gam_logit
+      Received by 4:
+        vcov = "HC0": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `geeglm` models.
@@ -1405,8 +1415,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "HC0": glmer
+      Received by 2:
+        vcov = "HC0": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `gls` models.
@@ -1585,8 +1595,9 @@
         `vcov = "HC0"` is not available for this `glmmTMB` fit.
         i Observations that share random effects have no scores of their own, so there is no per-observation (HC) sandwich.
         i Use `vcov = "CR0"` or `"CR1"`, clustered by default on the top-level grouping factor.
-      Received by 4:
-        vcov = "HC0": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "HC0": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for this `glmmTMB` fit.
@@ -1659,8 +1670,8 @@
         `vcov = "HC1"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "HC1": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "HC1": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `flexsurvreg` models.
@@ -1671,8 +1682,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "HC1": gam, gam_logit
+      Received by 4:
+        vcov = "HC1": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `geeglm` models.
@@ -1684,8 +1695,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "HC1": glmer
+      Received by 2:
+        vcov = "HC1": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `gls` models.
@@ -1864,8 +1875,9 @@
         `vcov = "HC1"` is not available for this `glmmTMB` fit.
         i Observations that share random effects have no scores of their own, so there is no per-observation (HC) sandwich.
         i Use `vcov = "CR0"` or `"CR1"`, clustered by default on the top-level grouping factor.
-      Received by 4:
-        vcov = "HC1": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "HC1": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for this `glmmTMB` fit.
@@ -1938,8 +1950,8 @@
         `vcov = "HC2"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "HC2": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "HC2": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `flexsurvreg` models.
@@ -1950,8 +1962,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "HC2": gam, gam_logit
+      Received by 4:
+        vcov = "HC2": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `geeglm` models.
@@ -1963,8 +1975,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "HC2": glmer
+      Received by 2:
+        vcov = "HC2": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `gls` models.
@@ -2150,8 +2162,9 @@
         `vcov = "HC2"` is not available for this `glmmTMB` fit.
         i Observations that share random effects have no scores of their own, so there is no per-observation (HC) sandwich.
         i Use `vcov = "CR0"` or `"CR1"`, clustered by default on the top-level grouping factor.
-      Received by 4:
-        vcov = "HC2": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "HC2": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for this `glmmTMB` fit.
@@ -2224,8 +2237,8 @@
         `vcov = "HC3"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "HC3": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "HC3": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `flexsurvreg` models.
@@ -2236,8 +2249,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "HC3": gam, gam_logit
+      Received by 4:
+        vcov = "HC3": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `geeglm` models.
@@ -2249,8 +2262,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "HC3": glmer
+      Received by 2:
+        vcov = "HC3": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `gls` models.
@@ -2436,8 +2449,9 @@
         `vcov = "HC3"` is not available for this `glmmTMB` fit.
         i Observations that share random effects have no scores of their own, so there is no per-observation (HC) sandwich.
         i Use `vcov = "CR0"` or `"CR1"`, clustered by default on the top-level grouping factor.
-      Received by 4:
-        vcov = "HC3": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "HC3": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for this `glmmTMB` fit.
@@ -2510,8 +2524,8 @@
         `vcov = "HC4"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "HC4": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "HC4": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `flexsurvreg` models.
@@ -2522,8 +2536,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "HC4": gam, gam_logit
+      Received by 4:
+        vcov = "HC4": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `geeglm` models.
@@ -2535,8 +2549,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "HC4": glmer
+      Received by 2:
+        vcov = "HC4": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `gls` models.
@@ -2722,8 +2736,9 @@
         `vcov = "HC4"` is not available for this `glmmTMB` fit.
         i Observations that share random effects have no scores of their own, so there is no per-observation (HC) sandwich.
         i Use `vcov = "CR0"` or `"CR1"`, clustered by default on the top-level grouping factor.
-      Received by 4:
-        vcov = "HC4": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "HC4": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for this `glmmTMB` fit.
@@ -2796,8 +2811,8 @@
         `vcov = "HC5"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "HC5": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "HC5": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `flexsurvreg` models.
@@ -2808,8 +2823,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "HC5": gam, gam_logit
+      Received by 4:
+        vcov = "HC5": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `geeglm` models.
@@ -2821,8 +2836,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "HC5": glmer
+      Received by 2:
+        vcov = "HC5": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `gls` models.
@@ -3008,8 +3023,9 @@
         `vcov = "HC5"` is not available for this `glmmTMB` fit.
         i Observations that share random effects have no scores of their own, so there is no per-observation (HC) sandwich.
         i Use `vcov = "CR0"` or `"CR1"`, clustered by default on the top-level grouping factor.
-      Received by 4:
-        vcov = "HC5": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "HC5": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for this `glmmTMB` fit.
@@ -3082,8 +3098,9 @@
         `vcov = "bootstrap"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "bootstrap": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "bootstrap": fenegbin, feols, feols_iv, feols_nofe, fepois,
+            fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `flexsurvreg` models.
@@ -3094,8 +3111,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "bootstrap": gam, gam_logit
+      Received by 4:
+        vcov = "bootstrap": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `geeglm` models.
@@ -3107,8 +3124,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "bootstrap": glmer
+      Received by 2:
+        vcov = "bootstrap": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `gls` models.
@@ -3282,8 +3299,9 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for this `glmmTMB` fit.
         i This class supports `vcov = "classical"`, `"CR0"` and `"CR1"`.
-      Received by 4:
-        vcov = "bootstrap": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "bootstrap": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for this `glmmTMB` fit.
@@ -3356,8 +3374,8 @@
         `vcov = "iid"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "iid": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "iid": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `flexsurvreg` models.
@@ -3368,8 +3386,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "iid": gam, gam_logit
+      Received by 4:
+        vcov = "iid": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `geeglm` models.
@@ -3388,8 +3406,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "iid": glmer
+      Received by 2:
+        vcov = "iid": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `gls` models.
@@ -3574,8 +3592,9 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for this `glmmTMB` fit.
         i This class supports `vcov = "classical"`, `"CR0"` and `"CR1"`.
-      Received by 4:
-        vcov = "iid": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "iid": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for this `glmmTMB` fit.
@@ -3648,8 +3667,9 @@
         `vcov = "jackknife"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "jackknife": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "jackknife": fenegbin, feols, feols_iv, feols_nofe, fepois,
+            fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `flexsurvreg` models.
@@ -3660,8 +3680,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "jackknife": gam, gam_logit
+      Received by 4:
+        vcov = "jackknife": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `geeglm` models.
@@ -3673,8 +3693,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "jackknife": glmer
+      Received by 2:
+        vcov = "jackknife": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `gls` models.
@@ -3855,8 +3875,9 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for this `glmmTMB` fit.
         i This class supports `vcov = "classical"`, `"CR0"` and `"CR1"`.
-      Received by 4:
-        vcov = "jackknife": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "jackknife": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for this `glmmTMB` fit.
@@ -3929,8 +3950,8 @@
         `vcov = "ker"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "ker": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "ker": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `flexsurvreg` models.
@@ -3941,8 +3962,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "ker": gam, gam_logit
+      Received by 4:
+        vcov = "ker": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `geeglm` models.
@@ -3961,8 +3982,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "ker": glmer
+      Received by 2:
+        vcov = "ker": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `gls` models.
@@ -4147,8 +4168,9 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for this `glmmTMB` fit.
         i This class supports `vcov = "classical"`, `"CR0"` and `"CR1"`.
-      Received by 4:
-        vcov = "ker": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "ker": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for this `glmmTMB` fit.
@@ -4221,8 +4243,8 @@
         `vcov = "nid"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "nid": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "nid": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `flexsurvreg` models.
@@ -4233,8 +4255,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "nid": gam, gam_logit
+      Received by 4:
+        vcov = "nid": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `geeglm` models.
@@ -4253,8 +4275,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "nid": glmer
+      Received by 2:
+        vcov = "nid": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `gls` models.
@@ -4439,8 +4461,9 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for this `glmmTMB` fit.
         i This class supports `vcov = "classical"`, `"CR0"` and `"CR1"`.
-      Received by 4:
-        vcov = "nid": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "nid": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for this `glmmTMB` fit.
@@ -4513,8 +4536,8 @@
         `vcov = "rank"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
         i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        vcov = "rank": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "rank": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `flexsurvreg` models.
@@ -4525,8 +4548,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 2:
-        vcov = "rank": gam, gam_logit
+      Received by 4:
+        vcov = "rank": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `geeglm` models.
@@ -4545,8 +4568,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `glmerMod` models.
         i This class supports: classical. See ?table_regression_mixed.
-      Received by 1:
-        vcov = "rank": glmer
+      Received by 2:
+        vcov = "rank": glmer, glmer_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `gls` models.
@@ -4731,8 +4754,9 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for this `glmmTMB` fit.
         i This class supports `vcov = "classical"`, `"CR0"` and `"CR1"`.
-      Received by 4:
-        vcov = "rank": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "rank": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for this `glmmTMB` fit.
@@ -5067,8 +5091,8 @@
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `fixest`: "classical".
-      Received by 5:
-        vcov = "HC9": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      Received by 6:
+        vcov = "HC9": fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
@@ -5079,8 +5103,8 @@
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `gam`: "classical", "CR1".
-      Received by 2:
-        vcov = "HC9": gam, gam_logit
+      Received by 4:
+        vcov = "HC9": gam, gam_betar, gam_logit, gam_nb
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
@@ -5098,14 +5122,15 @@
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `glmerMod`: "classical".
-      Received by 1:
-        vcov = "HC9": glmer
+      Received by 2:
+        vcov = "HC9": glmer, glmer_nb
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `glmmTMB`: "classical", "CR0", "CR1".
-      Received by 4:
-        vcov = "HC9": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      Received by 7:
+        vcov = "HC9": glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
@@ -5302,9 +5327,9 @@
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
         i Set `vcov` to `"CR0"` or `"CR1"` to use the cluster vector for cluster-robust SE.
-      Received by 4:
-        cluster with vcov = "classical": glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
-            glmmTMB_zi
+      Received by 7:
+        cluster with vcov = "classical": glmmTMB, glmmTMB_beta, glmmTMB_disp,
+            glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_zi
       ----
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
@@ -5324,10 +5349,10 @@
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
         i Set `vcov` to `"CR1"` to use the cluster vector for cluster-robust SE.
-      Received by 13:
-        cluster with vcov = "classical": bam, betareg, clm, gam, gam_logit,
-            hurdle, mlogit, multinom, polr, survreg, survreg_strata, tobit,
-            zeroinfl
+      Received by 15:
+        cluster with vcov = "classical": bam, betareg, clm, gam, gam_betar,
+            gam_logit, gam_nb, hurdle, mlogit, multinom, polr, survreg,
+            survreg_strata, tobit, zeroinfl
       ----
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
@@ -5382,8 +5407,8 @@
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
         i `glmerMod` models have no cluster-robust `vcov`.
-      Received by 1:
-        cluster with vcov = "classical": glmer
+      Received by 2:
+        cluster with vcov = "classical": glmer, glmer_nb
       ----
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
@@ -5424,9 +5449,9 @@
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
         i fixest clusters through its own `vcov` interface: `fixest::feols(..., vcov = ~cluster_var)`, or `summary(fit, vcov = ~cluster_var)`.
-      Received by 5:
-        cluster with vcov = "classical": feols, feols_iv, feols_nofe, fepois,
-            fepois_nofe
+      Received by 6:
+        cluster with vcov = "classical": fenegbin, feols, feols_iv, feols_nofe,
+            fepois, fepois_nofe
 
 # the cluster and unknown-vcov messages keep their text and class: Stan
 
