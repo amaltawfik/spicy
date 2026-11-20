@@ -65,7 +65,7 @@ as_regression_frame.glmmTMB <- function(
   # SE comes out near zero (marginaleffects 1.0.0).
   is_ordinal <- .glmmTMB_is_ordinal(fit)
   ame_columns <- if (is_ordinal || is_reml_glmmTMB_fit(fit)) {
-    setdiff(show_columns, c("ame", "ame_se", "ame_ci", "ame_p"))
+    setdiff(show_columns, .AME_COLUMN_TOKENS)
   } else {
     show_columns
   }

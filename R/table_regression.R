@@ -953,7 +953,7 @@
 #'   `"ess_tail"` / `"mcse"` (per-coefficient sampler diagnostics and
 #'   the Monte Carlo standard error of the displayed posterior
 #'   median, all-Bayesian tables only), `"ame"`, `"ame_se"`, `"ame_ci"`,
-#'   `"ame_p"`, `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
+#'   `"ame_p"`, `"ame_df"` (the `"df"` of the AMEs), `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
 #'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
 #'   `"partial_eta2_ci"`, `"partial_omega2"` +
@@ -2013,7 +2013,7 @@ table_regression <- function(
   # `ame_type` defines the AME columns; a table without one reaches nothing.
   if (
     !identical(ame_type, "slope") &&
-      !any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)
+      !any(.AME_COLUMN_TOKENS %in% show_columns)
   ) {
     .warn_ignored(
       "ame_type",
@@ -2849,7 +2849,7 @@ table_regression <- function(
     function(v) is.character(v) && startsWith(v, "CR"),
     logical(1)
   ))
-  use_ame_satt <- any_cr && "ame" %in% show_columns
+  use_ame_satt <- any_cr && any(.AME_COLUMN_TOKENS %in% show_columns)
 
   # ---- Per-model extraction (Layer 1) ------------------------------------
   default_id <- function(i) paste0("M", i)
@@ -3374,7 +3374,7 @@ table_regression <- function(
   # one model can produce AME, the capable models populate their columns
   # and the incapable ones en-dash -- so only the all-incapable case
   # errors.
-  if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
+  if (any(.AME_COLUMN_TOKENS %in% show_columns)) {
     ame_ok <- vapply(
       frames,
       function(fr) {
@@ -4943,42 +4943,47 @@ table_regression <- function(
 # `show_columns = "df"` needs one coefficient of one model tested on a
 # t distribution: a finite `df` on a B row of a frame, the value the
 # column prints. A table of z tests (or of posteriors) would print an
-# empty column, so the call is refused.
+# empty column, so the call is refused. `"ame_df"` reads the AME rows.
 .reg_check_df_column <- function(
   models,
   frames,
   show_columns,
   call = rlang::caller_env()
 ) {
-  if (!"df" %in% show_columns) {
-    return(invisible(NULL))
-  }
+  # `ame_df` reads the AME rows the same way.
+  tk <- intersect(c("df", "ame_df"), show_columns)
+  type <- c(df = "B", ame_df = "ame")[tk]
   has_df <- vapply(
-    frames,
-    function(fr) {
-      cf <- fr$coefs
-      !is.null(cf$df) && any(is.finite(cf$df[cf$estimate_type %in% "B"]))
+    tk,
+    function(k) {
+      any(vapply(
+        frames,
+        function(fr) {
+          cf <- fr$coefs
+          !is.null(cf$df) &&
+            any(is.finite(cf$df[cf$estimate_type %in% type[[k]]]))
+        },
+        logical(1)
+      ))
     },
     logical(1)
   )
-  if (any(has_df)) {
+  if (all(has_df)) {
     return(invisible(NULL))
   }
+  tk <- tk[!has_df][[1L]]
   all_bayes <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+  head <- sprintf(
+    "Token `\"%s\"` in `show_columns` has no value for any model in the table: ",
+    tk
+  )
   spicy_abort(
     c(
       if (all_bayes) {
-        paste0(
-          "Token `\"df\"` in `show_columns` has no value for any model in ",
-          "the table: a posterior has no test."
-        )
+        paste0(head, "a posterior has no test.")
       } else {
-        paste0(
-          "Token `\"df\"` in `show_columns` has no value for any model in ",
-          "the table: its tests are z tests, which have no degrees of ",
-          "freedom."
-        )
+        paste0(head, "its tests are z tests, which have no degrees of freedom.")
       },
       "i" = paste0(
         "The column gives the degrees of freedom of t tests (`lm`, a ",

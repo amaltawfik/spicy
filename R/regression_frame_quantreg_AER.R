@@ -47,7 +47,7 @@ as_regression_frame.rq <- function(
   # matrix via marginaleffects, so the old table disagreed with itself).
   se_method <- se %||% .rq_se_method(vcov)
 
-  wants_ame <- any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)
+  wants_ame <- any(.AME_COLUMN_TOKENS %in% show_columns)
   if (identical(se_method, "rank") && wants_ame) {
     spicy_abort(
       c(

@@ -28,6 +28,10 @@
 # checked separately, by `validate_class_appropriate_tokens()` -- one
 # validator, not two: the nested-stats half was folded into it when the
 # change statistics became fit-statistic ROWS (feb7f529).
+# The AME columns: any one of them makes the table compute the AMEs, and
+# the classes without AMEs refuse them all.
+.AME_COLUMN_TOKENS <- c("ame", "ame_se", "ame_ci", "ame_p", "ame_df")
+
 .regression_tokens <- list(
   # ATOMIC tokens for `show_columns`: one token = one displayed
   # column. All lowercase (idiomatic R / broom convention). Group
@@ -49,11 +53,8 @@
     # Outcome event counts "events/N" per factor level, model totals
     # on continuous rows (binomial outcomes only; STROBE item 16)
     "n_events",
-    # Average marginal effects (AME)
-    "ame",
-    "ame_se",
-    "ame_ci",
-    "ame_p",
+    # Average marginal effects (AME); ame_df is the df of their t tests
+    .AME_COLUMN_TOKENS,
     # Survival estimands (coxph): RMST difference over [0, tau] and
     # cumulative-incidence difference at `at_time`, by g-computation
     "rmst",
@@ -3433,7 +3434,7 @@ validate_class_appropriate_tokens <- function(
   all_cox <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1), c("coxph", "cph")))
   if (all_cox) {
-    bad <- intersect(show_columns, c("ame", "ame_se", "ame_ci", "ame_p"))
+    bad <- intersect(show_columns, .AME_COLUMN_TOKENS)
     if (length(bad) > 0L) {
       spicy_abort(
         c(
@@ -3765,7 +3766,7 @@ validate_class_appropriate_tokens <- function(
   all_mlogit <- length(models) > 0L &&
     all(vapply(models, inherits, logical(1), "mlogit"))
   if (all_mlogit) {
-    bad <- intersect(show_columns, c("ame", "ame_se", "ame_ci", "ame_p"))
+    bad <- intersect(show_columns, .AME_COLUMN_TOKENS)
     if (length(bad) > 0L) {
       spicy_abort(
         c(
@@ -4785,7 +4786,7 @@ detect_non_additive_terms <- function(fit) {
 # any vcov is CR* AND "AME" is requested. Rendering layer uses this
 # flag to dispatch to clubSandwich::linear_contrast() (Q14b).
 detect_ame_satterthwaite_path <- function(vcov, show_columns) {
-  if (!"ame" %in% show_columns) {
+  if (!any(.AME_COLUMN_TOKENS %in% show_columns)) {
     return(FALSE)
   }
   vcov_per <- if (is.list(vcov)) vcov else list(vcov)

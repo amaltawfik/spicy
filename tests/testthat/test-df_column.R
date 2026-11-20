@@ -395,3 +395,107 @@ test_that("the French table heads the column ddl, with a decimal comma", {
   expect_true("df" %in% names(as.data.frame(tb)))
   expect_identical(as_structured(tb)$col_meta$df$display_label, "ddl")
 })
+
+# ---- ame_df: the df of each AME's test -------------------------------------
+
+# The AME df of the coefficient rows, from the typed body.
+.ame_df_values <- function(tbl) {
+  s <- as_structured(tbl)
+  nm <- names(s$col_meta)[vapply(
+    s$col_meta,
+    function(m) identical(m$token, "ame_df"),
+    logical(1)
+  )]
+  s$body[[nm]][s$body[[".row_role"]] %in% c("coef", "level")]
+}
+
+test_that("ame_df shows the Satterthwaite df of the AMEs of an lm under CR2", {
+  skip_if_not_installed("clubSandwich")
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt + am, data = transform(mtcars, am = factor(am)))
+  tb <- table_regression(
+    fit,
+    show_columns = c("b", "ame", "ame_df", "ame_p"),
+    vcov = "CR2",
+    cluster = ~gear
+  )
+  td <- broom::tidy(tb)
+  ame <- td[td$estimate_type == "ame", ]
+  expect_true(all(ame$test_type == "t"))
+  vals <- .ame_df_values(tb)
+  expect_equal(vals[!is.na(vals)], ame$df, tolerance = 1e-8)
+  # A fractional df prints with one decimal, under the header of df.
+  expect_true("df" %in% names(.dfc_char(tb)))
+  expect_identical(
+    .dfc_console(tb)[!is.na(vals)],
+    sprintf("%.1f", ame$df)
+  )
+  # Shown alone, the token still takes the Satterthwaite df.
+  expect_equal(
+    .ame_df_values(table_regression(
+      fit,
+      show_columns = c("b", "ame_df"),
+      vcov = "CR2",
+      cluster = ~gear
+    )),
+    vals
+  )
+})
+
+test_that("ame_df shows the residual df of a classical lm, beside df", {
+  skip_if_not_installed("marginaleffects")
+  fit <- lm(mpg ~ wt + am, data = transform(mtcars, am = factor(am)))
+  tb <- table_regression(
+    fit,
+    show_columns = c("b", "df", "ame", "ame_df")
+  )
+  vals <- .ame_df_values(tb)
+  expect_equal(vals[!is.na(vals)], rep(df.residual(fit), 2L))
+  # Two df columns, the second for the AMEs.
+  expect_identical(
+    setdiff(names(as.data.frame(tb)), c("variable", "label", "level")),
+    c(".row_role", "B", "df", "AME", "df.2")
+  )
+})
+
+test_that("ame_df is refused where no AME has a t test, blank beside one", {
+  skip_if_not_installed("marginaleffects")
+  g <- glm(am ~ wt, data = mtcars, family = binomial)
+  expect_error(
+    table_regression(g, show_columns = c("b", "ame", "ame_df")),
+    "Token `\"ame_df\"`",
+    class = "spicy_invalid_input"
+  )
+  # A t test and a z test: the z test leaves its cell blank.
+  f <- lm(mpg ~ wt, data = mtcars)
+  tb <- table_regression(
+    list(f, g),
+    show_columns = c("b", "ame", "ame_df")
+  )
+  s <- as_structured(tb)
+  rows <- s$body[[".variable"]] %in% "wt"
+  expect_equal(s$body[["mpg: df"]][rows], df.residual(f))
+  expect_true(is.na(s$body[["am: df"]][rows]))
+  expect_identical(trimws(.dfc_char(tb)[["am: df"]][rows]), "")
+  # Refused with the other AME columns where they are.
+  skip_if_not_installed("survival")
+  cx <- survival::coxph(
+    survival::Surv(time, status) ~ age,
+    data = survival::lung
+  )
+  expect_error(
+    table_regression(cx, show_columns = c("b", "ame_df")),
+    "not defined for Cox models",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("the French table heads the ame_df column ddl", {
+  skip_if_not_installed("marginaleffects")
+  withr::local_options(spicy.language = "fr")
+  tb <- table_regression(
+    lm(mpg ~ wt, data = mtcars),
+    show_columns = c("b", "ame", "ame_df")
+  )
+  expect_identical(as_structured(tb)$col_meta[["df"]]$display_label, "ddl")
+})

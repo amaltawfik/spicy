@@ -27,8 +27,12 @@
 #'     no t, show a dash, as in the `"t"` column. The header reads df,
 #'     ddl in French. Opt-in: no group token holds it.
 #'   \item Marginal effects: `"ame"`, `"ame_se"`, `"ame_ci"`,
-#'     `"ame_p"`. `"p"` always refers to the B-coefficient
-#'     p-value; for the AME-specific p-value use `"ame_p"`.
+#'     `"ame_p"`, `"ame_df"`. `"p"` always refers to the B-coefficient
+#'     p-value; for the AME-specific p-value use `"ame_p"`. `"ame_df"`
+#'     gives the degrees of freedom of each AME's t test (the
+#'     Satterthwaite df under `vcov = "CR2"`), under the header of
+#'     `"df"` and with its rules: blank under a z test, refused when no
+#'     AME of the table has a t test.
 #'   \item Partial effect sizes -- `lm` only: `"partial_f2"`,
 #'     `"partial_eta2"`, `"partial_omega2"`, each with a paired
 #'     `_ci` companion (`"partial_f2_ci"`, `"partial_eta2_ci"`,

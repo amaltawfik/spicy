@@ -960,6 +960,11 @@ build_column_spec <- function(
       fields = "p_value",
       header_short = lab("header_p")
     ),
+    ame_df = list(
+      estimate_type = "ame",
+      fields = "df",
+      header_short = lab("header_df")
+    ),
     # Model-level variance explained, per fit. Populated by the
     # univariable screen (one fit per predictor block), where the
     # question "how much of the outcome does this predictor explain on
@@ -1530,7 +1535,7 @@ format_cell_value <- function(
     return(.fmt_count(val))
   }
   # The df of the row's test: blank under a z test (Inf) or none.
-  if (identical(tk, "df")) {
+  if (tk %in% c("df", "ame_df")) {
     if (!isTRUE(is.finite(val))) {
       return("")
     }

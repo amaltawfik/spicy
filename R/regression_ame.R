@@ -2358,7 +2358,7 @@ extract_ame_glm <- function(
   df = Inf,
   ame_type = .ame_type_in_force()
 ) {
-  ame_tokens <- c("ame", "ame_se", "ame_ci", "ame_p")
+  ame_tokens <- .AME_COLUMN_TOKENS
   if (!any(ame_tokens %in% show_columns)) {
     return(coefs)
   }

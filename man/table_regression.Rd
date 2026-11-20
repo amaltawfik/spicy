@@ -316,7 +316,7 @@ direction, Bayesian fits only), \code{"rhat"} / \code{"ess_bulk"} /
 \code{"ess_tail"} / \code{"mcse"} (per-coefficient sampler diagnostics and
 the Monte Carlo standard error of the displayed posterior
 median, all-Bayesian tables only), \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
-\code{"ame_p"}, \code{"rmst"} + \code{"rmst_se"} / \code{"rmst_ci"} / \code{"rmst_p"},
+\code{"ame_p"}, \code{"ame_df"} (the \code{"df"} of the AMEs), \code{"rmst"} + \code{"rmst_se"} / \code{"rmst_ci"} / \code{"rmst_p"},
 \code{"risk_diff"} + its \verb{_se} / \verb{_ci} / \verb{_p} companions,
 \code{"partial_f2"} + \code{"partial_f2_ci"}, \code{"partial_eta2"} +
 \code{"partial_eta2_ci"}, \code{"partial_omega2"} +

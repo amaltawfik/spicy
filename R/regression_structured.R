@@ -544,7 +544,7 @@ build_structured_body <- function(
       # Per-fit variance explained: same precision as the fit-statistics
       # R^2 row it can also appear as (`fit_digits`).
       fit_digits
-    } else if (token %in% c("n", "n_events", "df")) {
+    } else if (token %in% c("n", "n_events", "df", "ame_df")) {
       # Counts, not estimates: `digits` governs the estimation columns
       # only, so N stays "364" and never "364.00" / "364.000". The
       # console renderer already formats n_obs / events as integers. A
@@ -905,7 +905,7 @@ build_structured_body <- function(
   # coefficient cell records its precision in `row_fmt`, which every
   # engine reads first (`.resolve_cell_fmt()`), Excel included.
   for (nm in names(col_meta)) {
-    if (!identical(col_meta[[nm]]$token, "df")) {
+    if (!isTRUE(col_meta[[nm]]$token %in% c("df", "ame_df"))) {
       next
     }
     v <- body_df[[nm]]
@@ -1399,7 +1399,7 @@ build_structured_body <- function(
       next
     }
     # The df of a z test (Inf) or of no test: absent, blank.
-    if (identical(cs$token, "df")) {
+    if (isTRUE(cs$token %in% c("df", "ame_df"))) {
       if (!isTRUE(is.finite(row[[e$name]]))) {
         row[[e$name]] <- NA_real_
       }

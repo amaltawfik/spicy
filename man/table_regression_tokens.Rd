@@ -28,8 +28,12 @@ test. The rows of a random effect or of a smooth term, which have
 no t, show a dash, as in the \code{"t"} column. The header reads df,
 ddl in French. Opt-in: no group token holds it.
 \item Marginal effects: \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
-\code{"ame_p"}. \code{"p"} always refers to the B-coefficient
-p-value; for the AME-specific p-value use \code{"ame_p"}.
+\code{"ame_p"}, \code{"ame_df"}. \code{"p"} always refers to the B-coefficient
+p-value; for the AME-specific p-value use \code{"ame_p"}. \code{"ame_df"}
+gives the degrees of freedom of each AME's t test (the
+Satterthwaite df under \code{vcov = "CR2"}), under the header of
+\code{"df"} and with its rules: blank under a z test, refused when no
+AME of the table has a t test.
 \item Partial effect sizes -- \code{lm} only: \code{"partial_f2"},
 \code{"partial_eta2"}, \code{"partial_omega2"}, each with a paired
 \verb{_ci} companion (\code{"partial_f2_ci"}, \code{"partial_eta2_ci"},

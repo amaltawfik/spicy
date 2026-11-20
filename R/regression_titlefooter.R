@@ -612,7 +612,7 @@ build_ame_quantity_footer_block_from_frames <- function(
 ) {
   if (
     !is.list(frames) ||
-      !any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)
+      !any(.AME_COLUMN_TOKENS %in% show_columns)
   ) {
     return(NULL)
   }
@@ -1638,7 +1638,7 @@ build_ame_satterthwaite_footer_block_from_frames <- function(
   frames,
   show_columns
 ) {
-  if (!"ame" %in% show_columns) {
+  if (!any(.AME_COLUMN_TOKENS %in% show_columns)) {
     return(NULL)
   }
   if (!is.list(frames) || length(frames) == 0L) {

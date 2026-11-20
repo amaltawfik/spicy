@@ -119,7 +119,7 @@ extract_lm_phase1 <- function(
   # asymmetry with plain factors (where `Female (ref.)` is already
   # shown) and makes the AME baseline visible to the reader.
   ame_requested <- any(
-    c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns
+    .AME_COLUMN_TOKENS %in% show_columns
   )
   beta_requested <- !identical(standardized, "none")
   ref_rows <- build_reference_rows(
@@ -180,7 +180,7 @@ extract_lm_phase1 <- function(
   # The note names Satterthwaite for this model only when its AME rows
   # took those df (extract_ame_rows() marks them).
   ame_satt_used <- FALSE
-  if (any(c("ame", "ame_se", "ame_ci", "ame_p") %in% show_columns)) {
+  if (any(.AME_COLUMN_TOKENS %in% show_columns)) {
     ame_rows <- extract_ame_rows(
       fit = fit,
       vc = vc,
