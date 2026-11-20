@@ -17,7 +17,7 @@ Pour le modèle pénalisé, `f_pen$stats["d.f."]` vaut 5,600312 (degrés de libe
 
 `pentrace()` choisit la pénalité sur le critère « Model L.R. - 2 × d.f. effectifs ». Il vaut 209,66 pour la pénalité 2 et 208,57 pour le maximum de vraisemblance, donc le modèle pénalisé est le meilleur. `AIC(f_pen, type = "chisq")` donne aussi 209,6593.
 
-spicy affichait jusqu'ici un AIC de 470,2 pour le maximum de vraisemblance et de 475,4 pour le modèle pénalisé. Le tableau classait les deux modèles à l'inverse du critère qui avait choisi la pénalité. L'AIC de rms compte la pénalité deux fois : une fois dans la vraisemblance, une fois dans les degrés de liberté effectifs.
+spicy affichait jusqu'ici un AIC de 470,2 pour le maximum de vraisemblance et de 475,4 pour le modèle pénalisé. Le tableau classait les deux modèles à l'inverse du critère qui avait choisi la pénalité. L'AIC de rms ajoute le terme de pénalité à la déviance, alors que le rétrécissement est déjà compté par les degrés de liberté effectifs.
 
 ## Décision
 
@@ -35,7 +35,7 @@ Avec la règle, l'AIC du modèle pénalisé vaut 469,1 contre 470,2 pour le maxi
 
 Harrell F. E. (2015), Regression Modeling Strategies, 2e éd., Springer, p. 211, éq. 9.65 : « LR χ² − 2 × effective d.f., where LR χ² is the likelihood ratio χ² for the penalized model, but ignoring the penalty function ».
 
-mgcv suit la même convention pour un GAM : `logLik.gam` renvoie la vraisemblance sans pénalité avec les degrés de liberté effectifs.
+mgcv suit la même convention pour un GAM. L'aide de `logLik.gam` (mgcv installé, lue le 2026-11-20) : « Conditional AIC uses the likelihood of all the model coefficients, evaluated at the penalized MLE. The degrees of freedom to use then is the effective degrees of freedom for the model. »
 
 ## Alternatives écartées
 

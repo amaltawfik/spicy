@@ -1067,7 +1067,8 @@ as_regression_frame.Glm <- function(
 # logLik() of an lrm, NULL when it fails. For a penalized fit rms
 # returns the penalized log-likelihood (fit$deviance ends with it), with
 # the effective d.f. plus the intercepts as its "df": the AIC then
-# charges the fit for the penalty twice. Harrell (RMS, 2nd ed., eq. 9.65)
+# adds the penalty term to the deviance, although the effective d.f.
+# already count the shrinkage. Harrell (RMS, 2nd ed., eq. 9.65)
 # and pentrace() judge a penalized fit on the likelihood-ratio chi-square
 # "ignoring the penalty function", fit$stats["Model L.R."]: the value
 # becomes the log-likelihood without the penalty term at the penalized
