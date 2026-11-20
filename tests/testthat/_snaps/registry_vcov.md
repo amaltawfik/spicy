@@ -274,7 +274,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `Glm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR1": rms_Glm, rms_Glm_logit, rms_Glm_xy
@@ -294,7 +294,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `cph` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR1": cph, cph_xy
@@ -354,7 +354,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `lrm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR1": lrm, lrm_ordinal, lrm_xy
@@ -367,7 +367,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `ols` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR1": ols, ols_xy
@@ -456,7 +456,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `Glm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR1S": rms_Glm, rms_Glm_logit, rms_Glm_xy
@@ -497,7 +497,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `cph` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR1S": cph, cph_xy
@@ -583,7 +583,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `lrm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR1S": lrm, lrm_ordinal, lrm_xy
@@ -610,7 +610,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `ols` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR1S": ols, ols_xy
@@ -718,7 +718,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `Glm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR2": rms_Glm, rms_Glm_logit, rms_Glm_xy
@@ -759,7 +759,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `cph` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR2": cph, cph_xy
@@ -833,7 +833,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `lrm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR2": lrm, lrm_ordinal, lrm_xy
@@ -860,7 +860,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `ols` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR2": ols, ols_xy
@@ -976,7 +976,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `Glm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR3": rms_Glm, rms_Glm_logit, rms_Glm_xy
@@ -1017,7 +1017,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `cph` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR3": cph, cph_xy
@@ -1091,7 +1091,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `lrm` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 3:
         vcov = "CR3": lrm, lrm_ordinal, lrm_xy
@@ -1118,7 +1118,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `ols` models.
-        i rms::robcov() computes one cluster-robust estimator, with no small-sample factor: CR0.
+        i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
       Received by 2:
         vcov = "CR3": ols, ols_xy
