@@ -1418,7 +1418,7 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
                 "two-stage least squares does not define uniquely: ",
                 "`AER::ivreg()` and `estimatr::iv_robust()` use ",
                 "different hat values. For the second, refit with ",
-                "`estimatr::iv_robust(..., se_type = \"HC2\")` or \"HC3\"."
+                "`estimatr::iv_robust(..., se_type = \"HC2\")` or `se_type = \"HC3\"`."
               )
             } else {
               paste0(
@@ -1426,9 +1426,10 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
                 "least-squares model."
               )
             },
-            "i" = paste0(
-              "This class supports: \"classical\", \"HC0\", \"HC1\", ",
-              "\"CR0\"-\"CR3\" and \"CR1S\" with `cluster`."
+            "i" = sprintf(
+              "This class supports: %s. See %s.",
+              paste(supported, collapse = ", "),
+              .reg_help_page(models[[i]])
             )
           ),
           class = "spicy_unsupported_vcov",
@@ -3631,7 +3632,7 @@ validate_class_appropriate_tokens <- function(
     spicy_abort(
       c(
         paste0(
-          "Token 'pseudo_r2_ferrari' in `show_fit_stats` is defined only ",
+          "Token `\"pseudo_r2_ferrari\"` in `show_fit_stats` is defined only ",
           "for beta regressions fitted with `betareg::betareg()`."
         ),
         "i" = paste0(

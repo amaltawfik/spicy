@@ -4948,12 +4948,12 @@ table_regression <- function(
     c(
       if (all_bayes) {
         paste0(
-          "Token \"df\" in `show_columns` has no value for any model in ",
+          "Token `\"df\"` in `show_columns` has no value for any model in ",
           "the table: a posterior has no test."
         )
       } else {
         paste0(
-          "Token \"df\" in `show_columns` has no value for any model in ",
+          "Token `\"df\"` in `show_columns` has no value for any model in ",
           "the table: its tests are z tests, which have no degrees of ",
           "freedom."
         )
