@@ -727,6 +727,13 @@
   TRUE, y = TRUE)" for an rms model. A survey-design model under `vcov =
   "CR1S"` is pointed to its design instead of to `"CR2"`.
 
+* `table_regression()`: `labels` names the reference level of a factor
+  by the name its coefficient would have. With `Male` as the reference,
+  `labels = c(sexMale = "Men")` gives the row "Men (ref.)", the header
+  "sex: [ref: Men]" under `reference_style = "annotation"` and "sex =
+  Men" in the note under `"footer"`. The name was refused with a
+  warning.
+
 * `table_regression(nested = TRUE)` compares two instrumental-variables
   `feols()` models of the same outcome, which it took for models of
   different outcomes. A model without a predictor can open a hierarchy

@@ -293,8 +293,11 @@ test_that("keep/drop and show_intercept govern display AND long payload", {
   lg <- table_regression(fit, output = "long", keep = "^age$")
   expect_identical(sum(grepl(": age$", lg$term)), 3L)
   # A prefixed-namespace regex is a no-op on BOTH views (bare terms
-  # govern), not just on the display.
-  lg2 <- table_regression(fit, output = "long", drop = "^Student: ")
+  # govern), not just on the display: it matches nothing, and warns.
+  expect_warning(
+    lg2 <- table_regression(fit, output = "long", drop = "^Student: "),
+    class = "spicy_no_match"
+  )
   expect_true(any(grepl("^Student: ", lg2$term)))
   # show_intercept = FALSE reaches the long payload too.
   lg3 <- table_regression(fit, output = "long", show_intercept = FALSE)
