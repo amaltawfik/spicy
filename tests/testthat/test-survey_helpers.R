@@ -466,12 +466,12 @@ test_that("the design line counts the primary units of non-zero weight", {
     unname(lines),
     c(
       "Design: stratified (stype), with finite population correction; 194 degrees of freedom.",
-      "Design: cluster (dnum), 14 PSU, with finite population correction; 13 degrees of freedom.",
-      "Design: cluster (dnum), 8 PSU, with finite population correction; 7 degrees of freedom.",
-      "Design: cluster (dnum), 8 PSU, with finite population correction, calibrated / post-stratified; 7 degrees of freedom.",
-      "Design: cluster (dnum), 8 PSU, with finite population correction, calibrated / post-stratified; 7 degrees of freedom.",
-      "Design: cluster (dnum), 2 sampling stages, 14 PSU, with finite population correction, calibrated / post-stratified; 13 degrees of freedom.",
-      "Design: stratified (stype), cluster (dnum), 120 PSU, calibrated / post-stratified; 118 degrees of freedom.",
+      "Design: cluster (dnum), 14 PSUs, with finite population correction; 13 degrees of freedom.",
+      "Design: cluster (dnum), 8 PSUs, with finite population correction; 7 degrees of freedom.",
+      "Design: cluster (dnum), 8 PSUs, with finite population correction, calibrated / post-stratified; 7 degrees of freedom.",
+      "Design: cluster (dnum), 8 PSUs, with finite population correction, calibrated / post-stratified; 7 degrees of freedom.",
+      "Design: cluster (dnum), 2 sampling stages, 14 PSUs, with finite population correction, calibrated / post-stratified; 13 degrees of freedom.",
+      "Design: stratified (stype), cluster (dnum), 120 PSUs, calibrated / post-stratified; 118 degrees of freedom.",
       "Design: replicate weights (JK1), 15 replicates; 7 degrees of freedom.",
       "Design: simple random sample, with finite population correction, calibrated / post-stratified; 24 degrees of freedom."
     )
@@ -505,7 +505,7 @@ test_that("a stratum left with one primary unit is counted once", {
   expect_identical(c(m$n_psu, m$n_strata, m$n_obs), c(121L, 3L, 151L))
   expect_identical(
     .design_note_lines(m)[[1L]],
-    "Design: stratified (stype), cluster (dnum), 121 PSU, calibrated / post-stratified; 118 degrees of freedom."
+    "Design: stratified (stype), cluster (dnum), 121 PSUs, calibrated / post-stratified; 118 degrees of freedom."
   )
 })
 
@@ -528,7 +528,7 @@ test_that("every table and regression note carries the same count", {
   scheme <- .design_scheme_parts(.design_meta(d))
   expect_identical(
     scheme,
-    "cluster (dnum), 8 PSU, with finite population correction, calibrated / post-stratified"
+    "cluster (dnum), 8 PSUs, with finite population correction, calibrated / post-stratified"
   )
   for (fit in list(glm_fit, cox_fit)) {
     note <- attr(table_regression(fit, output = "long"), "note")
@@ -825,15 +825,15 @@ test_that("the design footer says what the design is, in three sentences", {
   )
   expect_identical(
     .design_note_lines(.design_meta(.svy_fixture("clus1")))[[1L]],
-    "Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom."
+    "Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom."
   )
   expect_identical(
     .design_note_lines(.design_meta(.svy_fixture("clus2")))[[1L]],
-    "Design: cluster (dnum), 2 sampling stages, 40 PSU, with finite population correction; 39 degrees of freedom."
+    "Design: cluster (dnum), 2 sampling stages, 40 PSUs, with finite population correction; 39 degrees of freedom."
   )
   expect_identical(
     .design_note_lines(.design_meta(.svy_fixture("cal")))[[1L]],
-    "Design: cluster (dnum), 15 PSU, with finite population correction, calibrated / post-stratified; 14 degrees of freedom."
+    "Design: cluster (dnum), 15 PSUs, with finite population correction, calibrated / post-stratified; 14 degrees of freedom."
   )
   rep_lines <- .design_note_lines(.design_meta(.svy_fixture("rep1")))
   expect_identical(
@@ -1041,4 +1041,18 @@ test_that("the plain refusal is untouched for a non-design non-frame", {
   )
   expect_identical(conditionMessage(err), "`data` must be a data.frame.")
   expect_identical(.check_data_frame(mtcars, "table_continuous"), mtcars)
+})
+
+test_that("the design line counts one primary unit in the singular", {
+  meta <- list(
+    kind = "taylor",
+    has_strata = FALSE,
+    psu_name = "g",
+    n_psu = 1L,
+    n_obs = 10L,
+    n_stages = 1L
+  )
+  expect_identical(.design_scheme_parts(meta), "cluster (g), 1 PSU")
+  meta$n_psu <- 2L
+  expect_identical(.design_scheme_parts(meta), "cluster (g), 2 PSUs")
 })

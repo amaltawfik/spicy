@@ -1075,7 +1075,14 @@
     )
   }
   if (clustered) {
-    parts <- c(parts, spicy_fmt("note_design_psu", as.integer(meta$n_psu)))
+    parts <- c(
+      parts,
+      if (meta$n_psu == 1L) {
+        spicy_str("note_design_psu_one")
+      } else {
+        spicy_fmt("note_design_psu", as.integer(meta$n_psu))
+      }
+    )
   }
   if (isTRUE(meta$has_fpc)) {
     parts <- c(parts, spicy_str("note_design_fpc"))

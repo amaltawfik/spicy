@@ -577,6 +577,7 @@
   note_design_srs = "\u00E9chantillon al\u00E9atoire simple",
   note_design_stages = "%d degr\u00E9s de tirage",
   note_design_psu = "%d UPS",
+  note_design_psu_one = "1 UPS",
   note_design_fpc = "avec correction pour population finie",
   note_design_calibrated = "cal\u00E9 / post-stratifi\u00E9",
   note_design_replicate = "poids r\u00E9pliqu\u00E9s (%s), %d r\u00E9plications",

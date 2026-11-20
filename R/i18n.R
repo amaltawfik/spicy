@@ -1336,7 +1336,8 @@
   note_design_cluster = "cluster (%s)",
   note_design_srs = "simple random sample",
   note_design_stages = "%d sampling stages",
-  note_design_psu = "%d PSU",
+  note_design_psu = "%d PSUs",
+  note_design_psu_one = "1 PSU",
   note_design_fpc = "with finite population correction",
   note_design_calibrated = "calibrated / post-stratified",
   # Two holes: the replicate type (JK1 / JKn / BRR / bootstrap -- an

@@ -137,7 +137,7 @@
          No     │  12   8.4   3  23.1   8  32.0  0     0.0   23  12.6       
          Yes    │ 131  91.6  10  76.9  17  68.0  2   100.0  160  87.4       
       
-      Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (0–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
+      Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSUs, with finite population correction; degrees of freedom vary by group (0–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
 
 ---
 
@@ -163,7 +163,7 @@
          No     │   23     12.6         
          Yes    │  160     87.4         
       
-      Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (0–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
+      Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSUs, with finite population correction; degrees of freedom vary by group (0–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
 
 ---
 
@@ -181,7 +181,7 @@
          No     │  12   8.4   3  23.1   8  32.0  0     0.0   23  12.6       
          Yes    │ 131  91.6  10  76.9  17  68.0  2   100.0  160  87.4       
       
-      Note. Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (0–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
+      Note. Percentages are column percentages. Design: cluster (dnum), 15 PSUs, with finite population correction; degrees of freedom vary by group (0–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.
 
 # jama and lancet: the console tables under the theme
 
