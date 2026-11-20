@@ -348,21 +348,31 @@ fit_ml <- selection(lfp ~ age + I(age^2) + faminc + kids + educ,
                     wage ~ exper + I(exper^2) + educ + city, data = Mroz87)
 fit_2s <- heckit(lfp ~ age + I(age^2) + faminc + kids + educ,
                  wage ~ exper + I(exper^2) + educ + city, data = Mroz87)
-table_regression(list(Likelihood = fit_ml, Heckit = fit_2s), digits = 3)
+table_regression(fit_ml, digits = 3)
 ```
 
-Each variable has a `selection` row, an `outcome` row, or both,
-depending on the equations it enters. Education is in the two: it
-raises the probability of working and, among the women who work, the
-wage.
+A model alone sets its two equations side by side: the wage equation
+under `Outcome`, then the probit of participation under `Selection`. A
+variable fills the cells of the equations it enters. Education is in
+the two: it raises the probability of working and, among the women who
+work, the wage. `kids` is a logical variable and has a row for each of
+its values, the reference first. `outcome_labels` renames the two
+groups.
 
 The `Error terms` block holds what the model estimates beside its
 coefficients, and the note defines each of them. σ is the standard
 deviation of the error of the wage equation. ρ is the correlation
 between the errors of the two equations. If it is zero, the women who
 work are not selected on what the model does not observe, and a
-regression on them alone would do. Here ρ is −0.13, p = .424 by
-maximum likelihood: these data give no sign of such a selection.
+regression on them alone would do. Here ρ is −0.13, p = .424: these
+data give no sign of such a selection.
+
+Beside another model, the equations go back to rows: each variable has
+a `selection` row, an `outcome` row, or both.
+
+```{r sel-two, eval = have_sel}
+table_regression(list(Likelihood = fit_ml, Heckit = fit_2s), digits = 3)
+```
 
 The two-step method does not estimate ρ directly. It adds a regressor
 to the wage equation, the inverse Mills ratio, whose coefficient λ
@@ -415,10 +425,9 @@ table_regression(fit_bin)
 ### Treatment-effects models
 
 `treatReg()` estimates the effect of a binary treatment that the units
-choose. The outcome is observed for everyone, and the first equation,
-labeled `selection` in the table, is that of the treatment. The example
-takes the college attendance of the wife and the logarithm of the
-family income.
+choose. The outcome is observed for everyone, and the equation under
+`Selection` is that of the treatment. The example takes the college
+attendance of the wife and the logarithm of the family income.
 
 ```{r sel-treat, eval = have_sel}
 Mroz87$college <- trimws(Mroz87$wifecoll) == "TRUE"
