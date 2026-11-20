@@ -185,7 +185,9 @@ When every panel has the same column headers, one header heads the
 whole table. Otherwise the header of the first panel heads it and each
 later panel opens with its own header rows, below its label row:
 an \code{exponentiate = TRUE} glm panel reads "OR" where an lm panel reads
-"B", and a multinomial panel keeps its outcome categories in columns.
+"B", a multinomial panel keeps its outcome categories in columns, and
+the panel of a selection model alone keeps its two equations in
+columns.
 A panel narrower than the widest one leaves the extra columns blank.
 The header of a panel has the rows of the header of its table: its
 column groups, ruled under, its labels, and the bounds of its interval
