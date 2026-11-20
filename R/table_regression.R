@@ -3752,7 +3752,8 @@ table_regression <- function(
       mn_spanners <- .multinom_columns_spanners(
         ex$spanners %||% ex$model_ids,
         frames[[1L]]$info$extras$reference_outcome %||% NA_character_,
-        outcome_labels
+        outcome_labels,
+        selection = !is.null(ex$spanners)
       )
       # `outcome_labels` is consumed as the spanner override in this
       # layout: the renderer's per-model Outcome row must not also

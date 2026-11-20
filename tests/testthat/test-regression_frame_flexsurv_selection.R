@@ -640,3 +640,47 @@ test_that("a selection model alone in French and in a stack", {
   expect_true(any(grepl("Outcome", out[1:3], fixed = TRUE)))
   expect_true(any(grepl("Selection", out[1:3], fixed = TRUE)))
 })
+
+test_that("inline() reaches a model by its identity, whatever the language", {
+  fit <- .fit_selection_factors()
+  withr::with_options(list(spicy.language = "fr"), {
+    tb <- table_regression(fit)
+    expect_identical(
+      inline(tb, educ, model = "Outcome"),
+      inline(tb, educ, model = 1)
+    )
+    expect_identical(
+      inline(tb, educ, model = "outcome"),
+      inline(tb, educ, model = 1)
+    )
+    expect_identical(
+      inline(tb, educ, model = "selection"),
+      inline(tb, educ, model = 2)
+    )
+  })
+  # The displayed label wins over an identity: "M2" is the label of the
+  # first model here.
+  tm <- table_regression(list(
+    M2 = stats::lm(mpg ~ wt, data = mtcars),
+    stats::lm(mpg ~ wt + hp, data = mtcars)
+  ))
+  expect_identical(inline(tm, wt, model = "M2"), inline(tm, wt, model = 1))
+  expect_identical(inline(tm, wt, model = "M1"), inline(tm, wt, model = 1))
+  expect_error(inline(tm, wt, model = "m2x"), class = "spicy_invalid_input")
+})
+
+test_that("outcome_labels of the wrong length names the equations", {
+  fit <- .fit_selection_factors()
+  for (bad in list("Wage", 1:2)) {
+    err <- expect_error(
+      table_regression(fit, outcome_labels = bad),
+      class = "spicy_invalid_input"
+    )
+    expect_match(
+      conditionMessage(err),
+      "one label per equation for a selection model alone",
+      fixed = TRUE
+    )
+    expect_no_match(conditionMessage(err), "multinomial", fixed = TRUE)
+  }
+})

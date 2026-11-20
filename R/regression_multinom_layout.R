@@ -161,13 +161,39 @@
 .multinom_columns_spanners <- function(
   cats,
   reference_outcome,
-  outcome_labels
+  outcome_labels,
+  selection = FALSE
 ) {
   spanners <- cats
   if (is.null(outcome_labels)) {
     return(spanners)
   }
   non_ref_idx <- which(!(cats %in% reference_outcome))
+  # A selection model alone: one label per equation, outcome first.
+  if (
+    selection &&
+      (!is.character(outcome_labels) || length(outcome_labels) != length(cats))
+  ) {
+    spicy_abort(
+      c(
+        paste0(
+          "`outcome_labels` must be a character vector with one label ",
+          "per equation for a selection model alone, in order: the ",
+          "outcome equation, then the selection equation."
+        ),
+        "x" = if (is.character(outcome_labels)) {
+          sprintf(
+            "You supplied %d label(s) for %d equations.",
+            length(outcome_labels),
+            length(cats)
+          )
+        } else {
+          sprintf("You supplied a <%s>.", class(outcome_labels)[[1L]])
+        }
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   if (!is.character(outcome_labels)) {
     spicy_abort(
       c(
