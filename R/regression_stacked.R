@@ -147,9 +147,8 @@
   typed <- setdiff(names(as.list(call))[-1L], .REG_STACKED_OWN_ARGS)
   args <- mget(typed, envir = env)
   if (!identical(nested, nested_typed)) {
-    if ("nested" %in% names(args)) {
-      args$nested <- nested
-    }
+    # `nested` is not among `args` (.REG_STACKED_OWN_ARGS): it reaches the
+    # panels through the request, below.
     if ("show_fit_stats" %in% names(args)) {
       args["show_fit_stats"] <- list(np$show_fit_stats)
     }
