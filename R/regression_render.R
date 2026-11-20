@@ -1695,7 +1695,21 @@ format_term_label <- function(
     }
     return(paste0("  ", lbl))
   }
-  resolve_label(term, labels)
+  lbl <- resolve_label(term, labels)
+  # Flat, a selection-model row keeps its equation in front ("selection:
+  # age"), in the table language as under the grouped header.
+  ol <- term_row$outcome_prefix %||% NA_character_
+  if (identical(lbl, term) && !is.na(ol)) {
+    disp <- .reg_equation_display(ol)
+    if (!identical(disp, ol)) {
+      lbl <- paste0(
+        spicy_fmt("label_block_header", disp),
+        " ",
+        substring(term, nchar(ol) + 3L)
+      )
+    }
+  }
+  lbl
 }
 
 # The equation of a selection-model row under the header of its term,

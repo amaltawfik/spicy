@@ -415,3 +415,19 @@ test_that("the exponentiated component intercept is named as its row shows", {
   expect_match(out, "ZI constant", fixed = TRUE)
   expect_match(out, "The ZI constant row estimates", fixed = TRUE)
 })
+
+# ---- 11. The equations of a flat selection table in French ---------------
+
+test_that("a flat selection table names its equations in the table language", {
+  skip_if_not_installed("sampleSelection")
+  fit <- fu_selection()
+  rows <- withr::with_options(
+    list(spicy.language = "fr"),
+    fu_rows(table_regression(fit, factor_layout = "flat"))
+  )
+  expect_true("sélection : age" %in% rows)
+  expect_true("résultat : exper" %in% rows)
+  expect_false("selection: age" %in% rows)
+  rows <- fu_rows(table_regression(fit, factor_layout = "flat"))
+  expect_true(all(c("selection: age", "outcome: exper") %in% rows))
+})
