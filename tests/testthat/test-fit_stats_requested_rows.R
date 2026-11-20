@@ -363,3 +363,142 @@ test_that("`fixed_effects` asked of a fixest model fitted without fixed effects 
     table_regression(with_fe, show_fit_stats = c("nobs", "fixed_effects"))
   )
 })
+
+# ---- The controls on a group of models ---------------------------------------
+
+# validate_class_appropriate_tokens() refuses a literal list of fit
+# statistics when every model of the table is of one group. Each list
+# below is the list of such a control, with the test the control makes on
+# a fit; no class of the group lists one of its tokens in the column
+# `fit_stats` of the registry. The change tokens of these lists, and the
+# controls of the rq and rlm hierarchies, are left out: the registry has
+# no column for them. So are the column tokens (the AME of Cox and mlogit
+# fits, p and t of Bayesian fits, the partial columns of mixed and GEE
+# fits), and the pseudo-R-squared refused for a table of GAMs, which
+# depends on the family of each GAM (the predicates above).
+rr_group_lists <- list(
+  "all glm" = list(
+    member = function(f) inherits(f, "glm") && !inherits(f, "geeglm"),
+    tokens = c("r2", "omega2", "f2")
+  ),
+  "all glm, not all GAMs" = list(
+    member = function(f) {
+      inherits(f, "glm") && !inherits(f, c("geeglm", "gam"))
+    },
+    tokens = "adj_r2"
+  ),
+  "all lm" = list(
+    member = function(f) inherits(f, "lm") && !inherits(f, "glm"),
+    tokens = c(
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "r2_deviance"
+    )
+  ),
+  "all Bayesian" = list(
+    member = function(f) inherits(f, c("stanreg", "brmsfit")),
+    tokens = c(
+      "aic",
+      "aicc",
+      "bic",
+      "deviance",
+      "log_lik",
+      "r2",
+      "adj_r2",
+      "omega2",
+      "f2",
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "r2_deviance",
+      "sigma",
+      "rmse"
+    )
+  ),
+  "all GEE" = list(
+    member = function(f) inherits(f, "geeglm"),
+    tokens = c(
+      "r2",
+      "adj_r2",
+      "omega2",
+      "f2",
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "r2_deviance",
+      "aic",
+      "aicc",
+      "bic",
+      "deviance",
+      "log_lik"
+    )
+  ),
+  "all mixed" = list(
+    member = function(f) {
+      inherits(f, c("merMod", "lmerModLmerTest", "glmmTMB", "lme", "clmm"))
+    },
+    tokens = c(
+      "r2",
+      "adj_r2",
+      "omega2",
+      "f2",
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "r2_deviance"
+    )
+  ),
+  "all survey designs" = list(
+    member = function(f) .is_design_fit(f),
+    tokens = c(
+      "deviance",
+      "bic",
+      "aicc",
+      "pseudo_r2_mcfadden",
+      "pseudo_r2_nagelkerke",
+      "pseudo_r2_tjur",
+      "r2_deviance"
+    )
+  ),
+  "all survey designs, no svyglm" = list(
+    member = function(f) .is_design_fit(f) && !inherits(f, "svyglm"),
+    tokens = "aic"
+  )
+)
+
+# The class vectors of the Stan fits, which CI does not build: the group
+# tests read the classes only.
+rr_stan_classes <- list(
+  stanreg = c("stanreg", "glm", "lm"),
+  brmsfit = "brmsfit"
+)
+
+test_that("no class of a group lists a token its group control refuses", {
+  skip_on_cran()
+  reg <- .supported_models_registry()
+  ids <- .refusal_ids()
+  fits <- c(
+    lapply(stats::setNames(ids, ids), .class_fixture),
+    lapply(rr_stan_classes, function(cl) structure(list(), class = cl))
+  )
+  seen <- character()
+  for (id in names(fits)) {
+    fit <- fits[[id]]
+    cl <- .reg_registry_class(fit)
+    listed <- .reg_cell_tokens(reg$fit_stats[reg$class == cl])
+    for (g in names(rr_group_lists)) {
+      if (!rr_group_lists[[g]]$member(fit)) {
+        next
+      }
+      seen <- union(seen, g)
+      expect_identical(
+        intersect(rr_group_lists[[g]]$tokens, listed),
+        character(),
+        label = paste(id, "in", g)
+      )
+    }
+  }
+  # Every group has a class of the registry in it.
+  expect_setequal(seen, names(rr_group_lists))
+})
