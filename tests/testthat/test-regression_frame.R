@@ -593,8 +593,12 @@ test_that("one incapable model refuses the whole hierarchy", {
   expect_s3_class(err, "spicy_invalid_input")
   # Only the INCAPABLE class is named -- the capable lm is not at fault.
   expect_match(conditionMessage(err), "`lm_robust`", fixed = TRUE)
-  expect_false(grepl("`lm` /", conditionMessage(err), fixed = TRUE))
-  expect_match(conditionMessage(err), "adjacent PAIRS", fixed = TRUE)
+  expect_false(grepl("`lm` and", conditionMessage(err), fixed = TRUE))
+  expect_match(
+    conditionMessage(err),
+    "removes the comparison for the whole table",
+    fixed = TRUE
+  )
 })
 
 

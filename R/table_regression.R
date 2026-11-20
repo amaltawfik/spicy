@@ -3562,11 +3562,10 @@ table_regression <- function(
             .fmt_and(paste0("`", classes, "`"))
           ),
           "i" = paste0(
-            "The change statistics of a hierarchy (\u0394R\u00B2, partial ",
-            "F, LRT, \u0394AIC) all need a comparison of nested fits ",
-            "that this class does not provide here, and a hierarchy ",
-            "compares adjacent PAIRS -- one model that cannot be compared ",
-            "removes the comparison, it does not blank one column."
+            "The change statistics compare each model with the one before ",
+            "it, and this class has no test of two nested fits here. One ",
+            "model that cannot be compared removes the comparison for the ",
+            "whole table."
           ),
           "i" = "Render the models side by side with `nested = FALSE`.",
           # survey's own tests, where a design fit is the refused one:

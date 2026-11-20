@@ -1920,35 +1920,35 @@
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `clmm`.
-        i The change statistics of a hierarchy (<U+0394>R<U+00B2>, partial F, LRT, <U+0394>AIC) all need a comparison of nested fits that this class does not provide here, and a hierarchy compares adjacent PAIRS -- one model that cannot be compared removes the comparison, it does not blank one column.
+        i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
         i Render the models side by side with `nested = FALSE`.
       Received by 1:
         nested = TRUE: clmm
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `iv_robust`.
-        i The change statistics of a hierarchy (<U+0394>R<U+00B2>, partial F, LRT, <U+0394>AIC) all need a comparison of nested fits that this class does not provide here, and a hierarchy compares adjacent PAIRS -- one model that cannot be compared removes the comparison, it does not blank one column.
+        i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
         i Render the models side by side with `nested = FALSE`.
       Received by 1:
         nested = TRUE: iv_robust
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `ivreg`.
-        i The change statistics of a hierarchy (<U+0394>R<U+00B2>, partial F, LRT, <U+0394>AIC) all need a comparison of nested fits that this class does not provide here, and a hierarchy compares adjacent PAIRS -- one model that cannot be compared removes the comparison, it does not blank one column.
+        i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
         i Render the models side by side with `nested = FALSE`.
       Received by 1:
         nested = TRUE: ivreg
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `lm_robust`.
-        i The change statistics of a hierarchy (<U+0394>R<U+00B2>, partial F, LRT, <U+0394>AIC) all need a comparison of nested fits that this class does not provide here, and a hierarchy compares adjacent PAIRS -- one model that cannot be compared removes the comparison, it does not blank one column.
+        i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
         i Render the models side by side with `nested = FALSE`.
       Received by 1:
         nested = TRUE: lm_robust
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `svyglm`.
-        i The change statistics of a hierarchy (<U+0394>R<U+00B2>, partial F, LRT, <U+0394>AIC) all need a comparison of nested fits that this class does not provide here, and a hierarchy compares adjacent PAIRS -- one model that cannot be compared removes the comparison, it does not blank one column.
+        i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
         i Render the models side by side with `nested = FALSE`.
         i For a design-based fit, test a term with `survey::regTermTest(fit, ~term)`. Two nested `svyglm()` or `svycoxph()` fits are compared by `anova(fit0, fit)`.
       Received by 3:
@@ -3606,7 +3606,7 @@
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `stanreg`.
-        i The change statistics of a hierarchy (<U+0394>R<U+00B2>, partial F, LRT, <U+0394>AIC) all need a comparison of nested fits that this class does not provide here, and a hierarchy compares adjacent PAIRS -- one model that cannot be compared removes the comparison, it does not blank one column.
+        i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
         i Render the models side by side with `nested = FALSE`.
       Received by 1:
         nested = TRUE: stanreg
