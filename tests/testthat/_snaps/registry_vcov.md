@@ -132,14 +132,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "CR0": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "CR0": lm_robust, lm_robust_fe
       ----
@@ -327,14 +327,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "CR1": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "CR1": lm_robust, lm_robust_fe
       ----
@@ -537,14 +537,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "CR1S": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "CR1S": lm_robust, lm_robust_fe
       ----
@@ -792,14 +792,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "CR2": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "CR2": lm_robust, lm_robust_fe
       ----
@@ -1043,14 +1043,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "CR3": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "CR3": lm_robust, lm_robust_fe
       ----
@@ -1286,14 +1286,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "HC0": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "HC0": lm_robust, lm_robust_fe
       ----
@@ -1535,14 +1535,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "HC1": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "HC1": lm_robust, lm_robust_fe
       ----
@@ -1784,7 +1784,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "HC2": iv_robust
       ----
@@ -1798,7 +1798,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "HC2": lm_robust, lm_robust_fe
       ----
@@ -2040,7 +2040,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "HC3": iv_robust
       ----
@@ -2054,7 +2054,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "HC3": lm_robust, lm_robust_fe
       ----
@@ -2296,7 +2296,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "HC4": iv_robust
       ----
@@ -2310,7 +2310,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "HC4": lm_robust, lm_robust_fe
       ----
@@ -2552,7 +2552,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "HC5": iv_robust
       ----
@@ -2566,7 +2566,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "HC5": lm_robust, lm_robust_fe
       ----
@@ -2814,7 +2814,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "bootstrap": iv_robust
       ----
@@ -2828,7 +2828,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "bootstrap": lm_robust, lm_robust_fe
       ----
@@ -3065,7 +3065,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "iid": iv_robust
       ----
@@ -3078,7 +3078,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "iid": lm_robust, lm_robust_fe
       ----
@@ -3320,7 +3320,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "jackknife": iv_robust
       ----
@@ -3334,7 +3334,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "jackknife": lm_robust, lm_robust_fe
       ----
@@ -3578,7 +3578,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "ker": iv_robust
       ----
@@ -3591,7 +3591,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "ker": lm_robust, lm_robust_fe
       ----
@@ -3840,7 +3840,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "nid": iv_robust
       ----
@@ -3853,7 +3853,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "nid": lm_robust, lm_robust_fe
       ----
@@ -4102,7 +4102,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `iv_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::iv_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 1:
         vcov = "rank": iv_robust
       ----
@@ -4115,7 +4115,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
-        i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
+        i Refit with the standard errors you want: `estimatr::lm_robust(..., se_type = "HC3")`, or `se_type = "CR2"` with `clusters =`.
       Received by 2:
         vcov = "rank": lm_robust, lm_robust_fe
       ----

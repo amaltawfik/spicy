@@ -1359,8 +1359,8 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
             "i" = sprintf(
               paste0(
                 "Refit with the standard errors you want: ",
-                "%s(..., se_type = \"HC3\"), or ",
-                "se_type = \"CR2\" with `clusters =`."
+                "`%s(..., se_type = \"HC3\")`, or ",
+                "`se_type = \"CR2\"` with `clusters =`."
               ),
               estimatr_fn
             )
@@ -1625,7 +1625,7 @@ validate_cluster_lists <- function(
         sprintf(
           paste0(
             "estimatr clusters at fit time: ",
-            "%s(..., clusters = <var>, se_type = \"CR2\")."
+            "`%s(..., clusters = <var>, se_type = \"CR2\")`."
           ),
           estimatr_fn
         )
