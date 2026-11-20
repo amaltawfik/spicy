@@ -140,7 +140,7 @@ test_that("the type sentence names the models of one type together", {
   made$info$extras$title_prefix <- "Made-up model"
   type_note <- function(frames) {
     gsub(
-      " ",
+      "\u00a0",
       " ",
       build_regression_type_footer_block_from_frames(frames),
       fixed = TRUE
