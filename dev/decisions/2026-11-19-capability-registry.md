@@ -38,6 +38,8 @@ Chaque argument mis à une valeur autre que son défaut, sur chaque ajustement d
 
 Les effets hors famille sont légitimes : l'argument suit la structure de l'ajustement (effets aléatoires, seuils, composantes), et non la famille du registre. Un refus par famille serait donc faux pour ces dix cas. `tau` et `at_time` seuls sont refusés partout, dans leur famille aussi, parce qu'aucune colonne RMST ou de différence de risque n'est demandée. Avec la colonne demandée, 63 ajustements hors famille sur 64 reçoivent l'erreur qui dit que la classe n'a pas ces colonnes. Le 64e est un `AER::tobit`, qui hérite de `survreg` et reçoit une RMST calculée sur une régression censurée qui n'est pas une durée.
 
+2026-11-20 : la phrase sur le `AER::tobit` est fausse. Sa RMST et sa différence de risque sont refusées (« not available for a tobit fit », snapshot de `test-refusal_messages.R`), comme pour les 63 autres. Depuis ce jour, le refus vient avant la demande de `tau`.
+
 ## Mesure 2 : la validation pourrait-elle lire le registre ?
 
 Sur les 71 ajustements, 18 classes en ont au moins deux.
