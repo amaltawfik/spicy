@@ -3103,8 +3103,11 @@ validate_class_appropriate_tokens <- function(
   }
 
   if ("delta" %in% show_fit_stats) {
+    # The dispersion with covariates first, then the registry, as for
+    # theta above.
     is_nb1 <- vapply(models, .is_nb1_fit, logical(1))
-    if (!any(is_nb1)) {
+    .abort_modeled_dispersion(models[is_nb1], "delta", "delta", call)
+    if (!.reg_any_offers(models, "delta")) {
       spicy_abort(
         c(
           paste0(
@@ -3122,7 +3125,6 @@ validate_class_appropriate_tokens <- function(
         call = call
       )
     }
-    .abort_modeled_dispersion(models[is_nb1], "delta", "delta", call)
   }
 
   if ("phi" %in% show_fit_stats) {
