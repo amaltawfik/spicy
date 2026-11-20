@@ -1790,8 +1790,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `ivreg` models.
-        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
-        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or `se_type = "HC3"`.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "HC2": ivreg
       ----
@@ -2046,8 +2046,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `ivreg` models.
-        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
-        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or `se_type = "HC3"`.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "HC3": ivreg
       ----
@@ -2302,8 +2302,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `ivreg` models.
-        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
-        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or `se_type = "HC3"`.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "HC4": ivreg
       ----
@@ -2558,8 +2558,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `ivreg` models.
-        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
-        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or `se_type = "HC3"`.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "HC5": ivreg
       ----
@@ -2821,7 +2821,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `ivreg` models.
         i The resamplers refit an `lm()`, not the two-stage least-squares model.
-        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "bootstrap": ivreg
       ----
@@ -3071,7 +3071,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `ivreg` models.
-        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "iid": ivreg
       ----
@@ -3327,7 +3327,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `ivreg` models.
         i The resamplers refit an `lm()`, not the two-stage least-squares model.
-        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "jackknife": ivreg
       ----
@@ -3584,7 +3584,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `ivreg` models.
-        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "ker": ivreg
       ----
@@ -3846,7 +3846,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `ivreg` models.
-        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "nid": ivreg
       ----
@@ -4108,7 +4108,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `ivreg` models.
-        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression_robust.
       Received by 1:
         vcov = "rank": ivreg
       ----

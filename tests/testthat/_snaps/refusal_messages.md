@@ -72,383 +72,7 @@
         show_columns = "ame_se": selection
       ----
       error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `Glm`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 2:
-        show_columns = "partial_chi2": rms_Glm
-        show_columns = "partial_f": rms_Glm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `betareg`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": betareg
-        show_columns = "partial_eta2": betareg
-        show_columns = "partial_eta2_ci": betareg
-        show_columns = "partial_f": betareg
-        show_columns = "partial_f2": betareg
-        show_columns = "partial_f2_ci": betareg
-        show_columns = "partial_omega2": betareg
-        show_columns = "partial_omega2_ci": betareg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `clm`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": clm
-        show_columns = "partial_eta2": clm
-        show_columns = "partial_eta2_ci": clm
-        show_columns = "partial_f": clm
-        show_columns = "partial_f2": clm
-        show_columns = "partial_f2_ci": clm
-        show_columns = "partial_omega2": clm
-        show_columns = "partial_omega2_ci": clm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `clmm`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 2:
-        show_columns = "partial_chi2": clmm
-        show_columns = "partial_f": clmm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `coxph`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": coxph
-        show_columns = "partial_eta2": coxph
-        show_columns = "partial_eta2_ci": coxph
-        show_columns = "partial_f": coxph
-        show_columns = "partial_f2": coxph
-        show_columns = "partial_f2_ci": coxph
-        show_columns = "partial_omega2": coxph
-        show_columns = "partial_omega2_ci": coxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `cph`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": cph
-        show_columns = "partial_eta2": cph
-        show_columns = "partial_eta2_ci": cph
-        show_columns = "partial_f": cph
-        show_columns = "partial_f2": cph
-        show_columns = "partial_f2_ci": cph
-        show_columns = "partial_omega2": cph
-        show_columns = "partial_omega2_ci": cph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `fixest`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": feols
-        show_columns = "partial_eta2": feols
-        show_columns = "partial_eta2_ci": feols
-        show_columns = "partial_f": feols
-        show_columns = "partial_f2": feols
-        show_columns = "partial_f2_ci": feols
-        show_columns = "partial_omega2": feols
-        show_columns = "partial_omega2_ci": feols
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `flexsurvreg`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": flexsurvreg
-        show_columns = "partial_eta2": flexsurvreg
-        show_columns = "partial_eta2_ci": flexsurvreg
-        show_columns = "partial_f": flexsurvreg
-        show_columns = "partial_f2": flexsurvreg
-        show_columns = "partial_f2_ci": flexsurvreg
-        show_columns = "partial_omega2": flexsurvreg
-        show_columns = "partial_omega2_ci": flexsurvreg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `gam`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 6:
-        show_columns = "partial_chi2": bam, gam, gam_logit
-        show_columns = "partial_f": bam, gam, gam_logit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `gls`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": gls
-        show_columns = "partial_eta2": gls
-        show_columns = "partial_eta2_ci": gls
-        show_columns = "partial_f": gls
-        show_columns = "partial_f2": gls
-        show_columns = "partial_f2_ci": gls
-        show_columns = "partial_omega2": gls
-        show_columns = "partial_omega2_ci": gls
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `hurdle`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": hurdle
-        show_columns = "partial_eta2": hurdle
-        show_columns = "partial_eta2_ci": hurdle
-        show_columns = "partial_f": hurdle
-        show_columns = "partial_f2": hurdle
-        show_columns = "partial_f2_ci": hurdle
-        show_columns = "partial_omega2": hurdle
-        show_columns = "partial_omega2_ci": hurdle
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `iv_robust`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": iv_robust
-        show_columns = "partial_eta2": iv_robust
-        show_columns = "partial_eta2_ci": iv_robust
-        show_columns = "partial_f": iv_robust
-        show_columns = "partial_f2": iv_robust
-        show_columns = "partial_f2_ci": iv_robust
-        show_columns = "partial_omega2": iv_robust
-        show_columns = "partial_omega2_ci": iv_robust
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `ivreg`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": ivreg
-        show_columns = "partial_eta2": ivreg
-        show_columns = "partial_eta2_ci": ivreg
-        show_columns = "partial_f": ivreg
-        show_columns = "partial_f2": ivreg
-        show_columns = "partial_f2_ci": ivreg
-        show_columns = "partial_omega2": ivreg
-        show_columns = "partial_omega2_ci": ivreg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `lm_robust`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": lm_robust
-        show_columns = "partial_eta2": lm_robust
-        show_columns = "partial_eta2_ci": lm_robust
-        show_columns = "partial_f": lm_robust
-        show_columns = "partial_f2": lm_robust
-        show_columns = "partial_f2_ci": lm_robust
-        show_columns = "partial_omega2": lm_robust
-        show_columns = "partial_omega2_ci": lm_robust
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `lrm`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 2:
-        show_columns = "partial_chi2": lrm
-        show_columns = "partial_f": lrm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `mlogit`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": mlogit
-        show_columns = "partial_eta2": mlogit
-        show_columns = "partial_eta2_ci": mlogit
-        show_columns = "partial_f": mlogit
-        show_columns = "partial_f2": mlogit
-        show_columns = "partial_f2_ci": mlogit
-        show_columns = "partial_omega2": mlogit
-        show_columns = "partial_omega2_ci": mlogit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `multinom`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": multinom
-        show_columns = "partial_eta2": multinom
-        show_columns = "partial_eta2_ci": multinom
-        show_columns = "partial_f": multinom
-        show_columns = "partial_f2": multinom
-        show_columns = "partial_f2_ci": multinom
-        show_columns = "partial_omega2": multinom
-        show_columns = "partial_omega2_ci": multinom
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `nls`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": nls
-        show_columns = "partial_eta2": nls
-        show_columns = "partial_eta2_ci": nls
-        show_columns = "partial_f": nls
-        show_columns = "partial_f2": nls
-        show_columns = "partial_f2_ci": nls
-        show_columns = "partial_omega2": nls
-        show_columns = "partial_omega2_ci": nls
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `ols`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": ols
-        show_columns = "partial_eta2": ols
-        show_columns = "partial_eta2_ci": ols
-        show_columns = "partial_f": ols
-        show_columns = "partial_f2": ols
-        show_columns = "partial_f2_ci": ols
-        show_columns = "partial_omega2": ols
-        show_columns = "partial_omega2_ci": ols
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `polr`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": polr
-        show_columns = "partial_eta2": polr
-        show_columns = "partial_eta2_ci": polr
-        show_columns = "partial_f": polr
-        show_columns = "partial_f2": polr
-        show_columns = "partial_f2_ci": polr
-        show_columns = "partial_omega2": polr
-        show_columns = "partial_omega2_ci": polr
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `rlm`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": rlm
-        show_columns = "partial_eta2": rlm
-        show_columns = "partial_eta2_ci": rlm
-        show_columns = "partial_f": rlm
-        show_columns = "partial_f2": rlm
-        show_columns = "partial_f2_ci": rlm
-        show_columns = "partial_omega2": rlm
-        show_columns = "partial_omega2_ci": rlm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `rq`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": rq
-        show_columns = "partial_eta2": rq
-        show_columns = "partial_eta2_ci": rq
-        show_columns = "partial_f": rq
-        show_columns = "partial_f2": rq
-        show_columns = "partial_f2_ci": rq
-        show_columns = "partial_omega2": rq
-        show_columns = "partial_omega2_ci": rq
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `selection`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": selection
-        show_columns = "partial_eta2": selection
-        show_columns = "partial_eta2_ci": selection
-        show_columns = "partial_f": selection
-        show_columns = "partial_f2": selection
-        show_columns = "partial_f2_ci": selection
-        show_columns = "partial_omega2": selection
-        show_columns = "partial_omega2_ci": selection
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `survreg`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": survreg
-        show_columns = "partial_eta2": survreg
-        show_columns = "partial_eta2_ci": survreg
-        show_columns = "partial_f": survreg
-        show_columns = "partial_f2": survreg
-        show_columns = "partial_f2_ci": survreg
-        show_columns = "partial_omega2": survreg
-        show_columns = "partial_omega2_ci": survreg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `svycoxph`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": svycoxph
-        show_columns = "partial_eta2": svycoxph
-        show_columns = "partial_eta2_ci": svycoxph
-        show_columns = "partial_f": svycoxph
-        show_columns = "partial_f2": svycoxph
-        show_columns = "partial_f2_ci": svycoxph
-        show_columns = "partial_omega2": svycoxph
-        show_columns = "partial_omega2_ci": svycoxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `svyglm`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 2:
-        show_columns = "partial_chi2": svyglm
-        show_columns = "partial_f": svyglm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `svyolr`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": svyolr
-        show_columns = "partial_eta2": svyolr
-        show_columns = "partial_eta2_ci": svyolr
-        show_columns = "partial_f": svyolr
-        show_columns = "partial_f2": svyolr
-        show_columns = "partial_f2_ci": svyolr
-        show_columns = "partial_omega2": svyolr
-        show_columns = "partial_omega2_ci": svyolr
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `tobit`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": tobit
-        show_columns = "partial_eta2": tobit
-        show_columns = "partial_eta2_ci": tobit
-        show_columns = "partial_f": tobit
-        show_columns = "partial_f2": tobit
-        show_columns = "partial_f2_ci": tobit
-        show_columns = "partial_omega2": tobit
-        show_columns = "partial_omega2_ci": tobit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `zeroinfl`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": zeroinfl
-        show_columns = "partial_eta2": zeroinfl
-        show_columns = "partial_eta2_ci": zeroinfl
-        show_columns = "partial_f": zeroinfl
-        show_columns = "partial_f2": zeroinfl
-        show_columns = "partial_f2_ci": zeroinfl
-        show_columns = "partial_omega2": zeroinfl
-        show_columns = "partial_omega2_ci": zeroinfl
-      ----
-      error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for a stratified survreg fit (M1).
+        RMST / risk-difference columns are not available for a stratified survreg fit.
         i Per-stratum scale parameters are not standardized; refit without `strata()`.
       Received by 8:
         show_columns = "risk_diff": survreg_strata
@@ -475,7 +99,7 @@
         show_columns = "rmst_se": tobit
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (Glm).
+        RMST / risk-difference columns are not available for this model class (`Glm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": rms_Glm
@@ -488,7 +112,7 @@
         show_columns = "rmst_se": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (bam).
+        RMST / risk-difference columns are not available for this model class (`bam`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": bam
@@ -501,7 +125,7 @@
         show_columns = "rmst_se": bam
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (betareg).
+        RMST / risk-difference columns are not available for this model class (`betareg`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": betareg
@@ -514,7 +138,7 @@
         show_columns = "rmst_se": betareg
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (clm).
+        RMST / risk-difference columns are not available for this model class (`clm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": clm
@@ -527,7 +151,7 @@
         show_columns = "rmst_se": clm
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (clmm).
+        RMST / risk-difference columns are not available for this model class (`clmm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": clmm
@@ -540,7 +164,7 @@
         show_columns = "rmst_se": clmm
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (cph).
+        RMST / risk-difference columns are not available for this model class (`cph`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": cph
@@ -553,7 +177,7 @@
         show_columns = "rmst_se": cph
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (fixest).
+        RMST / risk-difference columns are not available for this model class (`fixest`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": feols
@@ -566,7 +190,7 @@
         show_columns = "rmst_se": feols
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (flexsurvreg).
+        RMST / risk-difference columns are not available for this model class (`flexsurvreg`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": flexsurvreg
@@ -579,7 +203,7 @@
         show_columns = "rmst_se": flexsurvreg
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (gam).
+        RMST / risk-difference columns are not available for this model class (`gam`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 16:
         show_columns = "risk_diff": gam, gam_logit
@@ -592,7 +216,7 @@
         show_columns = "rmst_se": gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (geeglm).
+        RMST / risk-difference columns are not available for this model class (`geeglm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": geeglm
@@ -605,7 +229,7 @@
         show_columns = "rmst_se": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (glm).
+        RMST / risk-difference columns are not available for this model class (`glm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": glm_gaussian
@@ -618,7 +242,7 @@
         show_columns = "rmst_se": glm_gaussian
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (glmerMod).
+        RMST / risk-difference columns are not available for this model class (`glmerMod`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": glmer
@@ -631,7 +255,7 @@
         show_columns = "rmst_se": glmer
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (glmmTMB).
+        RMST / risk-difference columns are not available for this model class (`glmmTMB`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": glmmTMB
@@ -644,7 +268,7 @@
         show_columns = "rmst_se": glmmTMB
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (gls).
+        RMST / risk-difference columns are not available for this model class (`gls`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": gls
@@ -657,7 +281,7 @@
         show_columns = "rmst_se": gls
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (hurdle).
+        RMST / risk-difference columns are not available for this model class (`hurdle`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": hurdle
@@ -670,7 +294,7 @@
         show_columns = "rmst_se": hurdle
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (iv_robust).
+        RMST / risk-difference columns are not available for this model class (`iv_robust`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": iv_robust
@@ -683,7 +307,7 @@
         show_columns = "rmst_se": iv_robust
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (ivreg).
+        RMST / risk-difference columns are not available for this model class (`ivreg`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": ivreg
@@ -696,20 +320,7 @@
         show_columns = "rmst_se": ivreg
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (lm).
-        i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
-      Received by 8:
-        show_columns = "risk_diff": lm
-        show_columns = "risk_diff_ci": lm
-        show_columns = "risk_diff_p": lm
-        show_columns = "risk_diff_se": lm
-        show_columns = "rmst": lm
-        show_columns = "rmst_ci": lm
-        show_columns = "rmst_p": lm
-        show_columns = "rmst_se": lm
-      ----
-      error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (lm_robust).
+        RMST / risk-difference columns are not available for this model class (`lm_robust`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": lm_robust
@@ -722,7 +333,20 @@
         show_columns = "rmst_se": lm_robust
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (lme).
+        RMST / risk-difference columns are not available for this model class (`lm`).
+        i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
+      Received by 8:
+        show_columns = "risk_diff": lm
+        show_columns = "risk_diff_ci": lm
+        show_columns = "risk_diff_p": lm
+        show_columns = "risk_diff_se": lm
+        show_columns = "rmst": lm
+        show_columns = "rmst_ci": lm
+        show_columns = "rmst_p": lm
+        show_columns = "rmst_se": lm
+      ----
+      error: spicy_invalid_input, spicy_error
+        RMST / risk-difference columns are not available for this model class (`lme`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": lme
@@ -735,7 +359,7 @@
         show_columns = "rmst_se": lme
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (lmerMod).
+        RMST / risk-difference columns are not available for this model class (`lmerMod`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": lmer
@@ -748,7 +372,7 @@
         show_columns = "rmst_se": lmer
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (lrm).
+        RMST / risk-difference columns are not available for this model class (`lrm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": lrm
@@ -761,7 +385,7 @@
         show_columns = "rmst_se": lrm
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (mlogit).
+        RMST / risk-difference columns are not available for this model class (`mlogit`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": mlogit
@@ -774,7 +398,7 @@
         show_columns = "rmst_se": mlogit
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (multinom).
+        RMST / risk-difference columns are not available for this model class (`multinom`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": multinom
@@ -787,7 +411,7 @@
         show_columns = "rmst_se": multinom
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (negbin).
+        RMST / risk-difference columns are not available for this model class (`negbin`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": glm.nb
@@ -800,7 +424,7 @@
         show_columns = "rmst_se": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (nls).
+        RMST / risk-difference columns are not available for this model class (`nls`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": nls
@@ -813,7 +437,7 @@
         show_columns = "rmst_se": nls
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (ols).
+        RMST / risk-difference columns are not available for this model class (`ols`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": ols
@@ -826,7 +450,7 @@
         show_columns = "rmst_se": ols
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (polr).
+        RMST / risk-difference columns are not available for this model class (`polr`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": polr
@@ -839,7 +463,7 @@
         show_columns = "rmst_se": polr
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (rlm).
+        RMST / risk-difference columns are not available for this model class (`rlm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": rlm
@@ -852,7 +476,7 @@
         show_columns = "rmst_se": rlm
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (rq).
+        RMST / risk-difference columns are not available for this model class (`rq`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": rq
@@ -865,7 +489,7 @@
         show_columns = "rmst_se": rq
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (selection).
+        RMST / risk-difference columns are not available for this model class (`selection`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": selection
@@ -878,7 +502,7 @@
         show_columns = "rmst_se": selection
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (svyglm).
+        RMST / risk-difference columns are not available for this model class (`svyglm`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": svyglm
@@ -891,7 +515,7 @@
         show_columns = "rmst_se": svyglm
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (svyolr).
+        RMST / risk-difference columns are not available for this model class (`svyolr`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": svyolr
@@ -904,7 +528,7 @@
         show_columns = "rmst_se": svyolr
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (zeroinfl).
+        RMST / risk-difference columns are not available for this model class (`zeroinfl`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": zeroinfl
@@ -917,7 +541,742 @@
         show_columns = "rmst_se": zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
-        Token "df" in `show_columns` has no value for any model in the table: its tests are z tests, which have no degrees of freedom.
+        Term-level columns (`partial_*`) are not available for `Glm`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 2:
+        show_columns = "partial_chi2": rms_Glm
+        show_columns = "partial_f": rms_Glm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `betareg`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": betareg
+        show_columns = "partial_eta2": betareg
+        show_columns = "partial_eta2_ci": betareg
+        show_columns = "partial_f": betareg
+        show_columns = "partial_f2": betareg
+        show_columns = "partial_f2_ci": betareg
+        show_columns = "partial_omega2": betareg
+        show_columns = "partial_omega2_ci": betareg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `clm`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": clm
+        show_columns = "partial_eta2": clm
+        show_columns = "partial_eta2_ci": clm
+        show_columns = "partial_f": clm
+        show_columns = "partial_f2": clm
+        show_columns = "partial_f2_ci": clm
+        show_columns = "partial_omega2": clm
+        show_columns = "partial_omega2_ci": clm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `clmm`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 2:
+        show_columns = "partial_chi2": clmm
+        show_columns = "partial_f": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `coxph`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": coxph
+        show_columns = "partial_eta2": coxph
+        show_columns = "partial_eta2_ci": coxph
+        show_columns = "partial_f": coxph
+        show_columns = "partial_f2": coxph
+        show_columns = "partial_f2_ci": coxph
+        show_columns = "partial_omega2": coxph
+        show_columns = "partial_omega2_ci": coxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `cph`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": cph
+        show_columns = "partial_eta2": cph
+        show_columns = "partial_eta2_ci": cph
+        show_columns = "partial_f": cph
+        show_columns = "partial_f2": cph
+        show_columns = "partial_f2_ci": cph
+        show_columns = "partial_omega2": cph
+        show_columns = "partial_omega2_ci": cph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `fixest`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": feols
+        show_columns = "partial_eta2": feols
+        show_columns = "partial_eta2_ci": feols
+        show_columns = "partial_f": feols
+        show_columns = "partial_f2": feols
+        show_columns = "partial_f2_ci": feols
+        show_columns = "partial_omega2": feols
+        show_columns = "partial_omega2_ci": feols
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `flexsurvreg`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": flexsurvreg
+        show_columns = "partial_eta2": flexsurvreg
+        show_columns = "partial_eta2_ci": flexsurvreg
+        show_columns = "partial_f": flexsurvreg
+        show_columns = "partial_f2": flexsurvreg
+        show_columns = "partial_f2_ci": flexsurvreg
+        show_columns = "partial_omega2": flexsurvreg
+        show_columns = "partial_omega2_ci": flexsurvreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `gam`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 6:
+        show_columns = "partial_chi2": bam, gam, gam_logit
+        show_columns = "partial_f": bam, gam, gam_logit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `gls`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": gls
+        show_columns = "partial_eta2": gls
+        show_columns = "partial_eta2_ci": gls
+        show_columns = "partial_f": gls
+        show_columns = "partial_f2": gls
+        show_columns = "partial_f2_ci": gls
+        show_columns = "partial_omega2": gls
+        show_columns = "partial_omega2_ci": gls
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `hurdle`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": hurdle
+        show_columns = "partial_eta2": hurdle
+        show_columns = "partial_eta2_ci": hurdle
+        show_columns = "partial_f": hurdle
+        show_columns = "partial_f2": hurdle
+        show_columns = "partial_f2_ci": hurdle
+        show_columns = "partial_omega2": hurdle
+        show_columns = "partial_omega2_ci": hurdle
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `iv_robust`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": iv_robust
+        show_columns = "partial_eta2": iv_robust
+        show_columns = "partial_eta2_ci": iv_robust
+        show_columns = "partial_f": iv_robust
+        show_columns = "partial_f2": iv_robust
+        show_columns = "partial_f2_ci": iv_robust
+        show_columns = "partial_omega2": iv_robust
+        show_columns = "partial_omega2_ci": iv_robust
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `ivreg`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": ivreg
+        show_columns = "partial_eta2": ivreg
+        show_columns = "partial_eta2_ci": ivreg
+        show_columns = "partial_f": ivreg
+        show_columns = "partial_f2": ivreg
+        show_columns = "partial_f2_ci": ivreg
+        show_columns = "partial_omega2": ivreg
+        show_columns = "partial_omega2_ci": ivreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `lm_robust`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": lm_robust
+        show_columns = "partial_eta2": lm_robust
+        show_columns = "partial_eta2_ci": lm_robust
+        show_columns = "partial_f": lm_robust
+        show_columns = "partial_f2": lm_robust
+        show_columns = "partial_f2_ci": lm_robust
+        show_columns = "partial_omega2": lm_robust
+        show_columns = "partial_omega2_ci": lm_robust
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `lrm`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 2:
+        show_columns = "partial_chi2": lrm
+        show_columns = "partial_f": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `mlogit`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": mlogit
+        show_columns = "partial_eta2": mlogit
+        show_columns = "partial_eta2_ci": mlogit
+        show_columns = "partial_f": mlogit
+        show_columns = "partial_f2": mlogit
+        show_columns = "partial_f2_ci": mlogit
+        show_columns = "partial_omega2": mlogit
+        show_columns = "partial_omega2_ci": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `multinom`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": multinom
+        show_columns = "partial_eta2": multinom
+        show_columns = "partial_eta2_ci": multinom
+        show_columns = "partial_f": multinom
+        show_columns = "partial_f2": multinom
+        show_columns = "partial_f2_ci": multinom
+        show_columns = "partial_omega2": multinom
+        show_columns = "partial_omega2_ci": multinom
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `nls`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": nls
+        show_columns = "partial_eta2": nls
+        show_columns = "partial_eta2_ci": nls
+        show_columns = "partial_f": nls
+        show_columns = "partial_f2": nls
+        show_columns = "partial_f2_ci": nls
+        show_columns = "partial_omega2": nls
+        show_columns = "partial_omega2_ci": nls
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `ols`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": ols
+        show_columns = "partial_eta2": ols
+        show_columns = "partial_eta2_ci": ols
+        show_columns = "partial_f": ols
+        show_columns = "partial_f2": ols
+        show_columns = "partial_f2_ci": ols
+        show_columns = "partial_omega2": ols
+        show_columns = "partial_omega2_ci": ols
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `polr`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": polr
+        show_columns = "partial_eta2": polr
+        show_columns = "partial_eta2_ci": polr
+        show_columns = "partial_f": polr
+        show_columns = "partial_f2": polr
+        show_columns = "partial_f2_ci": polr
+        show_columns = "partial_omega2": polr
+        show_columns = "partial_omega2_ci": polr
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `rlm`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": rlm
+        show_columns = "partial_eta2": rlm
+        show_columns = "partial_eta2_ci": rlm
+        show_columns = "partial_f": rlm
+        show_columns = "partial_f2": rlm
+        show_columns = "partial_f2_ci": rlm
+        show_columns = "partial_omega2": rlm
+        show_columns = "partial_omega2_ci": rlm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `rq`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": rq
+        show_columns = "partial_eta2": rq
+        show_columns = "partial_eta2_ci": rq
+        show_columns = "partial_f": rq
+        show_columns = "partial_f2": rq
+        show_columns = "partial_f2_ci": rq
+        show_columns = "partial_omega2": rq
+        show_columns = "partial_omega2_ci": rq
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `selection`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": selection
+        show_columns = "partial_eta2": selection
+        show_columns = "partial_eta2_ci": selection
+        show_columns = "partial_f": selection
+        show_columns = "partial_f2": selection
+        show_columns = "partial_f2_ci": selection
+        show_columns = "partial_omega2": selection
+        show_columns = "partial_omega2_ci": selection
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `survreg`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": survreg
+        show_columns = "partial_eta2": survreg
+        show_columns = "partial_eta2_ci": survreg
+        show_columns = "partial_f": survreg
+        show_columns = "partial_f2": survreg
+        show_columns = "partial_f2_ci": survreg
+        show_columns = "partial_omega2": survreg
+        show_columns = "partial_omega2_ci": survreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `svycoxph`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+        i For a design-based fit, test a term with `survey::regTermTest(fit, ~term)`.
+      Received by 8:
+        show_columns = "partial_chi2": svycoxph
+        show_columns = "partial_eta2": svycoxph
+        show_columns = "partial_eta2_ci": svycoxph
+        show_columns = "partial_f": svycoxph
+        show_columns = "partial_f2": svycoxph
+        show_columns = "partial_f2_ci": svycoxph
+        show_columns = "partial_omega2": svycoxph
+        show_columns = "partial_omega2_ci": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `svyglm`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+        i For a design-based fit, test a term with `survey::regTermTest(fit, ~term)`.
+      Received by 2:
+        show_columns = "partial_chi2": svyglm
+        show_columns = "partial_f": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `svyolr`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+        i For a design-based fit, test a term with `survey::regTermTest(fit, ~term)`.
+      Received by 8:
+        show_columns = "partial_chi2": svyolr
+        show_columns = "partial_eta2": svyolr
+        show_columns = "partial_eta2_ci": svyolr
+        show_columns = "partial_f": svyolr
+        show_columns = "partial_f2": svyolr
+        show_columns = "partial_f2_ci": svyolr
+        show_columns = "partial_omega2": svyolr
+        show_columns = "partial_omega2_ci": svyolr
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `tobit`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": tobit
+        show_columns = "partial_eta2": tobit
+        show_columns = "partial_eta2_ci": tobit
+        show_columns = "partial_f": tobit
+        show_columns = "partial_f2": tobit
+        show_columns = "partial_f2_ci": tobit
+        show_columns = "partial_omega2": tobit
+        show_columns = "partial_omega2_ci": tobit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Term-level columns (`partial_*`) are not available for `zeroinfl`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": zeroinfl
+        show_columns = "partial_eta2": zeroinfl
+        show_columns = "partial_eta2_ci": zeroinfl
+        show_columns = "partial_f": zeroinfl
+        show_columns = "partial_f2": zeroinfl
+        show_columns = "partial_f2_ci": zeroinfl
+        show_columns = "partial_omega2": zeroinfl
+        show_columns = "partial_omega2_ci": zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `Glm` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
+      Received by 1:
+        show_columns = "adj_r2": rms_Glm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `betareg` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": betareg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `clm` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": clm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `clmm` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `coxph` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": coxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `cph` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": cph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `fixest` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": feols
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `flexsurvreg` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": flexsurvreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `geeglm` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
+      Received by 1:
+        show_columns = "adj_r2": geeglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `glm` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
+      Received by 1:
+        show_columns = "adj_r2": glm_gaussian
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `glmerMod` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": glmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `glmmTMB` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": glmmTMB
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `gls` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": gls
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `hurdle` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": hurdle
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `iv_robust` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": iv_robust
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `ivreg` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": ivreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `lm_robust` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": lm_robust
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `lme` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": lme
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `lmerMod` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `lrm` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
+      Received by 1:
+        show_columns = "adj_r2": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `mgcv` GAMs.
+        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
+        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`, `"r2_deviance"`.
+      Received by 1:
+        show_columns = "adj_r2": bam
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `mgcv` GAMs.
+        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
+        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_tjur"`, `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`.
+      Received by 1:
+        show_columns = "adj_r2": gam_logit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `mgcv` GAMs.
+        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
+        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"r2_deviance"`.
+      Received by 1:
+        show_columns = "adj_r2": gam
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `mlogit` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `multinom` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": multinom
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `negbin` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
+      Received by 1:
+        show_columns = "adj_r2": glm.nb
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `nls` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": nls
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `polr` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": polr
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `rq` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": rq
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `selection` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": selection
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `survreg` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": survreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `svycoxph` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `svyglm` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
+      Received by 1:
+        show_columns = "adj_r2": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `svyolr` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": svyolr
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `tobit` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": tobit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `zeroinfl` models.
+        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
+        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
+      Received by 1:
+        show_columns = "adj_r2": zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame"` in `show_columns` is not available for `mlogit` models.
+        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
+      Received by 1:
+        show_columns = "ame": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+      Received by 1:
+        show_columns = "ame": cph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
+      Received by 1:
+        show_columns = "ame": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
+      Received by 1:
+        show_columns = "ame": coxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_ci"` in `show_columns` is not available for `mlogit` models.
+        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
+      Received by 1:
+        show_columns = "ame_ci": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_ci"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+      Received by 1:
+        show_columns = "ame_ci": cph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_ci"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
+      Received by 1:
+        show_columns = "ame_ci": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_ci"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
+      Received by 1:
+        show_columns = "ame_ci": coxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_p"` in `show_columns` is not available for `mlogit` models.
+        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
+      Received by 1:
+        show_columns = "ame_p": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_p"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+      Received by 1:
+        show_columns = "ame_p": cph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_p"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
+      Received by 1:
+        show_columns = "ame_p": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_p"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
+      Received by 1:
+        show_columns = "ame_p": coxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_se"` in `show_columns` is not available for `mlogit` models.
+        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
+      Received by 1:
+        show_columns = "ame_se": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_se"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+      Received by 1:
+        show_columns = "ame_se": cph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_se"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
+      Received by 1:
+        show_columns = "ame_se": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_se"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
+      Received by 1:
+        show_columns = "ame_se": coxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"df"` in `show_columns` has no value for any model in the table: its tests are z tests, which have no degrees of freedom.
         i The column gives the degrees of freedom of t tests (`lm`, a `glm` whose dispersion is estimated, `nlme::lme`, a survey design, a cluster-robust `vcov = "CR2"`, ...).
       Received by 27:
         show_columns = "df": bam, betareg, clm, clmm, coxph, cph, fepois,
@@ -926,426 +1285,7 @@
             polr, rlm, rms_Glm, survreg, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
-        Token "pd" in `show_columns` is defined only for Bayesian fits.
-        i The probability of direction is a posterior-draw summary (share of draws on the dominant side of zero); frequentist fits have none.
-      Received by 39:
-        show_columns = "pd": bam, betareg, clm, clmm, coxph, cph, feols,
-            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
-            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
-            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_chi2"` in `show_columns` is not defined for `lm` models.
-        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
-        i Use `"partial_f"`, or `"partial_f2"`, `"partial_eta2"` or `"partial_omega2"` for the variance-explained partials of an `lm`.
-      Received by 1:
-        show_columns = "partial_chi2": lm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_chi2"` in `show_columns` is not defined for the model (`glm`, Gamma).
-        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
-        i Use `"partial_f"`.
-      Received by 1:
-        show_columns = "partial_chi2": glm_gamma
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_chi2"` in `show_columns` is not defined for the model (`glm`, gaussian).
-        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
-        i Use `"partial_f"`.
-      Received by 1:
-        show_columns = "partial_chi2": glm_gaussian
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_chi2"` in `show_columns` is not defined for the model (`glm`, quasipoisson).
-        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
-        i Use `"partial_f"`.
-      Received by 1:
-        show_columns = "partial_chi2": glm_quasi
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`glm`, binomial).
-        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
-        i Use `"partial_chi2"`.
-      Received by 2:
-        show_columns = "partial_f": glm_logit, glm_probit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`glm`, poisson).
-        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
-        i Use `"partial_chi2"`.
-      Received by 1:
-        show_columns = "partial_f": glm_poisson
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`glmerMod`).
-        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
-        i Use `"partial_chi2"`.
-      Received by 1:
-        show_columns = "partial_f": glmer
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`glmmTMB`).
-        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
-        i Use `"partial_chi2"`.
-      Received by 1:
-        show_columns = "partial_f": glmmTMB
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`lme`).
-        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
-        i Use `"partial_chi2"`.
-      Received by 1:
-        show_columns = "partial_f": lme
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`lmerMod`).
-        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
-        i Use `"partial_chi2"`.
-      Received by 1:
-        show_columns = "partial_f": lmer
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`negbin`, Negative Binomial).
-        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
-        i Use `"partial_chi2"`.
-      Received by 1:
-        show_columns = "partial_f": glm.nb
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `Glm` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
-      Received by 1:
-        show_columns = "adj_r2": rms_Glm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `betareg` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": betareg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `clm` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": clm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `clmm` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": clmm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `coxph` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": coxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `cph` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": cph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `fixest` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": feols
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `flexsurvreg` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": flexsurvreg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `geeglm` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
-      Received by 1:
-        show_columns = "adj_r2": geeglm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `glm` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
-      Received by 1:
-        show_columns = "adj_r2": glm_gaussian
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `glmerMod` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": glmer
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `glmmTMB` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": glmmTMB
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `gls` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": gls
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `hurdle` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": hurdle
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `iv_robust` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": iv_robust
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `ivreg` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": ivreg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `lm_robust` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": lm_robust
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `lme` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": lme
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `lmerMod` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": lmer
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `lrm` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
-      Received by 1:
-        show_columns = "adj_r2": lrm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `mgcv` GAMs.
-        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
-        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`, `"r2_deviance"`.
-      Received by 1:
-        show_columns = "adj_r2": bam
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `mgcv` GAMs.
-        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
-        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_tjur"`, `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`.
-      Received by 1:
-        show_columns = "adj_r2": gam_logit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `mgcv` GAMs.
-        i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
-        i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"r2_deviance"`.
-      Received by 1:
-        show_columns = "adj_r2": gam
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `mlogit` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": mlogit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `multinom` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": multinom
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `negbin` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
-      Received by 1:
-        show_columns = "adj_r2": glm.nb
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `nls` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": nls
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `polr` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": polr
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `rq` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": rq
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `selection` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": selection
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `survreg` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": survreg
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `svycoxph` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": svycoxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `svyglm` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
-      Received by 1:
-        show_columns = "adj_r2": svyglm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `svyolr` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": svyolr
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `tobit` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": tobit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `zeroinfl` models.
-        i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
-        i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
-      Received by 1:
-        show_columns = "adj_r2": zeroinfl
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame" in `show_columns` are not available for mlogit models.
-        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
-      Received by 1:
-        show_columns = "ame": mlogit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
-      Received by 1:
-        show_columns = "ame": svycoxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
-      Received by 2:
-        show_columns = "ame": coxph, cph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_ci" in `show_columns` are not available for mlogit models.
-        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
-      Received by 1:
-        show_columns = "ame_ci": mlogit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_ci" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
-      Received by 1:
-        show_columns = "ame_ci": svycoxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_ci" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
-      Received by 2:
-        show_columns = "ame_ci": coxph, cph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_p" in `show_columns` are not available for mlogit models.
-        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
-      Received by 1:
-        show_columns = "ame_p": mlogit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_p" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
-      Received by 1:
-        show_columns = "ame_p": svycoxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_p" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
-      Received by 2:
-        show_columns = "ame_p": coxph, cph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_se" in `show_columns` are not available for mlogit models.
-        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
-      Received by 1:
-        show_columns = "ame_se": mlogit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_se" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
-      Received by 1:
-        show_columns = "ame_se": svycoxph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ame_se" in `show_columns` are not defined for Cox models.
-        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
-        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
-      Received by 2:
-        show_columns = "ame_se": coxph, cph
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "ess_bulk" in `show_columns` are shown only when every model is Bayesian.
+        Token `"ess_bulk"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
       Received by 39:
@@ -1356,7 +1296,7 @@
             survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "ess_tail" in `show_columns` are shown only when every model is Bayesian.
+        Token `"ess_tail"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
       Received by 39:
@@ -1367,7 +1307,7 @@
             survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "mcse" in `show_columns` are shown only when every model is Bayesian.
+        Token `"mcse"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
       Received by 39:
@@ -1378,476 +1318,760 @@
             survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_chi2" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_chi2"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_chi2": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_chi2"` in `show_columns` is not defined for `lm` models.
+        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
+        i Use `"partial_f"`, or `"partial_f2"`, `"partial_eta2"` or `"partial_omega2"` for the variance-explained partials of an `lm`.
+      Received by 1:
+        show_columns = "partial_chi2": lm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_chi2"` in `show_columns` is not defined for this model class (`glm`, Gamma).
+        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
+        i Use `"partial_f"`.
+      Received by 1:
+        show_columns = "partial_chi2": glm_gamma
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_chi2"` in `show_columns` is not defined for this model class (`glm`, gaussian).
+        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
+        i Use `"partial_f"`.
+      Received by 1:
+        show_columns = "partial_chi2": glm_gaussian
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_chi2"` in `show_columns` is not defined for this model class (`glm`, quasipoisson).
+        i `"partial_chi2"` is the likelihood-ratio chi-square of a `glm` whose dispersion is fixed (binomial, Poisson, `MASS::glm.nb()`) and the Wald chi-square of a mixed-effects model.
+        i Use `"partial_f"`.
+      Received by 1:
+        show_columns = "partial_chi2": glm_quasi
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_eta2": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_eta2"` in `show_columns` is not defined for `Glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
-      Received by 7:
-        show_columns = "partial_eta2": glm.nb, glm_logit, glm_poisson,
-            glm_probit, lrm, rms_Glm, svyglm
+      Received by 1:
+        show_columns = "partial_eta2": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_eta2"` in `show_columns` is not defined for `glm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 3:
+        show_columns = "partial_eta2": glm_logit, glm_poisson, glm_probit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2"` in `show_columns` is not defined for `glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The analog for a `glm` whose dispersion is estimated is `"partial_f"`, the partial F test that `anova(reduced, full, test = "F")` reports.
         i Replace with `"partial_f"` or drop the token.
       Received by 3:
         show_columns = "partial_eta2": glm_gamma, glm_gaussian, glm_quasi
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"partial_eta2"` in `show_columns` is not defined for `lrm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_eta2": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
       Received by 3:
         show_columns = "partial_eta2": bam, gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2" in `show_columns` are not defined for mixed-effects models.
-        i Variance-explained partials do not apply to mixed models. For a partial Wald chi-square test of each term, use `"partial_chi2"`.
-      Received by 5:
-        show_columns = "partial_eta2": clmm, glmer, glmmTMB, lme, lmer
+        Token `"partial_eta2"` in `show_columns` is not defined for `negbin` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_eta2": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2_ci" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_eta2"` in `show_columns` is not defined for `svyglm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_eta2": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+      Received by 1:
+        show_columns = "partial_eta2": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+        i For a partial Wald chi-square test of each term, use `"partial_chi2"`.
+      Received by 4:
+        show_columns = "partial_eta2": glmer, glmmTMB, lme, lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_eta2_ci": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `Glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
-      Received by 7:
-        show_columns = "partial_eta2_ci": glm.nb, glm_logit, glm_poisson,
-            glm_probit, lrm, rms_Glm, svyglm
+      Received by 1:
+        show_columns = "partial_eta2_ci": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `glm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 3:
+        show_columns = "partial_eta2_ci": glm_logit, glm_poisson, glm_probit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The analog for a `glm` whose dispersion is estimated is `"partial_f"`, the partial F test that `anova(reduced, full, test = "F")` reports.
         i Replace with `"partial_f"` or drop the token.
       Received by 3:
         show_columns = "partial_eta2_ci": glm_gamma, glm_gaussian, glm_quasi
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2_ci" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `lrm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_eta2_ci": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
       Received by 3:
         show_columns = "partial_eta2_ci": bam, gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2_ci" in `show_columns` are not defined for mixed-effects models.
-        i Variance-explained partials do not apply to mixed models. For a partial Wald chi-square test of each term, use `"partial_chi2"`.
-      Received by 5:
-        show_columns = "partial_eta2_ci": clmm, glmer, glmmTMB, lme, lmer
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `negbin` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_eta2_ci": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `svyglm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_eta2_ci": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+      Received by 1:
+        show_columns = "partial_eta2_ci": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+        i For a partial Wald chi-square test of each term, use `"partial_chi2"`.
+      Received by 4:
+        show_columns = "partial_eta2_ci": glmer, glmmTMB, lme, lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_f": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_f"` in `show_columns` is not defined for this model class (`glm`, binomial).
+        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
+        i Use `"partial_chi2"`.
+      Received by 2:
+        show_columns = "partial_f": glm_logit, glm_probit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f"` in `show_columns` is not defined for this model class (`glm`, poisson).
+        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
+        i Use `"partial_chi2"`.
+      Received by 1:
+        show_columns = "partial_f": glm_poisson
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f"` in `show_columns` is not defined for this model class (`glmerMod`).
+        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
+        i Use `"partial_chi2"`.
+      Received by 1:
+        show_columns = "partial_f": glmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f"` in `show_columns` is not defined for this model class (`glmmTMB`).
+        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
+        i Use `"partial_chi2"`.
+      Received by 1:
+        show_columns = "partial_f": glmmTMB
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f"` in `show_columns` is not defined for this model class (`lme`).
+        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
+        i Use `"partial_chi2"`.
+      Received by 1:
+        show_columns = "partial_f": lme
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f"` in `show_columns` is not defined for this model class (`lmerMod`).
+        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
+        i Use `"partial_chi2"`.
+      Received by 1:
+        show_columns = "partial_f": lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f"` in `show_columns` is not defined for this model class (`negbin`, Negative Binomial).
+        i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
+        i Use `"partial_chi2"`.
+      Received by 1:
+        show_columns = "partial_f": glm.nb
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_f2": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_f2"` in `show_columns` is not defined for `Glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
-      Received by 7:
-        show_columns = "partial_f2": glm.nb, glm_logit, glm_poisson, glm_probit,
-            lrm, rms_Glm, svyglm
+      Received by 1:
+        show_columns = "partial_f2": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_f2"` in `show_columns` is not defined for `glm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 3:
+        show_columns = "partial_f2": glm_logit, glm_poisson, glm_probit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2"` in `show_columns` is not defined for `glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The analog for a `glm` whose dispersion is estimated is `"partial_f"`, the partial F test that `anova(reduced, full, test = "F")` reports.
         i Replace with `"partial_f"` or drop the token.
       Received by 3:
         show_columns = "partial_f2": glm_gamma, glm_gaussian, glm_quasi
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"partial_f2"` in `show_columns` is not defined for `lrm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_f2": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
       Received by 3:
         show_columns = "partial_f2": bam, gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2" in `show_columns` are not defined for mixed-effects models.
-        i Variance-explained partials do not apply to mixed models. For a partial Wald chi-square test of each term, use `"partial_chi2"`.
-      Received by 5:
-        show_columns = "partial_f2": clmm, glmer, glmmTMB, lme, lmer
+        Token `"partial_f2"` in `show_columns` is not defined for `negbin` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_f2": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2_ci" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_f2"` in `show_columns` is not defined for `svyglm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_f2": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+      Received by 1:
+        show_columns = "partial_f2": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+        i For a partial Wald chi-square test of each term, use `"partial_chi2"`.
+      Received by 4:
+        show_columns = "partial_f2": glmer, glmmTMB, lme, lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2_ci"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_f2_ci": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `Glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
-      Received by 7:
-        show_columns = "partial_f2_ci": glm.nb, glm_logit, glm_poisson,
-            glm_probit, lrm, rms_Glm, svyglm
+      Received by 1:
+        show_columns = "partial_f2_ci": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `glm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 3:
+        show_columns = "partial_f2_ci": glm_logit, glm_poisson, glm_probit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The analog for a `glm` whose dispersion is estimated is `"partial_f"`, the partial F test that `anova(reduced, full, test = "F")` reports.
         i Replace with `"partial_f"` or drop the token.
       Received by 3:
         show_columns = "partial_f2_ci": glm_gamma, glm_gaussian, glm_quasi
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2_ci" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `lrm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_f2_ci": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
       Received by 3:
         show_columns = "partial_f2_ci": bam, gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2_ci" in `show_columns` are not defined for mixed-effects models.
-        i Variance-explained partials do not apply to mixed models. For a partial Wald chi-square test of each term, use `"partial_chi2"`.
-      Received by 5:
-        show_columns = "partial_f2_ci": clmm, glmer, glmmTMB, lme, lmer
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `negbin` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_f2_ci": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `svyglm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_f2_ci": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2_ci"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+      Received by 1:
+        show_columns = "partial_f2_ci": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_f2_ci"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+        i For a partial Wald chi-square test of each term, use `"partial_chi2"`.
+      Received by 4:
+        show_columns = "partial_f2_ci": glmer, glmmTMB, lme, lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_omega2": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_omega2"` in `show_columns` is not defined for `Glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
-      Received by 7:
-        show_columns = "partial_omega2": glm.nb, glm_logit, glm_poisson,
-            glm_probit, lrm, rms_Glm, svyglm
+      Received by 1:
+        show_columns = "partial_omega2": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_omega2"` in `show_columns` is not defined for `glm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 3:
+        show_columns = "partial_omega2": glm_logit, glm_poisson, glm_probit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2"` in `show_columns` is not defined for `glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The analog for a `glm` whose dispersion is estimated is `"partial_f"`, the partial F test that `anova(reduced, full, test = "F")` reports.
         i Replace with `"partial_f"` or drop the token.
       Received by 3:
         show_columns = "partial_omega2": glm_gamma, glm_gaussian, glm_quasi
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"partial_omega2"` in `show_columns` is not defined for `lrm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_omega2": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
       Received by 3:
         show_columns = "partial_omega2": bam, gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2" in `show_columns` are not defined for mixed-effects models.
-        i Variance-explained partials do not apply to mixed models. For a partial Wald chi-square test of each term, use `"partial_chi2"`.
-      Received by 5:
-        show_columns = "partial_omega2": clmm, glmer, glmmTMB, lme, lmer
+        Token `"partial_omega2"` in `show_columns` is not defined for `negbin` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_omega2": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2_ci" in `show_columns` are not defined for GEE fits (`geeglm`).
+        Token `"partial_omega2"` in `show_columns` is not defined for `svyglm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_omega2": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+      Received by 1:
+        show_columns = "partial_omega2": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+        i For a partial Wald chi-square test of each term, use `"partial_chi2"`.
+      Received by 4:
+        show_columns = "partial_omega2": glmer, glmmTMB, lme, lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for GEE fits (`geeglm`).
         i The partial likelihood-ratio chi-square, the partial F and the variance-explained partials need a true likelihood, a deviance or an OLS variance partition; GEE has none of them.
       Received by 1:
         show_columns = "partial_omega2_ci": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `Glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
-      Received by 7:
-        show_columns = "partial_omega2_ci": glm.nb, glm_logit, glm_poisson,
-            glm_probit, lrm, rms_Glm, svyglm
+      Received by 1:
+        show_columns = "partial_omega2_ci": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `glm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 3:
+        show_columns = "partial_omega2_ci": glm_logit, glm_poisson, glm_probit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `glm` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The analog for a `glm` whose dispersion is estimated is `"partial_f"`, the partial F test that `anova(reduced, full, test = "F")` reports.
         i Replace with `"partial_f"` or drop the token.
       Received by 3:
         show_columns = "partial_omega2_ci": glm_gamma, glm_gaussian, glm_quasi
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2_ci" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `lrm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_omega2_ci": lrm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `mgcv` GAMs.
         i spicy computes no term-level effect size or test for a GAM: `summary()` of the GAM gives the tests of its terms.
       Received by 3:
         show_columns = "partial_omega2_ci": bam, gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2_ci" in `show_columns` are not defined for mixed-effects models.
-        i Variance-explained partials do not apply to mixed models. For a partial Wald chi-square test of each term, use `"partial_chi2"`.
-      Received by 5:
-        show_columns = "partial_omega2_ci": clmm, glmer, glmmTMB, lme, lmer
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `negbin` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_omega2_ci": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `Glm` models.
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `svyglm` models.
+        i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
+        i Replace with `"partial_chi2"` or drop the token.
+      Received by 1:
+        show_columns = "partial_omega2_ci": svyglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+      Received by 1:
+        show_columns = "partial_omega2_ci": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for mixed-effects models.
+        i Variance-explained partials do not apply to mixed models.
+        i For a partial Wald chi-square test of each term, use `"partial_chi2"`.
+      Received by 4:
+        show_columns = "partial_omega2_ci": glmer, glmmTMB, lme, lmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"pd"` in `show_columns` is defined only for Bayesian fits.
+        i The probability of direction is a posterior-draw summary (share of draws on the dominant side of zero); frequentist fits have none.
+      Received by 39:
+        show_columns = "pd": bam, betareg, clm, clmm, coxph, cph, feols,
+            flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gaussian, glmer,
+            glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
+            lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
+            survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"r2"` in `show_columns` is not defined for `Glm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "r2": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `betareg` models.
+        Token `"r2"` in `show_columns` is not defined for `betareg` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": betareg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `clm` models.
+        Token `"r2"` in `show_columns` is not defined for `clm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": clm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `clmm` models.
+        Token `"r2"` in `show_columns` is not defined for `clmm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": clmm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `coxph` models.
+        Token `"r2"` in `show_columns` is not defined for `coxph` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": coxph
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `cph` models.
+        Token `"r2"` in `show_columns` is not defined for `cph` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": cph
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `fixest` models.
+        Token `"r2"` in `show_columns` is not defined for `fixest` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": feols
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `flexsurvreg` models.
+        Token `"r2"` in `show_columns` is not defined for `flexsurvreg` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": flexsurvreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `geeglm` models.
+        Token `"r2"` in `show_columns` is not defined for `geeglm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "r2": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `glm` models.
+        Token `"r2"` in `show_columns` is not defined for `glm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "r2": glm_gaussian
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `glmerMod` models.
+        Token `"r2"` in `show_columns` is not defined for `glmerMod` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": glmer
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `glmmTMB` models.
+        Token `"r2"` in `show_columns` is not defined for `glmmTMB` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": glmmTMB
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `gls` models.
+        Token `"r2"` in `show_columns` is not defined for `gls` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": gls
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `hurdle` models.
+        Token `"r2"` in `show_columns` is not defined for `hurdle` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": hurdle
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `iv_robust` models.
+        Token `"r2"` in `show_columns` is not defined for `iv_robust` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": iv_robust
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `ivreg` models.
+        Token `"r2"` in `show_columns` is not defined for `ivreg` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": ivreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `lm_robust` models.
+        Token `"r2"` in `show_columns` is not defined for `lm_robust` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": lm_robust
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `lme` models.
+        Token `"r2"` in `show_columns` is not defined for `lme` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": lme
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `lmerMod` models.
+        Token `"r2"` in `show_columns` is not defined for `lmerMod` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": lmer
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `lrm` models.
+        Token `"r2"` in `show_columns` is not defined for `lrm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "r2": lrm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"r2"` in `show_columns` is not defined for `mgcv` GAMs.
         i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
         i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`, `"r2_deviance"`.
       Received by 1:
         show_columns = "r2": bam
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"r2"` in `show_columns` is not defined for `mgcv` GAMs.
         i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
         i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"pseudo_r2_tjur"`, `"pseudo_r2_mcfadden"`, `"pseudo_r2_nagelkerke"`.
       Received by 1:
         show_columns = "r2": gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `mgcv` GAMs.
+        Token `"r2"` in `show_columns` is not defined for `mgcv` GAMs.
         i The column reports the R<U+00B2> of each fit of a univariable screen of least-squares models. For a GAM, ask for a fit-statistics row in `show_fit_stats`.
         i A GAM shows mgcv's adjusted R<U+00B2>, `"adj_r2"`, and the R<U+00B2> of the glm of its family: `"r2_deviance"`.
       Received by 1:
         show_columns = "r2": gam
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `mlogit` models.
+        Token `"r2"` in `show_columns` is not defined for `mlogit` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": mlogit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `multinom` models.
+        Token `"r2"` in `show_columns` is not defined for `multinom` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": multinom
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `negbin` models.
+        Token `"r2"` in `show_columns` is not defined for `negbin` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "r2": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `nls` models.
+        Token `"r2"` in `show_columns` is not defined for `nls` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": nls
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `polr` models.
+        Token `"r2"` in `show_columns` is not defined for `polr` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": polr
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `rq` models.
+        Token `"r2"` in `show_columns` is not defined for `rq` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": rq
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `selection` models.
+        Token `"r2"` in `show_columns` is not defined for `selection` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": selection
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `survreg` models.
+        Token `"r2"` in `show_columns` is not defined for `survreg` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": survreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `svycoxph` models.
+        Token `"r2"` in `show_columns` is not defined for `svycoxph` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": svycoxph
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `svyglm` models.
+        Token `"r2"` in `show_columns` is not defined for `svyglm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "r2": svyglm
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `svyolr` models.
+        Token `"r2"` in `show_columns` is not defined for `svyolr` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": svyolr
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `tobit` models.
+        Token `"r2"` in `show_columns` is not defined for `tobit` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": tobit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `zeroinfl` models.
+        Token `"r2"` in `show_columns` is not defined for `zeroinfl` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2_change", "f_change", "p_change" in `show_fit_stats` are not defined for `rlm` models.
-        i M-estimation minimizes a bounded loss rather than a likelihood or a residual sum of squares, so an rlm hierarchy has neither a likelihood-ratio test nor a partial F to report.
-        i Drop the token, or compare the least-squares fits (`lm()`) if the hierarchy itself is the question.
-      Received by 1:
-        nested = TRUE: rlm
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token(s) "rhat" in `show_columns` are shown only when every model is Bayesian.
+        Token `"rhat"` in `show_columns` is shown only when every model is Bayesian.
         i R-hat, ESS and MCSE are sampler diagnostics of the posterior draws; frequentist fits have none.
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
       Received by 39:
@@ -1856,6 +2080,13 @@
             glmmTMB, gls, hurdle, iv_robust, ivreg, lm, lm_robust, lme, lmer,
             lrm, mlogit, multinom, nls, ols, polr, rlm, rms_Glm, rq, selection,
             survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Tokens `"r2_change"`, `"f_change"` and `"p_change"` in `show_fit_stats` are not defined for `rlm` models.
+        i M-estimation minimizes a bounded loss rather than a likelihood or a residual sum of squares, so an rlm hierarchy has neither a likelihood-ratio test nor a partial F to report.
+        i Drop the token, or compare the least-squares fits (`lm()`) if the hierarchy itself is the question.
+      Received by 1:
+        nested = TRUE: rlm
       ----
       error: spicy_invalid_input, spicy_error
         `"beta"` is in `show_columns` but `standardized = "none"`.
@@ -1951,77 +2182,77 @@
         re_ci = "profile": clmm, glmmTMB, lme
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (Glm).
+        `show_columns = "n_events"` is not available for this model class (`Glm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": rms_Glm
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (bam).
+        `show_columns = "n_events"` is not available for this model class (`bam`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": bam
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (betareg).
+        `show_columns = "n_events"` is not available for this model class (`betareg`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": betareg
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (clm).
+        `show_columns = "n_events"` is not available for this model class (`clm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": clm
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (clmm).
+        `show_columns = "n_events"` is not available for this model class (`clmm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": clmm
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (cph).
+        `show_columns = "n_events"` is not available for this model class (`cph`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": cph
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (fixest).
+        `show_columns = "n_events"` is not available for this model class (`fixest`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": feols
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (flexsurvreg).
+        `show_columns = "n_events"` is not available for this model class (`flexsurvreg`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": flexsurvreg
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (gam).
+        `show_columns = "n_events"` is not available for this model class (`gam`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 2:
         show_columns = "n_events": gam, gam_logit
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (geeglm).
+        `show_columns = "n_events"` is not available for this model class (`geeglm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": geeglm
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (glm).
+        `show_columns = "n_events"` is not available for this model class (`glm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 4:
@@ -2029,168 +2260,168 @@
             glm_quasi
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (glmmTMB).
+        `show_columns = "n_events"` is not available for this model class (`glmmTMB`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": glmmTMB
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (gls).
+        `show_columns = "n_events"` is not available for this model class (`gls`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": gls
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (hurdle).
+        `show_columns = "n_events"` is not available for this model class (`hurdle`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": hurdle
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (iv_robust).
+        `show_columns = "n_events"` is not available for this model class (`iv_robust`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": iv_robust
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (ivreg).
+        `show_columns = "n_events"` is not available for this model class (`ivreg`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": ivreg
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (lm).
-        i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
-        i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
-      Received by 1:
-        show_columns = "n_events": lm
-      ----
-      error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (lm_robust).
+        `show_columns = "n_events"` is not available for this model class (`lm_robust`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": lm_robust
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (lme).
+        `show_columns = "n_events"` is not available for this model class (`lm`).
+        i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
+        i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
+      Received by 1:
+        show_columns = "n_events": lm
+      ----
+      error: spicy_invalid_input, spicy_error
+        `show_columns = "n_events"` is not available for this model class (`lme`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": lme
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (lmerMod).
+        `show_columns = "n_events"` is not available for this model class (`lmerMod`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": lmer
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (lrm).
+        `show_columns = "n_events"` is not available for this model class (`lrm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": lrm
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (mlogit).
+        `show_columns = "n_events"` is not available for this model class (`mlogit`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": mlogit
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (multinom).
+        `show_columns = "n_events"` is not available for this model class (`multinom`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": multinom
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (negbin).
+        `show_columns = "n_events"` is not available for this model class (`negbin`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": glm.nb
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (nls).
+        `show_columns = "n_events"` is not available for this model class (`nls`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": nls
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (ols).
+        `show_columns = "n_events"` is not available for this model class (`ols`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": ols
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (polr).
+        `show_columns = "n_events"` is not available for this model class (`polr`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": polr
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (rlm).
+        `show_columns = "n_events"` is not available for this model class (`rlm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": rlm
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (rq).
+        `show_columns = "n_events"` is not available for this model class (`rq`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": rq
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (selection).
+        `show_columns = "n_events"` is not available for this model class (`selection`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": selection
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (survreg).
+        `show_columns = "n_events"` is not available for this model class (`survreg`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": survreg
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (svyglm).
+        `show_columns = "n_events"` is not available for this model class (`svyglm`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": svyglm
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (svyolr).
+        `show_columns = "n_events"` is not available for this model class (`svyolr`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": svyolr
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (tobit).
+        `show_columns = "n_events"` is not available for this model class (`tobit`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": tobit
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (zeroinfl).
+        `show_columns = "n_events"` is not available for this model class (`zeroinfl`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
@@ -2236,212 +2467,204 @@
         standardized = "basic" (with beta): glmmTMB_ordinal
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (Glm).
+        `standardized = "basic"` is not supported for this model class (`Glm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): rms_Glm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (bam).
+        `standardized = "basic"` is not supported for this model class (`bam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): bam
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (betareg).
+        `standardized = "basic"` is not supported for this model class (`betareg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): betareg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (clm).
+        `standardized = "basic"` is not supported for this model class (`clm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): clm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (clmm).
+        `standardized = "basic"` is not supported for this model class (`clmm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): clmm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (coxph).
+        `standardized = "basic"` is not supported for this model class (`coxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): coxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (cph).
+        `standardized = "basic"` is not supported for this model class (`cph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): cph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (fixest).
+        `standardized = "basic"` is not supported for this model class (`fixest`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): feols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (flexsurvreg).
+        `standardized = "basic"` is not supported for this model class (`flexsurvreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): flexsurvreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (gam).
+        `standardized = "basic"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 2:
         standardized = "basic" (with beta): gam, gam_logit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (gls).
+        `standardized = "basic"` is not supported for this model class (`gls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): gls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (hurdle).
+        `standardized = "basic"` is not supported for this model class (`hurdle`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): hurdle
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (iv_robust).
+        `standardized = "basic"` is not supported for this model class (`iv_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): iv_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (ivreg).
+        `standardized = "basic"` is not supported for this model class (`ivreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): ivreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (lm_robust).
+        `standardized = "basic"` is not supported for this model class (`lm_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): lm_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (lrm).
+        `standardized = "basic"` is not supported for this model class (`lrm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): lrm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (mlogit).
+        `standardized = "basic"` is not supported for this model class (`mlogit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): mlogit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (multinom).
+        `standardized = "basic"` is not supported for this model class (`multinom`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): multinom
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (nls).
+        `standardized = "basic"` is not supported for this model class (`nls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): nls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (ols).
+        `standardized = "basic"` is not supported for this model class (`ols`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): ols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (polr).
+        `standardized = "basic"` is not supported for this model class (`polr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): polr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (rlm).
+        `standardized = "basic"` is not supported for this model class (`rlm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): rlm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (rq).
+        `standardized = "basic"` is not supported for this model class (`rq`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): rq
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (selection).
+        `standardized = "basic"` is not supported for this model class (`selection`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): selection
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (survreg).
+        `standardized = "basic"` is not supported for this model class (`survreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): survreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (svycoxph).
+        `standardized = "basic"` is not supported for this model class (`svycoxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): svycoxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (svyglm).
+        `standardized = "basic"` is not supported for this model class (`svyglm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): svyglm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (svyolr).
+        `standardized = "basic"` is not supported for this model class (`svyolr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): svyolr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (tobit).
+        `standardized = "basic"` is not supported for this model class (`tobit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): tobit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "basic"` is not supported for this model class (zeroinfl).
+        `standardized = "basic"` is not supported for this model class (`zeroinfl`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "basic" (with beta): zeroinfl
       ----
@@ -2459,212 +2682,204 @@
         standardized = "posthoc" (with beta): glmmTMB_ordinal
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (Glm).
+        `standardized = "posthoc"` is not supported for this model class (`Glm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): rms_Glm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (bam).
+        `standardized = "posthoc"` is not supported for this model class (`bam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): bam
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (betareg).
+        `standardized = "posthoc"` is not supported for this model class (`betareg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): betareg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (clm).
+        `standardized = "posthoc"` is not supported for this model class (`clm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): clm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (clmm).
+        `standardized = "posthoc"` is not supported for this model class (`clmm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): clmm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (coxph).
+        `standardized = "posthoc"` is not supported for this model class (`coxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): coxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (cph).
+        `standardized = "posthoc"` is not supported for this model class (`cph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): cph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (fixest).
+        `standardized = "posthoc"` is not supported for this model class (`fixest`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): feols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (flexsurvreg).
+        `standardized = "posthoc"` is not supported for this model class (`flexsurvreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): flexsurvreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (gam).
+        `standardized = "posthoc"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 2:
         standardized = "posthoc" (with beta): gam, gam_logit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (gls).
+        `standardized = "posthoc"` is not supported for this model class (`gls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): gls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (hurdle).
+        `standardized = "posthoc"` is not supported for this model class (`hurdle`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): hurdle
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (iv_robust).
+        `standardized = "posthoc"` is not supported for this model class (`iv_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): iv_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (ivreg).
+        `standardized = "posthoc"` is not supported for this model class (`ivreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): ivreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (lm_robust).
+        `standardized = "posthoc"` is not supported for this model class (`lm_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): lm_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (lrm).
+        `standardized = "posthoc"` is not supported for this model class (`lrm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): lrm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (mlogit).
+        `standardized = "posthoc"` is not supported for this model class (`mlogit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): mlogit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (multinom).
+        `standardized = "posthoc"` is not supported for this model class (`multinom`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): multinom
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (nls).
+        `standardized = "posthoc"` is not supported for this model class (`nls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): nls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (ols).
+        `standardized = "posthoc"` is not supported for this model class (`ols`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): ols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (polr).
+        `standardized = "posthoc"` is not supported for this model class (`polr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): polr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (rlm).
+        `standardized = "posthoc"` is not supported for this model class (`rlm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): rlm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (rq).
+        `standardized = "posthoc"` is not supported for this model class (`rq`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): rq
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (selection).
+        `standardized = "posthoc"` is not supported for this model class (`selection`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): selection
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (survreg).
+        `standardized = "posthoc"` is not supported for this model class (`survreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): survreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (svycoxph).
+        `standardized = "posthoc"` is not supported for this model class (`svycoxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): svycoxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (svyglm).
+        `standardized = "posthoc"` is not supported for this model class (`svyglm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): svyglm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (svyolr).
+        `standardized = "posthoc"` is not supported for this model class (`svyolr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): svyolr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (tobit).
+        `standardized = "posthoc"` is not supported for this model class (`tobit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): tobit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "posthoc"` is not supported for this model class (zeroinfl).
+        `standardized = "posthoc"` is not supported for this model class (`zeroinfl`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "posthoc" (with beta): zeroinfl
       ----
@@ -2682,198 +2897,190 @@
         standardized = "pseudo" (with beta): glmmTMB_ordinal
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (Glm).
+        `standardized = "pseudo"` is not supported for this model class (`Glm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): rms_Glm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (bam).
+        `standardized = "pseudo"` is not supported for this model class (`bam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): bam
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (betareg).
+        `standardized = "pseudo"` is not supported for this model class (`betareg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): betareg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (clm).
+        `standardized = "pseudo"` is not supported for this model class (`clm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): clm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (clmm).
+        `standardized = "pseudo"` is not supported for this model class (`clmm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): clmm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (coxph).
+        `standardized = "pseudo"` is not supported for this model class (`coxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): coxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (cph).
+        `standardized = "pseudo"` is not supported for this model class (`cph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): cph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (fixest).
+        `standardized = "pseudo"` is not supported for this model class (`fixest`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): feols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (flexsurvreg).
+        `standardized = "pseudo"` is not supported for this model class (`flexsurvreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): flexsurvreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (gam).
+        `standardized = "pseudo"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 2:
         standardized = "pseudo" (with beta): gam, gam_logit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (gls).
+        `standardized = "pseudo"` is not supported for this model class (`gls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): gls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (hurdle).
+        `standardized = "pseudo"` is not supported for this model class (`hurdle`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): hurdle
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (iv_robust).
+        `standardized = "pseudo"` is not supported for this model class (`iv_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): iv_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (ivreg).
+        `standardized = "pseudo"` is not supported for this model class (`ivreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): ivreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (lm_robust).
+        `standardized = "pseudo"` is not supported for this model class (`lm_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): lm_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (lrm).
+        `standardized = "pseudo"` is not supported for this model class (`lrm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): lrm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (mlogit).
+        `standardized = "pseudo"` is not supported for this model class (`mlogit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): mlogit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (multinom).
+        `standardized = "pseudo"` is not supported for this model class (`multinom`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): multinom
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (nls).
+        `standardized = "pseudo"` is not supported for this model class (`nls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): nls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (polr).
+        `standardized = "pseudo"` is not supported for this model class (`polr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): polr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (rq).
+        `standardized = "pseudo"` is not supported for this model class (`rq`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): rq
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (selection).
+        `standardized = "pseudo"` is not supported for this model class (`selection`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): selection
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (survreg).
+        `standardized = "pseudo"` is not supported for this model class (`survreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): survreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (svycoxph).
+        `standardized = "pseudo"` is not supported for this model class (`svycoxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): svycoxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (svyglm).
+        `standardized = "pseudo"` is not supported for this model class (`svyglm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): svyglm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (svyolr).
+        `standardized = "pseudo"` is not supported for this model class (`svyolr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): svyolr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (tobit).
+        `standardized = "pseudo"` is not supported for this model class (`tobit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): tobit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "pseudo"` is not supported for this model class (zeroinfl).
+        `standardized = "pseudo"` is not supported for this model class (`zeroinfl`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "pseudo" (with beta): zeroinfl
       ----
@@ -2891,212 +3098,204 @@
         standardized = "refit" (with beta): glmmTMB_ordinal
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (Glm).
+        `standardized = "refit"` is not supported for this model class (`Glm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): rms_Glm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (bam).
+        `standardized = "refit"` is not supported for this model class (`bam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): bam
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (betareg).
+        `standardized = "refit"` is not supported for this model class (`betareg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): betareg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (clm).
+        `standardized = "refit"` is not supported for this model class (`clm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): clm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (clmm).
+        `standardized = "refit"` is not supported for this model class (`clmm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): clmm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (coxph).
+        `standardized = "refit"` is not supported for this model class (`coxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): coxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (cph).
+        `standardized = "refit"` is not supported for this model class (`cph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): cph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (fixest).
+        `standardized = "refit"` is not supported for this model class (`fixest`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): feols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (flexsurvreg).
+        `standardized = "refit"` is not supported for this model class (`flexsurvreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): flexsurvreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (gam).
+        `standardized = "refit"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 2:
         standardized = "refit" (with beta): gam, gam_logit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (gls).
+        `standardized = "refit"` is not supported for this model class (`gls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): gls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (hurdle).
+        `standardized = "refit"` is not supported for this model class (`hurdle`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): hurdle
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (iv_robust).
+        `standardized = "refit"` is not supported for this model class (`iv_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): iv_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (ivreg).
+        `standardized = "refit"` is not supported for this model class (`ivreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): ivreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (lm_robust).
+        `standardized = "refit"` is not supported for this model class (`lm_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): lm_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (lrm).
+        `standardized = "refit"` is not supported for this model class (`lrm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): lrm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (mlogit).
+        `standardized = "refit"` is not supported for this model class (`mlogit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): mlogit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (multinom).
+        `standardized = "refit"` is not supported for this model class (`multinom`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): multinom
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (nls).
+        `standardized = "refit"` is not supported for this model class (`nls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): nls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (ols).
+        `standardized = "refit"` is not supported for this model class (`ols`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): ols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (polr).
+        `standardized = "refit"` is not supported for this model class (`polr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): polr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (rlm).
+        `standardized = "refit"` is not supported for this model class (`rlm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): rlm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (rq).
+        `standardized = "refit"` is not supported for this model class (`rq`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): rq
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (selection).
+        `standardized = "refit"` is not supported for this model class (`selection`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): selection
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (survreg).
+        `standardized = "refit"` is not supported for this model class (`survreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): survreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (svycoxph).
+        `standardized = "refit"` is not supported for this model class (`svycoxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): svycoxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (svyglm).
+        `standardized = "refit"` is not supported for this model class (`svyglm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): svyglm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (svyolr).
+        `standardized = "refit"` is not supported for this model class (`svyolr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): svyolr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (tobit).
+        `standardized = "refit"` is not supported for this model class (`tobit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): tobit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "refit"` is not supported for this model class (zeroinfl).
+        `standardized = "refit"` is not supported for this model class (`zeroinfl`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "refit" (with beta): zeroinfl
       ----
@@ -3114,212 +3313,204 @@
         standardized = "smart" (with beta): glmmTMB_ordinal
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (Glm).
+        `standardized = "smart"` is not supported for this model class (`Glm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): rms_Glm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (bam).
+        `standardized = "smart"` is not supported for this model class (`bam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): bam
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (betareg).
+        `standardized = "smart"` is not supported for this model class (`betareg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): betareg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (clm).
+        `standardized = "smart"` is not supported for this model class (`clm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): clm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (clmm).
+        `standardized = "smart"` is not supported for this model class (`clmm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): clmm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (coxph).
+        `standardized = "smart"` is not supported for this model class (`coxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): coxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (cph).
+        `standardized = "smart"` is not supported for this model class (`cph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): cph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (fixest).
+        `standardized = "smart"` is not supported for this model class (`fixest`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): feols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (flexsurvreg).
+        `standardized = "smart"` is not supported for this model class (`flexsurvreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): flexsurvreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (gam).
+        `standardized = "smart"` is not supported for this model class (`gam`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 2:
         standardized = "smart" (with beta): gam, gam_logit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (gls).
+        `standardized = "smart"` is not supported for this model class (`gls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): gls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (hurdle).
+        `standardized = "smart"` is not supported for this model class (`hurdle`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): hurdle
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (iv_robust).
+        `standardized = "smart"` is not supported for this model class (`iv_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): iv_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (ivreg).
+        `standardized = "smart"` is not supported for this model class (`ivreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): ivreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (lm_robust).
+        `standardized = "smart"` is not supported for this model class (`lm_robust`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): lm_robust
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (lrm).
+        `standardized = "smart"` is not supported for this model class (`lrm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): lrm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (mlogit).
+        `standardized = "smart"` is not supported for this model class (`mlogit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): mlogit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (multinom).
+        `standardized = "smart"` is not supported for this model class (`multinom`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): multinom
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (nls).
+        `standardized = "smart"` is not supported for this model class (`nls`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): nls
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (ols).
+        `standardized = "smart"` is not supported for this model class (`ols`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): ols
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (polr).
+        `standardized = "smart"` is not supported for this model class (`polr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): polr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (rlm).
+        `standardized = "smart"` is not supported for this model class (`rlm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): rlm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (rq).
+        `standardized = "smart"` is not supported for this model class (`rq`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): rq
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (selection).
+        `standardized = "smart"` is not supported for this model class (`selection`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): selection
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (survreg).
+        `standardized = "smart"` is not supported for this model class (`survreg`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): survreg
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (svycoxph).
+        `standardized = "smart"` is not supported for this model class (`svycoxph`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): svycoxph
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (svyglm).
+        `standardized = "smart"` is not supported for this model class (`svyglm`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): svyglm
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (svyolr).
+        `standardized = "smart"` is not supported for this model class (`svyolr`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): svyolr
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (tobit).
+        `standardized = "smart"` is not supported for this model class (`tobit`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): tobit
       ----
       error: spicy_unsupported_standardized, spicy_error
-        `standardized = "smart"` is not supported for this model class (zeroinfl).
+        `standardized = "smart"` is not supported for this model class (`zeroinfl`).
         i Standardized coefficients are available for `lm`, `glm` (incl. `MASS::glm.nb`), mixed models (`lmer` / `glmer` / `glmmTMB` / `nlme::lme`), and fixed-effects `stan_glm`-style fits ("posthoc" / "basic" / "smart").
-        i To compare predictor effects in other classes, use average marginal effects where supported: `show_columns = c("b", "ame")`.
+        i To compare predictor effects, use average marginal effects: `show_columns = c("b", "ame")`.
       Received by 1:
         standardized = "smart" (with beta): zeroinfl
       ----
@@ -3456,29 +3647,7 @@
     Output
       ----
       error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `brmsfit`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 8:
-        show_columns = "partial_chi2": brmsfit
-        show_columns = "partial_eta2": brmsfit
-        show_columns = "partial_eta2_ci": brmsfit
-        show_columns = "partial_f": brmsfit
-        show_columns = "partial_f2": brmsfit
-        show_columns = "partial_f2_ci": brmsfit
-        show_columns = "partial_omega2": brmsfit
-        show_columns = "partial_omega2_ci": brmsfit
-      ----
-      error: spicy_invalid_input, spicy_error
-        Partial effect-size columns are not available for `stanreg`.
-        i The term-level partial effect size is defined here for the least-squares families (`partial_f` / `partial_f2` / `partial_eta2` / `partial_omega2`) and, as a partial likelihood-ratio or Wald chi-square, for `glm` and the mixed-effects families (`partial_chi2`), or as a partial F test for a `glm` whose dispersion is estimated (`partial_f`). No such decomposition exists for this class (see ?table_regression_models).
-        i Drop the partial effect-size token(s) from `show_columns`.
-      Received by 2:
-        show_columns = "partial_chi2": stanreg
-        show_columns = "partial_f": stanreg
-      ----
-      error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (brmsfit).
+        RMST / risk-difference columns are not available for this model class (`brmsfit`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": brmsfit
@@ -3491,7 +3660,7 @@
         show_columns = "rmst_se": brmsfit
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for this model class (stanreg).
+        RMST / risk-difference columns are not available for this model class (`stanreg`).
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:
         show_columns = "risk_diff": stanreg
@@ -3504,82 +3673,104 @@
         show_columns = "rmst_se": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token "df" in `show_columns` has no value for any model in the table: a posterior has no test.
-        i The column gives the degrees of freedom of t tests (`lm`, a `glm` whose dispersion is estimated, `nlme::lme`, a survey design, a cluster-robust `vcov = "CR2"`, ...).
-      Received by 2:
-        show_columns = "df": brmsfit, stanreg
+        Term-level columns (`partial_*`) are not available for `brmsfit`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 8:
+        show_columns = "partial_chi2": brmsfit
+        show_columns = "partial_eta2": brmsfit
+        show_columns = "partial_eta2_ci": brmsfit
+        show_columns = "partial_f": brmsfit
+        show_columns = "partial_f2": brmsfit
+        show_columns = "partial_f2_ci": brmsfit
+        show_columns = "partial_omega2": brmsfit
+        show_columns = "partial_omega2_ci": brmsfit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `brmsfit` models.
+        Term-level columns (`partial_*`) are not available for `stanreg`.
+        i The partial effect sizes (`partial_f2`, `partial_eta2`, `partial_omega2`) are defined here for the least-squares families. The term-level tests are `partial_f` for `lm` and for a `glm` whose dispersion is estimated, and `partial_chi2` for `glm` and the mixed-effects families. This class has neither (see ?table_regression_models).
+        i Drop the `partial_*` token(s) from `show_columns`.
+      Received by 2:
+        show_columns = "partial_chi2": stanreg
+        show_columns = "partial_f": stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` is not defined for `brmsfit` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "adj_r2": brmsfit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "adj_r2" in `show_columns` are not defined for `stanreg` models.
+        Token `"adj_r2"` in `show_columns` is not defined for `stanreg` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "adj_r2": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "ame_p" in `show_columns` are not defined for Bayesian fits.
+        Token `"ame_p"` in `show_columns` is not defined for Bayesian fits.
         i A posterior has no p-value or t-statistic (for coefficients or AMEs). The probability of direction (`"pd"`) is the closest posterior summary.
       Received by 2:
         show_columns = "ame_p": brmsfit, stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2" in `show_columns` are not defined for `glm` models.
+        Token `"df"` in `show_columns` has no value for any model in the table: a posterior has no test.
+        i The column gives the degrees of freedom of t tests (`lm`, a `glm` whose dispersion is estimated, `nlme::lme`, a survey design, a cluster-robust `vcov = "CR2"`, ...).
+      Received by 2:
+        show_columns = "df": brmsfit, stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"partial_eta2"` in `show_columns` is not defined for `stanreg` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
       Received by 1:
         show_columns = "partial_eta2": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_eta2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_eta2_ci"` in `show_columns` is not defined for `stanreg` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
       Received by 1:
         show_columns = "partial_eta2_ci": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_f2"` in `show_columns` is not defined for `stanreg` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
       Received by 1:
         show_columns = "partial_f2": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_f2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_f2_ci"` in `show_columns` is not defined for `stanreg` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
       Received by 1:
         show_columns = "partial_f2_ci": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2" in `show_columns` are not defined for `glm` models.
+        Token `"partial_omega2"` in `show_columns` is not defined for `stanreg` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
       Received by 1:
         show_columns = "partial_omega2": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "partial_omega2_ci" in `show_columns` are not defined for `glm` models.
+        Token `"partial_omega2_ci"` in `show_columns` is not defined for `stanreg` models.
         i Variance-explained partition (R<U+00B2> / partial f<U+00B2> / <U+03B7><U+00B2> / <U+03C9><U+00B2>) does not apply outside the least-squares framework. The `glm`-appropriate analog is `"partial_chi2"` (Type-II partial likelihood-ratio chi-square; Long & Freese 2014 <U+00A7>3.2.2, <U+00A7>3.2.4).
         i Replace with `"partial_chi2"` or drop the token.
       Received by 1:
         show_columns = "partial_omega2_ci": stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `brmsfit` models.
+        Token `"r2"` in `show_columns` is not defined for `brmsfit` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Report the model's own summary instead (for `coxph`, the likelihood-ratio test, and the concordance, a row with `show_fit_stats = "concordance"`).
       Received by 1:
         show_columns = "r2": brmsfit
       ----
       error: spicy_invalid_input, spicy_error
-        Token(s) "r2" in `show_columns` are not defined for `stanreg` models.
+        Token `"r2"` in `show_columns` is not defined for `stanreg` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
@@ -3606,14 +3797,14 @@
         p_adjust = "holm": brmsfit, stanreg
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (brmsfit).
+        `show_columns = "n_events"` is not available for this model class (`brmsfit`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
         show_columns = "n_events": brmsfit
       ----
       error: spicy_invalid_input, spicy_error
-        `show_columns = "n_events"` is not available for this model class (stanreg).
+        `show_columns = "n_events"` is not available for this model class (`stanreg`).
         i Outcome event counts need a binary (binomial family) outcome with an ungrouped 0/1, logical, or two-level factor response -- or a coxph fit on right-censored single-record data.
         i The model-total event count is also available as a fit statistic for survival models: `show_fit_stats = c("nobs", "n_events")`.
       Received by 1:
