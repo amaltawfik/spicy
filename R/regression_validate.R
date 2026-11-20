@@ -3128,31 +3128,9 @@ validate_class_appropriate_tokens <- function(
   }
 
   if ("phi" %in% show_fit_stats) {
+    # The precision with covariates first, then the registry, as for
+    # theta above.
     is_beta <- vapply(models, .is_beta_fit, logical(1))
-    if (!any(is_beta)) {
-      spicy_abort(
-        c(
-          paste0(
-            "Token `\"phi\"` in `show_fit_stats` is defined only ",
-            "for fits with a beta precision (`betareg::betareg()`, ",
-            "mgcv `betar()`, glmmTMB `beta_family()`, `betabinomial()`, ",
-            "`ordbeta()`), and no model in the table is one."
-          ),
-          "i" = paste0(
-            "In beta regression, Var(y) = mu(1-mu)/(1+phi): higher phi = ",
-            "less dispersion. For `betabinomial()` and `ordbeta()`, phi is ",
-            "the precision parameter of the beta part. Other families have ",
-            "no such parameter."
-          ),
-          "i" = paste0(
-            "A phi fixed in the call (mgcv `betar(theta)` with theta > 0) ",
-            "is not an estimate and has no row."
-          )
-        ),
-        class = "spicy_invalid_input",
-        call = call
-      )
-    }
     variable_prec <- vapply(
       models[is_beta],
       function(m) {
@@ -3183,6 +3161,30 @@ validate_class_appropriate_tokens <- function(
             "With precision covariates, phi is not a single number; ",
             "inspect the precision coefficients with ",
             "`summary(fit)` instead."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    if (!.reg_any_offers(models, "phi")) {
+      spicy_abort(
+        c(
+          paste0(
+            "Token `\"phi\"` in `show_fit_stats` is defined only ",
+            "for fits with a beta precision (`betareg::betareg()`, ",
+            "mgcv `betar()`, glmmTMB `beta_family()`, `betabinomial()`, ",
+            "`ordbeta()`), and no model in the table is one."
+          ),
+          "i" = paste0(
+            "In beta regression, Var(y) = mu(1-mu)/(1+phi): higher phi = ",
+            "less dispersion. For `betabinomial()` and `ordbeta()`, phi is ",
+            "the precision parameter of the beta part. Other families have ",
+            "no such parameter."
+          ),
+          "i" = paste0(
+            "A phi fixed in the call (mgcv `betar(theta)` with theta > 0) ",
+            "is not an estimate and has no row."
           )
         ),
         class = "spicy_invalid_input",
