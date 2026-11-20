@@ -3226,8 +3226,9 @@ validate_class_appropriate_tokens <- function(
     c("qic", "qicu", "scale", "max_cluster_size")
   )
   if (length(gee_tokens) > 0L) {
-    any_gee <- length(models) > 0L && any(gee_flags)
-    if (!any_gee) {
+    # The registry says which models carry them (.reg_offers()); the four
+    # tokens are listed together, by the geeglm cell alone.
+    if (!.reg_any_offers(eff_models, gee_tokens[1L])) {
       spicy_abort(
         c(
           .token_msg(
