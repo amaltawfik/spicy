@@ -765,6 +765,33 @@ test_that("labels - the reference level is named as its coefficient", {
   )
 })
 
+test_that("labels - the reference label in the header and in the note", {
+  skip_on_cran()
+  fit <- lm(mpg ~ wt + cyl + am, data = transform(mt, am = factor(am)))
+  lab <- c(cyl4 = "Four", am0 = "Automatic")
+  out <- table_regression(fit, labels = lab, reference_style = "annotation")
+  expect_true(all(
+    c("cyl: [ref: Four]", "am: [ref: Automatic]") %in% out$Variable
+  ))
+  out <- table_regression(fit, labels = lab, reference_style = "footer")
+  expect_match(
+    attr(out, "note"),
+    "Reference categories: cyl = Four; am = Automatic.",
+    fixed = TRUE
+  )
+  # Two models whose references differ: each level its label.
+  m6 <- lm(mpg ~ cyl, data = transform(mt, cyl = relevel(cyl, "6")))
+  out <- table_regression(
+    list(lm(mpg ~ cyl, data = mt), m6),
+    labels = c(cyl4 = "Four", cyl6 = "Six"),
+    reference_style = "footer"
+  )
+  expect_match(attr(out, "note"), "cyl = Four; cyl = Six.", fixed = TRUE)
+  withr::local_options(spicy.language = "fr")
+  out <- table_regression(fit, labels = lab, reference_style = "footer")
+  expect_match(attr(out, "note"), "cyl = Four\u00a0; am = Automatic.")
+})
+
 test_that("labels - the reference level across model classes", {
   skip_on_cran()
   skip_if_not_installed("nnet")

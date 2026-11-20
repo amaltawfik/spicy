@@ -478,7 +478,8 @@ build_regression_footer_from_frames <- function(
       ),
       build_reference_categories_footer_block_from_frames(
         frames_display,
-        reference_style
+        reference_style,
+        term_labels
       )
     ),
     # (b) The missing data: the cases the univariable models are fit on.
@@ -4200,7 +4201,8 @@ inform_polynomial_pedagogy <- function() {
 #                                             level name)
 build_reference_categories_footer_block_from_frames <- function(
   frames,
-  reference_style
+  reference_style,
+  labels = NULL
 ) {
   if (!identical(reference_style, "footer")) {
     return(NULL)
@@ -4243,7 +4245,7 @@ build_reference_categories_footer_block_from_frames <- function(
             .reg_component_level_display(lvl, ft)
           )
         } else {
-          sprintf("%s = %s", ft, lvl)
+          sprintf("%s = %s", ft, .reg_ref_level_label(ft, lvl, labels))
         }
       )
     }

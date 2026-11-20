@@ -2644,9 +2644,22 @@ format_fixed <- function(x, digits, decimal_mark = ".") {
       !is.na(ref_level) &&
       nzchar(ref_level)
   ) {
-    return(spicy_fmt("label_ref_annotation", header, ref_level))
+    return(spicy_fmt(
+      "label_ref_annotation",
+      header,
+      .reg_ref_level_label(factor_term, ref_level, labels)
+    ))
   }
   header
+}
+
+# A reference level as the table writes it outside its row (the
+# annotation of the header, the reference note): the label `labels` gives
+# the name its coefficient would have ("cyl4"), as the row takes it
+# (`format_term_label()`), else the level.
+.reg_ref_level_label <- function(factor_term, level, labels) {
+  key <- paste0(factor_term, level)
+  if (!is.null(labels) && key %in% names(labels)) labels[[key]] else level
 }
 
 build_factor_header_row <- function(
