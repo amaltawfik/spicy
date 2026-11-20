@@ -306,9 +306,9 @@
 }
 
 # The `vcov` values each class accepts, one string per registry class:
-# the column `vcov` of the registry. Written by hand from the capability
-# gate (.robust_vcov_support() in R/vcov.R, and the refusals of
-# validate_vcov_cluster_lists()); each cell was checked on 2026-11-19 by
+# the column `vcov` of the registry, which the capability gate reads
+# (.robust_vcov_support() in R/vcov.R, with the reasons of each cell).
+# Each cell was checked on 2026-11-19 by
 # fitting each class and calling table_regression() with every token of
 # .VCOV_MODES.
 #

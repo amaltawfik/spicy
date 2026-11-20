@@ -3084,7 +3084,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `lm` models.
-        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, bootstrap, jackknife, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, CR1S, bootstrap, jackknife. See ?table_regression.
       Received by 2:
         vcov = "iid": lm, lm_weighted
       ----
@@ -3597,7 +3597,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `lm` models.
-        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, bootstrap, jackknife, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, CR1S, bootstrap, jackknife. See ?table_regression.
       Received by 2:
         vcov = "ker": lm, lm_weighted
       ----
@@ -3859,7 +3859,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `lm` models.
-        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, bootstrap, jackknife, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, CR1S, bootstrap, jackknife. See ?table_regression.
       Received by 2:
         vcov = "nid": lm, lm_weighted
       ----
@@ -4121,7 +4121,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `lm` models.
-        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, bootstrap, jackknife, CR1S. See ?table_regression.
+        i This class supports: classical, HC0, HC1, HC2, HC3, HC4, HC5, CR0, CR1, CR2, CR3, CR1S, bootstrap, jackknife. See ?table_regression.
       Received by 2:
         vcov = "rank": lm, lm_weighted
       ----

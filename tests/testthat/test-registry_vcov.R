@@ -103,6 +103,23 @@ test_that("the 'classical only' cells are those of the predicate table", {
   )
 })
 
+# The gate reads the cell of the first class of the fit: a subclass
+# outside the registry, admitted by inheritance, keeps `classical`, and
+# the aliases read the cell of their registry class.
+test_that("the vcov gate reads the first class of the fit and its aliases", {
+  g <- glm(am ~ wt, binomial, mtcars)
+  class(g) <- c("myglm", class(g))
+  expect_identical(.robust_vcov_support(g), "classical")
+  expect_true(all(.REG_VCOV_ALIAS %in% names(.REG_VCOV)))
+  expect_true(all(.REG_VCOV_AT_COMPUTE %in% names(.REG_VCOV_CLASSICAL_ONLY)))
+  for (a in names(.REG_VCOV_ALIAS)) {
+    expect_identical(
+      .reg_vcov_class(structure(list(), class = a)),
+      .REG_VCOV_ALIAS[[a]]
+    )
+  }
+})
+
 for (id in names(.CLASS_FIXTURES)) {
   local({
     id <- id

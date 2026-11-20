@@ -1135,129 +1135,75 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 
 # ---- Robust-vcov capability (C2) ------------------------------------------
 
-# Which `vcov` types table_regression() can actually COMPUTE for this fit's
-# class. Default: "classical" only -- a robust vcov the class does not (yet)
-# support fails fast in validate_vcov_cluster_lists() with a clear
-# spicy_unsupported_vcov error, instead of silently returning model-based SEs
-# under a robust label (audit finding C2). The supported set grows per class as
-# the robust path is wired + cross-validated; see dev/C2_robust_vcov_spec.md.
+# Which `vcov` values table_regression() admits for a fit: the cell of its
+# class in the registry (.REG_VCOV, read by .reg_vcov_values()), so a
+# robust vcov the class cannot compute fails fast in
+# validate_vcov_cluster_lists() with a spicy_unsupported_vcov error,
+# instead of returning model-based SEs under a robust label (audit
+# finding C2). "classical" is in every cell, so default calls never error.
 #
-# Note: "classical" is the user-facing token for the model-based default and is
-# supported by EVERY class, so default calls never error -- only an explicit
-# robust request on a class that cannot honor it does.
+# The cell is read at the level of the fit, except for the classes of
+# .REG_VCOV_AT_COMPUTE, whose reduced state is refused where the variance
+# is computed, with a reason of its own (.refuse_cr_nlme_contrasts(),
+# .rms_robust_vcov()). The class is the first class of the fit, so a
+# class outside the registry admitted by inheritance (a subclass of glm)
+# keeps "classical"; .REG_VCOV_ALIAS names the subclasses that take the
+# cell of their parent.
+#
+# Why the cells hold what they hold:
+#   * lm alone takes "CR1S", Stata's `regress, vce(cluster)` (CR1S
+#     scaling, t(G-1)): Stata's ML commands scale by G/(G-1) and report z,
+#     so a glm "CR1S" would carry a false Stata label.
+#   * ivreg takes what two engines agree on with estimatr::iv_robust():
+#     HC0 / HC1 and CR0-CR3 / CR1S. HC2-HC5 hang on a leverage 2SLS does
+#     not define uniquely, and the resamplers refit an lm.
+#   * lmer and lme: clubSandwich CR*, with Satterthwaite df. glmer: none,
+#     clubSandwich has no vcovCR method for glmerMod. glmmTMB: CR0 from its
+#     own sandwich and CR1, its G/(G-1) scaling (R/vcov_glmmTMB.R), never
+#     clubSandwich, whose vcovCR.default returned SEs ~360x deflated on a
+#     Poisson random-intercept check (2026-08-05).
+#   * coxph: the Lin-Wei sandwich, CR0. rms fits: rms::robcov(), CR0,
+#     which needs the fit's x = TRUE, y = TRUE.
+#   * survreg, tobit, gam / bam, polr, clm, betareg, mlogit, multinom and
+#     the pscl fits: sandwich::vcovCL(), CR1. No HC*: no hat values (pscl,
+#     multinom), or a meat vcovHC() mis-scales (mlogit: nobs() counts the
+#     long-format rows, deflating SEs by ~sqrt(J)). A clm with scale or
+#     nominal terms, and a negative-binomial pscl fit, have no complete
+#     estimating functions.
+#   * svyglm, svyolr, svycoxph: the design-based variance is the robust
+#     one, and clustering belongs in svydesign(ids = ). clubSandwich has no
+#     vcovCR.svyglm, and vcovCR.glm would ignore the design.
+#   * rq: quantreg's own family. "classical" is nid (Hendricks-Koenker),
+#     "bootstrap" boot.rq (with `cluster`, Hagemann's wild gradient). The
+#     jackknife is inconsistent for non-smooth estimators.
+#   * geeglm, lm_robust, iv_robust, fixest: the fit carries its variance.
 .robust_vcov_support <- function(fit) {
-  full <- c(
-    "classical",
-    paste0("HC", 0:5),
-    paste0("CR", 0:3),
-    "bootstrap",
-    "jackknife"
-  )
-  # Cluster-robust only: clubSandwich CR* is defined, but HC* (an OLS / single-
-  # level concept) and the lm/glm-refitting resamplers are not.
-  cr_only <- c("classical", paste0("CR", 0:3))
-  # The classes that compute one cluster estimator take the token that names
-  # it (.single_cluster_token()): CR1 for the sandwich::vcovCL() classes,
-  # CR0 for coxph and the rms fits.
-  cl_only <- c("classical", "CR1")
-  cr0_only <- c("classical", "CR0")
-  switch(
-    class(fit)[1L],
-    # lm additionally takes "CR1S" -- the full Stata
-    # `regress, vce(cluster)` convention (CR1S scaling + t(G-1)).
-    # NOT granted to glm: Stata's ML commands scale by G/(G-1) and
-    # report z, so a glm "CR1S" would carry a false Stata label.
-    lm = c(full, "CR1S"),
-    # ivreg (2SLS) takes the sandwiches an lm takes where two engines
-    # agree: HC0 / HC1 (sandwich) and CR0-CR3 / CR1S (clubSandwich) match
-    # estimatr::iv_robust(). HC2-HC5 hang on a leverage 2SLS does not
-    # define uniquely (AER's hatvalues() is not estimatr's), and the
-    # resamplers refit an lm. Refusals in validate_vcov_cluster_lists().
-    ivreg = c("classical", "HC0", "HC1", paste0("CR", 0:3), "CR1S"),
-    glm = full,
-    negbin = full, # MASS::glm.nb delegates to the glm path
-    # Mixed-effects: cluster-robust via clubSandwich (Inc 2). lmer / lme get
-    # Satterthwaite df. glmer is NOT granted: clubSandwich has no vcovCR
-    # method for it (glmerMod errors outright). glmmTMB takes CR0 from its
-    # own sandwich, and CR1 as its G/(G-1) scaling (R/vcov_glmmTMB.R) --
-    # never clubSandwich, whose
-    # vcovCR.default returned SEs ~360x deflated on a Poisson
-    # random-intercept check (2026-08-05).
-    lmerMod = cr_only,
-    lmerModLmerTest = cr_only,
-    lme = cr_only,
-    glmmTMB = .glmmTMB_robust_vcov_support(fit),
-    # Survival (Inc 3): coxph -> Lin-Wei grouped-dfbeta; survreg -> vcovCL.
-    coxph = cr0_only,
-    survreg = cl_only,
-    # AER::tobit is a survreg (its vcovCL equals the survreg twin's).
-    tobit = cl_only,
-    # Inc 4: cluster sandwich via sandwich::vcovCL. clm is structure-aware:
-    # scale/nominal (partial-PO) fits have no sandwich estfun method, so CR*
-    # is refused for them (-> spicy_unsupported_vcov up front).
-    # svyglm is NOT granted: clubSandwich has no vcovCR.svyglm, so the call
-    # silently dispatches to vcovCR.glm, which ignores the survey design
-    # (strata, FPC, calibration). Clustering belongs in the design itself
-    # (svydesign(ids = ...)); the fit's own Taylor/replicate variance IS the
-    # design-based robust variance (refusal message in the validate gate).
-    gam = cl_only,
-    bam = cl_only,
-    polr = cl_only,
-    clm = .clm_robust_vcov_support(fit, cl_only),
-    betareg = cl_only,
-    # mlogit: CR* only. vcovHC() is NUMERICALLY WRONG for mlogit -- its meat
-    # divides by nobs() (long-format rows, n x J) while estfun() has one row
-    # per choice situation (n), deflating SEs by ~sqrt(J); and without a
-    # hatvalues method HC1-HC5 silently equal HC0. vcovCL() sizes everything
-    # off the estfun rows and matches sandwich::sandwich(), so the cluster
-    # path is correct (verified against the Fishing data, 2026-07-03).
-    mlogit = cl_only,
-    # nnet::multinom: CR* via sandwich::vcovCL, unlocked by sandwich
-    # 3.1-2's estfun.multinom(). HC* stays impossible -- no working
-    # residuals or hatvalues for a multi-equation model (meatHC errors
-    # with "cannot match dimension of model.matrix and estfun").
-    # Cluster SEs cross-validated against mlogit::mlogit on identical
-    # data: coefficients and vcovCL SEs agree to 4 decimals
-    # (dev/multinom_robust_vcov_spec.md, 2026-07-14).
-    multinom = cl_only,
-    # Inc 4b: rms fits via rms::robcov() native cluster sandwich (needs the
-    # fit's x = TRUE, y = TRUE). ols / lrm / cph / Glm.
-    ols = cr0_only,
-    lrm = cr0_only,
-    cph = cr0_only,
-    Glm = cr0_only,
-    # Two-part count models (pscl): sandwich::estfun / bread work for BOTH
-    # components (verified 2026-07-02), so the CL cluster sandwich covers the
-    # whole model. vcovHC's type= machinery fails (no hatvalues) -> no HC*.
-    # A negative-binomial fit is classical only: estfun() has no score for
-    # theta (.pscl_negbin_refuse_vcov()).
-    zeroinfl = ,
-    hurdle = if (.pscl_is_negbin(fit)) "classical" else cl_only,
-    # quantreg::rq: its own summary.rq() estimator family, not the
-    # sandwich vocabulary. "classical" resolves to the nid sandwich
-    # (Hendricks-Koenker; quantreg's own large-sample default and what
-    # Stata's vce(robust) / parameters / modelsummary report); "iid" is
-    # the Koenker-Bassett / Stata vce(iid) parity opt-in; "ker" the
-    # Powell kernel sandwich; "rank" the rank-score inversion (genuine
-    # CIs, no SE/t/p); "bootstrap" quantreg's native boot.rq (with
-    # cluster= -> Hagemann 2017 wild gradient). HC* refused (nid is not
-    # an HC label; rq has no estfun/hatvalues), CR* refused (no
-    # clubSandwich backend; the cluster route is bootstrap), jackknife
-    # refused (deterministic leave-one-out is inconsistent for
-    # non-smooth estimators; Efron 1982, Shao & Wu 1989).
-    rq = c("classical", "nid", "iid", "ker", "rank", "bootstrap"),
-    # geepack::geeglm: the fit's own sandwich ("san.se", clustered on
-    # its `id =`) IS the default inference -- robust by construction.
-    # spicy's HC* / CR* tokens are refused with a GEE-specific message
-    # (validate_vcov_cluster_lists / .gee_refuse_vcov); the estimator
-    # choice lives on the fit (geeglm's `std.err =` option).
-    geeglm = "classical",
-    # Univariable screen bundle: the request is forwarded to every
-    # underlying fit, so the capability is theirs (homogeneous lm/glm).
-    spicy_uv_screen = .robust_vcov_support(fit$fits[[1L]]),
-    # --- classes whose robust path is wired in later C2 increments go here ---
-    "classical"
-  )
+  # Univariable screen bundle: the request is forwarded to every
+  # underlying fit, so the capability is theirs (homogeneous lm/glm).
+  if (identical(class(fit)[1L], "spicy_uv_screen")) {
+    return(.robust_vcov_support(fit$fits[[1L]]))
+  }
+  cls <- .reg_vcov_class(fit)
+  if (is.na(cls)) {
+    return("classical")
+  }
+  .reg_vcov_values(cls, if (!cls %in% .REG_VCOV_AT_COMPUTE) fit)
+}
+
+# The subclasses that take the `vcov` cell of their registry class.
+.REG_VCOV_ALIAS <- c(lmerModLmerTest = "lmerMod", bam = "gam")
+
+# The classes whose reduced state is refused at the computation.
+.REG_VCOV_AT_COMPUTE <- c("lme", "cph", "ols", "lrm", "Glm")
+
+# The registry class whose `vcov` cell a fit reads: its first class, or
+# the class it is an alias of; NA outside the registry.
+.reg_vcov_class <- function(fit) {
+  cls <- class(fit)[1L]
+  if (cls %in% names(.REG_VCOV_ALIAS)) {
+    cls <- .REG_VCOV_ALIAS[[cls]]
+  }
+  if (cls %in% names(.REG_VCOV)) cls else NA_character_
 }
 
 
@@ -1379,14 +1325,10 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 
 # clm with a scale (scale = ~) or nominal (nominal = ~, partial-PO) component has
 # no sandwich::estfun method ("estimating functions for scale regression not
-# implemented yet"), so vcovCL / CR* cannot be formed. Refuse CR* up front for
-# those fits (the validate gate then emits a clear spicy_unsupported_vcov) rather
-# than crashing deep inside estfun. Plain proportional-odds clm keeps cl_only.
-.clm_robust_vcov_support <- function(fit, cl_only) {
-  if (.clm_has_scale_or_nominal(fit)) "classical" else cl_only
-}
-
-# The predicate of the clm cell of .REG_VCOV.
+# implemented yet"), so vcovCL / CR* cannot be formed. CR* is refused up front
+# for those fits (the validate gate then emits a clear spicy_unsupported_vcov)
+# rather than crashing deep inside estfun. Plain proportional-odds clm keeps
+# CR1. The predicate of the clm cell of .REG_VCOV.
 .clm_has_scale_or_nominal <- function(fit) {
   !is.null(fit$S.terms) || !is.null(fit$nom.terms)
 }

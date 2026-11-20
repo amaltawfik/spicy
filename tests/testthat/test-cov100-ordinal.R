@@ -4,7 +4,7 @@
 # Targets the branches the earlier suites leave uncovered:
 #   * as_regression_frame.clm(): the frame-level refusal of a robust vcov for
 #     a partial-proportional-odds fit. table_regression()'s validate gate
-#     (.clm_robust_vcov_support) normally intercepts first, so the method's
+#     (.robust_vcov_support) normally intercepts first, so the method's
 #     own guard only fires on a direct frame call.
 #   * .ordinal_maybe_profile_ci(): (a) the early return when no estimated
 #     predictor rows exist, (b) the spicy_fallback path when confint()
