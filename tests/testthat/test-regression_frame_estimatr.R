@@ -169,6 +169,40 @@ test_that("lm_robust clustered: the label names the cluster variable", {
   expect_true(fr$info$extras$clustered)
 })
 
+test_that("lm_robust under clustered CR2 names its Satterthwaite df", {
+  sat <- "P-values: Satterthwaite t-test, cluster-robust df."
+  fit <- .fit_lm_robust_cluster()
+  # estimatr tests each coefficient on Bell-McCaffrey df, fractional.
+  expect_true(any(fit$df != round(fit$df)))
+  expect_match(
+    attr(table_regression(fit, output = "data.frame"), "note"),
+    sat,
+    fixed = TRUE
+  )
+  # Beside an lm under CR2, the sentence holds for both and is bare.
+  note <- attr(
+    table_regression(
+      list(LM = lm(mpg ~ wt, data = mtcars), LMR = fit),
+      vcov = list("CR2", "classical"),
+      cluster = list(~cyl, NULL),
+      output = "data.frame"
+    ),
+    "note"
+  )
+  expect_match(note, sat, fixed = TRUE)
+  expect_no_match(note, "LM: P-values", fixed = TRUE)
+  # Under CR0 and "stata" estimatr tests on G - 1: no sentence.
+  for (st in c("CR0", "stata")) {
+    f0 <- estimatr::lm_robust(mpg ~ wt, data = mtcars, clusters = cyl, se_type = st)
+    expect_identical(unique(f0$df), 2)
+    expect_no_match(
+      attr(table_regression(f0, output = "data.frame"), "note"),
+      sat,
+      fixed = TRUE
+    )
+  }
+})
+
 
 # ---- 5. lm_robust: fit stats --------------------------------------------
 

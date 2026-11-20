@@ -2536,6 +2536,16 @@ build_nested_gam_footer_block_from_frames <- function(
   ) {
     return(spicy_str("note_pvalues_satterthwaite_cr"))
   }
+  # estimatr computes the same df under its CR2 (Bell-McCaffrey, per
+  # coefficient: `fit$df` fractional); under CR0 and "stata" it tests on
+  # G - 1.
+  if (
+    cls %in% c("lm_robust", "iv_robust") &&
+      identical(frame$info$extras$se_type, "CR2") &&
+      isTRUE(frame$info$extras$clustered)
+  ) {
+    return(spicy_str("note_pvalues_satterthwaite_cr"))
+  }
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
     return(spicy_str("note_pvalues_satterthwaite"))
   }
