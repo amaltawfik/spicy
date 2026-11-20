@@ -43,7 +43,11 @@ three or more levels, or \code{contrast = "none"}) has no default: it
 refuses and gives the address of a mean.}
 
 \item{model}{A group of \code{by}, or in a multi-model table the model:
-its label (as displayed) or its position. See \emph{Groups and models}.}
+its label (as displayed) or its position. A value that is no
+displayed label is also looked up among the identities of the
+models (\code{"M1"}, and the equations \code{"outcome"} and \code{"selection"} of a
+selection model alone, in any case), so a call survives the language
+of the table. See \emph{Groups and models}.}
 }
 \value{
 A character scalar.

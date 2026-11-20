@@ -189,7 +189,11 @@
 #'   three or more levels, or `contrast = "none"`) has no default: it
 #'   refuses and gives the address of a mean.
 #' @param model A group of `by`, or in a multi-model table the model:
-#'   its label (as displayed) or its position. See *Groups and models*.
+#'   its label (as displayed) or its position. A value that is no
+#'   displayed label is also looked up among the identities of the
+#'   models (`"M1"`, and the equations `"outcome"` and `"selection"` of a
+#'   selection model alone, in any case), so a call survives the language
+#'   of the table. See *Groups and models*.
 #'
 #' @return A character scalar.
 #'
@@ -1227,6 +1231,26 @@ inline <- function(
   list(s = s, formatted = formatted)
 }
 
+# The position of the group whose columns carry `model` as their model
+# identity, for a `model` that names no displayed label: the identity
+# does not change with the language of the table. The two equations of a
+# selection model alone ("Outcome", "Selection") match whatever the case.
+# NA when no group, or several, carry it.
+.inline_model_by_id <- function(s, spans, model) {
+  body_cols <- names(.struct_display_body(s$body))
+  ids <- vapply(
+    spans,
+    function(ix) {
+      id <- unlist(lapply(s$col_meta[body_cols[ix]], `[[`, "model_id"))
+      if (length(id)) as.character(id[[1L]]) else NA_character_
+    },
+    character(1)
+  )
+  eq <- ids %in% c("Outcome", "Selection")
+  hit <- which(ids %in% model | (eq & tolower(ids) == tolower(model)))
+  if (length(hit) == 1L) hit else NA_integer_
+}
+
 # The candidate columns after the `model` filter: NULL model on a
 # single-model table keeps every column; on a multi-model table the
 # choice is required as soon as a token is ambiguous across models.
@@ -1281,6 +1305,9 @@ inline <- function(
     if (model < 1L || model > length(spans)) NULL else as.integer(model)
   } else {
     m <- match(model, names(spans))
+    if (is.na(m)) {
+      m <- .inline_model_by_id(s, spans, model)
+    }
     if (is.na(m)) NULL else m
   }
   if (is.null(pick)) {
