@@ -1898,6 +1898,12 @@ table_regression <- function(
   if (is.null(panel_req)) {
     validate_cluster_lists(vcov, cluster, models)
   }
+  # The `cluster` of a design-based fit has been warned about: it goes no
+  # further, resolved or not (resolve_cluster()).
+  design_fit <- vapply(models, .is_design_fit, logical(1))
+  if (is.list(cluster) && any(design_fit)) {
+    cluster[design_fit] <- list(NULL)
+  }
 
   # Multinomial outcome-as-columns gate (single nnet::multinom model,
   # no nested comparison). Computed early because it drives the

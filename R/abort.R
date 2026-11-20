@@ -683,6 +683,18 @@ resolve_cluster <- function(
   if (is.null(cluster)) {
     return(NULL)
   }
+  # A design-based fit has the clusters of its design: `cluster` is
+  # ignored with a warning (validate_cluster_lists()), so a formula or a
+  # column name is not looked up. A design variable the model does not
+  # use is not an unknown variable.
+  if (.is_design_fit(fit)) {
+    if (is.character(cluster) && length(cluster) == 1L) {
+      return(stats::reformulate(cluster))
+    }
+    if (inherits(cluster, "formula")) {
+      return(cluster)
+    }
+  }
   if (inherits(cluster, "formula")) {
     vars <- all.vars(cluster)
     if (length(vars) == 0L) {

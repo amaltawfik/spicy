@@ -218,3 +218,29 @@ test_that("a quasibinomial svyglm has its AIC without library(survey)", {
   expect_equal(spicy:::.svyglm_aic(fit), oracle[["AIC"]])
   expect_equal(spicy:::.svyglm_eff_p(fit), oracle[["eff.p"]])
 })
+
+test_that("`cluster` on a design-based fit is ignored with one warning, whatever variable it names", {
+  skip_if_not_installed("survey")
+  data("api", package = "survey", envir = environment())
+  des <- survey::svydesign(ids = ~dnum, weights = ~pw, data = apiclus1)
+  fit <- survey::svyglm(api00 ~ ell, design = des)
+  # `ell` is in the model, `dnum` only in the design.
+  msgs <- vapply(
+    list(~ell, ~dnum, "dnum"),
+    function(cl) {
+      w <- expect_warning(
+        table_regression(fit, cluster = cl),
+        class = "spicy_ignored_arg"
+      )
+      conditionMessage(w)
+    },
+    character(1)
+  )
+  expect_identical(msgs[[2L]], msgs[[1L]])
+  expect_identical(msgs[[3L]], msgs[[1L]])
+  expect_match(
+    msgs[[1L]],
+    "The survey design carries the clustering",
+    fixed = TRUE
+  )
+})
