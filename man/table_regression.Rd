@@ -248,6 +248,10 @@ reference level under every value. Weighted fits average with the
 same weights under every value, per-category models (ordinal,
 multinomial) report the quantity for each category probability, and
 Bayesian fits summarize its draws. The table note names the quantity.
+The AME is averaged over the data the model was fitted on, read
+again from the environment of the fit when the table is built: when
+they have changed since (rows dropped, values recoded), the AME
+cells of that model stay empty, with a warning.
 Ignored, with a warning, when no AME column is shown.}
 
 \item{partial_type}{The hypothesis of the term-level tests and of the
