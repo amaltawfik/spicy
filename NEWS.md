@@ -58,6 +58,22 @@
   instead of "outcome". A namespace prefix is dropped:
   `survival::Surv(time, status)` reads `Surv(time, status)`.
 
+* `table_regression()`: a sample-selection model alone (`selection()`,
+  `heckit()`, `treatReg()`) shows its two equations as column groups,
+  "Outcome" then "Selection", with its error terms, n and AIC under the
+  first, as a multinomial model alone shows its categories. Its default
+  columns are B, SE and p: ask for the interval with `show_columns`. A
+  factor or a logical predictor has a header, its levels and a reference
+  row, where the table read `kidsTRUE`. Beside other models, or under
+  `nested = TRUE`, the equations stay in rows. `outcome_labels` renames
+  the two groups. `keep` and `drop` match the terms of such a table
+  without their prefix (`"educ"`), and `inline()` selects the equation
+  with `model`, under its name in any language
+  (`inline(tbl, educ, model = "outcome")`), no longer with `level`.
+  `tidy()` and `output = "long"` keep the prefixed terms and fill
+  `factor_term` and `factor_level`; the long output gains the reference
+  rows.
+
 * `table_regression()` names the rows of a fixest model as `lm()` and
   `ivreg()` name them: `education` for the endogenous regressor of an IV
   `feols()` model, not fixest's `fit_education`, and `I(x^2)` where
@@ -1366,8 +1382,8 @@
   logistique."), as the rest of its note. Both were in English. A type
   without a French name keeps them in English.
 
-* `table_regression()`: a multinomial model beside other models, and a
-  Heckman selection model, name each row under the header of a term by
+* `table_regression()`: a multinomial model or a Heckman selection
+  model beside other models names each row under the header of a term by
   its outcome category (or equation) alone: "Upper secondary" under
   "age:", where the row read "Upper secondary: age". A factor level
   keeps its category ("Upper secondary: Male"). `tidy()` and
