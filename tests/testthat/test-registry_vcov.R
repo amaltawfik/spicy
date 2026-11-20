@@ -90,18 +90,29 @@ test_that("every vcov cell parses to values of .VCOV_MODES", {
   }
 })
 
+# A parenthesis that begins with "classical only" reduces its cell, and
+# the classes whose cell has one are those with a predicate.
+test_that("the 'classical only' cells are those of the predicate table", {
+  only <- names(.REG_VCOV)[grepl("(classical only", .REG_VCOV, fixed = TRUE)]
+  expect_setequal(names(.REG_VCOV_CLASSICAL_ONLY), only)
+  expect_identical(
+    unname(vapply(.REG_VCOV[only], function(cell) {
+      lengths(regmatches(cell, gregexpr("(classical only", cell, fixed = TRUE)))
+    }, integer(1))),
+    rep(1L, length(only))
+  )
+})
+
 for (id in names(.CLASS_FIXTURES)) {
   local({
     id <- id
     test_that(paste0("the registry gives the vcov values of ", id), {
       skip_on_cran()
       fit <- .class_fixture(id)
-      reg <- .supported_models_registry()
       cl <- .CLASS_FIXTURES[[id]]$class
-      ok <- setdiff(
-        .reg_cell_tokens(reg$vcov[reg$class == cl]),
-        vc_refused[[id]]$vcov
-      )
+      ok <- setdiff(.reg_vcov_values(cl), vc_refused[[id]]$vcov)
+      # The reader at the level of the fit gives the same values.
+      expect_identical(.reg_vcov_values(cl, fit), ok, label = id)
       for (m in .VCOV_MODES) {
         res <- tryCatch(
           {

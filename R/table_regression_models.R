@@ -281,11 +281,13 @@
   out
 }
 
-# The tokens of a registry cell (`vcov`, `fit_stats_default`, `fit_stats`),
-# in their order. A cell is a comma-separated list; a parenthesis after an
-# item gives the condition under which it holds, and its own commas do not
-# split the cell. `conditional = FALSE` keeps the items without a
-# condition. A range such as "HC0-HC5" gives every token of it.
+# The tokens of a registry cell, in their order: the reader of the cells
+# of fit statistics (`fit_stats_default`, `fit_stats`); the `vcov` cells
+# are read by .reg_vcov_values(), which calls it. A cell is a
+# comma-separated list; a parenthesis after an item gives the condition
+# under which it holds, and its own commas do not split the cell.
+# `conditional = FALSE` keeps the items without a condition. A range such
+# as "HC0-HC5" gives every token of it.
 .reg_cell_tokens <- function(cell, conditional = TRUE) {
   items <- trimws(strsplit(cell, ",(?![^()]*\\))", perl = TRUE)[[1L]])
   if (!conditional) {
@@ -308,9 +310,13 @@
 # gate (.robust_vcov_support() in R/vcov.R, and the refusals of
 # validate_vcov_cluster_lists()); each cell was checked on 2026-11-19 by
 # fitting each class and calling table_regression() with every token of
-# .VCOV_MODES. A parenthesis gives the condition under which the set
-# shrinks, or what "classical" stands for when the class carries its own
-# variance.
+# .VCOV_MODES.
+#
+# Convention of the parentheses: one that begins with "classical only"
+# reduces the cell to `classical` for the fits on which the predicate of
+# the class (.REG_VCOV_CLASSICAL_ONLY) is TRUE; any other parenthesis is a
+# gloss of `classical`, saying what it stands for when the class carries
+# its own variance. .reg_vcov_values() reads the cells.
 .REG_VCOV <- c(
   lm = "classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife",
   glm = "classical, HC0-HC5, CR0-CR3, bootstrap, jackknife",
@@ -352,6 +358,32 @@
   stanreg = "classical (the posterior)",
   brmsfit = "classical (the posterior)"
 )
+
+# The predicate of each "classical only" cell of .REG_VCOV: TRUE when the
+# fit is in the state its parenthesis names. The computation of the
+# variance calls the same functions.
+.REG_VCOV_CLASSICAL_ONLY <- list(
+  glmmTMB = function(fit) .glmmTMB_no_sandwich(fit),
+  lme = function(fit) .nlme_contrasts_differ(fit),
+  clm = function(fit) .clm_has_scale_or_nominal(fit),
+  zeroinfl = function(fit) .pscl_is_negbin(fit),
+  hurdle = function(fit) .pscl_is_negbin(fit),
+  cph = function(fit) .rms_lacks_xy(fit),
+  ols = function(fit) .rms_lacks_xy(fit),
+  lrm = function(fit) .rms_lacks_xy(fit),
+  Glm = function(fit) .rms_lacks_xy(fit)
+)
+
+# The `vcov` values of a registry class: without `fit`, every value of its
+# cell; with `fit`, the values that fit accepts (`classical` alone when
+# the predicate of a "classical only" cell holds).
+.reg_vcov_values <- function(class, fit = NULL) {
+  only <- .REG_VCOV_CLASSICAL_ONLY[[class]]
+  if (!is.null(fit) && !is.null(only) && isTRUE(only(fit))) {
+    return("classical")
+  }
+  .reg_cell_tokens(.REG_VCOV[[class]])
+}
 
 # The fit statistics of a one-model table, one string per registry class:
 # the columns `fit_stats_default` (the rows the default

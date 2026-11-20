@@ -1154,8 +1154,7 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
       # classical-only when a plain proportional-odds clm takes CR*.
       if (
         inherits(models[[i]], "clm") &&
-          (!is.null(models[[i]]$S.terms) ||
-            !is.null(models[[i]]$nom.terms))
+          .clm_has_scale_or_nominal(models[[i]])
       ) {
         spicy_abort(
           c(

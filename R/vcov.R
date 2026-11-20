@@ -82,11 +82,8 @@
 # coef_test() takes its df from the same design. Measured on a 30-cluster
 # lme: SE(A1) 0.102 against 0.127 for the equivalent lmer fit, whose
 # design clubSandwich reads from the fit. (gls has the same route but no
-# robust vcov in spicy.)
-.refuse_cr_nlme_contrasts <- function(fit, type) {
-  if (!inherits(fit, "lme")) {
-    return(invisible(NULL))
-  }
+# robust vcov in spicy.) The predicate of the lme cell of .REG_VCOV.
+.nlme_contrasts_differ <- function(fit) {
   dat <- .nlme_get_data(fit)
   same <- is.null(dat) ||
     tryCatch(
@@ -99,7 +96,11 @@
       },
       error = function(e) TRUE
     )
-  if (same) {
+  !same
+}
+
+.refuse_cr_nlme_contrasts <- function(fit, type) {
+  if (!inherits(fit, "lme") || !.nlme_contrasts_differ(fit)) {
     return(invisible(NULL))
   }
   spicy_abort(
@@ -1382,7 +1383,12 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # those fits (the validate gate then emits a clear spicy_unsupported_vcov) rather
 # than crashing deep inside estfun. Plain proportional-odds clm keeps cl_only.
 .clm_robust_vcov_support <- function(fit, cl_only) {
-  if (!is.null(fit$S.terms) || !is.null(fit$nom.terms)) "classical" else cl_only
+  if (.clm_has_scale_or_nominal(fit)) "classical" else cl_only
+}
+
+# The predicate of the clm cell of .REG_VCOV.
+.clm_has_scale_or_nominal <- function(fit) {
+  !is.null(fit$S.terms) || !is.null(fit$nom.terms)
 }
 
 # pscl fits with a negative-binomial part: zeroinfl(dist = "negbin"), and a
@@ -1822,8 +1828,14 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # error when they are missing instead of rms's terse "did not specify x=TRUE in
 # fit". Dimnames are normalized ("Intercept" -> "(Intercept)") to match the
 # coefs frame's term column (see .rms_coef_named()).
+# An rms fit without its model matrices: the predicate of the rms cells of
+# .REG_VCOV.
+.rms_lacks_xy <- function(fit) {
+  is.null(fit[["x"]]) || is.null(fit[["y"]])
+}
+
 .rms_robust_vcov <- function(fit, cluster) {
-  if (is.null(fit[["x"]]) || is.null(fit[["y"]])) {
+  if (.rms_lacks_xy(fit)) {
     cl <- class(fit)[1L]
     spicy_abort(
       c(

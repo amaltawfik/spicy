@@ -47,10 +47,16 @@
 # The vcov tokens a glmmTMB fit supports: CR0 and CR1, except where
 # glmmTMB's sandwich does not apply.
 .glmmTMB_robust_vcov_support <- function(fit) {
-  if (is_reml_glmmTMB_fit(fit) || .glmmTMB_is_ordinal(fit)) {
+  if (.glmmTMB_no_sandwich(fit)) {
     return("classical")
   }
   c("classical", "CR0", "CR1")
+}
+
+# A REML fit or one of the ordinal family, where glmmTMB's sandwich does
+# not apply: the predicate of the glmmTMB cell of .REG_VCOV.
+.glmmTMB_no_sandwich <- function(fit) {
+  is_reml_glmmTMB_fit(fit) || .glmmTMB_is_ordinal(fit)
 }
 
 # The refusal, with its reason, for a token a glmmTMB fit does not
