@@ -55,6 +55,27 @@ test_that("multi-model panels with real per-model stats keep them all", {
   expect_gt(length(n_lines), 0L)
 })
 
+test_that("a continuation panel keeps the header of the block it shows", {
+  skip_if_not_installed("fixest")
+  lsdv <- lm(mpg ~ wt + factor(cyl), data = mtcars)
+  fe <- fixest::feols(mpg ~ wt | cyl, data = mtcars)
+  out <- withr::with_options(
+    list(width = 80),
+    capture.output(print(table_regression(
+      list(A = lsdv, B = lsdv, C = lsdv, D = fe),
+      keep = "wt",
+      show_columns = c("b", "se", "ci", "p")
+    )))
+  )
+  expect_gt(length(grep("^ Variable ", out)), 1L)
+  # The "cyl" row of the fixest panel sits under its block header.
+  cyl <- grep("^   cyl ", out)
+  expect_gt(length(cyl), 0L)
+  for (r in cyl) {
+    expect_match(out[r - 1L], "^ Fixed effects:")
+  }
+})
+
 test_that("single-panel tables are untouched by the stub-drop logic", {
   fit <- lm(mpg ~ wt + hp, data = mtcars)
   out <- withr::with_options(

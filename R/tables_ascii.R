@@ -1156,6 +1156,19 @@ spicy_print_table <- function(
             },
             logical(1)
           )
+          # A block header ("Fixed effects:") has no value of its own: it
+          # stays while one of the indented rows under it stays.
+          stub <- as.character(sub[[1L]][fit_rows])
+          child <- grepl("^\\s", stub)
+          for (i in which(blank & !child)) {
+            j <- i + 1L
+            while (j <= length(fit_rows) && child[j] && blank[j]) {
+              j <- j + 1L
+            }
+            if (j <= length(fit_rows) && child[j]) {
+              blank[i] <- FALSE
+            }
+          }
           if (any(blank)) {
             sub <- sub[-fit_rows[blank], , drop = FALSE]
             if (all(blank)) {
