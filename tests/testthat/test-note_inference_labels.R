@@ -136,6 +136,38 @@ for (id in names(.CLASS_FIXTURES)) {
   })
 }
 
+# The selection fixture is a selection() fit by maximum likelihood; a
+# two-step heckit() fit and a treatReg() fit are held to the same form.
+test_that("the standard-error labels of the selection models follow one form", {
+  skip_on_cran()
+  skip_if_not_installed("sampleSelection")
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  fits <- list(
+    heckit = sampleSelection::heckit(
+      lfp ~ age + educ,
+      wage ~ exper + educ,
+      data = Mroz87
+    ),
+    treatReg = sampleSelection::treatReg(
+      lfp ~ age + educ,
+      wage ~ lfp + educ,
+      data = Mroz87
+    )
+  )
+  want <- c(heckit = "classical (two-step)", treatReg = "classical (Fisher information)")
+  for (id in names(fits)) {
+    en <- nl_label(nl_note(fits[[id]], id, NULL, "en"), "en")
+    fr <- nl_label(nl_note(fits[[id]], id, NULL, "fr"), "fr")
+    expect_identical(en, want[[id]], label = id)
+    expect_identical(nl_parens(fr), nl_parens(en), label = paste(id, fr))
+    expect_identical(nl_acronyms(fr, "fr"), nl_acronyms(en, "en"), label = id)
+  }
+  expect_identical(
+    nl_label(nl_note(.class_fixture("selection"), "selection", NULL, "en"), "en"),
+    nl_label(nl_note(.class_fixture("betareg"), "betareg", NULL, "en"), "en")
+  )
+})
+
 test_that("twin fits print the same default label", {
   skip_on_cran()
   twins <- list(

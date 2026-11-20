@@ -1527,6 +1527,9 @@
   # class name (an identifier).
   note_vcov_classical_wls = "classical (WLS)",
   note_vcov_classical_2sls = "classical (2SLS)",
+  # A two-step selection fit (sampleSelection::heckit()): Heckman's
+  # corrected covariance of the two-step estimates.
+  note_vcov_classical_two_step = "classical (two-step)",
   note_vcov_classical_nls = "classical (nonlinear least squares)",
   note_vcov_classical_m = "classical (M-estimation)",
   note_vcov_classical_model = "classical (model-based)",
@@ -1566,10 +1569,6 @@
   note_vcov_jackknife = "jackknife (leave-one-out)",
   note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
   note_vcov_jackknife_plain = "jackknife",
-  # The standard errors of a selection model, named by the estimation
-  # method that sets them.
-  note_vcov_selection_ml = "maximum likelihood",
-  note_vcov_selection_two_step = "two-step",
   # The variance estimator of a fit under a sampling design, named by the
   # MECHANISM the design actually uses -- not by the design's R class,
   # which is never shown to a reader, and not by whether the descriptive

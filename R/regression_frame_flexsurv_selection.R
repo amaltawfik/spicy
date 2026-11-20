@@ -654,12 +654,14 @@ as_regression_frame.selection <- function(
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    # The note names the estimation method, which sets the standard
-    # errors: the inverse Hessian of the likelihood, or Heckman's
-    # corrected two-step formula.
+    # The standard errors under the names of the other classes: a fit by
+    # maximum likelihood (selection(), treatReg()) takes the inverse of
+    # the negative Hessian of maxLik(), as betareg or polr do; a two-step
+    # fit (heckit()) Heckman's corrected covariance (heckitVcov()), whose
+    # parenthesis names the method, as "classical (2SLS)" does.
     vcov_label = vcov_label %||%
       spicy_str(
-        if (is_ml) "note_vcov_selection_ml" else "note_vcov_selection_two_step"
+        if (is_ml) "note_vcov_classical_glm" else "note_vcov_classical_two_step"
       ),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,

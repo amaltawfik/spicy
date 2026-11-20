@@ -146,17 +146,20 @@ test_that("every row tests on summary()'s t with the residual df", {
   )
 })
 
-test_that("the note names the estimation method of each model", {
+test_that("the note names the standard errors of each estimation method", {
   ml <- .sel_ml()
   ts <- .sel_2s()
   expect_match(
     .sel_note(table_regression(ml)),
-    "Std. errors: maximum likelihood.",
+    "Std. errors: classical (Fisher information).",
     fixed = TRUE
   )
   expect_match(
     .sel_note(table_regression(list(ts, ml))),
-    "Std. errors: Model 1: two-step, Model 2: maximum likelihood.",
+    paste0(
+      "Std. errors: Model 1: classical (two-step), ",
+      "Model 2: classical (Fisher information)."
+    ),
     fixed = TRUE
   )
 })

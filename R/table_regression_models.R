@@ -963,8 +963,10 @@
 #' binary outcome), the inverse Mills ratio \eqn{\lambda}{lambda} followed by
 #' \eqn{\sigma}{sigma} and \eqn{\rho}{rho} without standard errors for a
 #' two-step fit. Tests and intervals use the t distribution with the
-#' residual df that `summary()` uses, and the note names the estimation
-#' method and the number of cases with an observed outcome. A tobit-5
+#' residual df that `summary()` uses. The note names the standard errors,
+#' "classical (Fisher information)" for a maximum-likelihood fit and
+#' "classical (two-step)" for a two-step fit, and the number of cases
+#' with an observed outcome. A tobit-5
 #' (switching regression) fit is refused.
 #'
 #' @section Shared semantics (all classes):
