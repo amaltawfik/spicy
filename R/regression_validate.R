@@ -3604,11 +3604,12 @@ validate_class_appropriate_tokens <- function(
   }
 
   # The pseudo-R^2 of a beta regression, which betareg alone computes.
-  # ANY-gate: the other columns of a mixed set take an empty cell.
+  # ANY-gate: the other columns of a mixed set take an empty cell. The
+  # registry says which models carry it (.reg_offers()).
   if (
     "pseudo_r2_ferrari" %in%
       show_fit_stats &&
-      !any(vapply(eff_models, inherits, logical(1), "betareg"))
+      !.reg_any_offers(eff_models, "pseudo_r2_ferrari")
   ) {
     spicy_abort(
       c(
