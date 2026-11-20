@@ -544,10 +544,11 @@ build_structured_body <- function(
       # Per-fit variance explained: same precision as the fit-statistics
       # R^2 row it can also appear as (`fit_digits`).
       fit_digits
-    } else if (token %in% c("n", "n_events")) {
+    } else if (token %in% c("n", "n_events", "df")) {
       # Counts, not estimates: `digits` governs the estimation columns
       # only, so N stays "364" and never "364.00" / "364.000". The
-      # console renderer already formats n_obs / events as integers.
+      # console renderer already formats n_obs / events as integers. A
+      # fractional df takes one decimal in its cell's `row_fmt`.
       0L
     } else if (token %in% c("ess_bulk", "ess_tail")) {
       0L # effective SAMPLE SIZES: integers, never "959.60"
@@ -899,6 +900,32 @@ build_structured_body <- function(
     n_body_rows,
     empty = ""
   )
+
+  # ---- The df column: one decimal for a fractional df --------------------
+  # The console prints a whole df without decimals and a fractional one
+  # (Satterthwaite) with one (`.format_df_number()`): each fractional
+  # coefficient cell records its precision in `row_fmt`, which every
+  # engine reads first (`.resolve_cell_fmt()`), Excel included.
+  for (nm in names(col_meta)) {
+    if (!identical(col_meta[[nm]]$token, "df")) {
+      next
+    }
+    v <- body_df[[nm]]
+    frac <- body_df[[".row_role"]] %in% c("coef", "level") &
+      !is.na(v) &
+      abs(v - round(v)) >= 1e-8
+    if (!any(frac)) {
+      next
+    }
+    m <- col_meta[[nm]]
+    col_meta[[nm]]$row_fmt <- lapply(seq_len(n_body_rows), function(i) {
+      f <- .resolve_cell_fmt(m, i)
+      if (frac[[i]]) {
+        f$precision <- 1L
+      }
+      f
+    })
+  }
 
   # ---- Term-level tests: the console's cell -----------------------------
   # A partial chi-square or partial F prints its df after the statistic,
@@ -1370,6 +1397,13 @@ build_structured_body <- function(
     # word the same cell differently again.
     if (.vc_cell_undefined(long_row, cs, re_columns)) {
       status[[e$name]] <- "undefined"
+      next
+    }
+    # The df of a z test (Inf) or of no test: absent, blank.
+    if (identical(cs$token, "df")) {
+      if (!isTRUE(is.finite(row[[e$name]]))) {
+        row[[e$name]] <- NA_real_
+      }
       next
     }
     # Generalized NA-with-term-present (decision 12, 2026-08-14). The

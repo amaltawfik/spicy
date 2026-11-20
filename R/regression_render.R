@@ -825,6 +825,13 @@ build_column_spec <- function(
       fields = "p_value",
       header_short = lab("header_p")
     ),
+    # The df of each coefficient's test, the `df` of tidy(): blank under
+    # a z test (`format_cell_value()`).
+    df = list(
+      estimate_type = "B",
+      fields = "df",
+      header_short = lab("header_df")
+    ),
     # Probability of direction (Bayesian fits): share of posterior
     # draws on the dominant side of zero, range [0.5, 1].
     pd = list(
@@ -1298,8 +1305,9 @@ build_body_row <- function(
   # The smooth-term row of a GAM: its chi-square or F has no place under
   # a t / z header, so the statistic cell is undefined (the value stays in
   # `tidy()`). Its other cells follow the generic NA rule.
+  # The df column follows the t column: no t, no df.
   if (identical(long_row$estimate_type[1L], "edf")) {
-    return(identical(cs$token, "t"))
+    return(cs$token %in% c("t", "df"))
   }
   # An empty match yields NA here, which is not "vc": a cell whose term
   # is absent from the model is blank, never a dash.
@@ -1307,7 +1315,7 @@ build_body_row <- function(
     return(FALSE)
   }
   tk <- cs$token
-  if (identical(tk, "t")) {
+  if (tk %in% c("t", "df")) {
     return(TRUE)
   }
   if (identical(tk, "se") && !"se" %in% re_columns) {
@@ -1343,21 +1351,20 @@ build_body_row <- function(
   if (length(df) == 0L) {
     return("")
   }
-  txt <- vapply(
-    df,
-    function(d) {
-      if (isTRUE(abs(d - round(d)) < 1e-8)) {
-        return(as.character(as.integer(round(d))))
-      }
-      chartr(
-        ".",
-        decimal_mark,
-        formatC(d, format = "f", digits = 1L, decimal.mark = ".")
-      )
-    },
-    character(1)
-  )
+  txt <- vapply(df, .format_df_number, character(1), decimal_mark)
   paste0(" (", paste(txt, collapse = ", "), ")")
+}
+
+# One df as `.format_df_suffix()` prints it: "28", "6.8" ("6,8").
+.format_df_number <- function(d, decimal_mark = ".") {
+  if (isTRUE(abs(d - round(d)) < 1e-8)) {
+    return(as.character(as.integer(round(d))))
+  }
+  chartr(
+    ".",
+    decimal_mark,
+    formatC(d, format = "f", digits = 1L, decimal.mark = ".")
+  )
 }
 
 format_cell_value <- function(
@@ -1515,6 +1522,13 @@ format_cell_value <- function(
   }
   if (field == "n_obs") {
     return(.fmt_count(val))
+  }
+  # The df of the row's test: blank under a z test (Inf) or none.
+  if (identical(tk, "df")) {
+    if (!isTRUE(is.finite(val))) {
+      return("")
+    }
+    return(.format_df_number(val, decimal_mark))
   }
   # Per-fit R^2: like the N cell, an NA means "same fit as the block's
   # first row", not "no value exists" -- blank, never an en-dash.

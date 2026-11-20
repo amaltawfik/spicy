@@ -3645,6 +3645,7 @@ table_regression <- function(
       requested_fit_stats,
       nested = isTRUE(nested) && length(models) >= 2L
     )
+    .reg_check_df_column(models, frames, show_columns)
   }
   if (fit_only) {
     .reg_warn_ic_not_comparable(models, frames, show_fit_stats)
@@ -4819,6 +4820,57 @@ table_regression <- function(
           )
         )
       }
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
+# `show_columns = "df"` needs one coefficient of one model tested on a
+# t distribution: a finite `df` on a B row of a frame, the value the
+# column prints. A table of z tests (or of posteriors) would print an
+# empty column, so the call is refused.
+.reg_check_df_column <- function(
+  models,
+  frames,
+  show_columns,
+  call = rlang::caller_env()
+) {
+  if (!"df" %in% show_columns) {
+    return(invisible(NULL))
+  }
+  has_df <- vapply(
+    frames,
+    function(fr) {
+      cf <- fr$coefs
+      !is.null(cf$df) && any(is.finite(cf$df[cf$estimate_type %in% "B"]))
+    },
+    logical(1)
+  )
+  if (any(has_df)) {
+    return(invisible(NULL))
+  }
+  all_bayes <- length(models) > 0L &&
+    all(vapply(models, inherits, logical(1), c("stanreg", "brmsfit")))
+  spicy_abort(
+    c(
+      if (all_bayes) {
+        paste0(
+          "Token \"df\" in `show_columns` has no value for any model in ",
+          "the table: a posterior has no test."
+        )
+      } else {
+        paste0(
+          "Token \"df\" in `show_columns` has no value for any model in ",
+          "the table: its tests are z tests, which have no degrees of ",
+          "freedom."
+        )
+      },
+      "i" = paste0(
+        "The column gives the degrees of freedom of t tests (`lm`, a ",
+        "`glm` whose dispersion is estimated, `nlme::lme`, a survey ",
+        "design, a cluster-robust `vcov = \"CR2\"`, ...)."
+      )
     ),
     class = "spicy_invalid_input",
     call = call

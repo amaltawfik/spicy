@@ -41,6 +41,8 @@
     "ci",
     "t",
     "p",
+    # The df of each coefficient's test (t tests; blank under z)
+    "df",
     # Per-row N (populated by univariable-screening frames, where each
     # predictor block is its own fit; blank for ordinary models)
     "n",
