@@ -335,7 +335,10 @@
   intercept alone. The rows follow `keep` and `drop`, and their tests
   count in `p_adjust`. In `tidy()` and `output = "long"` they have
   `estimate_type = "edf"`, with the reference degrees of freedom in `df`
-  and the test in `statistic` and `p.value`.
+  and the test in `statistic` and `p.value`. Under a robust variance the
+  test of the smooth terms is not computed, and the note says so. A
+  nested comparison that includes a GAM says that its change test is
+  approximate.
 
 * `table_regression()` shows the precision submodel of a
   `betareg::betareg()` model (`y ~ x | z`) in a "Precision" block, on the
@@ -350,7 +353,15 @@
   ratio of a two-step fit. `keep` and `drop` select these rows by
   coefficient name, and `show_components = FALSE` omits the block. The
   note names the estimation method, maximum likelihood or two-step, and
-  the number of observations whose outcome is observed.
+  the number of observations whose outcome is observed. With a binary
+  outcome, it says that the outcome equation is a probit.
+
+* `keep` and `drop` of `table_regression()` take the exact name of a
+  term as it is written, parentheses included (`keep = "log(bili)"`,
+  `drop = "I(age^2)"`), besides regular expressions. `labels` renames
+  the rows of the blocks under the names `keep` knows (`"s(age)"`,
+  `"Precision::persons"`, `"rho"`), and its warning lists the same terms
+  as that of `keep`.
 
 * `table_regression()`: `show_fit_stats = "log_lik"` shows the
   log-likelihood of each model, the value of `logLik()` from which the
@@ -645,8 +656,14 @@
   error and interval.
 
 * `table_regression()` refuses by name an `lm()` fit with a matrix
-  response (`mlm`), an `aov()` fit and the `rms::Rq()` and `rms::Gls()`
-  wrappers. They stopped on an internal error.
+  response (`mlm`), an `aov()` fit, the `gam` part of an `mgcv::gamm()`
+  fit and the `rms::Rq()` and `rms::Gls()` wrappers. They stopped on an
+  internal error.
+
+* `table_regression()`: in French, the `selection` and `outcome` rows of
+  a sample-selection model are translated. Under `exponentiate = TRUE`,
+  the note on the component blocks is a full sentence. In `tidy()`, an
+  error-term row without a test has `test_type` and `df` `NA`.
 
 * `table_regression()` keeps the random-effect correlation row of an
   `lme()` model whose approximate covariance matrix of the variance
