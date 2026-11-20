@@ -39,7 +39,8 @@
   `glance()` read `log(wage)`, `I(parttime == "yes")` or
   `cbind(succ, fail)` where they read `wage`, `parttime` or `succ`. A
   `sampleSelection::selection()` model is titled by its outcome variable
-  instead of "outcome".
+  instead of "outcome". A namespace prefix is dropped:
+  `survival::Surv(time, status)` reads `Surv(time, status)`.
 
 * `table_regression()` names the rows of a fixest model as `lm()` and
   `ivreg()` name them: `education` for the endogenous regressor of an IV
@@ -66,6 +67,13 @@
   hierarchy that holds an `ols()` or `lrm()` model fitted with
   `penalty =` is rendered without change statistics, with a warning:
   neither test is valid for penalized estimates.
+
+* `table_regression()` computes the fit statistics of a penalized
+  `rms::lrm()` model on the log-likelihood without the penalty term, with
+  the effective degrees of freedom: the log-likelihood, deviance, AIC,
+  AICc, BIC and McFadden's R². The AIC then ranks a penalized and an
+  unpenalized model as `rms::pentrace()` does, where the table ranked
+  them the other way. A note says which likelihood the rows use.
 
 * `table_regression()`: the random-effects rows follow one convention
   whatever the engine, so the same model fitted with `lmer()`, `lme()`
@@ -597,8 +605,10 @@
 
 * `table_regression()`: the note of an rms model passed through
   `robcov()` or `bootcov()` names that variance, where it said "Wald
-  asymptotic". `vcov = "CR0"` on such a model starts again from the
-  model-based variance instead of building a sandwich on a sandwich.
+  asymptotic". For an `ols()` model it says "sandwich", since the fit
+  does not record whether `robcov()` used Huber's or Efron's method.
+  `vcov = "CR0"` on such a model starts again from the model-based
+  variance instead of building a sandwich on a sandwich.
 
 * `table_regression()`: a note says that an `lrm()` or `ols()` model
   fitted with `penalty =` is penalized, and gives the penalty.
@@ -621,7 +631,8 @@
 
 * `table_regression()` shows the correlation row of an `lme()` model
   fitted under `lmeControl(natural = FALSE)` or with a `pdCompSymm`
-  block.
+  block, and the standard deviation of such a block has its standard
+  error and interval.
 
 * `table_regression()` refuses by name an `lm()` fit with a matrix
   response (`mlm`), an `aov()` fit and the `rms::Rq()` and `rms::Gls()`
