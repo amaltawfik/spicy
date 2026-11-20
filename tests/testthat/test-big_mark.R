@@ -115,6 +115,29 @@ test_that("the counts of a note take the separator, the degrees of freedom do no
   expect_no_match(lm_out, "4,098", fixed = TRUE)
 })
 
+test_that("a design note groups its clusters, never its degrees of freedom", {
+  skip_if_not_installed("survey")
+  d <- bm_data()
+  d$id <- ceiling(seq_len(nrow(d)) / 2)
+  des <- survey::svydesign(ids = ~id, weights = ~w, data = d)
+  out <- bm_print(table_categorical_svy(des, g, style = comma))
+  expect_match(out, "2,050 PSU", fixed = TRUE)
+  expect_match(out, "2049 degrees of freedom", fixed = TRUE)
+})
+
+test_that("the note of a univariable screen groups its complete cases", {
+  d <- bm_data()
+  d$z[1:100] <- NA
+  out <- bm_print(table_regression_uv(
+    d,
+    bin,
+    c(z, g),
+    family = binomial,
+    style = comma
+  ))
+  expect_match(out, "(4,000.4,100)")
+})
+
 test_that("years and percentages are no counts", {
   d <- bm_data()
   out <- bm_print(table_categorical(d, yr, style = comma))

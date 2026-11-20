@@ -1808,8 +1808,38 @@ spicy_str <- function(key) {
 # are DATA (variable names, counts, percentages), never words to translate.
 # A template whose hole repeats must use the positional form (`%1$s`).
 spicy_fmt <- function(key, ...) {
-  sprintf(spicy_str(key), ...)
+  tpl <- spicy_str(key)
+  if (key %in% .COUNT_HOLE_KEYS && !is.null(.style_big_mark())) {
+    # The `%d` holes of these templates are counts, written as the
+    # counts of the table are: with `spicy_style(big_mark = )`.
+    holes <- regmatches(tpl, gregexpr(.SPICY_FORMAT_SPEC_RX, tpl))[[1L]]
+    args <- list(...)
+    for (i in which(endsWith(holes, "d") & seq_along(holes) <= length(args))) {
+      args[[i]] <- .fmt_count(args[[i]])
+    }
+    tpl <- gsub("%d", "%s", tpl, fixed = TRUE)
+    return(do.call(sprintf, c(list(tpl), args)))
+  }
+  sprintf(tpl, ...)
 }
+
+# The templates whose numbers are all counts (rows, observations,
+# respondents, clusters): the thousands separator reaches them through
+# `spicy_fmt()`. Not the df, replicates, stages or model numbers.
+.COUNT_HOLE_KEYS <- c(
+  "note_missing_item",
+  "note_missing_rows_total",
+  "note_rows_missing_weights",
+  "note_uv_common_complete_cases",
+  "note_uv_varying_n",
+  "note_multiresponse_n_nodata",
+  "note_multiresponse_n_none",
+  "note_negative_weights",
+  "note_negative_weights_battery",
+  "note_loo_pareto_k",
+  "note_loo_waic_unreliable",
+  "note_design_psu"
+)
 
 # Resolution with the LANGUAGE layer bypassed: the user's labels override
 # still wins (it outranks every language), then the English default --
