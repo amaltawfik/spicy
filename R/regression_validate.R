@@ -1443,8 +1443,9 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
             class(models[[i]])[1L]
           ),
           "i" = sprintf(
-            "This class supports: %s. See ?table_regression.",
-            paste(supported, collapse = ", ")
+            "This class supports: %s. See %s.",
+            paste(supported, collapse = ", "),
+            .reg_help_page(models[[i]])
           )
         ),
         class = "spicy_unsupported_vcov",

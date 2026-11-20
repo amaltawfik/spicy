@@ -358,3 +358,22 @@ test_that("tidy / glance / as_structured / as.data.frame work for every registry
     expect_gt(nrow(df), 0L)
   }
 })
+
+test_that("a refusal sends a fit to the help page of its family", {
+  fake <- function(cls) structure(list(), class = cls)
+  expect_identical(
+    .reg_help_page(fake(c("tobit", "survreg"))),
+    "?table_regression_robust"
+  )
+  expect_identical(
+    .reg_help_page(fake(c("glmerMod", "merMod"))),
+    "?table_regression_mixed"
+  )
+  # A family without a page of its own, and a class outside the registry.
+  expect_identical(.reg_help_page(fake("lm")), "?table_regression")
+  expect_identical(.reg_help_page(fake("foo")), "?table_regression")
+  for (cl in .supported_models_registry()$class) {
+    page <- sub("^[?]", "", .reg_help_page(fake(cl)))
+    expect_true(page %in% c("table_regression", .REG_FAMILY_PAGE), label = cl)
+  }
+})

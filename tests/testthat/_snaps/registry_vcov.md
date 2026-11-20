@@ -79,7 +79,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "CR0": clmm
       ----
@@ -92,7 +92,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "CR0": flexsurvreg
       ----
@@ -112,13 +112,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR0": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR0": gls
       ----
@@ -274,7 +274,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "CR1": clmm
       ----
@@ -301,7 +301,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "CR1": flexsurvreg
       ----
@@ -314,13 +314,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR1": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR1": gls
       ----
@@ -470,7 +470,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "CR1S": clmm
       ----
@@ -497,7 +497,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "CR1S": flexsurvreg
       ----
@@ -517,13 +517,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR1S": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR1S": gls
       ----
@@ -550,13 +550,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "CR1S": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "CR1S": lmer, lmer_ml
       ----
@@ -725,7 +725,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "CR2": clmm
       ----
@@ -752,7 +752,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "CR2": flexsurvreg
       ----
@@ -772,13 +772,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR2": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR2": gls
       ----
@@ -976,7 +976,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "CR3": clmm
       ----
@@ -1003,7 +1003,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "CR3": flexsurvreg
       ----
@@ -1023,13 +1023,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR3": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "CR3": gls
       ----
@@ -1217,25 +1217,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC0": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC0": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC0": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC0": cph, cph_xy
       ----
@@ -1248,7 +1248,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "HC0": flexsurvreg
       ----
@@ -1267,19 +1267,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC0": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC0": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC0": hurdle
       ----
@@ -1299,13 +1299,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC0": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC0": lmer, lmer_ml
       ----
@@ -1343,7 +1343,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC0": polr
       ----
@@ -1368,7 +1368,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "HC0": survreg, survreg_strata
       ----
@@ -1395,13 +1395,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "HC0": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC0": zeroinfl
       ----
@@ -1466,25 +1466,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC1": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC1": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC1": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC1": cph, cph_xy
       ----
@@ -1497,7 +1497,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "HC1": flexsurvreg
       ----
@@ -1516,19 +1516,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC1": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC1": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC1": hurdle
       ----
@@ -1548,13 +1548,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC1": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC1": lmer, lmer_ml
       ----
@@ -1592,7 +1592,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC1": polr
       ----
@@ -1617,7 +1617,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "HC1": survreg, survreg_strata
       ----
@@ -1644,13 +1644,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "HC1": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC1": zeroinfl
       ----
@@ -1715,25 +1715,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC2": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC2": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC2": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC2": cph, cph_xy
       ----
@@ -1746,7 +1746,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "HC2": flexsurvreg
       ----
@@ -1765,19 +1765,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC2": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC2": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC2": hurdle
       ----
@@ -1804,13 +1804,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC2": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC2": lmer, lmer_ml
       ----
@@ -1848,7 +1848,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC2": polr
       ----
@@ -1873,7 +1873,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "HC2": survreg, survreg_strata
       ----
@@ -1900,13 +1900,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "HC2": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC2": zeroinfl
       ----
@@ -1971,25 +1971,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC3": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC3": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC3": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC3": cph, cph_xy
       ----
@@ -2002,7 +2002,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "HC3": flexsurvreg
       ----
@@ -2021,19 +2021,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC3": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC3": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC3": hurdle
       ----
@@ -2060,13 +2060,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC3": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC3": lmer, lmer_ml
       ----
@@ -2104,7 +2104,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC3": polr
       ----
@@ -2129,7 +2129,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "HC3": survreg, survreg_strata
       ----
@@ -2156,13 +2156,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "HC3": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC3": zeroinfl
       ----
@@ -2227,25 +2227,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC4": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC4": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC4": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC4": cph, cph_xy
       ----
@@ -2258,7 +2258,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "HC4": flexsurvreg
       ----
@@ -2277,19 +2277,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC4": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC4": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC4": hurdle
       ----
@@ -2316,13 +2316,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC4": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC4": lmer, lmer_ml
       ----
@@ -2360,7 +2360,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC4": polr
       ----
@@ -2385,7 +2385,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "HC4": survreg, survreg_strata
       ----
@@ -2412,13 +2412,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "HC4": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC4": zeroinfl
       ----
@@ -2483,25 +2483,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC5": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC5": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC5": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "HC5": cph, cph_xy
       ----
@@ -2514,7 +2514,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "HC5": flexsurvreg
       ----
@@ -2533,19 +2533,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC5": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "HC5": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC5": hurdle
       ----
@@ -2572,13 +2572,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC5": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "HC5": lmer, lmer_ml
       ----
@@ -2616,7 +2616,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "HC5": polr
       ----
@@ -2641,7 +2641,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "HC5": survreg, survreg_strata
       ----
@@ -2668,13 +2668,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "HC5": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "HC5": zeroinfl
       ----
@@ -2739,25 +2739,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "bootstrap": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "bootstrap": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "bootstrap": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "bootstrap": cph, cph_xy
       ----
@@ -2770,7 +2770,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "bootstrap": flexsurvreg
       ----
@@ -2789,25 +2789,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "bootstrap": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "bootstrap": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "bootstrap": hurdle
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `hurdle` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "bootstrap": hurdle_negbin
       ----
@@ -2834,13 +2834,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "bootstrap": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "bootstrap": lmer, lmer_ml
       ----
@@ -2852,13 +2852,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `mlogit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "bootstrap": mlogit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `multinom` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "bootstrap": multinom
       ----
@@ -2876,7 +2876,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "bootstrap": polr
       ----
@@ -2894,7 +2894,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "bootstrap": survreg, survreg_strata
       ----
@@ -2921,19 +2921,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "bootstrap": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "bootstrap": zeroinfl
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `zeroinfl` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "bootstrap": zeroinfl_negbin
       ----
@@ -2983,25 +2983,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "iid": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "iid": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "iid": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "iid": cph, cph_xy
       ----
@@ -3014,7 +3014,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "iid": flexsurvreg
       ----
@@ -3040,25 +3040,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "iid": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "iid": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "iid": hurdle
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `hurdle` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "iid": hurdle_negbin
       ----
@@ -3090,13 +3090,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "iid": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "iid": lmer, lmer_ml
       ----
@@ -3108,13 +3108,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `mlogit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "iid": mlogit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `multinom` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "iid": multinom
       ----
@@ -3138,7 +3138,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "iid": polr
       ----
@@ -3156,7 +3156,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "iid": survreg, survreg_strata
       ----
@@ -3183,19 +3183,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "iid": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "iid": zeroinfl
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `zeroinfl` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "iid": zeroinfl_negbin
       ----
@@ -3245,25 +3245,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "jackknife": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "jackknife": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "jackknife": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "jackknife": cph, cph_xy
       ----
@@ -3276,7 +3276,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "jackknife": flexsurvreg
       ----
@@ -3295,25 +3295,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "jackknife": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "jackknife": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "jackknife": hurdle
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `hurdle` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "jackknife": hurdle_negbin
       ----
@@ -3340,13 +3340,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "jackknife": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "jackknife": lmer, lmer_ml
       ----
@@ -3358,13 +3358,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `mlogit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "jackknife": mlogit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `multinom` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "jackknife": multinom
       ----
@@ -3382,7 +3382,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "jackknife": polr
       ----
@@ -3407,7 +3407,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "jackknife": survreg, survreg_strata
       ----
@@ -3434,19 +3434,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "jackknife": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "jackknife": zeroinfl
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `zeroinfl` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "jackknife": zeroinfl_negbin
       ----
@@ -3496,25 +3496,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "ker": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "ker": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "ker": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "ker": cph, cph_xy
       ----
@@ -3527,7 +3527,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "ker": flexsurvreg
       ----
@@ -3553,25 +3553,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "ker": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "ker": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "ker": hurdle
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `hurdle` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "ker": hurdle_negbin
       ----
@@ -3603,13 +3603,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "ker": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "ker": lmer, lmer_ml
       ----
@@ -3621,13 +3621,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `mlogit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "ker": mlogit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `multinom` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "ker": multinom
       ----
@@ -3651,7 +3651,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "ker": polr
       ----
@@ -3669,7 +3669,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "ker": survreg, survreg_strata
       ----
@@ -3696,19 +3696,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "ker": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "ker": zeroinfl
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `zeroinfl` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "ker": zeroinfl_negbin
       ----
@@ -3758,25 +3758,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "nid": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "nid": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "nid": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "nid": cph, cph_xy
       ----
@@ -3789,7 +3789,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "nid": flexsurvreg
       ----
@@ -3815,25 +3815,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "nid": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "nid": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "nid": hurdle
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `hurdle` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "nid": hurdle_negbin
       ----
@@ -3865,13 +3865,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "nid": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "nid": lmer, lmer_ml
       ----
@@ -3883,13 +3883,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `mlogit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "nid": mlogit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `multinom` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "nid": multinom
       ----
@@ -3913,7 +3913,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "nid": polr
       ----
@@ -3931,7 +3931,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "nid": survreg, survreg_strata
       ----
@@ -3958,19 +3958,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "nid": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "nid": zeroinfl
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `zeroinfl` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "nid": zeroinfl_negbin
       ----
@@ -4020,25 +4020,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `clm` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "rank": clm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `clmm` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_ordinal.
       Received by 1:
         vcov = "rank": clmm
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `coxph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "rank": coxph, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `cph` models.
-        i This class supports: classical, CR0. See ?table_regression.
+        i This class supports: classical, CR0. See ?table_regression_survival.
       Received by 2:
         vcov = "rank": cph, cph_xy
       ----
@@ -4051,7 +4051,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `flexsurvreg` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "rank": flexsurvreg
       ----
@@ -4077,25 +4077,25 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `glmerMod` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "rank": glmer
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `gls` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_mixed.
       Received by 1:
         vcov = "rank": gls
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `hurdle` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "rank": hurdle
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `hurdle` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "rank": hurdle_negbin
       ----
@@ -4127,13 +4127,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `lme` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "rank": lme, lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `lmerMod` models.
-        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression.
+        i This class supports: classical, CR0, CR1, CR2, CR3. See ?table_regression_mixed.
       Received by 2:
         vcov = "rank": lmer, lmer_ml
       ----
@@ -4145,13 +4145,13 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `mlogit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "rank": mlogit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `multinom` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_categorical.
       Received by 1:
         vcov = "rank": multinom
       ----
@@ -4175,7 +4175,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `polr` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_ordinal.
       Received by 1:
         vcov = "rank": polr
       ----
@@ -4193,7 +4193,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `survreg` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_survival.
       Received by 2:
         vcov = "rank": survreg, survreg_strata
       ----
@@ -4220,19 +4220,19 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `tobit` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_robust.
       Received by 1:
         vcov = "rank": tobit
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `zeroinfl` models.
-        i This class supports: classical, CR1. See ?table_regression.
+        i This class supports: classical, CR1. See ?table_regression_counts.
       Received by 1:
         vcov = "rank": zeroinfl
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `zeroinfl` models.
-        i This class supports: classical. See ?table_regression.
+        i This class supports: classical. See ?table_regression_counts.
       Received by 1:
         vcov = "rank": zeroinfl_negbin
       ----

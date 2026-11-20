@@ -611,6 +611,23 @@
   "Bayesian" = "table_regression_bayesian"
 )
 
+# The registry class of a fit: the first class of the fit that has a row
+# in the registry (a `bam` reads `gam`), NA for a class without one.
+.reg_registry_class <- function(fit) {
+  cls <- intersect(class(fit), .supported_models_registry()$class)
+  if (length(cls) == 0L) NA_character_ else cls[1L]
+}
+
+# The help page a message sends a fit to: the page of its family
+# (?table_regression_robust for a tobit), ?table_regression for a class
+# whose family has no page of its own.
+.reg_help_page <- function(fit) {
+  reg <- .supported_models_registry()
+  fam <- reg$family[match(.reg_registry_class(fit), reg$class)]
+  page <- if (is.na(fam)) NA_character_ else unname(.REG_FAMILY_PAGE[fam])
+  paste0("?", if (is.na(page)) "table_regression" else page)
+}
+
 # The other families a class also serves, with what it brings to each:
 # glmmTMB is a mixed engine (its row of the registry) that also fits
 # ordinal models and zero-inflated, hurdle and dispersion models. One
