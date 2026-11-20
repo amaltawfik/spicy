@@ -4156,8 +4156,10 @@ table_regression <- function(
 # "wcyes:g3b" and "wcyes:g3c") labels none of them: it warns too, with
 # its rows. The side-by-side table and the driver of a stack check the
 # names of all the models here. `terms`: the names `keep` and `drop` match
-# (`.reg_filter_terms()`), which the warning lists, as theirs does; the
-# rows of a block ("s(age)", "rho") are labeled under them.
+# (`.reg_filter_terms()`); the rows of a block ("s(age)", "rho") are
+# labeled under them. The warning lists those `labels` accepts: a row
+# named after its equation or outcome category ("selection: z", "b: x")
+# under its term ("z", "x"), which labels its header.
 .reg_warn_label_names <- function(models, frames, labels, note_labels, terms) {
   label_keys <- c(.reg_label_keys(models), .reg_block_label_keys(frames))
   several <- if (is.character(labels)) {
@@ -4199,6 +4201,11 @@ table_regression <- function(
       class = "spicy_unknown_name"
     )
   }
+  named <- ifelse(
+    terms %in% label_keys,
+    terms,
+    sub("^.*?: ", "", terms, perl = TRUE)
+  )
   .warn_unknown_label_names(
     c(
       label_keys,
@@ -4209,7 +4216,7 @@ table_regression <- function(
     ),
     labels,
     note_labels,
-    hint = .reg_terms_sentence(terms)
+    hint = .reg_terms_sentence(named[named %in% label_keys])
   )
 }
 

@@ -560,6 +560,52 @@ test_that("labels - an unknown key warns and is left out (decision 54)", {
   expect_identical(out$Variable, table_regression(fit)$Variable)
 })
 
+# The terms the warning of `labels` cites are names `labels` accepts: a row
+# named after its equation or outcome category ("selection: z", "B: x") is
+# cited under its term. One call per fixture, with every name cited.
+for (id in c(
+  "multinom",
+  "selection",
+  "zeroinfl",
+  "hurdle",
+  "glmmTMB_disp",
+  "mlogit",
+  "betareg"
+)) {
+  test_that(paste("labels - the terms its warning cites are labels:", id), {
+    skip_on_cran()
+    fit <- .class_fixture(id)
+    # Two multinomial models take the layout in rows ("B: x"), whose names
+    # `keep` still lists.
+    if (identical(id, "multinom")) {
+      fit <- list(fit, fit)
+      w_keep <- expect_warning(
+        table_regression(fit, keep = "nope"),
+        class = "spicy_no_match"
+      )
+      expect_match(conditionMessage(w_keep), "\"B: x\"", fixed = TRUE)
+    }
+    w <- expect_warning(
+      table_regression(fit, labels = c(nope = "X")),
+      class = "spicy_unknown_name"
+    )
+    hint <- sub(".*The terms of this table: ", "", conditionMessage(w))
+    cited <- gsub(
+      "\"",
+      "",
+      regmatches(hint, gregexpr("\"[^\"]*\"", hint))[[1L]]
+    )
+    expect_gt(length(cited), 0L)
+    expect_no_warning(
+      table_regression(
+        fit,
+        labels = stats::setNames(rep("L", length(cited)), cited)
+      ),
+      class = "spicy_unknown_name"
+    )
+  })
+}
+
 test_that("nested = TRUE – different nobs errors spicy_invalid_input", {
   skip_on_cran()
   m1 <- lm(mpg ~ wt, data = mt)
