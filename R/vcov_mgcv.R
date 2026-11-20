@@ -21,19 +21,23 @@
 
 .MGCV_SANDWICH_CLASS <- "spicy_mgcv_sandwich"
 
+# The GLM score of .mgcv_sandwich_parts() is the score of an
+# exponential-family (or quasi-likelihood) mean model. mgcv's extended
+# and general families (betar, ocat, scat, ziP, tw, gaulss, cox.ph, ...)
+# have other scores, or several linear predictors, and are refused
+# rather than given a wrong sandwich. nb() is the exception: given its
+# theta, its coefficient score is the GLM score with
+# V(mu) = mu + mu^2 / theta, the score MASS::glm.nb() fits use. The
+# predicate of the gam cell of .REG_VCOV.
+.mgcv_no_sandwich <- function(fit) {
+  fam <- fit$family
+  inherits(fam, c("extended.family", "general.family")) &&
+    !startsWith(fam$family, "Negative Binomial")
+}
+
 .mgcv_sandwich_wrap <- function(fit) {
   fam <- fit$family
-  # The GLM score below is the score of an exponential-family (or
-  # quasi-likelihood) mean model. mgcv's extended and general families
-  # (betar, ocat, scat, ziP, tw, gaulss, cox.ph, ...) have other scores,
-  # or several linear predictors, and are refused rather than given a
-  # wrong sandwich. nb() is the exception: given its theta, its
-  # coefficient score is the GLM score with V(mu) = mu + mu^2 / theta,
-  # the score MASS::glm.nb() fits use.
-  if (
-    inherits(fam, c("extended.family", "general.family")) &&
-      !startsWith(fam$family, "Negative Binomial")
-  ) {
+  if (.mgcv_no_sandwich(fit)) {
     spicy_abort(
       c(
         sprintf(

@@ -349,7 +349,7 @@
   svyglm = "classical (design-based)",
   svyolr = "classical (design-based)",
   svycoxph = "classical (design-based)",
-  gam = "classical, CR1",
+  gam = "classical, CR1 (classical only for an mgcv extended family other than nb)",
   betareg = "classical, CR1",
   selection = "classical",
   ols = "classical, CR0 (classical only without x = TRUE, y = TRUE)",
@@ -371,7 +371,8 @@
   cph = function(fit) .rms_lacks_xy(fit),
   ols = function(fit) .rms_lacks_xy(fit),
   lrm = function(fit) .rms_lacks_xy(fit),
-  Glm = function(fit) .rms_lacks_xy(fit)
+  Glm = function(fit) .rms_lacks_xy(fit),
+  gam = function(fit) .mgcv_no_sandwich(fit)
 )
 
 # The `vcov` values of a registry class: without `fit`, every value of its

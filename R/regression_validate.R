@@ -1170,8 +1170,13 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
       # (logit, poisson, ...) use a DIFFERENT vce(cluster) convention
       # -- G/(G-1) scaling with z inference -- so a glm "CR1S" would
       # print numbers under a Stata label that Stata itself does not
-      # produce.
-      if (identical(vt, "CR1S") && inherits(models[[i]], "glm")) {
+      # produce. Not for a gam, which reaches here only when its family
+      # refuses every cluster value (the generic message below says so).
+      if (
+        identical(vt, "CR1S") &&
+          inherits(models[[i]], "glm") &&
+          !inherits(models[[i]], "gam")
+      ) {
         spicy_abort(
           c(
             "`vcov = \"CR1S\"` is available for `lm` fits only.",

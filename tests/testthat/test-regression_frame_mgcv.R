@@ -828,8 +828,10 @@ test_that("the refusal of a robust variance names the GAM family without its par
   m <- stats::plogis(-0.3 + 0.5 * d$x)
   d$y <- stats::rbeta(200, 7 * m, 7 * (1 - m))
   fit <- mgcv::gam(y ~ x, family = mgcv::betar(), data = d)
+  # table_regression() refuses CR1 earlier, at the gate (the gam cell of
+  # the registry); the computation keeps its own refusal.
   err <- expect_error(
-    table_regression(fit, vcov = "CR1", cluster = d$g),
+    spicy:::compute_model_vcov(fit, type = "CR1", cluster = d$g),
     class = "spicy_unsupported_vcov"
   )
   expect_match(

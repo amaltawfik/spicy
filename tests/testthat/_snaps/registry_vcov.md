@@ -57,13 +57,6 @@
         vcov = "CR3": lme_contrasts
       ----
       error: spicy_unsupported_vcov, spicy_error
-        A robust variance is not available for `gam` fits with the `Beta regression` family.
-        i spicy forms the sandwich of mgcv fits from the GLM score, which covers the exponential families, the quasi families and nb() only.
-        i Use `vcov = "classical"` for this fit.
-      Received by 1:
-        vcov = "CR1": gam_betar
-      ----
-      error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `bam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
@@ -105,10 +98,16 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "CR0": gam_betar
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "CR0"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 4:
-        vcov = "CR0": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "CR0": gam, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `geeglm` models.
@@ -325,6 +324,12 @@
         i This class supports: classical. See ?table_regression_survival.
       Received by 1:
         vcov = "CR1": flexsurvreg
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "CR1"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "CR1": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `geeglm` models.
@@ -552,10 +557,16 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "CR1S": gam_betar
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "CR1S"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 4:
-        vcov = "CR1S": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "CR1S": gam, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `geeglm` models.
@@ -849,10 +860,16 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "CR2": gam_betar
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "CR2"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 4:
-        vcov = "CR2": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "CR2": gam, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `geeglm` models.
@@ -1129,10 +1146,16 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "CR3": gam_betar
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "CR3"` is not available for `gam` models.
         i spicy computes one cluster-robust estimator for mgcv fits, from their GLM score and penalized covariance: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 4:
-        vcov = "CR3": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "CR3": gam, gam_logit, gam_nb
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `geeglm` models.
@@ -1402,8 +1425,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "HC0": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "HC0": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "HC0"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "HC0": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `geeglm` models.
@@ -1682,8 +1711,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "HC1": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "HC1": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "HC1"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "HC1": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `geeglm` models.
@@ -1962,8 +1997,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "HC2": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "HC2": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "HC2"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "HC2": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `geeglm` models.
@@ -2249,8 +2290,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "HC3": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "HC3": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "HC3"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "HC3": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `geeglm` models.
@@ -2536,8 +2583,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "HC4": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "HC4": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "HC4"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "HC4": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `geeglm` models.
@@ -2823,8 +2876,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "HC5": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "HC5": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "HC5"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "HC5": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `geeglm` models.
@@ -3111,8 +3170,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "bootstrap": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "bootstrap": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "bootstrap"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "bootstrap": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `geeglm` models.
@@ -3386,8 +3451,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "iid": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "iid": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "iid"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "iid": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `geeglm` models.
@@ -3680,8 +3751,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "jackknife": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "jackknife": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "jackknife"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "jackknife": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `geeglm` models.
@@ -3962,8 +4039,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "ker": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "ker": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "ker"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "ker": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `geeglm` models.
@@ -4255,8 +4338,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "nid": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "nid": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "nid"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "nid": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `geeglm` models.
@@ -4548,8 +4637,14 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `gam` models.
         i This class supports: classical, CR1. See ?table_regression.
-      Received by 4:
-        vcov = "rank": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "rank": gam, gam_logit, gam_nb
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        `vcov = "rank"` is not available for `gam` models.
+        i This fit supports: classical. Its class also supports CR1 (classical only for an mgcv extended family other than nb). See ?table_regression.
+      Received by 1:
+        vcov = "rank": gam_betar
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `geeglm` models.
@@ -5103,8 +5198,14 @@
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `gam`: "classical", "CR1".
-      Received by 4:
-        vcov = "HC9": gam, gam_betar, gam_logit, gam_nb
+      Received by 3:
+        vcov = "HC9": gam, gam_logit, gam_nb
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `gam`: "classical". Its class also supports CR1 (classical only for an mgcv extended family other than nb).
+      Received by 1:
+        vcov = "HC9": gam_betar
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
@@ -5349,10 +5450,10 @@
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
         i Set `vcov` to `"CR1"` to use the cluster vector for cluster-robust SE.
-      Received by 15:
-        cluster with vcov = "classical": bam, betareg, clm, gam, gam_betar,
-            gam_logit, gam_nb, hurdle, mlogit, multinom, polr, survreg,
-            survreg_strata, tobit, zeroinfl
+      Received by 14:
+        cluster with vcov = "classical": bam, betareg, clm, gam, gam_logit,
+            gam_nb, hurdle, mlogit, multinom, polr, survreg, survreg_strata,
+            tobit, zeroinfl
       ----
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
@@ -5379,6 +5480,12 @@
         i This fit has no cluster-robust `vcov`. Its class supports CR0, CR1, CR2, CR3 (classical only with contrasts other than the session's).
       Received by 1:
         cluster with vcov = "classical": lme_contrasts
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i This fit has no cluster-robust `vcov`. Its class supports CR1 (classical only for an mgcv extended family other than nb).
+      Received by 1:
+        cluster with vcov = "classical": gam_betar
       ----
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.

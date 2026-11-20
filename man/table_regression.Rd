@@ -1251,7 +1251,7 @@ values each class accepts, the \code{vcov} column of
    Survey-weighted \tab \code{svyolr} \tab classical (design-based) \cr
    Survey-weighted \tab \code{svycoxph} \tab classical (design-based) \cr
    Population-averaged (GEE) \tab \code{geeglm} \tab classical (the fit's own) \cr
-   Additive, proportions, selection \tab \code{gam} \tab classical, CR1 \cr
+   Additive, proportions, selection \tab \code{gam} \tab classical, CR1 (classical only for an mgcv extended family other than nb) \cr
    Additive, proportions, selection \tab \code{betareg} \tab classical, CR1 \cr
    Additive, proportions, selection \tab \code{selection} \tab classical \cr
    rms \tab \code{ols} \tab classical, CR0 (classical only without x = TRUE, y = TRUE) \cr
