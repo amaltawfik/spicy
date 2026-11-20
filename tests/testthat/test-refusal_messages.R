@@ -117,25 +117,8 @@ rm_swept <- function(id, key) {
 # defects to fix, and a list that may not grow.
 rm_unclassed <- list()
 
-# The smaller model of a nested pair: the fit without `x`, rebuilt in an
-# environment that has the data and the namespace of the fitting package.
-rm_reduced <- function(fit, id) {
-  pkg <- .CLASS_FIXTURES[[id]]$pkgs[1L]
-  if (!is.null(names(pkg)) && nzchar(names(pkg))) {
-    pkg <- names(pkg)
-  }
-  env <- new.env(
-    parent = if (is.null(pkg)) globalenv() else asNamespace(pkg)
-  )
-  env$d <- .class_fixture_data()
-  env$.svy_des <- .svy_des
-  tryCatch(
-    suppressWarnings(suppressMessages(
-      eval(stats::update(fit, . ~ . - x, evaluate = FALSE), env)
-    )),
-    error = function(e) NULL
-  )
-}
+# The smaller model of a nested pair (helper-refusal-log.R).
+rm_reduced <- .refusal_reduced
 
 # One call: "ok", "error" or "not built", with the conditions it signals.
 rm_call <- function(fit, id, a) {
@@ -247,4 +230,15 @@ test_that("the refusals and warnings of the argument sweep keep their text and c
 test_that("the refusals and warnings of the argument sweep keep their text and class: Stan", {
   .skip_unless_local_stan()
   .refusal_snapshot("args", .refusal_ids(stan = TRUE))
+})
+
+# A remedy names a token its receiver accepts (helper-refusal-log.R).
+test_that("every remedy of the argument sweep is accepted by its receiver", {
+  skip_on_cran()
+  .refusal_check_remedies("args", .refusal_ids())
+})
+
+test_that("every remedy of the argument sweep is accepted by its receiver: Stan", {
+  .skip_unless_local_stan()
+  .refusal_check_remedies("args", .refusal_ids(stan = TRUE))
 })

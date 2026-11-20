@@ -262,6 +262,17 @@ test_that("the refusals of the show_fit_stats sweep keep their text and class: S
   .refusal_snapshot("fit_stats", .refusal_ids(stan = TRUE))
 })
 
+# A remedy names a token its receiver accepts (helper-refusal-log.R).
+test_that("every remedy of the show_fit_stats sweep is accepted by its receiver", {
+  skip_on_cran()
+  .refusal_check_remedies("fit_stats", .refusal_ids())
+})
+
+test_that("every remedy of the show_fit_stats sweep is accepted by its receiver: Stan", {
+  .skip_unless_local_stan()
+  .refusal_check_remedies("fit_stats", .refusal_ids(stan = TRUE))
+})
+
 
 # ---- The rule --------------------------------------------------------------
 

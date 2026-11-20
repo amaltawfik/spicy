@@ -148,3 +148,120 @@
   is_stan <- vapply(.CLASS_FIXTURES, function(f) isTRUE(f$stan), logical(1))
   names(.CLASS_FIXTURES)[is_stan == stan]
 }
+
+# The smaller model of a nested pair: the fit without `x`, rebuilt in an
+# environment that has the data and the namespace of the fitting package.
+.refusal_reduced <- function(fit, id) {
+  pkg <- .CLASS_FIXTURES[[id]]$pkgs[1L]
+  if (!is.null(names(pkg)) && nzchar(names(pkg))) {
+    pkg <- names(pkg)
+  }
+  env <- new.env(
+    parent = if (is.null(pkg)) globalenv() else asNamespace(pkg)
+  )
+  env$d <- .class_fixture_data()
+  env$.svy_des <- .svy_des
+  tryCatch(
+    suppressWarnings(suppressMessages(
+      eval(stats::update(fit, . ~ . - x, evaluate = FALSE), env)
+    )),
+    error = function(e) NULL
+  )
+}
+
+# The tokens of `show_columns` and `show_fit_stats` a message proposes:
+# those written as strings in a line that says to use them.
+.refusal_remedy_tokens <- function(message) {
+  lines <- strsplit(message, "\n", fixed = TRUE)[[1L]]
+  lines <- lines[grepl("\\b[Uu]se\\b", lines)]
+  toks <- unlist(regmatches(lines, gregexpr("\"[a-z0-9_]+\"", lines)))
+  toks <- unique(gsub("\"", "", toks, fixed = TRUE))
+  intersect(
+    toks,
+    c(
+      .regression_tokens$show_columns_atomic,
+      .regression_tokens$show_fit_stats
+    )
+  )
+}
+
+# Every remedy of the log of `sweep` is a token its receiver accepts: a
+# refusal never proposes what the same fit would refuse next. A column
+# token is asked beside "b", a fit statistic beside "nobs", the change
+# statistics of one message together on the fit and its smaller model
+# under `nested = TRUE`; the survival estimands, whose computation takes
+# minutes, are asked of the class gate alone.
+.refusal_check_remedies <- function(sweep, ids) {
+  rows <- Filter(
+    function(r) sub(":.*", "", r$receiver) %in% ids,
+    .refusal_logs[[sweep]]$rows
+  )
+  change_toks <- c(.NESTED_CHANGE_TOKENS, .NESTED_WALD_CHANGE_TOKENS)
+  estimand_toks <- c(
+    "rmst",
+    "rmst_se",
+    "rmst_ci",
+    "rmst_p",
+    "risk_diff",
+    "risk_diff_se",
+    "risk_diff_ci",
+    "risk_diff_p"
+  )
+  done <- character()
+  for (r in rows) {
+    toks <- .refusal_remedy_tokens(r$message)
+    if (length(toks) == 0L) {
+      next
+    }
+    id <- sub(":.*", "", r$receiver)
+    change <- intersect(toks, change_toks)
+    asks <- c(
+      as.list(setdiff(toks, change)),
+      if (length(change)) list(change)
+    )
+    for (tk in asks) {
+      key <- paste(id, paste(tk, collapse = "+"))
+      if (key %in% done) {
+        next
+      }
+      done <- c(done, key)
+      fit <- .class_fixture(id)
+      args <- if (all(tk %in% change_toks)) {
+        red <- .refusal_reduced(fit, id)
+        if (is.null(red)) {
+          next
+        }
+        list(list(red, fit), nested = TRUE, show_fit_stats = c("nobs", tk))
+      } else if (tk %in% estimand_toks) {
+        NULL
+      } else if (tk %in% .regression_tokens$show_fit_stats) {
+        list(fit, show_fit_stats = unique(c("nobs", tk)))
+      } else {
+        list(fit, show_columns = unique(c("b", tk)))
+      }
+      err <- tryCatch(
+        {
+          if (is.null(args)) {
+            .reg_refuse_estimand_class(list(fit), tk)
+          } else {
+            suppressWarnings(suppressMessages(
+              do.call(table_regression, c(args, output = "data.frame"))
+            ))
+          }
+          NULL
+        },
+        spicy_error = function(e) conditionMessage(e)
+      )
+      # The smaller model is the fixture without `x`: an REML fit, whose
+      # hierarchy needs ML fits, or a fixest fit left with its fixed
+      # effects alone. Those refuse the pair, not the token.
+      if (
+        !is.null(err) &&
+          grepl("cannot compare REML fits|fixed effects only", err)
+      ) {
+        next
+      }
+      testthat::expect_null(err, label = paste("remedy", key))
+    }
+  }
+}

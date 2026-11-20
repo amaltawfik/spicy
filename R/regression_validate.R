@@ -2284,6 +2284,108 @@ absorbs_fixed_effects <- function(model) {
 #   * partial_chi2 / partial_f: one rule, `.check_term_test_tokens()`
 #   * glm -> no  r2 / adj_r2 / omega2  (use pseudo_r2_*; McFadden
 #                                      1974 / Nagelkerke 1991 / Tjur 2009)
+# The fit-statistic tokens of `tokens` that some model of `models` shows a
+# row for, to name in a remedy: a remedy never names a token the table
+# would refuse. Read from the column `fit_stats` of the registry
+# (R/table_regression_models.R): a token the class lists without a
+# condition is shown; one it lists with a condition is shown when the
+# fit meets it, read as the guards of validate_class_appropriate_tokens()
+# read it; a token the class does not list is not.
+.fit_stats_offered <- function(models, tokens) {
+  reg <- .supported_models_registry()
+  offered <- function(m, tk) {
+    cell <- reg$fit_stats[match(.reg_registry_class(m), reg$class)]
+    if (is.na(cell) || !tk %in% .reg_cell_tokens(cell)) {
+      return(FALSE)
+    }
+    if (tk %in% .reg_cell_tokens(cell, conditional = FALSE)) {
+      return(TRUE)
+    }
+    g <- if (inherits(m, "Glm")) .rms_as_glm(m) else m
+    switch(
+      tk,
+      pseudo_r2_mcfadden = ,
+      pseudo_r2_nagelkerke = if (inherits(m, "fixest")) {
+        is.character(m$family) || is.list(m$family)
+      } else {
+        .glm_r2_kind(g) %in% c("binomial", "count")
+      },
+      pseudo_r2_tjur = if (inherits(m, "lrm")) {
+        length(.lrm_levels(m)) == 2L
+      } else {
+        identical(.glm_r2_kind(g), "binomial")
+      },
+      r2_deviance = .glm_carries_r2_deviance(m),
+      # The Nakagawa R^2 of a glmmTMB fit, where the family and the
+      # components decide: asked of the fit, as its frame asks.
+      r2_marginal = ,
+      # (the ordinal family has none, as its frame says).
+      r2_conditional = !.glmmTMB_is_ordinal(m) &&
+        is.finite(
+          tryCatch(
+            .nakagawa_r2(m)[[sub("^r2_", "", tk)]],
+            error = function(e) NA_real_
+          ) %||%
+            NA_real_
+        ),
+      FALSE
+    )
+  }
+  tokens[vapply(
+    tokens,
+    function(tk) any(vapply(models, offered, logical(1), tk = tk)),
+    logical(1)
+  )]
+}
+
+# The line of a refusal that proposes other fit statistics: `fmt` with the
+# tokens the models show (each followed by its note, if any), or NULL --
+# no line -- when they show none.
+.fit_stats_remedy <- function(models, tokens, fmt, notes = NULL) {
+  ok <- .fit_stats_offered(models, tokens)
+  if (length(ok) == 0L) {
+    return(NULL)
+  }
+  items <- paste0("`", .quote_val(ok), "`")
+  if (!is.null(notes)) {
+    items <- paste(items, notes[ok])
+  }
+  sprintf(fmt, .fmt_and(items, "or"))
+}
+
+# The nested test a table of glm fits offers: the likelihood-ratio
+# chi-square, or the F test of the deviance change when the dispersion is
+# estimated; nothing for a table that mixes the two.
+.glm_nested_remedy <- function(models) {
+  # A design-based or a Bayesian glm has no nested test (the nested guard
+  # of table_regression()).
+  if (
+    any(vapply(
+      models,
+      function(m) .is_design_fit(m) || inherits(m, c("stanreg", "brmsfit")),
+      logical(1)
+    ))
+  ) {
+    return(NULL)
+  }
+  disp <- vapply(models, has_estimated_dispersion, logical(1))
+  if (all(disp)) {
+    c(
+      "i" = paste0(
+        "For a nested glm comparison, use `\"f_change\"` + ",
+        "`\"p_change\"` (F test of the deviance change)."
+      )
+    )
+  } else if (!any(disp)) {
+    c(
+      "i" = paste0(
+        "For a nested glm comparison, use `\"lrt_change\"` + ",
+        "`\"p_change\"` (likelihood-ratio chi-square)."
+      )
+    )
+  }
+}
+
 validate_class_appropriate_tokens <- function(
   models,
   show_columns,
@@ -2474,15 +2576,23 @@ validate_class_appropriate_tokens <- function(
             "{Tokens} in `show_fit_stats` {are} not defined for `glm` models.",
             bad_fit
           ),
-          "i" = paste0(
-            "Use the pseudo-R\u00B2 family instead: `\"pseudo_r2_mcfadden\"` ",
-            "(McFadden 1974), `\"pseudo_r2_nagelkerke\"` (Nagelkerke ",
-            "1991), or `\"pseudo_r2_tjur\"` (Tjur 2009; binomial only); ",
-            "for a gaussian, Gamma, inverse Gaussian or Tweedie family, ",
-            "`\"r2_deviance\"` (1 - deviance / null deviance). ",
-            "For nested glm comparison, use `\"lrt_change\"` + ",
-            "`\"p_change\"` (likelihood-ratio chi-square)."
-          )
+          "i" = .fit_stats_remedy(
+            eff_models,
+            c(
+              "pseudo_r2_mcfadden",
+              "pseudo_r2_nagelkerke",
+              "pseudo_r2_tjur",
+              "r2_deviance"
+            ),
+            "Use the R\u00B2 of a `glm` instead: %s.",
+            notes = c(
+              pseudo_r2_mcfadden = "(McFadden 1974)",
+              pseudo_r2_nagelkerke = "(Nagelkerke 1991)",
+              pseudo_r2_tjur = "(Tjur 2009)",
+              r2_deviance = "(1 - deviance / null deviance)"
+            )
+          ),
+          .glm_nested_remedy(eff_models)
         ),
         class = "spicy_invalid_input",
         call = call
@@ -2552,10 +2662,26 @@ validate_class_appropriate_tokens <- function(
           "likelihood-ratio chi-square, which reports no ",
           "variance-explained change."
         ),
-        "i" = paste0(
-          "Use `\"lrt_change\"` + `\"p_change\"`, which is also what ",
-          "`nested = TRUE` selects for this hierarchy by default."
-        )
+        # Not for a class whose hierarchy has no test at all (design-based
+        # fits and clmm, refused by the nested guard of
+        # table_regression()) or a fixest IV fit, whose likelihood-ratio
+        # row stays empty: no remedy the table would refuse.
+        "i" = if (
+          !any(vapply(
+            eff_models,
+            function(m) {
+              .is_design_fit(m) ||
+                inherits(m, "clmm") ||
+                (inherits(m, "fixest") && .fixest_is_iv_second_stage(m))
+            },
+            logical(1)
+          ))
+        ) {
+          paste0(
+            "Use `\"lrt_change\"` + `\"p_change\"`, which is also what ",
+            "`nested = TRUE` selects for this hierarchy by default."
+          )
+        }
       ),
       class = "spicy_invalid_input",
       call = call
@@ -2675,7 +2801,11 @@ validate_class_appropriate_tokens <- function(
             "{Tokens} in `show_fit_stats` {are} for `glm` models only.",
             bad_fit
           ),
-          "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
+          "i" = .fit_stats_remedy(
+            eff_models,
+            c("r2", "adj_r2", "omega2", "f2"),
+            "Use %s for these models."
+          )
         ),
         class = "spicy_invalid_input",
         call = call
@@ -3215,10 +3345,11 @@ validate_class_appropriate_tokens <- function(
             "{Tokens} in `show_fit_stats` {are} not defined for mixed-effects models.",
             bad_fit
           ),
-          "i" = paste0(
-            "Classical / pseudo R^2 do not apply to mixed-effects models. ",
-            "Use the Nakagawa marginal / conditional R^2 instead: ",
-            "`\"r2_marginal\"` and `\"r2_conditional\"` (Nakagawa et al. 2017)."
+          "i" = "Classical / pseudo R^2 do not apply to mixed-effects models.",
+          "i" = .fit_stats_remedy(
+            eff_models,
+            c("r2_marginal", "r2_conditional"),
+            "Use the Nakagawa R^2 instead: %s (Nakagawa et al. 2017)."
           )
         ),
         class = "spicy_invalid_input",
@@ -3236,10 +3367,14 @@ validate_class_appropriate_tokens <- function(
             "{Tokens} in `show_columns` {are} not defined for mixed-effects models.",
             bad_cols
           ),
-          "i" = paste0(
-            "Variance-explained partials do not apply to mixed models. For a ",
-            "partial Wald chi-square test of each term, use `\"partial_chi2\"`."
-          )
+          "i" = "Variance-explained partials do not apply to mixed models.",
+          # clmm has no term-level test: no remedy it would refuse.
+          "i" = if (!any(vapply(eff_models, inherits, logical(1), "clmm"))) {
+            paste0(
+              "For a partial Wald chi-square test of each term, use ",
+              "`\"partial_chi2\"`."
+            )
+          }
         ),
         class = "spicy_invalid_input",
         call = call
@@ -3279,6 +3414,10 @@ validate_class_appropriate_tokens <- function(
               "`survey::regTermTest(fit, ~term)` and read a marginal ",
               "survival curve with `survey::svykm()`."
             )
+          } else if (any(vapply(models, inherits, logical(1), "rms"))) {
+            # rms::cph has no estimand columns either: no remedy it would
+            # refuse.
+            NULL
           } else {
             paste0(
               "For absolute effects, use the survival estimand columns: ",
@@ -3453,9 +3592,12 @@ validate_class_appropriate_tokens <- function(
           "i" = paste0(
             "Tjur's R\u00B2 (2009) is mean(fitted | y = 1) - ",
             "mean(fitted | y = 0), which needs a binary outcome (the ",
-            "trials of a grouped binomial response count as such). ",
-            "Use `\"pseudo_r2_mcfadden\"` or `\"r2_deviance\"` ",
-            "for other families."
+            "trials of a grouped binomial response count as such)."
+          ),
+          "i" = .fit_stats_remedy(
+            eff_models,
+            c("pseudo_r2_mcfadden", "r2_deviance"),
+            "Use %s for these models."
           )
         ),
         class = "spicy_invalid_input",

@@ -2926,11 +2926,13 @@ table_regression <- function(
             "-style fits (\"posthoc\" / \"basic\" / ",
             "\"smart\")."
           ),
-          "i" = paste0(
-            "To compare predictor effects in other classes, ",
-            "use average marginal effects where supported: ",
-            "`show_columns = c(\"b\", \"ame\")`."
-          )
+          # A remedy the class would refuse is not offered.
+          "i" = if (isTRUE(frames[[i]]$info$supports$ame)) {
+            paste0(
+              "To compare predictor effects, use average marginal ",
+              "effects: `show_columns = c(\"b\", \"ame\")`."
+            )
+          }
         ),
         class = "spicy_unsupported_standardized"
       )
