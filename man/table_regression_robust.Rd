@@ -117,7 +117,9 @@ standard errors of a \code{feglm()} fit by sqrt((n - 1) / (n - K)) over
 those of its \code{glm()} twin with the fixed effects as dummies (a \code{feols()}
 fit already matches \code{lm()}), and
 \code{summary(fit, ssc = fixest::ssc(K.adj = FALSE))} gives the \code{glm()}
-values.
+values. Their t tests use the degrees of freedom the fit carries
+(\code{fit$df} for estimatr, \code{fixest::degrees_freedom(fit, "t")} for
+fixest), which \code{show_columns = "df"} prints in a column.
 
 \strong{\code{quantreg::rq}.} Its own estimator family, not the sandwich
 vocabulary:

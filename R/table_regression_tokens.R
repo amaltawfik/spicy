@@ -16,6 +16,16 @@
 #' \itemize{
 #'   \item Coefficient family: `"b"`, `"beta"` (standardized),
 #'     `"se"`, `"ci"`, `"t"`, `"p"`.
+#'   \item Degrees of freedom: `"df"`, those of each coefficient's t
+#'     test, the `df` of `tidy()`. They can differ from row to row: the
+#'     Satterthwaite df of a cluster-robust `vcov = "CR2"` or of an
+#'     `lmerTest` fit, the containment df of an `lme` fit. A whole df
+#'     prints without decimals, another with one (`1.9`). A z test leaves
+#'     its cell blank, and so does a model of z tests beside one of t
+#'     tests; the token is refused when no model of the table has a t
+#'     test. The rows of a random effect or of a smooth term, which have
+#'     no t, show a dash, as in the `"t"` column. The header reads df,
+#'     ddl in French. Opt-in: no group token holds it.
 #'   \item Marginal effects: `"ame"`, `"ame_se"`, `"ame_ci"`,
 #'     `"ame_p"`. `"p"` always refers to the B-coefficient
 #'     p-value; for the AME-specific p-value use `"ame_p"`.

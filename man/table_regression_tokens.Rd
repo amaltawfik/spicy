@@ -17,6 +17,16 @@ atomic tokens; see \code{show_columns} below.
 \itemize{
 \item Coefficient family: \code{"b"}, \code{"beta"} (standardized),
 \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"}.
+\item Degrees of freedom: \code{"df"}, those of each coefficient's t
+test, the \code{df} of \code{tidy()}. They can differ from row to row: the
+Satterthwaite df of a cluster-robust \code{vcov = "CR2"} or of an
+\code{lmerTest} fit, the containment df of an \code{lme} fit. A whole df
+prints without decimals, another with one (\code{1.9}). A z test leaves
+its cell blank, and so does a model of z tests beside one of t
+tests; the token is refused when no model of the table has a t
+test. The rows of a random effect or of a smooth term, which have
+no t, show a dash, as in the \code{"t"} column. The header reads df,
+ddl in French. Opt-in: no group token holds it.
 \item Marginal effects: \code{"ame"}, \code{"ame_se"}, \code{"ame_ci"},
 \code{"ame_p"}. \code{"p"} always refers to the B-coefficient
 p-value; for the AME-specific p-value use \code{"ame_p"}.

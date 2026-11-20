@@ -260,6 +260,8 @@ the method only.
 \item \code{lme}: t with the containment degrees of freedom of \code{nlme},
 named in the note. \code{gls}: t on n minus the number of coefficients.
 }
+\code{show_columns = "df"} prints the degrees of freedom of each t test in
+a column, blank for a z test.
 The confidence interval uses the same reference distribution as the
 test. The AME rows take the variance matrix of the coefficient rows,
 model-based or robust, and are tested by Wald z. Beside the t rows of

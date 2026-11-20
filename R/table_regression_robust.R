@@ -90,7 +90,9 @@
 #' those of its `glm()` twin with the fixed effects as dummies (a `feols()`
 #' fit already matches `lm()`), and
 #' `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the `glm()`
-#' values.
+#' values. Their t tests use the degrees of freedom the fit carries
+#' (`fit$df` for estimatr, `fixest::degrees_freedom(fit, "t")` for
+#' fixest), which `show_columns = "df"` prints in a column.
 #'
 #' **`quantreg::rq`.** Its own estimator family, not the sandwich
 #' vocabulary:

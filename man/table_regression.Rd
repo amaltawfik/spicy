@@ -308,8 +308,10 @@ adjustment} section for when this is and is not appropriate.}
 
 \item{show_columns}{Character vector of tokens selecting the
 per-coefficient columns and their display order. Accepts
-\strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"},
-\code{"beta"}, \code{"n"}, \code{"n_events"}, \code{"pd"} (probability of
+\strong{atomic tokens} (\code{"b"}, \code{"se"}, \code{"ci"}, \code{"t"}, \code{"p"}, \code{"df"}
+(the degrees of freedom of each coefficient's t test, blank under
+a z test; refused when every test of the table is z),
+\code{"beta"},\code{"n"}, \code{"n_events"}, \code{"pd"} (probability of
 direction, Bayesian fits only), \code{"rhat"} / \code{"ess_bulk"} /
 \code{"ess_tail"} / \code{"mcse"} (per-coefficient sampler diagnostics and
 the Monte Carlo standard error of the displayed posterior
@@ -1170,6 +1172,8 @@ coefficient of the same name (a predictor entered as itself, a
 factor level). A row without such a coefficient (a transformed
 predictor, \code{poly(x, 2)}) keeps the test of the \code{glm}: t on the
 residual df when the dispersion is estimated, z otherwise.
+The df differ from one coefficient to the next:
+\code{show_columns = "df"} prints them in a column.
 }
 For other classes the t-vs-z axis follows the estimator's native
 reference distribution (e.g. \code{glmmTMB}, survival, ordinal,

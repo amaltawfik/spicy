@@ -301,6 +301,8 @@
 #'     factor level). A row without such a coefficient (a transformed
 #'     predictor, `poly(x, 2)`) keeps the test of the `glm`: t on the
 #'     residual df when the dispersion is estimated, z otherwise.
+#'     The df differ from one coefficient to the next:
+#'     `show_columns = "df"` prints them in a column.
 #' }
 #' For other classes the t-vs-z axis follows the estimator's native
 #' reference distribution (e.g. `glmmTMB`, survival, ordinal,
@@ -929,8 +931,10 @@
 #'   [table_regression_survival].
 #' @param show_columns Character vector of tokens selecting the
 #'   per-coefficient columns and their display order. Accepts
-#'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`,
-#'   `"beta"`, `"n"`, `"n_events"`, `"pd"` (probability of
+#'   **atomic tokens** (`"b"`, `"se"`, `"ci"`, `"t"`, `"p"`, `"df"`
+#'   (the degrees of freedom of each coefficient's t test, blank under
+#'   a z test; refused when every test of the table is z),
+#'   `"beta"`,`"n"`, `"n_events"`, `"pd"` (probability of
 #'   direction, Bayesian fits only), `"rhat"` / `"ess_bulk"` /
 #'   `"ess_tail"` / `"mcse"` (per-coefficient sampler diagnostics and
 #'   the Monte Carlo standard error of the displayed posterior
