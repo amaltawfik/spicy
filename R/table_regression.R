@@ -4833,7 +4833,8 @@ table_regression <- function(
     n_groups = if (!any_of(c(mixed, "clmm", "geeglm", "fixest"))) {
       paste0(
         "`\"n_groups\"` counts the groups of a mixed model or a GEE, or the ",
-        "fixed effects a fixest model absorbs."
+        "fixed effects absorbed by a fixest model or by an estimatr model ",
+        "with `fixed_effects =`."
       )
     },
     # validate_class_appropriate_tokens() has refused a table without a

@@ -927,7 +927,7 @@
       ----
       error: spicy_invalid_input, spicy_error
         Token `"n_groups"` in `show_fit_stats` has no value for any model in the table.
-        i `"n_groups"` counts the groups of a mixed model or a GEE, or the fixed effects a fixest model absorbs.
+        i `"n_groups"` counts the groups of a mixed model or a GEE, or the fixed effects absorbed by a fixest model or by an estimatr model with `fixed_effects =`.
       Received by 52:
         "n_groups": bam, betareg, clm, clm_nominal, clm_scale, coxph,
             coxph_strata, cph, cph_xy, flexsurvreg, gam, gam_logit, glm.nb,
@@ -2663,7 +2663,7 @@
       ----
       error: spicy_invalid_input, spicy_error
         Token `"n_groups"` in `show_fit_stats` has no value for any model in the table.
-        i `"n_groups"` counts the groups of a mixed model or a GEE, or the fixed effects a fixest model absorbs.
+        i `"n_groups"` counts the groups of a mixed model or a GEE, or the fixed effects absorbed by a fixest model or by an estimatr model with `fixed_effects =`.
       Received by 2:
         "n_groups": brmsfit, stanreg
       ----
