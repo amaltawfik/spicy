@@ -22,6 +22,11 @@
   `feols()` model without an exogenous regressor (`y ~ 1 | x ~ z`), whose
   AME came out as 0. The error says what to do.
 
+* `table_regression()` no longer computes an AME on data that changed
+  after the model was fitted (rows dropped, values recoded, data frame
+  removed). The AME cells stay empty, with a warning that says why. The
+  AME was averaged over the new data, without a word.
+
 * `table_regression()` computes the standard errors of the random-effect
   rows of `lmer()` and `glmer()` models from the Hessian of the deviance,
   and no longer through merDeriv. Those of a `glmer()` model were wrong
@@ -590,6 +595,11 @@
   term no longer shows a row of 0 for each stratum, and the AME of an
   `ordinal::clm()` model with `nominal =` covers the predictors with
   nominal effects, one per category.
+
+* `table_regression()` computes the AME of an `lm()`, `glm()` or `lmer()`
+  model whose factor has a level without observations. It failed. Under
+  a `CR*` variance, an `lm()` whose data rows were renamed after the fit
+  keeps the Satterthwaite degrees of freedom of its AME.
 
 * `table_regression()` prints counts and fit statistics in full from 1e7
   on: a weighted n of 255345910 read "3e+08".
