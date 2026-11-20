@@ -820,3 +820,21 @@ test_that("an extended family shows sigma only when the GAM estimates a scale", 
   pois <- mgcv::gam(yc ~ x, family = stats::poisson(), data = d)
   expect_equal(sigma_of(pois), summary(pois)$dispersion)
 })
+
+test_that("the refusal of a robust variance names the GAM family without its parameter", {
+  skip_if_not_installed("mgcv")
+  set.seed(20261120)
+  d <- data.frame(x = stats::rnorm(200), g = rep(1:20, 10))
+  m <- stats::plogis(-0.3 + 0.5 * d$x)
+  d$y <- stats::rbeta(200, 7 * m, 7 * (1 - m))
+  fit <- mgcv::gam(y ~ x, family = mgcv::betar(), data = d)
+  err <- expect_error(
+    table_regression(fit, vcov = "CR1", cluster = d$g),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(
+    conditionMessage(err),
+    "for `gam` fits with the `Beta regression` family.",
+    fixed = TRUE
+  )
+})

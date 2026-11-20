@@ -385,7 +385,7 @@ standardize_pseudo_glm <- function(
         ),
         "i" = sprintf(
           "Family `%s` (link `%s`) is outside this scope; \u03B2 returned as NA.",
-          stats::family(fit)$family,
+          .family_label(stats::family(fit)$family),
           stats::family(fit)$link
         ),
         "i" = paste0(

@@ -1025,7 +1025,7 @@
         show_columns = "partial_f": lmer
       ----
       error: spicy_invalid_input, spicy_error
-        Token `"partial_f"` in `show_columns` is not defined for the model (`negbin`, Negative Binomial(1.4352)).
+        Token `"partial_f"` in `show_columns` is not defined for the model (`negbin`, Negative Binomial).
         i `"partial_f"` is the partial F of an `lm` and of a `glm` whose dispersion is estimated (gaussian, Gamma, inverse Gaussian, Tweedie, `negative.binomial(theta)` fitted by `glm()`, the quasi families), the F that `anova(reduced, full, test = "F")` reports.
         i Use `"partial_chi2"`.
       Received by 1:
@@ -3367,7 +3367,7 @@
       ----
       warning: spicy_caveat, spicy_warning
         `standardized = "pseudo"` (Menard fully-standardized) is defined for binomial families with logit / probit / cloglog / log links.
-        i Family `Negative Binomial(1.4352)` (link `log`) is outside this scope; <U+03B2> returned as NA.
+        i Family `Negative Binomial` (link `log`) is outside this scope; <U+03B2> returned as NA.
         i For non-binomial glms, use `standardized = "refit"` (x-standardization, Long & Freese 2014 <U+00A7>4.7.2) or one of `"posthoc"` / `"basic"` / `"smart"` (X-only scaling).
       Received by 1:
         standardized = "pseudo" (with beta): glm.nb

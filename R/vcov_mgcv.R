@@ -39,7 +39,7 @@
         sprintf(
           "A robust variance is not available for `%s` fits with the `%s` family.",
           class(fit)[1L],
-          fam$family
+          .family_label(fam$family)
         ),
         "i" = paste0(
           "spicy forms the sandwich of mgcv fits from the GLM score, which ",

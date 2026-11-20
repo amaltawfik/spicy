@@ -1927,7 +1927,12 @@ absorbs_fixed_effects <- function(model) {
       fam <- if (inherits(f, "glm")) {
         tryCatch(stats::family(f)$family, error = function(e) NULL)
       }
-      what <- paste0("`", class(f)[1L], "`", if (length(fam)) paste0(", ", fam))
+      what <- paste0(
+        "`",
+        class(f)[1L],
+        "`",
+        if (length(fam)) paste0(", ", .family_label(fam))
+      )
       if (length(models) > 1L) {
         sprintf("model %d (%s)", owner[j], what)
       } else {

@@ -159,6 +159,11 @@ spicy_abort <- function(
   .fmt_and(paste0("`", .quote_val(x), "`"), conj)
 }
 
+# A family as a message names it: without the parameter some families
+# carry in `family$family` ("Negative Binomial(1.4352)", "Beta
+# regression(33.032)", "Tweedie(p=1.5)").
+.family_label <- function(fam) sub("\\s*\\(.*\\)$", "", fam)
+
 # A message about tokens, in one form for one token or several: in
 # `template`, "{Tokens}" (or "{tokens}") becomes `Token `"x"`` or
 # `Tokens `"x"` and `"y"``, and "{are}", "{have}", "{need}", "{they}"
