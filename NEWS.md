@@ -363,6 +363,22 @@
   `"Precision::persons"`, `"rho"`), and its warning lists the same terms
   as that of `keep`.
 
+* `table_regression()` accepts `vcov = "HC0"`, `"HC1"`, `"CR0"` to
+  `"CR3"` and `"CR1S"` for `AER::ivreg()` models, with the standard
+  errors and degrees of freedom that `estimatr::iv_robust()` reports.
+  `"HC2"` to `"HC5"` stay refused, since the leverage of a 2SLS fit has
+  more than one definition; the error points to `iv_robust()`.
+
+* `table_regression()`: `show_columns = "df"` shows the degrees of
+  freedom of the t test of each coefficient: Satterthwaite under a `CR*`
+  variance, containment for `lme()`, those of the design for `svyglm()`.
+  The cell is empty under a z test, and the token is refused when no
+  model of the table has a t test.
+
+* `table_regression()`: `show_fit_stats = "pseudo_r2_ferrari"` shows on
+  request the pseudo-R² of a `betareg()` model, the one `summary()`
+  prints.
+
 * `table_regression()`: `show_fit_stats = "log_lik"` shows the
   log-likelihood of each model, the value of `logLik()` from which the
   AIC row is computed. A model without a likelihood shows a dash, and
@@ -565,8 +581,6 @@
 
 * `table_regression()`: `tau` passed with a `quantreg::rq()` model and
   no survival column says that the quantile of the fit is set in `rq()`.
-  The refusal of a robust or clustered `vcov` for an `ivreg()` model
-  names `estimatr::iv_robust()` and `fixest::feols()`, which compute it.
 
 * `table_regression()`: the p-values and intervals of a sample-selection
   model use the t distribution on the residual degrees of freedom, as
