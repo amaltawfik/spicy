@@ -42,6 +42,21 @@
   ft
 }
 
+# HTML: the frame of every flextable the package returns. flextable
+# writes the table in a `<div class="tabwid">` with no width rule, so
+# in an R Markdown page 420px wide a two-model regression table (455px)
+# ran past its 375px frame and widened the page. flextable's own scroll box (`opts_html = list(scroll
+# = list())`, which writes `overflow-x:auto;width:100%;` on that div)
+# makes it scroll within its frame, as gt and tinytable tables do. The
+# layout is kept as built; the option touches HTML only.
+.spicy_ft_html_frame <- function(ft) {
+  flextable::set_table_properties(
+    ft,
+    layout = ft$properties$layout,
+    opts_html = list(scroll = list())
+  )
+}
+
 # Every gt table of the package is built here: `gt::gt()` with an id of
 # its own, and the rules of its source notes and of its header in HTML
 # (`.spicy_gt_note_css()`, `.spicy_gt_header_css()`), which need that id

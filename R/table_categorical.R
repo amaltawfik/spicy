@@ -3681,7 +3681,7 @@ table_categorical <- function(
       # Same title the console prints, from the same helper: a table
       # that names itself on screen names itself in HTML too.
       return(.spicy_ft_html_caption(
-        build_flextable_oneway(report_wide_char),
+        .spicy_ft_html_frame(build_flextable_oneway(report_wide_char)),
         .categorical_title(NULL)
       ))
     }
@@ -5980,7 +5980,7 @@ table_categorical <- function(
     # by-table it names the grouping variable, which nothing else in
     # the rendered table states.
     return(.spicy_ft_html_caption(
-      build_flextable(merge_ci_inline(report_wide_char)),
+      .spicy_ft_html_frame(build_flextable(merge_ci_inline(report_wide_char))),
       .categorical_title(by_note)
     ))
   }

@@ -2009,6 +2009,7 @@ output_flextable <- function(rendered) {
   # on its first column only (dev/todo_from_ncs_2026-11-02.md, point 3).
   ft <- flextable::autofit(ft)
   ft <- flextable::set_table_properties(ft, layout = "fixed")
+  ft <- .spicy_ft_html_frame(ft)
 
   title <- attr(rendered, "title")
   note <- .apply_minus_sign(

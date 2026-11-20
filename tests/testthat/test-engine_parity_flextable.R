@@ -310,6 +310,49 @@ test_that("the descriptive families carry their title as an HTML caption", {
   )
 })
 
+test_that("every flextable scrolls within its frame in HTML", {
+  skip_if_not_installed("flextable")
+  d <- .pf_data()
+  m1 <- stats::lm(wellbeing_score ~ age + sex, data = d)
+  m2 <- stats::lm(wellbeing_score ~ age + sex + bmi, data = d)
+  fts <- list(
+    table_regression(list(m1, m2), output = "flextable"),
+    table_regression(list(m1, m2), note = FALSE, output = "flextable"),
+    table_stack(
+      A = table_regression(m1),
+      B = table_regression(m2),
+      output = "flextable"
+    ),
+    table_categorical(d, select = c("sex", "smoking"), output = "flextable"),
+    table_categorical(d, select = "smoking", by = "sex", output = "flextable"),
+    table_continuous(d, select = c("age", "bmi"), output = "flextable"),
+    table_continuous(d, select = "age", by = "sex", output = "flextable"),
+    table_continuous_lm(
+      d,
+      select = "bmi",
+      by = "education",
+      output = "flextable"
+    ),
+    table_battery(
+      d,
+      select = c("life_sat_health", "life_sat_work"),
+      output = "flextable"
+    )
+  )
+  for (ft in fts) {
+    expect_identical(ft$properties$opts_html$scroll, list())
+    # The box of the displayed table, after spicy's own HTML pass.
+    html <- as.character(knitr::knit_print(ft))
+    expect_match(
+      html,
+      "<div class=\"tabwid\" style=\"overflow-x:auto;width:100%;\">",
+      fixed = TRUE
+    )
+  }
+  # The layout the builders chose is kept.
+  expect_identical(fts[[1L]]$properties$layout, "fixed")
+})
+
 test_that("the caption is the title the console prints, in the table font", {
   skip_if_not_installed("flextable")
   d <- .pf_data()

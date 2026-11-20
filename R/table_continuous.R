@@ -4776,7 +4776,7 @@ export_desc_table <- function(
     }
 
     # Same title the console prints, from the same helper.
-    ft <- .spicy_ft_html_caption(ft, title)
+    ft <- .spicy_ft_html_caption(.spicy_ft_html_frame(ft), title)
     class(ft) <- c("spicy_flextable", class(ft))
     return(ft)
   }
