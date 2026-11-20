@@ -588,7 +588,17 @@
   translated ("robustes à l'hétéroscédasticité (HC2)", "robustes aux grappes
   (id)", "Newey-West (L = 2)").
 
+* Four new articles on the package site: robust standard errors with
+  IV, panel, tobit and quantile models; generalized additive, beta and
+  sample-selection models; rms fits; regression under a survey design.
+
 ## Improvements and bug fixes
+
+* The article *Summary tables from a survey design* said that the
+  normal interval of `survey::svyby()` is about 3% narrower than the
+  interval of the tables on 14 degrees of freedom. The interval of the
+  tables is 9% wider. Its section on regression is now a pointer to the
+  new article.
 
 * `table_regression()`: `tau` passed with a `quantreg::rq()` model and
   no survival column says that the quantile of the fit is set in `rq()`.
