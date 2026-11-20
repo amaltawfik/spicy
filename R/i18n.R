@@ -1513,23 +1513,31 @@
   fitstat_change_vs = "%s vs %s",
   note_vcov_classical_glm = "classical (Fisher information)",
   note_vcov_classical_lm = "classical (OLS)",
-  # The model-based default of the classes whose label names no
-  # mechanism (nls, AER::ivreg, rms::ols, fixest's IID, estimatr's
-  # classical se_type), capitalized as it has always printed.
-  note_vcov_classical_plain = "Classical",
-  # estimatr's robust `se_type` values, capitalized as they have always
-  # printed. One hole: the type ("HC2", "Stata HC1", "CR2").
+  # One estimator, one name (dev/decisions/2026-11-19-note-inference-
+  # labels.md): the model-based default opens on "classical", and its
+  # parenthesis says what it rests on. A weighted lm, an IV fit (AER::ivreg,
+  # estimatr::iv_robust, an instrumented feols), nls, MASS::rlm, and the
+  # mixed models of lme4 and nlme whose variance is read off the fitted
+  # model. One hole in `_corr`: the correlation structure of a gls fit, its
+  # class name (an identifier).
+  note_vcov_classical_wls = "classical (WLS)",
+  note_vcov_classical_2sls = "classical (2SLS)",
+  note_vcov_classical_nls = "classical (nonlinear least squares)",
+  note_vcov_classical_m = "classical (M-estimation)",
+  note_vcov_classical_model = "classical (model-based)",
+  note_vcov_classical_model_corr = "classical (model-based, %s)",
+  # The sandwich of an rms fit passed through robcov() without clusters.
+  # One hole: its author ("Huber", "Lin-Wei") or "sandwich".
   note_vcov_robust_plain = "Robust (%s)",
-  note_vcov_cluster_robust_plain = "Cluster-robust (%s)",
   # An estimatr fit with `se_type = "none"`, which computes no standard
   # errors.
   note_vcov_none_plain = "None (se_type = \"none\")",
-  # fixest's own labels, worded and capitalized as fixest prints them.
-  # The holes keep fixest's detail: the cluster variables ("id & period"),
-  # the estimator and its lag ("Newey-West", "2"), the Conley cutoff and
-  # its unit ("100", "km"). "Custom" is a matrix the user supplied.
-  note_vcov_fixest_hetero = "Heteroskedasticity-robust",
-  note_vcov_fixest_cluster = "Clustered (%s)",
+  # fixest's own estimators. The holes keep fixest's detail: the cluster
+  # variables ("id & period"), the estimator and its lag ("Newey-West",
+  # "2"), the Conley cutoff and its unit ("100", "km"). "Custom" is a
+  # matrix the user supplied.
+  note_vcov_fixest_hetero = "heteroskedasticity-robust",
+  note_vcov_fixest_cluster = "cluster-robust, clusters by %s",
   note_vcov_fixest_lag = "%s (L=%s)",
   note_vcov_fixest_conley = "Conley (%s%s)",
   note_vcov_fixest_custom = "Custom",
@@ -1553,16 +1561,10 @@
   note_vcov_jackknife = "jackknife (leave-one-out)",
   note_vcov_jackknife_cluster = "jackknife (leave-one-cluster-out), clusters by %s",
   note_vcov_jackknife_plain = "jackknife",
-  note_vcov_wald_asymptotic = "Wald asymptotic (z)",
   # The standard errors of a selection model, named by the estimation
   # method that sets them.
   note_vcov_selection_ml = "maximum likelihood",
   note_vcov_selection_two_step = "two-step",
-  # The model-based default of lmer, lme and gls. One hole in `_corr`:
-  # the correlation structure of a gls fit, its class name (an
-  # identifier).
-  note_vcov_wald_model = "Wald (model-based)",
-  note_vcov_wald_model_corr = "Wald (model-based, %s)",
   # The variance estimator of a fit under a sampling design, named by the
   # MECHANISM the design actually uses -- not by the design's R class,
   # which is never shown to a reader, and not by whether the descriptive
@@ -1588,13 +1590,14 @@
   note_vcov_gee_j1s = "One-step jackknife (GEE)",
   note_vcov_gee_fij = "Fully iterated jackknife (GEE)",
   # The rq standard-error methods. One hole in the bootstrap labels: the
-  # replicate count.
+  # replicate count. The clustered bootstrap takes `note_vcov_cluster_by`
+  # when the name of the cluster variable is known.
   note_vcov_rq_nid = "Quantile sandwich (nid, Hall-Sheather)",
   note_vcov_rq_iid = "Quantile (iid)",
   note_vcov_rq_ker = "Quantile kernel (ker)",
-  note_vcov_rq_rank = "Rank inversion (CIs only)",
-  note_vcov_rq_boot_cluster = "Quantile wild gradient cluster bootstrap (R = %d)",
-  note_vcov_rq_boot = "Quantile bootstrap (xy pairs, R = %d)",
+  note_vcov_rq_rank = "rank-test inversion (CIs only)",
+  note_vcov_rq_boot_cluster = "wild gradient cluster bootstrap (%d replicates)",
+  note_vcov_rq_boot = "bootstrap (xy pairs, %d replicates)",
   # The fixed-effect inference line of a mixed model: the distribution
   # and the df. A table note names the METHOD, never the package that
   # computed it: the reader must be able to reproduce it with any

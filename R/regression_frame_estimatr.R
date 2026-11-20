@@ -302,7 +302,14 @@ as_regression_frame.iv_robust <- function(
 
   se_type <- fit$se_type %||% "robust"
   clustered <- isTRUE(fit$clustered)
-  default_label <- .estimatr_vcov_label(se_type, clustered)
+  default_label <- .estimatr_vcov_label(
+    se_type,
+    is_iv = is_iv,
+    weighted = isTRUE(fit$weighted),
+    cluster_name = if (is.name(fit$call$clusters)) {
+      as.character(fit$call$clusters)
+    }
+  )
 
   supports <- list(
     ame = TRUE,
@@ -387,19 +394,41 @@ as_regression_frame.iv_robust <- function(
 }
 
 
-# Map estimatr's se_type slot to a human-readable vcov_label, in the
-# table language. The cluster-robust labels carry "(CR2)" suffix etc. to
-# disambiguate. se_type = "stata" is Stata's cluster-robust CR1:
-# estimatr stores an unclustered "stata" fit as "HC1".
-.estimatr_vcov_label <- function(se_type, clustered) {
-  base <- switch(
-    se_type,
-    "classical" = spicy_str("note_vcov_classical_plain"),
-    "stata" = spicy_fmt("note_vcov_cluster_robust_plain", "Stata CR1"),
-    "CR0" = ,
-    "CR2" = spicy_fmt("note_vcov_cluster_robust_plain", se_type),
-    "none" = spicy_str("note_vcov_none_plain"),
-    spicy_fmt("note_vcov_robust_plain", se_type)
-  )
-  base
+# Map estimatr's se_type slot to a vcov_label, in the table language and
+# under the names the lm and glm fits use for the same estimators. The
+# cluster-robust labels name the cluster variable when the call names it
+# (`clusters = state`), not when it passes an expression. se_type =
+# "stata" is Stata's cluster-robust CR1: estimatr stores an unclustered
+# "stata" fit as "HC1".
+.estimatr_vcov_label <- function(
+  se_type,
+  is_iv = FALSE,
+  weighted = FALSE,
+  cluster_name = NULL
+) {
+  if (identical(se_type, "classical")) {
+    return(spicy_str(
+      if (is_iv) {
+        "note_vcov_classical_2sls"
+      } else if (weighted) {
+        "note_vcov_classical_wls"
+      } else {
+        "note_vcov_classical_lm"
+      }
+    ))
+  }
+  if (identical(se_type, "none")) {
+    return(spicy_str("note_vcov_none_plain"))
+  }
+  if (se_type %in% c("stata", "CR0", "CR2")) {
+    label <- spicy_fmt(
+      "note_vcov_cr_bare",
+      if (identical(se_type, "stata")) "Stata CR1" else se_type
+    )
+    if (length(cluster_name) == 1L && nzchar(cluster_name)) {
+      label <- paste0(label, spicy_fmt("note_vcov_cluster_by", cluster_name))
+    }
+    return(label)
+  }
+  spicy_fmt("note_vcov_hc", se_type)
 }

@@ -427,7 +427,7 @@ as_regression_frame.gls <- function(
     random_effects = re,
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% spicy_str("note_vcov_wald_model"),
+    vcov_label = vcov_label %||% spicy_str("note_vcov_classical_model"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
@@ -466,9 +466,9 @@ as_regression_frame.gls <- function(
 
   corr_label <- .gls_corstruct_label(fit)
   default_vcov_label <- if (is.null(corr_label)) {
-    spicy_str("note_vcov_wald_model")
+    spicy_str("note_vcov_classical_model")
   } else {
-    spicy_fmt("note_vcov_wald_model_corr", corr_label)
+    spicy_fmt("note_vcov_classical_model_corr", corr_label)
   }
 
   extras <- list(

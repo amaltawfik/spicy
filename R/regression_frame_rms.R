@@ -677,9 +677,9 @@ as_regression_frame.Glm <- function(
     vcov_label = vcov_label %||%
       .rms_own_vcov_label(fit, rms_class) %||%
       (if (rms_class == "ols") {
-        spicy_str("note_vcov_classical_plain")
+        spicy_str("note_vcov_classical_lm")
       } else {
-        spicy_str("note_vcov_wald_asymptotic")
+        spicy_str("note_vcov_classical_glm")
       }),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,

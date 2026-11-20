@@ -32,6 +32,7 @@ as_regression_frame.rq <- function(
   model_id = "M1",
   se = NULL,
   boot_n = 1000L,
+  cluster_name = NULL,
   ...
 ) {
   .check_quantreg_available()
@@ -97,7 +98,8 @@ as_regression_frame.rq <- function(
     model_id = model_id,
     se_method = se_method,
     boot_n = boot_n,
-    clustered = !is.null(cluster)
+    clustered = !is.null(cluster),
+    cluster_name = cluster_name
   )
   # Read back by the nested Wald change test (one bootstrap draw).
   info$vcov_matrix <- rq_sum$cov
@@ -271,8 +273,14 @@ as_regression_frame.rq <- function(
 
 
 # Footer label per estimator (bare noun phrase: the footer builder
-# prepends "Std. errors: " itself).
-.rq_vcov_footer_label <- function(se_method, boot_n, clustered) {
+# prepends "Std. errors: " itself). The clustered bootstrap names its
+# cluster variable when the call gave one by name.
+.rq_vcov_footer_label <- function(
+  se_method,
+  boot_n,
+  clustered,
+  cluster_name = NULL
+) {
   switch(
     se_method,
     nid = spicy_str("note_vcov_rq_nid"),
@@ -280,7 +288,16 @@ as_regression_frame.rq <- function(
     ker = spicy_str("note_vcov_rq_ker"),
     rank = spicy_str("note_vcov_rq_rank"),
     boot = if (clustered) {
-      spicy_fmt("note_vcov_rq_boot_cluster", boot_n)
+      paste0(
+        spicy_fmt("note_vcov_rq_boot_cluster", boot_n),
+        if (
+          length(cluster_name) == 1L &&
+            !is.na(cluster_name) &&
+            nzchar(cluster_name)
+        ) {
+          spicy_fmt("note_vcov_cluster_by", cluster_name)
+        }
+      )
     } else {
       spicy_fmt("note_vcov_rq_boot", boot_n)
     }
@@ -297,7 +314,8 @@ as_regression_frame.rq <- function(
   model_id,
   se_method,
   boot_n = 1000L,
-  clustered = FALSE
+  clustered = FALSE,
+  cluster_name = NULL
 ) {
   dv <- .fit_dv(fit)
   dv_label <- .extract_dv_label(fit, dv)
@@ -377,7 +395,7 @@ as_regression_frame.rq <- function(
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
     vcov_label = vcov_label %||%
-      .rq_vcov_footer_label(se_method, boot_n, clustered),
+      .rq_vcov_footer_label(se_method, boot_n, clustered, cluster_name),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
@@ -589,7 +607,7 @@ as_regression_frame.ivreg <- function(
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% spicy_str("note_vcov_classical_plain"),
+    vcov_label = vcov_label %||% spicy_str("note_vcov_classical_2sls"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,

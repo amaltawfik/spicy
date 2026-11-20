@@ -396,7 +396,10 @@ as_regression_frame.fixest <- function(
   # vcov label comes from attr(summary$coeftable, "vcov_type"):
   # "IID" / "Clustered (Month)" / "Newey-West" / "Conley" / etc.
   vt <- attr(summary(fit)$coeftable, "vcov_type") %||% "IID"
-  default_label <- .fixest_vcov_label(vt)
+  default_label <- .fixest_vcov_label(
+    vt,
+    classical = .fixest_classical_key(fit, is_glm)
+  )
 
   fixef_sizes <- fit$fixef_sizes %||% integer(0)
   n_groups <- if (length(fixef_sizes) > 0L) {
@@ -925,20 +928,37 @@ as_regression_frame.fixest <- function(
 }
 
 
+# The key of the model-based default of a fixest fit, named as the other
+# engines name the same estimator: least squares, instrumented or weighted,
+# or the information matrix of a fepois / feglm / fenegbin fit.
+.fixest_classical_key <- function(fit, is_glm) {
+  if (is_glm) {
+    return("note_vcov_classical_glm")
+  }
+  if (.fixest_is_iv_second_stage(fit)) {
+    return("note_vcov_classical_2sls")
+  }
+  if (!is.null(fit$weights)) {
+    return("note_vcov_classical_wls")
+  }
+  "note_vcov_classical_lm"
+}
+
 # vcov_label normalizer. fixest's "vcov_type" attribute already carries
-# a near-renderer-ready label, in English: "IID" becomes the "Classical"
-# of the other engines, for cross-engine consistency, and the labels of
-# fixest's built-in estimators go through the registry so that they
-# follow the table language. Their variables, lag and cutoff are kept as
-# fixest gives them ("Clustered (id & period)", "Newey-West (L=2)",
+# a near-renderer-ready label, in English: "IID" becomes the classical
+# label of the other engines (`classical`, the key of the estimator), and
+# the labels of fixest's built-in estimators go through the registry so
+# that they follow the table language and the names the other engines
+# use ("cluster-robust, clusters by id & period"). Their variables, lag
+# and cutoff are kept as fixest gives them ("Newey-West (L=2)",
 # "Conley (100km)"). Any other label -- a function passed as `vcov`,
 # which fixest names by its call -- stays verbatim.
 # A cluster on combined fixed effects (`~id^period`) is named by an
 # internal fixest call, "combine_fixef_keep_names(id, period)": it is
 # written back as the user wrote it, "id^period".
-.fixest_vcov_label <- function(vt) {
+.fixest_vcov_label <- function(vt, classical = "note_vcov_classical_lm") {
   if (identical(vt, "IID")) {
-    return(spicy_str("note_vcov_classical_plain"))
+    return(spicy_str(classical))
   }
   m <- gregexpr("combine_fixef_keep_names\\([^()]*\\)", vt)
   regmatches(vt, m) <- lapply(regmatches(vt, m), function(s) {

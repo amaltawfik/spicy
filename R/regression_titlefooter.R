@@ -820,7 +820,8 @@ lowercase_first <- function(s) {
 # Frame-aware sibling of format_vcov_label(). Reads from
 #   frame$info$vcov_label          (Phase 1+: the engine-/class-specific
 #                                   already-formatted label, e.g.
-#                                   "Wald (model-based)", "Robust (HC2)",
+#                                   "classical (model-based)",
+#                                   "heteroskedasticity-robust (HC2)",
 #                                   "Bayesian (posterior covariance)", ...)
 #   frame$info$vcov_kind           (the estimator token, read through
 #                                   .frame_vcov_kind(): "model" / "HC*"
@@ -831,8 +832,10 @@ lowercase_first <- function(s) {
 # Routing: lm / glm go through the legacy classical/HC*/CR* derivation
 # below (so historical snapshots stay byte-stable). All other classes
 # use the engine-supplied `vcov_label` verbatim (which the Phase 1+
-# methods set thoughtfully -- e.g. `note_vcov_wald_asymptotic` for coxph,
-# "Robust (HC2)" / "Cluster-robust (CR2)" for estimatr).
+# methods set thoughtfully -- e.g. `note_vcov_classical_glm` for coxph,
+# "heteroskedasticity-robust (HC2)" for estimatr). Every label names the
+# estimator under the name the lm and glm arms below give it
+# (dev/decisions/2026-11-19-note-inference-labels.md).
 format_vcov_label_from_frame <- function(frame) {
   cls <- frame$info$class %||% ""
 
@@ -871,9 +874,12 @@ format_vcov_label_from_frame <- function(frame) {
     # "OIM" / SAS PROC LOGISTIC's bare "Standard Error" labels.
     # Parallels "classical (OLS)" for lm: both name the underlying
     # mechanism that produces the SE.
+    # A weighted lm is weighted least squares (WLS), not OLS.
     return(
       if (is_glm) {
         spicy_str("note_vcov_classical_glm")
+      } else if (!identical(frame$info$weights_kind %||% "none", "none")) {
+        spicy_str("note_vcov_classical_wls")
       } else {
         spicy_str("note_vcov_classical_lm")
       }

@@ -621,9 +621,9 @@ inform_lmertest_hint <- function() {
     vcov_kind = vcov_kind,
     vcov_label = vcov_label %||%
       (if (is_glm) {
-        spicy_str("note_vcov_wald_asymptotic")
+        spicy_str("note_vcov_classical_glm")
       } else {
-        spicy_str("note_vcov_wald_model")
+        spicy_str("note_vcov_classical_model")
       }),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
