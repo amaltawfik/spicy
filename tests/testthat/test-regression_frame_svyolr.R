@@ -251,7 +251,7 @@ test_that("the title names the link and the parallel-slopes assumption", {
   expect_identical(fr$info$family$family, "cumulative")
   expect_identical(fr$info$family$link, "logit")
   expect_identical(fr$info$weights_kind, "sampling")
-  expect_identical(fr$info$vcov_label, "Design-based (Taylor linearization)")
+  expect_identical(fr$info$vcov_label, "design-based (Taylor linearization)")
 })
 
 test_that("a probit svyolr is not titled logit", {
@@ -315,7 +315,7 @@ test_that("a svyolr on a replicate design is still class svyolr", {
   expect_invisible(spicy:::validate_regression_frame(fr))
   expect_identical(
     fr$info$vcov_label,
-    "Design-based (replicate weights, JKn)"
+    "design-based (replicate weights, JKn)"
   )
   expect_true(all(.olr_b(fr)$test_type == "t"))
 })

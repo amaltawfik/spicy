@@ -27,7 +27,7 @@ test_that("an ols passed through robcov() says sandwich, whatever the method", {
   for (m in c("huber", "efron")) {
     expect_identical(
       as_regression_frame(rms::robcov(o, method = m))$info$vcov_label,
-      "Robust (sandwich)"
+      "robust (sandwich)"
     )
   }
   expect_identical(
@@ -37,7 +37,7 @@ test_that("an ols passed through robcov() says sandwich, whatever the method", {
   withr::local_options(spicy.language = "fr")
   expect_identical(
     as_regression_frame(rms::robcov(o))$info$vcov_label,
-    "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (sandwich)"
+    "robustes (sandwich)"
   )
 })
 
@@ -47,7 +47,7 @@ test_that("an lrm passed through robcov() keeps Huber's name", {
   f <- rms::lrm(yb ~ x1 + x2, data = d, x = TRUE, y = TRUE)
   expect_identical(
     as_regression_frame(rms::robcov(f))$info$vcov_label,
-    "Robust (Huber)"
+    "robust (Huber)"
   )
   # spicy's own CR0 of an ols is robcov()'s Huber method.
   o <- rms::ols(y ~ x1 + x2, data = d, x = TRUE, y = TRUE)

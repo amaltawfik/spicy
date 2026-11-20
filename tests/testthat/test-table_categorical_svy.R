@@ -357,7 +357,7 @@ test_that("a replicate design gives the same percentages, its own intervals", {
   )))
   expect_match(
     attr(table_categorical_svy(.svycat_design("rep1"), select = stype), "note"),
-    "Std. errors: Design-based (replicate weights, JK1).",
+    "Std. errors: design-based (replicate weights, JK1).",
     fixed = TRUE
   )
 })

@@ -333,10 +333,10 @@ test_that("a detached design leaves the design line out entirely", {
   fit <- survey::svyglm(api00 ~ ell, design = d$strat)
   fr <- as_regression_frame(fit)
   fr$info$extras$design_degf_resid <- NULL
-  expect_null(spicy:::.format_design_for_frame(fr))
+  expect_null(spicy:::.design_parts_for_frame(fr))
   # And a frame from another family contributes nothing to the block.
   plain <- as_regression_frame(stats::lm(api00 ~ ell, data = d$apistrat))
-  expect_null(spicy:::.format_design_for_frame(plain))
+  expect_null(spicy:::.design_parts_for_frame(plain))
   expect_null(spicy:::build_design_footer_block_from_frames(list(plain)))
 })
 

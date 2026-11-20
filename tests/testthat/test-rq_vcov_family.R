@@ -71,7 +71,7 @@ test_that("rq rank inversion renders CIs only, at the requested level", {
   o <- summary(fit, se = "rank", alpha = 0.05)$coefficients
   expect_equal(b$ci_lower, unname(o[, "lower bd"]), tolerance = 1e-10)
   expect_equal(b$ci_upper, unname(o[, "upper bd"]), tolerance = 1e-10)
-  expect_match(fr$info$vcov_label, "Rank inversion", fixed = TRUE)
+  expect_match(fr$info$vcov_label, "rank-test inversion", fixed = TRUE)
   # AME needs a vcov matrix: refused under rank with the reason.
   expect_error(
     as_regression_frame(fit, vcov = "rank", show_columns = c("b", "ame")),
@@ -462,7 +462,7 @@ test_that("rq footer names the estimator: nid by default, bootstrap on request",
     "note"
   )
   expect_match(note_boot, "bootstrap", fixed = TRUE)
-  expect_match(note_boot, "R = 50", fixed = TRUE)
+  expect_match(note_boot, "50 replicates", fixed = TRUE)
   note_iid <- attr(table_regression(fit, vcov = "iid"), "note")
   expect_match(note_iid, "iid", fixed = TRUE)
 })

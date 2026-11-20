@@ -3,7 +3,7 @@
 #
 # The label was a literal, so a replicate-weight fit -- whose standard
 # errors come from 15 or 104 refits and where no linearization happens
-# at all -- was footnoted "Design-based (Taylor linearization)", while
+# at all -- was footnoted "design-based (Taylor linearization)", while
 # the descriptive twin on the SAME design said "replicate weights".
 #
 # The index is the variance mechanism, not the design's R class and not
@@ -39,12 +39,12 @@
 
 test_that("a linearized design keeps the label it has always had", {
   d <- .lbl_designs()
-  expect_identical(.lbl_of(d$strat), "Design-based (Taylor linearization)")
-  expect_identical(.lbl_of(d$clus), "Design-based (Taylor linearization)")
+  expect_identical(.lbl_of(d$strat), "design-based (Taylor linearization)")
+  expect_identical(.lbl_of(d$clus), "design-based (Taylor linearization)")
   # And it is a registry key now, not a literal.
   expect_identical(
     spicy_str("note_vcov_design_taylor"),
-    "Design-based (Taylor linearization)"
+    "design-based (Taylor linearization)"
   )
 })
 
@@ -54,7 +54,7 @@ test_that("a replicate design is named by its scheme", {
     rep <- survey::as.svrepdesign(d$clus, type = scheme)
     expect_identical(
       .lbl_of(rep),
-      sprintf("Design-based (replicate weights, %s)", scheme),
+      sprintf("design-based (replicate weights, %s)", scheme),
       info = scheme
     )
   }
@@ -63,7 +63,7 @@ test_that("a replicate design is named by its scheme", {
     rep <- suppressWarnings(survey::as.svrepdesign(d$strat, type = scheme))
     expect_identical(
       .lbl_of(rep),
-      sprintf("Design-based (replicate weights, %s)", scheme),
+      sprintf("design-based (replicate weights, %s)", scheme),
       info = scheme
     )
   }
@@ -75,9 +75,9 @@ test_that("a replicate design is named by its scheme", {
     type = "Fay",
     fay.rho = 0.3
   ))
-  expect_identical(.lbl_of(fay), "Design-based (replicate weights, Fay)")
+  expect_identical(.lbl_of(fay), "design-based (replicate weights, Fay)")
   plain_fay <- suppressWarnings(survey::as.svrepdesign(d$strat, type = "Fay"))
-  expect_identical(.lbl_of(plain_fay), "Design-based (replicate weights, BRR)")
+  expect_identical(.lbl_of(plain_fay), "design-based (replicate weights, BRR)")
 })
 
 test_that("a replicate design with no usable scheme drops the parenthesis", {
@@ -97,14 +97,14 @@ test_that("a replicate design with no usable scheme drops the parenthesis", {
     rscales = jk$rscales,
     combined.weights = TRUE
   )
-  expect_identical(.lbl_of(other), "Design-based (replicate weights)")
+  expect_identical(.lbl_of(other), "design-based (replicate weights)")
   # Same answer when the slot is absent altogether.
   rep <- survey::as.svrepdesign(d$clus, type = "JK1")
   fit <- survey::svyglm(api00 ~ ell, design = rep)
   fit$survey.design$type <- NULL
   expect_identical(
     as_regression_frame(fit)$info$vcov_label,
-    "Design-based (replicate weights)"
+    "design-based (replicate weights)"
   )
 })
 
@@ -115,13 +115,13 @@ test_that("calibrated, post-stratified and pps designs stay linearized", {
     ~stype,
     pop = c(`(Intercept)` = 6194, stypeH = 755, stypeM = 1018)
   )
-  expect_identical(.lbl_of(cal), "Design-based (Taylor linearization)")
+  expect_identical(.lbl_of(cal), "design-based (Taylor linearization)")
   ps <- survey::postStratify(
     d$strat,
     ~stype,
     data.frame(stype = c("E", "H", "M"), Freq = c(4421, 755, 1018))
   )
-  expect_identical(.lbl_of(ps), "Design-based (Taylor linearization)")
+  expect_identical(.lbl_of(ps), "design-based (Taylor linearization)")
   # A without-replacement pps design leaves NO class marker -- it is a
   # plain survey.design2 -- and its variance IS a linearization. Keying
   # the label on `.is_supported_design()` would have demoted it.
@@ -134,7 +134,7 @@ test_that("calibrated, post-stratified and pps designs stay linearized", {
     data = strat,
     pps = "brewer"
   )
-  expect_identical(.lbl_of(pps), "Design-based (Taylor linearization)")
+  expect_identical(.lbl_of(pps), "design-based (Taylor linearization)")
   expect_false(spicy:::.is_supported_design(pps))
 })
 
@@ -145,7 +145,7 @@ test_that("a two-phase design gets its own key, never a class name", {
     subset = ~ I(comp.imp == "Yes"),
     data = d$apistrat
   )
-  expect_identical(.lbl_of(tp), "Design-based (two-phase design)")
+  expect_identical(.lbl_of(tp), "design-based (two-phase design)")
   # twophase2 also inherits survey.design, so the order of the tests is
   # load-bearing: read as a linearized design it would be mislabeled.
   expect_true(inherits(tp, "survey.design"))
@@ -155,10 +155,10 @@ test_that("a detached design degrades to the bare label", {
   d <- .lbl_designs()
   fit <- survey::svyglm(api00 ~ ell, design = d$strat)
   fit$survey.design <- NULL
-  expect_identical(as_regression_frame(fit)$info$vcov_label, "Design-based")
+  expect_identical(as_regression_frame(fit)$info$vcov_label, "design-based")
   # An object that is a design of no known kind: still no R class name.
   fit$survey.design <- structure(list(), class = "some_future_design")
-  expect_identical(as_regression_frame(fit)$info$vcov_label, "Design-based")
+  expect_identical(as_regression_frame(fit)$info$vcov_label, "design-based")
 })
 
 test_that("the rendered footer of a replicate fit names replicate weights", {
@@ -171,7 +171,7 @@ test_that("the rendered footer of a replicate fit names replicate weights", {
   )
   expect_match(
     out,
-    "Std. errors: Design-based (replicate weights, JK1).",
+    "Std. errors: design-based (replicate weights, JK1).",
     fixed = TRUE
   )
   expect_false(grepl("Taylor", out, fixed = TRUE))

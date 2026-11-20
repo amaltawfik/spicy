@@ -163,7 +163,7 @@ Three things to read off this table:
   observations, the number of clusters (`N (Pig)`), and the largest
   cluster. These are the clusters the sandwich variance is actually
   computed over -- see the section on unsorted data below.
-* **The footer** carries two disclosures. `Std. errors: Robust
+* **The footer** carries two disclosures. `Std. errors: robust
   sandwich (GEE), clusters by Pig` names the inference: the fit's own
   sandwich estimator, clustered on its `id =` variable. `GEE working
   correlation: exchangeable (alpha = ...)` names the working

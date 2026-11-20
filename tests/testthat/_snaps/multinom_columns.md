@@ -19,5 +19,5 @@
        R² (McFadden)   │    0.00                                                      
        AIC             │ 2540.1                                                       
       
-      Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: Wald asymptotic (z). AIC = Akaike information criterion.
+      Note. Multinomial logistic regression. Reference outcome: Employed. Std. errors: classical (Fisher information). AIC = Akaike information criterion.
 

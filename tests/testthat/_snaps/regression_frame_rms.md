@@ -18,7 +18,7 @@
        R² (McFadden) │  0.33
        AIC           │ 51.5
       
-      Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
+      Note. Cumulative logit regression (proportional odds). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.
 
 ---
 
@@ -40,5 +40,5 @@
        R² (McFadden) │  0.33
        AIC           │ 51.5
       
-      Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.
+      Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.
 

@@ -329,15 +329,15 @@ test_that("the standard-error sentence prints the frame's label once, in each la
       lm = "Std. errors: classical (OLS).",
       glm = "Std. errors: classical (Fisher information).",
       negbin = "Std. errors: classical (Fisher information).",
-      lmer = "Std. errors: Wald (model-based).",
-      coxph = "Std. errors: Wald asymptotic (z)."
+      lmer = "Std. errors: classical (model-based).",
+      coxph = "Std. errors: classical (Fisher information)."
     ),
     fr = c(
       lm = "Erreurs standards\u00A0: classiques (MCO).",
       glm = "Erreurs standards\u00A0: classiques (information de Fisher).",
       negbin = "Erreurs standards\u00A0: classiques (information de Fisher).",
-      lmer = "Erreurs standards\u00A0: Wald (fond\u00E9es sur le mod\u00E8le).",
-      coxph = "Erreurs standards\u00A0: Wald asymptotique (z)."
+      lmer = "Erreurs standards\u00A0: classiques (fond\u00E9es sur le mod\u00E8le).",
+      coxph = "Erreurs standards\u00A0: classiques (information de Fisher)."
     )
   )
   for (lang in names(expected)) {

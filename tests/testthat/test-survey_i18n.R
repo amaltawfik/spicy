@@ -211,7 +211,7 @@ test_that("the design variance label of a regression footer comes from the regis
     out <- .svy_i18n_with_fake(.svy_i18n_render(table_regression(fits[[nm]])))
     expect_match(out, "z\u00e9z\u00fc", fixed = TRUE, info = nm)
     for (leak in c(
-      "Design-based",
+      "design-based",
       "Taylor linearization",
       "replicate weights",
       "two-phase design",

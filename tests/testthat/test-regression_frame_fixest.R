@@ -172,17 +172,17 @@ test_that("feols: fit_stats$r_squared + adj_r_squared finite; within_r2 in pseud
 
 # ---- 7. feols: cluster vcov label ---------------------------------------
 
-test_that("feols default: vcov_label normalizes 'IID' to 'Classical'", {
+test_that("feols default: vcov_label names 'IID' as lm does", {
   fit <- .fit_feols_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$vcov_label, "Classical")
+  expect_identical(fr$info$vcov_label, "classical (OLS)")
   expect_identical(fr$info$extras$vcov_type, "IID")
 })
 
-test_that("feols clustered: vcov_label includes 'Clustered'", {
+test_that("feols clustered: vcov_label is cluster-robust, by its clusters", {
   fit <- .fit_feols_cluster()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_match(fr$info$vcov_label, "Clustered", fixed = TRUE)
+  expect_match(fr$info$vcov_label, "cluster-robust, clusters by ", fixed = TRUE)
 })
 
 
@@ -1032,7 +1032,7 @@ test_that("fenegbin: theta and alpha rows, theta as MASS::glm.nb's, sigma blank"
   expect_true(is.na(theta[["Poisson: B"]]))
 })
 
-test_that("the standard-error note writes each fixest label in lower case after the model's name", {
+test_that("the standard-error note writes each fixest label as lm writes the same estimator", {
   skip_on_cran()
   skip_if_not_installed("fixest")
   d <- na.omit(airquality)
@@ -1048,8 +1048,8 @@ test_that("the standard-error note writes each fixest label in lower case after 
       vcov = "NW"
     )
   )
-  # fixest's own label of each fit, which a table of that model alone
-  # writes after "Std. errors:" ("IID" under its common name).
+  # fixest's own label of each fit, which the note writes under the
+  # name the other engines give the same estimator.
   expect_identical(
     unname(vapply(
       fits,
@@ -1065,10 +1065,10 @@ test_that("the standard-error note writes each fixest label in lower case after 
   )
   expect_match(
     attr(table_regression(fits$Hetero), "note"),
-    "Std. errors: Heteroskedasticity-robust.",
+    "Std. errors: heteroskedasticity-robust.",
     fixed = TRUE
   )
-  # After a model's name, the label opens in lower case, a surname aside.
+  # After a model's name, the label keeps its case, a surname included.
   note <- attr(
     table_regression(c(fits, list(OLS = stats::lm(Ozone ~ Wind, data = d)))),
     "note"
@@ -1076,8 +1076,8 @@ test_that("the standard-error note writes each fixest label in lower case after 
   expect_match(
     note,
     paste0(
-      "Std. errors: IID: classical, Hetero: heteroskedasticity-robust, ",
-      "Cluster: clustered (Month), NW: Newey-West (L=2), ",
+      "Std. errors: IID: classical (OLS); Hetero: heteroskedasticity-robust; ",
+      "Cluster: cluster-robust, clusters by Month; NW: Newey-West (L=2); ",
       "OLS: classical (OLS)."
     ),
     fixed = TRUE
@@ -1529,11 +1529,11 @@ test_that("a cluster on combined fixed effects is named as the user wrote it", {
     utils::capture.output(print(table_regression(fit))),
     collapse = " "
   )
-  expect_match(out, "Clustered (id^period)", fixed = TRUE)
+  expect_match(out, "cluster-robust, clusters by id^period", fixed = TRUE)
   expect_no_match(out, "combine_fixef", fixed = TRUE)
   expect_identical(
     .fixest_vcov_label("Clustered (combine_fixef_keep_names(id, period) & z)"),
-    "Clustered (id^period & z)"
+    "cluster-robust, clusters by id^period & z"
   )
 })
 

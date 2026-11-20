@@ -1270,6 +1270,7 @@ test_that("cluster_name – `df$col` extracted to 'col' for the footer", {
     attr(out, "note"),
     paste(
       "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region.",
+      "P-values: Satterthwaite t-test, cluster-robust df.",
       "CI = confidence interval."
     )
   )
@@ -1292,6 +1293,7 @@ test_that("cluster_name – bare symbol extracted as variable name", {
     attr(out, "note"),
     paste(
       "Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region_vec.",
+      "P-values: Satterthwaite t-test, cluster-robust df.",
       "CI = confidence interval."
     )
   )
@@ -1322,7 +1324,8 @@ test_that("cluster_name – list(...) with named elements per model", {
     paste0(
       "Note. Linear regression models. Std. errors: ",
       "Model 1: cluster-robust (CR2), clusters by region; ",
-      "Model 2: cluster-robust (CR2), clusters by clinic."
+      "Model 2: cluster-robust (CR2), clusters by clinic. ",
+      "P-values: Satterthwaite t-test, cluster-robust df."
     )
   )
 })

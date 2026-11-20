@@ -819,7 +819,7 @@ test_that("the design footer says what the design is, in three sentences", {
     .design_note_lines(.design_meta(.svy_fixture("strat"))),
     c(
       "Design: stratified (stype), with finite population correction; 197 degrees of freedom.",
-      "Std. errors: Design-based (Taylor linearization).",
+      "Std. errors: design-based (Taylor linearization).",
       "Confidence intervals and tests use the design degrees of freedom."
     )
   )
@@ -846,7 +846,7 @@ test_that("the design footer says what the design is, in three sentences", {
   # does.
   expect_identical(
     rep_lines[[2L]],
-    "Std. errors: Design-based (replicate weights, JK1)."
+    "Std. errors: design-based (replicate weights, JK1)."
   )
 })
 
@@ -854,7 +854,7 @@ test_that("both families print the SAME variance sentence for one design", {
   # A reader who puts a design table and a regression on the same page
   # sees one fact, said once. The two used to spell it two ways
   # ("Standard errors: Taylor linearization (survey)." against "Std.
-  # errors: Design-based (Taylor linearization).") and the difference
+  # errors: design-based (Taylor linearization).") and the difference
   # carried no information.
   skip_if_not_installed("survey")
   for (nm in c("clus1", "rep1")) {

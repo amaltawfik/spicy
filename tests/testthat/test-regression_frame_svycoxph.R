@@ -127,7 +127,7 @@ test_that("the replicate engine carries its own variance", {
     c(0.098378655047261149, 0.093730036737043512, 0.219664419691177781),
     tolerance = 1e-12
   )
-  expect_identical(fr$info$vcov_label, "Design-based (replicate weights, JKn)")
+  expect_identical(fr$info$vcov_label, "design-based (replicate weights, JKn)")
 })
 
 

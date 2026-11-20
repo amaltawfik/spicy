@@ -3434,7 +3434,7 @@ test_that("a continuation that leaves out a group keeps the rule of its total", 
   expect_identical(sum(rule), 2L)
 })
 
-test_that("each panel's standard-error label opens in lower case after its name", {
+test_that("each panel's standard-error label reads as it does alone, after its name", {
   skip_on_cran()
   skip_if_not_installed("fixest")
   skip_if_not_installed("estimatr")
@@ -3445,15 +3445,18 @@ test_that("each panel's standard-error label opens in lower case after its name"
   # Each model alone writes its label at the head of the sentence.
   expect_match(
     attr(table_regression(fe), "note"),
-    "Std. errors: Classical.",
+    "Std. errors: classical (OLS).",
     fixed = TRUE
   )
   expect_match(
     attr(table_regression(rb), "note"),
-    "Std. errors: Robust (HC1).",
+    "Std. errors: heteroskedasticity-robust (HC1).",
     fixed = TRUE
   )
-  want <- "Std. errors: A: classical, B: robust (HC1), C: classical (OLS)."
+  want <- paste0(
+    "Std. errors: A: classical (OLS), B: heteroskedasticity-robust (HC1), ",
+    "C: classical (OLS)."
+  )
   models <- list(A = fe, B = rb, C = ols)
   expect_match(attr(table_regression(models), "note"), want, fixed = TRUE)
   expect_match(
@@ -3473,18 +3476,18 @@ test_that("each panel's standard-error label opens in lower case after its name"
     want,
     fixed = TRUE
   )
-  # French: a surname keeps its capital ("Wald"), a common noun does not.
+  # French: the same labels, under the French names of the estimators.
   nb <- intToUtf8(0xa0)
   withr::with_options(list(spicy.language = "fr"), {
     cox <- .st_cox()
     expect_match(
       attr(table_regression(cox), "note"),
-      paste0("Erreurs standards", nb, ": Wald asymptotique (z)."),
+      paste0("Erreurs standards", nb, ": classiques (information de Fisher)."),
       fixed = TRUE
     )
     expect_match(
       attr(table_regression(fe), "note"),
-      paste0("Erreurs standards", nb, ": classiques."),
+      paste0("Erreurs standards", nb, ": classiques (MCO)."),
       fixed = TRUE
     )
     expect_match(
@@ -3497,9 +3500,9 @@ test_that("each panel's standard-error label opens in lower case after its name"
         nb,
         ": A",
         nb,
-        ": classiques, B",
+        ": classiques (MCO), B",
         nb,
-        ": Wald asymptotique (z)."
+        ": classiques (information de Fisher)."
       ),
       fixed = TRUE
     )

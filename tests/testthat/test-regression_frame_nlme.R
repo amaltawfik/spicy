@@ -335,7 +335,7 @@ test_that("gls with corCompSymm: vcov_label names the structure", {
 test_that("gls without correlation structure: vcov_label is plain Wald", {
   fit <- .fit_gls_plain()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$vcov_label, "Wald (model-based)")
+  expect_identical(fr$info$vcov_label, "classical (model-based)")
   expect_null(fr$info$extras$correlation_structure)
 })
 

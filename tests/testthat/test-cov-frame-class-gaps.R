@@ -378,9 +378,9 @@ test_that("glmmTMB frame relabels the vcov when a robust estimator is requested"
     class = "spicy_unsupported_vcov"
   )
 
-  # The default model-based path keeps glmmTMB's own Wald label.
+  # The default model-based path names the information matrix, as glm does.
   fr0 <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr0$info$vcov_label, "Wald asymptotic (z)")
+  expect_identical(fr0$info$vcov_label, "classical (Fisher information)")
 })
 
 

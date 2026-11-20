@@ -44,7 +44,7 @@ test_that("a fit passed through robcov() or bootcov() names that variance in the
     show_columns = "se"
   )))
   note <- paste(out, collapse = " ")
-  expect_match(note, "m: Wald asymptotic (z)", fixed = TRUE)
+  expect_match(note, "m: classical (Fisher information)", fixed = TRUE)
   expect_match(note, "r: robust (Huber)", fixed = TRUE)
   expect_match(note, "rc: cluster-robust (Huber), clusters by g", fixed = TRUE)
   expect_match(note, "b: nonparametric bootstrap (20 replicates)", fixed = TRUE)
@@ -58,7 +58,7 @@ test_that("a fit passed through robcov() or bootcov() names that variance in the
   out <- capture.output(print(table_regression(rms::robcov(o))))
   expect_match(
     paste(out, collapse = " "),
-    "Std. errors: Robust (sandwich).",
+    "Std. errors: robust (sandwich).",
     fixed = TRUE
   )
   ph <- rms::cph(

@@ -28,5 +28,5 @@
        AIC                   │ 177.1
        BIC                   │ 193.1
       
-      Note. Cumulative logit mixed-effects regression (proportional odds). Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+      Note. Cumulative logit mixed-effects regression (proportional odds). Std. errors: classical (Fisher information). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs cumulative logit regression, χ̄²(1) = 9.85, p < .001. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 

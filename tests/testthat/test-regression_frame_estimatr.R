@@ -142,10 +142,10 @@ test_that("lm_robust: supports$nested_lrt = FALSE (no logLik)", {
 
 # ---- 4. lm_robust: se_type variants surfaced -----------------------------
 
-test_that("lm_robust default: vcov_label = 'Robust (HC2)'", {
+test_that("lm_robust default: vcov_label = 'heteroskedasticity-robust (HC2)'", {
   fit <- .fit_lm_robust_basic()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$vcov_label, "Robust (HC2)")
+  expect_identical(fr$info$vcov_label, "heteroskedasticity-robust (HC2)")
   expect_identical(fr$info$extras$se_type, "HC2")
   expect_false(fr$info$extras$clustered)
 })
@@ -153,13 +153,19 @@ test_that("lm_robust default: vcov_label = 'Robust (HC2)'", {
 test_that("lm_robust se_type='HC3': vcov_label updates", {
   fit <- .fit_lm_robust_hc3()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$vcov_label, "Robust (HC3)")
+  expect_identical(fr$info$vcov_label, "heteroskedasticity-robust (HC3)")
 })
 
-test_that("lm_robust clustered: vcov_label = 'Cluster-robust (CR2)'", {
+test_that("lm_robust clustered: the label names the cluster variable", {
   fit <- .fit_lm_robust_cluster()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$vcov_label, "Cluster-robust (CR2)")
+  expect_identical(fr$info$vcov_label, "cluster-robust (CR2), clusters by cyl")
+  # A cluster passed as an expression has no name to give.
+  fit2 <- estimatr::lm_robust(mpg ~ wt, data = mtcars, clusters = mtcars$cyl)
+  expect_identical(
+    as_regression_frame(fit2, model_id = "M1")$info$vcov_label,
+    "cluster-robust (CR2)"
+  )
   expect_true(fr$info$extras$clustered)
 })
 
@@ -588,11 +594,11 @@ test_that("se_type = 'none': the note says so, and the cells are en dashes", {
     fr$info$extras$title_prefix,
     "Linear regression (no SE computed)"
   )
-  expect_identical(fr$info$vcov_label, "None (se_type = \"none\")")
+  expect_identical(fr$info$vcov_label, "none (se_type = \"none\")")
   out <- expect_no_error(capture.output(print(table_regression(fit))))
   txt <- paste(out, collapse = "\n")
   expect_match(txt, "Linear regression (no SE computed)", fixed = TRUE)
-  expect_match(txt, "Std. errors: None (se_type = \"none\").", fixed = TRUE)
+  expect_match(txt, "Std. errors: none (se_type = \"none\").", fixed = TRUE)
   se_col <- trimws(as.character(table_regression(fit)[["SE"]]))
   expect_true(all(se_col[nzchar(se_col)] == "–"))
 })
@@ -630,13 +636,13 @@ test_that("se_type = 'stata' with clusters is labeled cluster-robust (CR1)", {
   expect_equal(unname(fit$std.error), unname(cr1), tolerance = 1e-8)
   expect_match(
     attr(table_regression(fit), "note"),
-    "Std. errors: Cluster-robust (Stata CR1)",
+    "Std. errors: cluster-robust (Stata CR1), clusters by cyl",
     fixed = TRUE
   )
   withr::local_options(spicy.language = "fr")
   expect_match(
     attr(table_regression(fit), "note"),
-    "Erreurs standards\u00a0: robustes aux grappes (Stata CR1)",
+    "Erreurs standards\u00a0: robustes aux grappes (Stata CR1), grappes",
     fixed = TRUE
   )
   # Without clusters, "stata" is HC1, which estimatr records as such.
@@ -645,7 +651,7 @@ test_that("se_type = 'stata' with clusters is labeled cluster-robust (CR1)", {
   withr::local_options(spicy.language = "en")
   expect_match(
     attr(table_regression(hc1), "note"),
-    "Std. errors: Robust (HC1)",
+    "Std. errors: heteroskedasticity-robust (HC1)",
     fixed = TRUE
   )
 })
@@ -659,7 +665,7 @@ test_that("iv_robust with se_type = 'none' names IV and the missing SE", {
   )
 })
 
-test_that("the standard-error note writes each estimatr label in lower case after the model's name", {
+test_that("the standard-error note writes each estimatr label as lm writes it", {
   skip_on_cran()
   skip_if_not_installed("estimatr")
   hc1 <- estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "HC1")
@@ -668,12 +674,12 @@ test_that("the standard-error note writes each estimatr label in lower case afte
   # The label each model writes alone, at the head of the sentence.
   expect_match(
     attr(table_regression(hc1), "note"),
-    "Std. errors: Robust (HC1).",
+    "Std. errors: heteroskedasticity-robust (HC1).",
     fixed = TRUE
   )
   expect_match(
     attr(table_regression(cl), "note"),
-    "Std. errors: Classical.",
+    "Std. errors: classical (OLS).",
     fixed = TRUE
   )
   note <- attr(
@@ -683,8 +689,9 @@ test_that("the standard-error note writes each estimatr label in lower case afte
   expect_match(
     note,
     paste0(
-      "Std. errors: Model 1: robust (HC1), Model 2: classical, ",
-      "Model 3: cluster-robust (CR2), Model 4: classical (OLS)."
+      "Std. errors: Model 1: heteroskedasticity-robust (HC1); ",
+      "Model 2: classical (OLS); Model 3: cluster-robust (CR2), ",
+      "clusters by cyl; Model 4: classical (OLS)."
     ),
     fixed = TRUE
   )

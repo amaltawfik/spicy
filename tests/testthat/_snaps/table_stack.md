@@ -41,7 +41,7 @@
        N events        │  165                                 
        AIC             │ 1489.7                               
       
-      Note. BMI: linear regression; Dentist: logistic regression; Survival: Cox proportional hazards regression. Survival: Concordance C = 0.60 (SE = 0.03). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information), Survival: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
+      Note. BMI: linear regression; Dentist: logistic regression; Survival: Cox proportional hazards regression. Survival: Concordance C = 0.60 (SE = 0.03). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information), Survival: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 
 # a stack with a header per panel prints as pinned
 
@@ -90,7 +90,7 @@
        N events        │  165                                 
        AIC             │ 1489.7                               
       
-      Note. BMI: linear regression; Dentist: logistic regression; Survival: Cox proportional hazards regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Survival: Concordance C = 0.60 (SE = 0.03). Survival: coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information), Survival: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion; HR = hazard ratio.
+      Note. BMI: linear regression; Dentist: logistic regression; Survival: Cox proportional hazards regression. Dentist: coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Dentist: the (Intercept) row estimates the baseline odds. Survival: Concordance C = 0.60 (SE = 0.03). Survival: coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: BMI: classical (OLS), Dentist: classical (Fisher information), Survival: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion; HR = hazard ratio.
 
 # a stacked hierarchy prints as pinned
 
@@ -188,5 +188,5 @@
          Female (ref.) │  –       –     –     –    
          Male          │  .197   0.14  0.20   .465 
       
-      Note. Health: linear regression; Employment: multinomial logistic regression. Employment: Reference outcome: Employed. Std. errors: Health: classical (OLS), Employment: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
+      Note. Health: linear regression; Employment: multinomial logistic regression. Employment: Reference outcome: Employed. Std. errors: Health: classical (OLS), Employment: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 

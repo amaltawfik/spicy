@@ -1265,8 +1265,8 @@ test_that("the model-based Wald line of lmer, lme and gls follows the language",
   expect_identical(
     se_lines(),
     c(
-      rep("Std. errors: Wald (model-based).", 3L),
-      "Std. errors: Wald (model-based, corAR1)."
+      rep("Std. errors: classical (model-based).", 3L),
+      "Std. errors: classical (model-based, corAR1)."
     )
   )
   withr::local_options(spicy.language = "fr")
@@ -1274,10 +1274,10 @@ test_that("the model-based Wald line of lmer, lme and gls follows the language",
     se_lines(),
     c(
       rep(
-        "Erreurs standards\u00A0: Wald (fond\u00E9es sur le mod\u00E8le).",
+        "Erreurs standards\u00A0: classiques (fond\u00E9es sur le mod\u00E8le).",
         3L
       ),
-      "Erreurs standards\u00A0: Wald (fond\u00E9es sur le mod\u00E8le, corAR1)."
+      "Erreurs standards\u00A0: classiques (fond\u00E9es sur le mod\u00E8le, corAR1)."
     )
   )
 })
@@ -2103,11 +2103,18 @@ test_that("the GEE and quantile-regression notes follow the language", {
   )
   expect_identical(
     spicy:::.rq_vcov_footer_label("boot", 50L, FALSE),
-    "bootstrap quantile (paires xy, R = 50)"
+    "bootstrap (paires xy, 50 r\u00E9plications)"
   )
   expect_identical(
     spicy:::.rq_vcov_footer_label("boot", 50L, TRUE),
-    "bootstrap quantile sauvage par gradient, par grappes (R = 50)"
+    "bootstrap sauvage par gradient, par grappes (50 r\u00E9plications)"
+  )
+  expect_identical(
+    spicy:::.rq_vcov_footer_label("boot", 50L, TRUE, "school"),
+    paste0(
+      "bootstrap sauvage par gradient, par grappes (50 r\u00E9plications), ",
+      "grappes d\u00E9finies par school"
+    )
   )
 })
 
@@ -2126,7 +2133,13 @@ test_that("the classical standard-error line of nls follows the language", {
   )
   expect_identical(
     .se_line_en_fr(fit),
-    c("Std. errors: Classical.", "Erreurs standards\u00A0: classiques.")
+    c(
+      "Std. errors: classical (nonlinear least squares).",
+      paste0(
+        "Erreurs standards\u00A0: classiques ",
+        "(moindres carr\u00E9s non lin\u00E9aires)."
+      )
+    )
   )
 })
 
@@ -2135,7 +2148,10 @@ test_that("the classical standard-error line of ivreg follows the language", {
   fit <- AER::ivreg(mpg ~ wt + cyl | hp + drat + cyl, data = mtcars)
   expect_identical(
     .se_line_en_fr(fit),
-    c("Std. errors: Classical.", "Erreurs standards\u00A0: classiques.")
+    c(
+      "Std. errors: classical (2SLS).",
+      "Erreurs standards\u00A0: classiques (doubles moindres carr\u00E9s)."
+    )
   )
 })
 
@@ -2163,7 +2179,7 @@ test_that("the classical line of rms, fixest and estimatr follows the language",
   for (fit in fits) {
     expect_identical(
       .se_line_en_fr(fit),
-      c("Std. errors: Classical.", "Erreurs standards\u00A0: classiques.")
+      c("Std. errors: classical (OLS).", "Erreurs standards\u00A0: classiques (MCO).")
     )
   }
 })
@@ -2174,7 +2190,7 @@ test_that("the robust standard-error lines of estimatr follow the language", {
   expect_identical(
     .se_line_en_fr(hc),
     c(
-      "Std. errors: Robust (HC2).",
+      "Std. errors: heteroskedasticity-robust (HC2).",
       paste0(
         "Erreurs standards\u00A0: robustes \u00E0 ",
         "l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9 (HC2)."
@@ -2185,15 +2201,18 @@ test_that("the robust standard-error lines of estimatr follow the language", {
   expect_identical(
     .se_line_en_fr(cr),
     c(
-      "Std. errors: Cluster-robust (CR2).",
-      "Erreurs standards\u00A0: robustes aux grappes (CR2)."
+      "Std. errors: cluster-robust (CR2), clusters by cyl.",
+      paste0(
+        "Erreurs standards\u00A0: robustes aux grappes (CR2), ",
+        "grappes d\u00E9finies par cyl."
+      )
     )
   )
   none <- estimatr::lm_robust(mpg ~ wt, data = mtcars, se_type = "none")
   expect_identical(
     .se_line_en_fr(none),
     c(
-      "Std. errors: None (se_type = \"none\").",
+      "Std. errors: none (se_type = \"none\").",
       "Erreurs standards\u00A0: aucune (se_type = \"none\")."
     )
   )
@@ -2218,18 +2237,26 @@ test_that("the standard-error lines of fixest follow the language", {
     custom = summary(fe(), vcov = stats::vcov(hetero) * 2)
   )
   fr <- c(
-    iid = "classiques",
+    iid = "classiques (MCO)",
     hetero = "robustes \u00E0 l'h\u00E9t\u00E9rosc\u00E9dasticit\u00E9",
-    cluster = "robustes aux grappes (id)",
-    twoway = "robustes aux grappes (id & period)",
+    cluster = "robustes aux grappes, grappes d\u00E9finies par id",
+    twoway = "robustes aux grappes, grappes d\u00E9finies par id & period",
     nw = "Newey-West (L = 2)",
     dk = "Driscoll-Kraay (L = 2)",
     custom = "personnalis\u00E9es"
   )
   for (k in names(fits)) {
-    # The English line is fixest's own label, IID named as elsewhere.
-    vt <- attr(summary(fits[[k]])$coeftable, "vcov_type")
-    en <- if (identical(vt, "IID")) "Classical" else vt
+    # The English line names fixest's estimators as the other engines do;
+    # Newey-West and Driscoll-Kraay keep fixest's own label.
+    en <- c(
+      iid = "classical (OLS)",
+      hetero = "heteroskedasticity-robust",
+      cluster = "cluster-robust, clusters by id",
+      twoway = "cluster-robust, clusters by id & period",
+      nw = "Newey-West (L=2)",
+      dk = "Driscoll-Kraay (L=2)",
+      custom = "custom"
+    )[[k]]
     expect_identical(
       .se_line_en_fr(fits[[k]]),
       c(
@@ -2243,10 +2270,14 @@ test_that("the standard-error lines of fixest follow the language", {
   expect_identical(
     .se_line_en_fr(two),
     c(
-      "Std. errors: Model 1: clustered (id), Model 2: Newey-West (L=2).",
+      paste0(
+        "Std. errors: Model 1: cluster-robust, clusters by id; ",
+        "Model 2: Newey-West (L=2)."
+      ),
       paste0(
         "Erreurs standards\u00A0: Mod\u00E8le 1\u00A0: robustes aux ",
-        "grappes (id), Mod\u00E8le 2\u00A0: Newey-West (L = 2)."
+        "grappes, grappes d\u00E9finies par id\u00A0; ",
+        "Mod\u00E8le 2\u00A0: Newey-West (L = 2)."
       )
     )
   )

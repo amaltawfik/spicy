@@ -254,7 +254,7 @@ test_that("geeglm: scale is blank when the fit fixed it (scale.fix)", {
 test_that("geeglm: vcov label names the fit's own estimator + id", {
   fit <- .fit_gee_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
-  expect_identical(fr$info$vcov_label, "Robust sandwich (GEE), clusters by Pig")
+  expect_identical(fr$info$vcov_label, "robust sandwich (GEE), clusters by Pig")
 })
 
 test_that("geeglm: jackknife std.err is read and labeled, SEs match", {
@@ -262,7 +262,7 @@ test_that("geeglm: jackknife std.err is read and labeled, SEs match", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(
     fr$info$vcov_label,
-    "Approximate jackknife (GEE), clusters by Pig"
+    "approximate jackknife (GEE), clusters by Pig"
   )
   sm <- summary(fit)$coefficients
   b <- fr$coefs[fr$coefs$estimate_type == "B" & !(fr$coefs$is_ref %in% TRUE), ]
@@ -289,9 +289,9 @@ test_that("geeglm: j1s and fij std.err variants are read and labeled", {
     )))
     fr <- as_regression_frame(fit, model_id = "M1")
     lab <- if (se == "j1s") {
-      "One-step jackknife (GEE), clusters by id"
+      "one-step jackknife (GEE), clusters by id"
     } else {
-      "Fully iterated jackknife (GEE), clusters by id"
+      "fully iterated jackknife (GEE), clusters by id"
     }
     expect_identical(fr$info$vcov_label, lab)
     sm <- summary(fit)$coefficients
@@ -345,7 +345,7 @@ test_that("geeglm: footer discloses working correlation with alpha", {
   )
   expect_match(
     attr(out, "note"),
-    "Std. errors: Robust sandwich (GEE), clusters by Pig.",
+    "Std. errors: robust sandwich (GEE), clusters by Pig.",
     fixed = TRUE
   )
 })

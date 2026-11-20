@@ -91,7 +91,7 @@ test_that("svyglm: vcov_kind = 'survey-Taylor' + design-based label", {
   fit <- .fit_svyglm_gaussian()
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$info$vcov_kind, "survey-Taylor")
-  expect_match(fr$info$vcov_label, "Design-based", fixed = TRUE)
+  expect_match(fr$info$vcov_label, "design-based", fixed = TRUE)
   expect_match(fr$info$vcov_label, "Taylor", fixed = TRUE)
 })
 
