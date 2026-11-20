@@ -486,7 +486,7 @@
         show_columns = "rmst_se": survreg_strata
       ----
       error: spicy_invalid_input, spicy_error
-        RMST / risk-difference columns are not available for a tobit fit (M1).
+        RMST / risk-difference columns are not available for a tobit fit.
         i A tobit models a censored response, not a time to event.
         i They are computed by g-computation from a `survival::coxph` fit on right-censored single-record data, or a `survival::survreg` fit.
       Received by 8:

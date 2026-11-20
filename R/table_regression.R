@@ -1986,6 +1986,7 @@ table_regression <- function(
       }
     )
   }
+  .reg_refuse_estimand_class(models, show_columns, panel_req)
   # Survival estimand horizons: the horizon defines the estimand, so
   # it is explicit and mandatory -- and refused when unused.
   validate_estimand_horizons(show_columns, tau, at_time, models = models)
@@ -2955,22 +2956,7 @@ table_regression <- function(
         # warning); only a class with no estimand machinery aborts.
         is.null(frames[[i]]$info$extras$survival_estimands)
     ) {
-      model_tag <- .reg_model_tag(models, i, panel_req)
-      spicy_abort(
-        c(
-          sprintf(
-            "RMST / risk-difference columns are not available for %s.",
-            model_tag
-          ),
-          "i" = paste0(
-            "They are computed by g-computation from a ",
-            "`survival::coxph` fit on right-censored ",
-            "single-record data, or a `survival::survreg` ",
-            "fit."
-          )
-        ),
-        class = "spicy_invalid_input"
-      )
+      .reg_abort_estimand_class(models, i, panel_req)
     }
     # Truthfulness gate: `show_columns = "n_events"` requires per-row
     # outcome event counts, which only binomial fits with an ungrouped
@@ -4291,6 +4277,81 @@ table_regression <- function(
     sprintf("this model class (`%s`)", cls)
   }
 }
+
+# The RMST / risk-difference columns are computed for a `coxph` and a
+# `survreg` fit (R/regression_survival_estimands.R). Every other class
+# refuses them whatever the horizon, so the refusal comes before the
+# request for `tau` or `at_time`: asking for a horizon the table then
+# refuses sent the user round twice. A design-based Cox fit has its own
+# refusal (.svycoxph_refuse_estimands()); a univariable screen answers
+# for its fits later. The condition of a fit (a frailty term, strata of a
+# survreg) is read with the fit, once the horizon is known.
+.reg_refuse_estimand_class <- function(models, show_columns, panel = NULL) {
+  if (
+    !any(
+      c(
+        "rmst",
+        "rmst_se",
+        "rmst_ci",
+        "rmst_p",
+        "risk_diff",
+        "risk_diff_se",
+        "risk_diff_ci",
+        "risk_diff_p"
+      ) %in%
+        show_columns
+    )
+  ) {
+    return(invisible(NULL))
+  }
+  for (i in seq_along(models)) {
+    m <- models[[i]]
+    if (inherits(m, c("spicy_uv_screen", "svycoxph"))) {
+      next
+    }
+    if (inherits(m, "tobit")) {
+      several <- .reg_model_count(length(models), panel) > 1L
+      spicy_abort(
+        c(
+          sprintf(
+            "RMST / risk-difference columns are not available for a tobit fit%s.",
+            if (several) {
+              sprintf(" (%s)", .model_display_names(models, panel)[i])
+            } else {
+              ""
+            }
+          ),
+          "i" = "A tobit models a censored response, not a time to event.",
+          "i" = .ESTIMAND_ENGINES_HINT
+        ),
+        class = "spicy_invalid_input"
+      )
+    }
+    if (!inherits(m, c("coxph", "survreg")) || inherits(m, "rms")) {
+      .reg_abort_estimand_class(models, i, panel)
+    }
+  }
+  invisible(NULL)
+}
+
+.reg_abort_estimand_class <- function(models, i, panel = NULL) {
+  spicy_abort(
+    c(
+      sprintf(
+        "RMST / risk-difference columns are not available for %s.",
+        .reg_model_tag(models, i, panel)
+      ),
+      "i" = .ESTIMAND_ENGINES_HINT
+    ),
+    class = "spicy_invalid_input"
+  )
+}
+
+# The classes that have the RMST / risk-difference columns.
+.ESTIMAND_ENGINES_HINT <- paste0(
+  "They are computed by g-computation from a `survival::coxph` fit on ",
+  "right-censored single-record data, or a `survival::survreg` fit."
+)
 
 # `model_labels` beside a fully named list: the labels win (Q1), and the
 # caller is told.

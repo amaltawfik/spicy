@@ -360,6 +360,40 @@ test_that("the same refusal on a single model names the class only", {
   )
 })
 
+test_that("a class without the estimand columns is refused before the horizon is asked", {
+  d <- .gap_lung()
+  m <- stats::lm(time ~ age, data = d)
+  for (cols in list(c("b", "rmst"), c("b", "risk_diff"))) {
+    expect_error(
+      table_regression(m, show_columns = cols),
+      "not available for this model class (`lm`).",
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
+  skip_if_not_installed("AER")
+  tb <- AER::tobit(time ~ age, data = d)
+  err <- expect_error(
+    table_regression(tb, show_columns = c("b", "rmst")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "RMST / risk-difference columns are not available for a tobit fit.",
+    fixed = TRUE
+  )
+  err <- expect_error(
+    table_regression(list(m, tb), show_columns = c("b", "rmst"), tau = 365),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "model 1 (class `lm`)", fixed = TRUE)
+  err <- expect_error(
+    table_regression(list(tb, m), show_columns = c("b", "rmst"), tau = 365),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "a tobit fit (Model 1).", fixed = TRUE)
+})
+
 test_that("a Cox model later in a mixed list is still named by position", {
   skip_if_not_installed("survival")
   d <- .gap_lung()

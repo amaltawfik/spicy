@@ -422,27 +422,9 @@
 # on the same Weibull fit: exact; and against the closed-form
 # exponential RMST: machine precision.
 .survreg_estimand_gates <- function(fit, model_id) {
-  # AER::tobit inherits from survreg, but its Surv() response is a
-  # censored outcome, not a time to event: a survival curve, an RMST or
-  # a cumulative incidence of it means nothing.
-  if (inherits(fit, "tobit")) {
-    spicy_abort(
-      c(
-        sprintf(
-          "RMST / risk-difference columns are not available for a tobit fit (%s).",
-          model_id
-        ),
-        "i" = "A tobit models a censored response, not a time to event.",
-        "i" = paste0(
-          "They are computed by g-computation from a ",
-          "`survival::coxph` fit on right-censored ",
-          "single-record data, or a `survival::survreg` ",
-          "fit."
-        )
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
+  # AER::tobit, which inherits from survreg, is refused before the frames
+  # are built (.reg_refuse_estimand_class()): its Surv() response is a
+  # censored outcome, not a time to event.
   if (
     length(fit$scale) > 1L ||
       !is.null(attr(fit$terms, "specials")$strata)
