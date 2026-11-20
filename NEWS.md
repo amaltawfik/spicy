@@ -946,11 +946,13 @@
 * gt tables: the label of the first column and the note start at the
   left edge of the labels of the body, in a PDF too, where the label sat
   6 pt to the right. A table knitted to LaTeX or to Typst loses the empty
-  line between its column labels and the rule under them.
+  line between its column labels and the rule under them. Knitted to
+  Typst, a table of several models draws the rule under the name of each
+  model, which was missing.
 
-* In HTML, a tinytable table wider than the page scrolls within its
-  frame. In a reveal.js slide it takes 16 px, as a gt table does, and no
-  longer the size of the text of the slide.
+* In HTML, a tinytable or flextable table wider than the page scrolls
+  within its frame. In a reveal.js slide a tinytable table takes 16 px,
+  as a gt table does, and no longer the size of the text of the slide.
 
 * In LaTeX, the note of a tinytable table takes the line spacing of its
   own size. It kept the spacing of the text around it, too loose for a
