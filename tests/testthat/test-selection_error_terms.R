@@ -285,7 +285,7 @@ test_that("selection models at different df share one P-values sentence", {
   expect_match(
     note,
     paste0(
-      "P-values and CIs: t distribution; residual degrees of freedom: ",
+      "P-values and CIs: t distribution; degrees of freedom: ",
       "741 (Without, city); 740 (City)."
     ),
     fixed = TRUE
@@ -295,8 +295,8 @@ test_that("selection models at different df share one P-values sentence", {
   expect_match(
     .sel_note(table_regression(list(A = ml0, B = .sel_ml(d)))),
     paste0(
-      "Valeurs p et IC : loi t ; degrés de liberté ",
-      "résiduels : 741 (A), 740 (B)."
+      "Valeurs p et IC : loi t ; degrés de liberté",
+      " : 741 (A), 740 (B)."
     ),
     fixed = TRUE
   )

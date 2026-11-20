@@ -1621,8 +1621,9 @@
   # fit, and the intervals use the same t. One hole: the df.
   note_pvalues_t_df = "P-values and CIs: t distribution with %s df.",
   # Several such models whose df differ: one sentence, the df of each
-  # model ("740 (Model 1)"), as the design sentence gives them.
-  note_pvalues_t_df_models = "P-values and CIs: t distribution; residual degrees of freedom: %s.",
+  # model ("740 (Model 1)"), as the design sentence gives them. Not
+  # "residual": under lm_robust(se_type = "CR0") the df are G - 1.
+  note_pvalues_t_df_models = "P-values and CIs: t distribution; degrees of freedom: %s.",
   note_pvalues_t_df_item = "%s (%s)",
   note_ci_profile = "%s%% CIs: profile likelihood.",
   note_ci_bootstrap_percentile = "%s%% CIs: bootstrap percentile.",

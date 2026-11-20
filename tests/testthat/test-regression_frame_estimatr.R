@@ -236,7 +236,7 @@ test_that("lm_robust and iv_robust under clustered CR0 name their t(G - 1)", {
   # On two t: the df of each model, merged as for selection models.
   expect_match(
     attr(table_regression(list(A = a, B = c10)), "note"),
-    "t distribution; residual degrees of freedom: 19 (A), 9 (B).",
+    "t distribution; degrees of freedom: 19 (A), 9 (B).",
     fixed = TRUE
   )
   # Beside an lm, the sentence names its model.
