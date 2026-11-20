@@ -26,7 +26,11 @@ test_that("the refusal is the same in a fresh session with and without performan
   skip_if_not_installed("AER")
   skip_if_not_installed("performance")
   src <- normalizePath(test_path("..", ".."), winslash = "/", mustWork = FALSE)
-  load_line <- if (file.exists(file.path(src, "DESCRIPTION"))) {
+  # A source tree has its R files. An installed package, where covr runs
+  # the tests, has a DESCRIPTION too and no R sources: it is attached.
+  is_source <- file.exists(file.path(src, "DESCRIPTION")) &&
+    length(list.files(file.path(src, "R"), pattern = "\\.R$")) > 0L
+  load_line <- if (is_source) {
     sprintf(
       "suppressMessages(pkgload::load_all(\"%s\", quiet = TRUE, helpers = FALSE))",
       src
@@ -34,10 +38,18 @@ test_that("the refusal is the same in a fresh session with and without performan
   } else {
     "suppressMessages(library(spicy))"
   }
+  # The fresh session reads the libraries of this one, whichever way
+  # they were set (R_LIBS, a check directory, the library covr installs
+  # into).
+  lib_line <- sprintf(
+    ".libPaths(%s)",
+    paste(deparse(.libPaths()), collapse = "")
+  )
   run <- function(first) {
     script <- withr::local_tempfile(fileext = ".R")
     writeLines(
       c(
+        lib_line,
         if (first) "loadNamespace(\"performance\")",
         load_line,
         "iv <- AER::ivreg(mpg ~ wt | qsec, data = mtcars)",

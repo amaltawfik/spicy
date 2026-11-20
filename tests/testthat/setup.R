@@ -26,3 +26,21 @@ options(width = 80L)
 # which snapshot or expect_silent() block met it. Spent here; the block
 # that tests it resets it.
 suppressMessages(inform_lmertest_hint())
+
+# fixest takes half of the OpenMP threads it finds when its namespace
+# loads, and warns on every call once another package has lowered that
+# ceiling. Whether a session is in that case depends on the machine and
+# on the order of the files: on the Linux coverage runner every fixest
+# call warned ("Asked for 2 threads while the maximum is 1"), and the
+# blocks that expect no warning failed there and nowhere else. One
+# thread, set when the namespace loads, gives the same tests everywhere.
+local({
+  one_thread <- function(...) {
+    try(fixest::setFixest_nthreads(1), silent = TRUE)
+  }
+  if (isNamespaceLoaded("fixest")) {
+    one_thread()
+  } else {
+    setHook(packageEvent("fixest", "onLoad"), one_thread)
+  }
+})
