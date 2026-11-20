@@ -2324,7 +2324,11 @@ absorbs_fixed_effects <- function(model) {
           ) %||%
             NA_real_
         ),
-      # Defensive: every remedy asks only for the tokens read above.
+      # Any other token the class lists with a condition answers FALSE,
+      # as if the fit did not meet it: r2, adj_r2 and within_r2 of a
+      # fixest fit have no case here, and no remedy asks them of a fixest
+      # fit today (the r2 remedy is for tables of lm fits only). A remedy
+      # that names one for such a fit needs its case first.
       FALSE # nocov
     )
   }
