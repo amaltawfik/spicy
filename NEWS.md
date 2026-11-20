@@ -404,6 +404,13 @@
   partial statistic, "(Type II)" by default, and `tidy()` and the long
   output gain a `partial_type` column.
 
+* `spicy_style()` gains `big_mark`, a thousands separator for the counts
+  of every table: n, N, weighted counts, events, groups, and the counts
+  of headers and notes. `big_mark = ","` prints "7,846", and
+  `big_mark = "\u202f"` the thin space of French typography. It is off
+  by default. Degrees of freedom, years and estimates are not grouped,
+  and in Excel a count stays a number, with a grouping format.
+
 * `spicy_style()` gains `sample_size`. `"note"` (default, unchanged)
   states the sample size at the head of the note. `"header"` puts the
   size of each group in its column header, "Female (n = 620)", for
@@ -611,6 +618,10 @@
   model whose factor has a level without observations. It failed. Under
   a `CR*` variance, an `lm()` whose data rows were renamed after the fit
   keeps the Satterthwaite degrees of freedom of its AME.
+
+* `freq()`, `cross_tab()` and the weighted counts of the descriptive
+  tables print a count of 10 million or more in full: "250000000" read
+  "2e+08".
 
 * `table_regression()` prints counts and fit statistics in full from 1e7
   on: a weighted n of 255345910 read "3e+08".
