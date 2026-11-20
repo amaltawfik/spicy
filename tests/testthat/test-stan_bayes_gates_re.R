@@ -711,7 +711,7 @@ test_that("loo tokens without the loo package are refused upfront (CI-runnable)"
       character(0),
       c("nobs", "elpd_loo")
     ),
-    "need the loo package",
+    "needs the loo package",
     class = "spicy_missing_pkg"
   )
   # r2_bayes does not need loo and still passes this gate.

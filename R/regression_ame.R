@@ -386,7 +386,7 @@ extract_ame_satterthwaite <- function(
       nrow(mf),
       " when fitted)."
     ),
-    class = "spicy_ame_data_changed"
+    class = "spicy_internal"
   ) # nocov end
 }
 
