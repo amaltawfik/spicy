@@ -147,7 +147,7 @@
 }
 
 .xl_numfmt <- function(s) {
-  f <- .excel_numfmt(s$decimals, s$apa, s$signed, s$suffix)
+  f <- .excel_numfmt(s$decimals, s$apa, s$signed, s$suffix, isTRUE(s$group))
   if (isTRUE(s$neg)) paste0(f, ";-", f) else f
 }
 
@@ -204,6 +204,12 @@
     core <- substr(core, 1L, nchar(core) - nchar(spec$suffix))
     suffix <- spec$suffix
   }
+  # A count grouped by `spicy_style(big_mark = )` ("1,234") is read
+  # without its separators and keeps them through its number format.
+  group <- .big_marks_in(core, mark) > 0L
+  if (group) {
+    core <- gsub(.style_big_mark(), "", core, fixed = TRUE)
+  }
   core <- gsub(mark, ".", core, fixed = TRUE)
   shown <- paste0(core, suffix)
   m <- regmatches(core, regexec("^([+-]?)([0-9]*)(\\.[0-9]+)?$", core))[[1L]]
@@ -216,6 +222,7 @@
   for (v in c(value, as.numeric(core))) {
     for (s in list(spec, read)) {
       if (!is.null(s) && is.finite(v) && identical(.xl_shown(v, s), shown)) {
+        s$group <- group
         return(list(value = v, numfmt = .xl_numfmt(s)))
       }
     }

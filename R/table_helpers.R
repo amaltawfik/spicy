@@ -386,17 +386,19 @@ resolve_variable_labels <- function(data, cols, labels) {
   )
 }
 
-# Internal: a count of the sample-size sentence or of a header, an
-# integer with no thousands separator, as the counts of the tables.
-.fmt_sample_size <- function(x) formatC(round(x), format = "f", digits = 0)
+# Internal: a count of the sample-size sentence or of a header.
+.fmt_sample_size <- function(x) .fmt_count(x)
 
 # Internal: THE formatter of a count -- a frequency, a cell of a
-# cross-tabulation, an n, a weighted count. Fixed notation at every
-# size: `format_number()` turns to scientific notation from 1e7 on, and
-# a weighted national count of 250000000 printed "2e+08". `digits` is
-# 0 for a count; a weighted count shown with decimals passes its own.
-# NA gives `na`. Degrees of freedom, estimates and fit statistics other
-# than counts never come here.
+# cross-tabulation, an n, a weighted count, a number of events or of
+# groups, the N of a note or a header. Fixed notation at every size:
+# `format_number()` turns to scientific notation from 1e7 on, and a
+# weighted national count of 250000000 printed "2e+08". `digits` is 0
+# for a count; a weighted count shown with decimals passes its own. The
+# integer part takes the thousands separator of
+# `spicy_style(big_mark = )`, none by default. NA gives `na`. Degrees of
+# freedom, estimates and fit statistics other than counts never come
+# here.
 .fmt_count <- function(x, digits = 0L, decimal_mark = ".", na = "") {
   out <- rep(na, length(x))
   ok <- !is.na(x)
@@ -405,10 +407,50 @@ resolve_variable_labels <- function(data, cols, labels) {
       as.double(x[ok]),
       format = "f",
       digits = digits,
-      decimal.mark = decimal_mark
+      decimal.mark = decimal_mark,
+      big.mark = .style_big_mark() %||% ""
     )
   }
   out
+}
+
+# Internal: the number of thousands separators in each cell that is a
+# number written by `.fmt_count()` with one ("1,234,567" holds two), 0
+# elsewhere -- an interval "[0.1, 0.2]" or a label holds none. The
+# decimal padders count them apart from the digits, so a shorter count
+# is padded with a space of the separator's width where it has none.
+.big_marks_in <- function(x, decimal_mark = ".") {
+  out <- integer(length(x))
+  bm <- .style_big_mark()
+  if (is.null(bm)) {
+    return(out)
+  }
+  for (i in which(!is.na(x) & grepl(bm, x, fixed = TRUE))) {
+    int <- strsplit(sub("^[+-]", "", x[[i]]), decimal_mark, fixed = TRUE)
+    parts <- strsplit(int[[1L]][1L], bm, fixed = TRUE)[[1L]]
+    if (
+      length(parts) > 1L &&
+        grepl("^[0-9]{1,3}$", parts[1L]) &&
+        all(grepl("^[0-9]{3}$", parts[-1L]))
+    ) {
+      out[[i]] <- length(parts) - 1L
+    }
+  }
+  out
+}
+
+# Internal: the padding that stands in for a missing thousands
+# separator. A monospace pad (the console's space) is the pad itself; a
+# figure-space pad takes the separator when it is a space of its own
+# (narrow no-break, thin, no-break, plain), else the punctuation space
+# U+2008, as wide as a comma or a point.
+.big_mark_pad <- function(pad_char) {
+  bm <- .style_big_mark()
+  if (is.null(bm) || identical(pad_char, " ")) {
+    return(pad_char)
+  }
+  spaces <- intToUtf8(c(0x202FL, 0x2009L, 0x00A0L, 0x0020L), multiple = TRUE)
+  if (bm %in% spaces) bm else intToUtf8(0x2008L)
 }
 
 # Internal: where the tables put the sample size, the lever
@@ -763,6 +805,19 @@ decimal_align_strings <- function(
     NA_integer_,
     ifelse(has_dot, dot_pos - 1L, nchar(core))
   )
+  # The thousands separators of the counts (`spicy_style(big_mark = )`)
+  # are counted apart from the digits: a shorter count is padded with a
+  # space of their width where it has none. All zero by default.
+  marks <- .big_marks_in(core, decimal_mark)
+  mark_pad <- .big_mark_pad(pad_char)
+  max_marks <- max(marks[!is_blank], 0L)
+  before <- before - marks
+  pad_left <- function(i) {
+    paste0(
+      strrep(pad_char, max_before - before[i]),
+      strrep(mark_pad, max_marks - marks[i])
+    )
+  }
   after <- ifelse(
     is_blank,
     NA_integer_,
@@ -777,18 +832,20 @@ decimal_align_strings <- function(
     seq_along(values),
     function(i) {
       if (is_blank[i]) {
-        return(strrep(pad_char, total_width))
+        return(paste0(
+          strrep(pad_char, total_width),
+          strrep(mark_pad, max_marks)
+        ))
       }
       v <- values[i]
       if (has_dot[i]) {
-        pad_l <- strrep(pad_char, max_before - before[i])
         pad_r <- strrep(pad_char, max_after - after[i])
-        return(paste0(pad_l, v, pad_r))
+        return(paste0(pad_left(i), v, pad_r))
       }
       if (max_after == 0L) {
         # Pure integer column (no decimals anywhere) -- left-pad to
         # right-align the value, no decimal mark to align against.
-        return(paste0(strrep(pad_char, max_before - before[i]), v))
+        return(paste0(pad_left(i), v))
       }
       # Non-decimal cell in a column that has decimals elsewhere.
       # Two sub-cases:
@@ -801,15 +858,19 @@ decimal_align_strings <- function(
       #       position so it visually replaces the `.` of the
       #       absent value. Stata esttab / modelsummary convention
       #       (APA Manual 7 Section 7.13 gives the dash itself).
-      if (grepl("^-?[0-9]+$", core[i])) {
-        pad_l <- strrep(pad_char, max_before - before[i])
+      if (grepl("^-?[0-9]+$", core[i]) || marks[i] > 0L) {
         pad_r <- strrep(pad_char, 1L + max_after - sfx[i])
-        return(paste0(pad_l, v, pad_r))
+        return(paste0(pad_left(i), v, pad_r))
       }
       g <- safe_glyph_width(v)
       pad_l <- max(0L, max_before - (g - 1L) %/% 2L)
       pad_r <- max(0L, max_after - (g %/% 2L))
-      paste0(strrep(pad_char, pad_l), v, strrep(pad_char, pad_r))
+      paste0(
+        strrep(pad_char, pad_l),
+        strrep(mark_pad, max_marks),
+        v,
+        strrep(pad_char, pad_r)
+      )
     },
     character(1)
   )

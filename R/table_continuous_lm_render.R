@@ -698,18 +698,14 @@ build_wide_display_df_continuous_lm <- function(
       )
     }
     if (show_n) {
-      out[[.LM_KEY_N]][i] <- if (is.na(block$n[1])) {
-        ""
-      } else {
-        as.character(as.integer(block$n[1]))
-      }
+      out[[.LM_KEY_N]][i] <- .fmt_count(block$n[1])
     }
     if (show_weighted_n) {
-      out[[.LM_KEY_WEIGHTED_N]][i] <- if (is.na(block$weighted_n[1])) {
-        ""
-      } else {
-        format_number(block$weighted_n[1], digits, decimal_mark)
-      }
+      out[[.LM_KEY_WEIGHTED_N]][i] <- .fmt_count(
+        block$weighted_n[1],
+        digits,
+        decimal_mark
+      )
     }
   }
 

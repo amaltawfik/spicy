@@ -2517,7 +2517,11 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
                 f$precision,
                 f$p_style,
                 signed = isTRUE(f$fit_stat %in% .NESTED_SIGNED_TOKENS),
-                suffix = f$suffix
+                suffix = f$suffix,
+                group = .excel_count_group(
+                  isTRUE(f$fit_stat %in% .COUNT_FIT_TOKENS) ||
+                    isTRUE(meta$token %in% c("n", "n_events"))
+                )
               )
             }
           },
@@ -2541,7 +2545,11 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
         }
       } else {
         # Default per-column numfmt
-        default_fmt <- .excel_numfmt(meta$precision, meta$p_style)
+        default_fmt <- .excel_numfmt(
+          meta$precision,
+          meta$p_style,
+          group = .excel_count_group(meta$token %in% c("n", "n_events"))
+        )
         applied_fmt <- rep(default_fmt, nrow(body))
         wb <- openxlsx2::wb_add_numfmt(
           wb,
@@ -2557,7 +2565,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
               ov$precision %||% meta$precision,
               ov$p_style,
               signed = isTRUE(ov$fit_stat %in% .NESTED_SIGNED_TOKENS),
-              suffix = ov$suffix
+              suffix = ov$suffix,
+              group = .excel_count_group(ov$fit_stat %in% .COUNT_FIT_TOKENS)
             )
             excel_row <- body_first_row + ov$row - 1L
             applied_fmt[ov$row] <- ov_fmt

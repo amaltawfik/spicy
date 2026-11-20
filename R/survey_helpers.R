@@ -1143,7 +1143,7 @@
   }
   spicy_fmt(
     "note_design_n",
-    format_number(n_obs, digits = 0L, decimal_mark = decimal_mark),
-    format_number(sum_weights, digits = digits, decimal_mark = decimal_mark)
+    .fmt_count(n_obs, decimal_mark = decimal_mark),
+    .fmt_count(sum_weights, digits, decimal_mark)
   )
 }

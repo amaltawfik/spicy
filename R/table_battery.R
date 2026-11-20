@@ -1562,7 +1562,7 @@ table_battery <- function(
     v <- wide[[e$key]]
     cell <- switch(
       e$token,
-      n = num(v, 0L),
+      n = .fmt_count(v, decimal_mark = decimal_mark),
       p = vapply(
         v,
         function(p) format_p_value(p, decimal_mark, digits = p_digits),

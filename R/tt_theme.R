@@ -1380,12 +1380,14 @@
 # and of Quarto) with the default Latin Modern font, the lowercase Greek
 # letters of the statistics (the chi-squared of a note, beta, eta,
 # omega, sigma, the gamma of an association header, the zeta of a
-# cut-point), the less-than-or-equal sign of a formula and the figure
-# space of the decimal alignment are not in the font: they vanished from
+# cut-point), the less-than-or-equal sign of a formula, the figure
+# space of the decimal alignment and the punctuation space that stands
+# for a missing thousands separator are not in the font: they vanished from
 # the PDF with no error. pdflatex refuses them, and Delta and the minus
 # sign too, outright. Math mode has the Greek letters and the signs in
 # every engine, a phantom zero is exactly the width the figure space
-# stands for, and a squared letter is set as a superscript of its own --
+# stands for, a phantom comma that of the punctuation space, and a
+# squared letter is set as a superscript of its own --
 # Cohen's f2 too, so that it reads like the eta2 and the omega2 beside
 # it. The plus-minus sign, which every engine sets, is set in math too,
 # from the font of the minus sign beside it. Every other character spicy
@@ -1437,13 +1439,14 @@
   )
   text <- c(
     "\\hphantom{0}",
+    "\\hphantom{,}",
     "\\,",
     "\\ensuremath{-}",
     "\\ensuremath{\\pm}",
     "\\ensuremath{\\leq}"
   )
   names(text) <- intToUtf8(
-    c(0x2007, 0x202F, 0x2212, 0x00B1, 0x2264),
+    c(0x2007, 0x2008, 0x202F, 0x2212, 0x00B1, 0x2264),
     multiple = TRUE
   )
   for (k in names(text)) {

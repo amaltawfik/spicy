@@ -26,6 +26,7 @@ spicy_style(
   abbreviations = NULL,
   sample_size = NULL,
   minus_sign = NULL,
+  big_mark = NULL,
   v_digits
 )
 
@@ -159,6 +160,26 @@ sets it. \code{tinytable::save_tt(x, "table.docx")} writes the table
 through markdown and keeps the hyphen-minus: for a Word file, use
 \code{output = "word"} (or \code{"flextable"}), or knit the table in a Word
 document.}
+
+\item{big_mark}{The thousands separator of the counts. \code{NULL} (the
+default) writes none: "7846". A single character groups the digits
+of the integer part by three: \code{","} for APA ("7,846"), \code{"\\u202f"} for
+the narrow no-break space of French typography and of the SI ("7 846"),
+\code{"'"} for Swiss usage ("7'846"). It applies to the counts of every
+table that takes a style: n, N, weighted counts, the cells of a
+cross-tabulation, numbers of events and of groups, and the counts of
+the notes and headers ("N = 7,846"). Never to degrees of freedom,
+years, estimates, percentages or fit statistics that are not counts
+(AIC, deviance). A column that aligns its numbers on the decimal mark
+stays aligned. It cannot be a digit, the decimal mark or a minus
+sign. \code{\link[=freq]{freq()}} and \code{\link[=cross_tab]{cross_tab()}}, which take no \code{style}, read it from
+\code{options(spicy.style)}. No language sets it: under
+\code{options(spicy.language = "fr")}, ask for \code{big_mark = "\\u202f"}. The
+data frames, \code{tidy()} and \code{glance()} keep their numbers; only cells
+already written as text take the separator. \code{output = "excel"} keeps a
+count as a number and groups it through the cell's number format
+(\verb{#,##0}): Excel then shows the separator of its own locale, not the
+character given here.}
 
 \item{v_digits}{Defunct. Renamed \code{effect_size_digits} in spicy 0.14.0;
 supplying \code{v_digits} is an error (class \code{spicy_defunct}).}
@@ -491,7 +512,8 @@ Cohen's \emph{d}). This is also spicy's default rule, the one \code{"nejm"},
 
 Not encoded: the one-decimal rule for means of integer scales
 (depends on what the variable measures, which spicy cannot know),
-and the thousands separator (see \emph{Known gaps} below). Nor the star
+and the thousands separator, which no theme sets: add
+\code{big_mark = ","} (\code{spicy_style("apa", big_mark = ",")}). Nor the star
 thresholds. The official correlation and ANOVA sample tables mark
 \code{.05} / \code{.01} / \code{.001}, which is what \code{stars = TRUE} gives you --
 but as spicy's own default, not as anything this theme pins: one
@@ -530,14 +552,8 @@ them as spicy's default does.
 }
 
 \section{Known gaps}{
-Two rules the sources state but this release does not encode:
+A rule the sources state but this release does not encode:
 \itemize{
-\item \strong{thousands separator} (APA's comma, the EU code's thin
-no-break space). spicy formats numbers through more than one
-path, and a separator applied to some of them only would print
-\verb{1,234} in one column and \code{1234} in the next -- the exact
-inconsistency the SI brochure forbids ("the format used should
-not vary within one column").
 \item \strong{significant-figure rounding of estimates} (Epidemiology's
 \code{nn} / \code{n.n} / \verb{0.nn}, Science's "report only significant
 digits"). spicy's \code{digits} is a decimals contract applied per
@@ -574,6 +590,11 @@ table_regression(fit, style = spicy_style("lancet", ci_sep = " to "))
 old <- options(spicy.style = "apa")
 table_continuous(mtcars, c(mpg, wt))
 options(old)
+
+# A thousands separator for the counts: "," in English,
+# the narrow no-break space (U+202F) in French.
+df <- data.frame(g = rep(c("a", "b"), c(1500, 2600)))
+table_categorical(df, g, style = spicy_style(big_mark = ","))
 
 # Every abbreviation defined, for readers outside the field.
 table_continuous(mtcars, c(mpg, wt),

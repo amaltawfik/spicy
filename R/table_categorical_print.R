@@ -14,6 +14,9 @@
 #' @keywords internal
 #' @export
 print.spicy_categorical_table <- function(x, ...) {
+  # The style of the call, for the counts of the group headers.
+  pushed <- .style_restore(x)
+  on.exit(.style_end(pushed), add = TRUE)
   display_df <- attr(x, "display_df")
   group_var <- attr(x, "group_var")
   indent_text <- attr(x, "indent_text") %||% "  "

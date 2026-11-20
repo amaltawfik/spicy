@@ -760,8 +760,8 @@ build_selection_outcome_n_footer_block_from_frames <- function(
         c(
           spicy_fmt(
             "note_outcome_observed",
-            format_number(n1, digits = 0L, decimal_mark = decimal_mark),
-            format_number(n, digits = 0L, decimal_mark = decimal_mark)
+            .fmt_count(n1, decimal_mark = decimal_mark),
+            .fmt_count(n, decimal_mark = decimal_mark)
           ),
           if (isTRUE(frames[[i]]$info$extras$selection_binary_outcome)) {
             spicy_str("note_outcome_equation_probit")

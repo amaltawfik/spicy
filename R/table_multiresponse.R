@@ -1856,7 +1856,7 @@ table_multiresponse <- function(
     v <- switch(e$token, statistic = wide$Chi2, p = wide$p, wide[[e$key]])
     cell <- switch(
       e$token,
-      n = num(v, 0L),
+      n = .fmt_count(v, decimal_mark = decimal_mark),
       statistic = paste0(
         spicy_str("symbol_chi_sq"),
         "(",

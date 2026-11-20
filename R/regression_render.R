@@ -1422,7 +1422,7 @@ format_cell_value <- function(
     if (is.na(ev) || is.na(nn)) {
       return("")
     }
-    return(paste0(format(as.integer(ev)), "/", format(as.integer(nn))))
+    return(paste0(.fmt_count(ev), "/", .fmt_count(nn)))
   }
 
   # CI-only rendering: "[lo, hi]" -- shared by `ci`, `ame_ci`,
@@ -1514,10 +1514,7 @@ format_cell_value <- function(
     return(out)
   }
   if (field == "n_obs") {
-    if (is.na(val)) {
-      return("")
-    }
-    return(format(as.integer(val)))
+    return(.fmt_count(val))
   }
   # Per-fit R^2: like the N cell, an NA means "same fit as the block's
   # first row", not "no value exists" -- blank, never an en-dash.
@@ -2260,7 +2257,7 @@ build_fit_stats_rows <- function(
           }
           ng <- ngl_all[[m_id]]
           if (!is.null(ng) && fct %in% names(ng)) {
-            cells[[target_col]] <- sprintf("%d", as.integer(ng[[fct]]))
+            cells[[target_col]] <- .fmt_count(ng[[fct]])
           }
         }
         rows <- push_row(rows, cells)
@@ -2500,6 +2497,9 @@ format_fit_stat_value <- function(
   # p-value of the change-test: APA-style p formatting.
   if (identical(token, "p_change")) {
     return(format_p_value(val, decimal_mark = decimal_mark, digits = p_digits))
+  }
+  if (token %in% .COUNT_FIT_TOKENS) {
+    return(.fmt_count(val, decimal_mark = decimal_mark))
   }
   prec <- switch(
     token,

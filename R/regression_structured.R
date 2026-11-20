@@ -1678,6 +1678,16 @@ build_structured_body <- function(
   rows
 }
 
+# The fit-statistic rows that are counts: written by `.fmt_count()`, the
+# thousands separator of `spicy_style(big_mark = )` included.
+.COUNT_FIT_TOKENS <- c(
+  "nobs",
+  "weighted_nobs",
+  "n_groups",
+  "n_events",
+  "max_cluster_size"
+)
+
 .fit_stat_precision <- function(
   token,
   digits,
@@ -1689,8 +1699,7 @@ build_structured_body <- function(
   # always formatted it as an integer, but this structured-path bucket
   # missed it, so rich outputs rendered "165.00" (caught in the GEE
   # pass, 2026-07).
-  is_int <- token %in%
-    c("nobs", "weighted_nobs", "n_groups", "n_events", "max_cluster_size")
+  is_int <- token %in% .COUNT_FIT_TOKENS
   is_fit <- token %in%
     c(
       "r2",
@@ -1852,7 +1861,20 @@ build_structured_body <- function(
 #                       value and displays what the console prints
 # `decimal_mark` is irrelevant: Excel format codes always use "."
 # internally; the rendered separator follows the cell's locale.
-.excel_numfmt <- function(precision, p_style, signed = FALSE, suffix = NULL) {
+#   group = TRUE     -> "#,##0": a count under `spicy_style(big_mark = )`,
+#                       grouped by Excel in the separator of its own
+#                       locale (see `.excel_count_group()`)
+.excel_numfmt <- function(
+  precision,
+  p_style,
+  signed = FALSE,
+  suffix = NULL,
+  group = FALSE
+) {
+  if (isTRUE(group)) {
+    d <- max(0L, as.integer(precision), na.rm = TRUE)
+    return(if (d > 0L) paste0("#,##0.", strrep("0", d)) else "#,##0")
+  }
   if (length(suffix) == 1L && nzchar(suffix)) {
     sections <- strsplit(.excel_numfmt(precision, p_style, signed), ";")[[1L]]
     return(paste0(sections, "\"", suffix, "\"", collapse = ";"))
@@ -1873,6 +1895,13 @@ build_structured_body <- function(
     return(paste0("#.", zeros))
   }
   paste0("0.", zeros)
+}
+
+# Whether a count's Excel cell groups its digits: only under
+# `spicy_style(big_mark = )`. The cell stays a number; Excel writes the
+# separator of its own locale, not the character of the style.
+.excel_count_group <- function(is_count = TRUE) {
+  isTRUE(is_count) && !is.null(.style_big_mark())
 }
 
 # Below-threshold display text used in p-columns when |p| < threshold.
@@ -1994,6 +2023,11 @@ build_structured_body <- function(
   # its sign, as in the console: the token set is the shared one.
   s <- if (isTRUE(cfmt$fit_stat %in% .NESTED_SIGNED_TOKENS)) {
     format_signed(val, precision, decimal_mark)
+  } else if (
+    isTRUE(cfmt$fit_stat %in% .COUNT_FIT_TOKENS) ||
+      isTRUE(col_meta_entry$token %in% c("n", "n_events"))
+  ) {
+    .fmt_count(val, precision, decimal_mark)
   } else if (
     !is.null(cfmt$fit_stat) ||
       isTRUE(col_meta_entry$token %in% c("n", "n_events"))
@@ -2123,6 +2157,14 @@ build_structured_body <- function(
   if (max_lhs == 0L && max_rhs == 0L) {
     return(col_vals)
   }
+  # The thousands separators of a count (`spicy_style(big_mark = )`) are
+  # counted apart from the digits: a shorter cell takes a space of their
+  # width for each one it lacks. All zero by default.
+  marks <- .big_marks_in(lhs, decimal_mark)
+  mark_pad <- .big_mark_pad(fig_space)
+  max_marks <- max(0L, marks)
+  max_lhs <- max(0L, nchar(lhs) - marks)
+  pad_marks <- function(i) strrep(mark_pad, max_marks - marks[i])
 
   for (i in seq_along(col_vals)) {
     v <- col_vals[i]
@@ -2142,13 +2184,19 @@ build_structured_body <- function(
     # publication-grade decimal alignment Stata / SAS use for
     # missing cells.
     if (identical(v, na_dash)) {
-      pad_lhs <- strrep(fig_space, max(0L, max_lhs - 1L))
+      pad_lhs <- paste0(
+        strrep(fig_space, max(0L, max_lhs - 1L)),
+        strrep(mark_pad, max_marks)
+      )
       pad_rhs <- strrep(fig_space, max_rhs)
       col_vals[i] <- paste0(pad_lhs, na_dash, fig_space, pad_rhs)
       next
     }
     pos <- regexpr(decimal_mark, sub(" \\([^()]*\\)$", "", v), fixed = TRUE)
-    pad_lhs <- strrep(fig_space, max_lhs - nchar(lhs[i]))
+    pad_lhs <- paste0(
+      strrep(fig_space, max_lhs - (nchar(lhs[i]) - marks[i])),
+      pad_marks(i)
+    )
     pad_rhs <- strrep(fig_space, max_rhs - nchar(rhs[i]))
     if (pos < 0L) {
       # Integer-only cell: pad LHS, then place a digit-width space

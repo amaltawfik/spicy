@@ -2805,14 +2805,7 @@ table_categorical <- function(
   # sum of the displayed cells (SPSS behaves the same way). The
   # machine outputs keep the exact fractional counts; rounding
   # happens here, at display time only.
-  fmt_n <- function(x, na = "") {
-    out <- rep(na, length(x))
-    ok <- !is.na(x)
-    if (any(ok)) {
-      out[ok] <- formatC(round(x[ok], 0), format = "f", digits = 0)
-    }
-    out
-  }
+  fmt_n <- function(x, na = "") .fmt_count(x, na = na)
 
   # `fmt_p` defers to the shared `format_p_value()` helper so the
   # `table_*()` functions print *p*-values identically: `p_digits`
@@ -3804,7 +3797,7 @@ table_categorical <- function(
         wb <- openxlsx2::wb_add_numfmt(
           wb,
           dims = openxlsx2::wb_dims(rows = first_body_row:last_row, cols = 2),
-          numfmt = "0"
+          numfmt = .excel_numfmt(0L, NULL, group = .excel_count_group())
         )
         wb <- openxlsx2::wb_add_numfmt(
           wb,
@@ -6217,7 +6210,7 @@ table_categorical <- function(
           rows = first_body_row:last_row,
           cols = n_cols
         ),
-        numfmt = "0"
+        numfmt = .excel_numfmt(0L, NULL, group = .excel_count_group())
       )
       wb <- openxlsx2::wb_add_numfmt(
         wb,

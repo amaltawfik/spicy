@@ -3674,11 +3674,17 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
   # the quartiles, it does not list two numbers.
   bracket_sep <- if (decimal_mark == ",") "; " else ", "
 
+  # The weighted n: a count at the table's precision.
+  fmt_count <- function(v) {
+    .fmt_count(v, digits, decimal_mark, na = spicy_str("cell_undefined"))
+  }
+
   list(
     fmt = fmt,
     fmt_p = fmt_p,
     fmt_test = fmt_test,
     fmt_es = fmt_es,
+    fmt_count = fmt_count,
     bracket_sep = bracket_sep
   )
 }
@@ -3742,9 +3748,11 @@ epsilon_sq_boot_ci <- function(xvec, gvec, n_groups, ci_level, n_boot = 2000L) {
       # A count carries no decimals: the only statistic that skips
       # `fmt()`. An NA count is a group in which the variable has no
       # data: undefined, like the other cells of that group.
-      n_cells <- as.character(result$n)
-      n_cells[is.na(result$n)] <- spicy_str("cell_undefined")
+      n_cells <- .fmt_count(result$n, na = spicy_str("cell_undefined"))
       out[[entries[[1L]]$name]] <- blanked(n_cells, tok)
+    } else if (tok == "weighted_n" && !is.null(fmts$fmt_count)) {
+      w <- result[[entries[[1L]]$field]]
+      out[[entries[[1L]]$name]] <- blanked(fmts$fmt_count(w), tok)
     } else {
       for (e in entries) {
         out[[e$name]] <- blanked(fmt_col(result[[e$field]], e), tok)

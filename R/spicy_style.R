@@ -51,7 +51,8 @@
 # R/table_helpers.R), for `sample_size`, by the sample-size sentence and
 # the group headers (`.sample_size_place()`, R/table_helpers.R), for
 # `minus_sign`, by the tinytable builder (`.spicy_tt_bare()`,
-# R/tt_theme.R).
+# R/tt_theme.R), for `big_mark`, by the formatter of the counts
+# (`.fmt_count()`, R/table_helpers.R).
 .STYLE_FMT_FIELDS <- c(
   "p_style",
   "p_floor",
@@ -62,7 +63,8 @@
   "note_label",
   "abbreviations",
   "sample_size",
-  "minus_sign"
+  "minus_sign",
+  "big_mark"
 )
 
 .STYLE_FIELDS <- c(.STYLE_ARG_FIELDS, .STYLE_FMT_FIELDS)
@@ -387,7 +389,8 @@
 #'
 #' Not encoded: the one-decimal rule for means of integer scales
 #' (depends on what the variable measures, which spicy cannot know),
-#' and the thousands separator (see *Known gaps* below). Nor the star
+#' and the thousands separator, which no theme sets: add
+#' `big_mark = ","` (`spicy_style("apa", big_mark = ",")`). Nor the star
 #' thresholds. The official correlation and ANOVA sample tables mark
 #' `.05` / `.01` / `.001`, which is what `stars = TRUE` gives you --
 #' but as spicy's own default, not as anything this theme pins: one
@@ -424,14 +427,8 @@
 #'
 #' # Known gaps
 #'
-#' Two rules the sources state but this release does not encode:
+#' A rule the sources state but this release does not encode:
 #' \itemize{
-#'   \item **thousands separator** (APA's comma, the EU code's thin
-#'     no-break space). spicy formats numbers through more than one
-#'     path, and a separator applied to some of them only would print
-#'     `1,234` in one column and `1234` in the next -- the exact
-#'     inconsistency the SI brochure forbids ("the format used should
-#'     not vary within one column").
 #'   \item **significant-figure rounding of estimates** (Epidemiology's
 #'     `nn` / `n.n` / `0.nn`, Science's "report only significant
 #'     digits"). spicy's `digits` is a decimals contract applied per
@@ -559,6 +556,25 @@
 #'   through markdown and keeps the hyphen-minus: for a Word file, use
 #'   `output = "word"` (or `"flextable"`), or knit the table in a Word
 #'   document.
+#' @param big_mark The thousands separator of the counts. `NULL` (the
+#'   default) writes none: "7846". A single character groups the digits
+#'   of the integer part by three: `","` for APA ("7,846"), `"\u202f"` for
+#'   the narrow no-break space of French typography and of the SI ("7 846"),
+#'   `"'"` for Swiss usage ("7'846"). It applies to the counts of every
+#'   table that takes a style: n, N, weighted counts, the cells of a
+#'   cross-tabulation, numbers of events and of groups, and the counts of
+#'   the notes and headers ("N = 7,846"). Never to degrees of freedom,
+#'   years, estimates, percentages or fit statistics that are not counts
+#'   (AIC, deviance). A column that aligns its numbers on the decimal mark
+#'   stays aligned. It cannot be a digit, the decimal mark or a minus
+#'   sign. [freq()] and [cross_tab()], which take no `style`, read it from
+#'   `options(spicy.style)`. No language sets it: under
+#'   `options(spicy.language = "fr")`, ask for `big_mark = "\u202f"`. The
+#'   data frames, `tidy()` and `glance()` keep their numbers; only cells
+#'   already written as text take the separator. `output = "excel"` keeps a
+#'   count as a number and groups it through the cell's number format
+#'   (`#,##0`): Excel then shows the separator of its own locale, not the
+#'   character given here.
 #' @param v_digits Defunct. Renamed `effect_size_digits` in spicy 0.14.0;
 #'   supplying `v_digits` is an error (class `spicy_defunct`).
 #'
@@ -602,6 +618,11 @@
 #' table_continuous(mtcars, c(mpg, wt))
 #' options(old)
 #'
+#' # A thousands separator for the counts: "," in English,
+#' # the narrow no-break space (U+202F) in French.
+#' df <- data.frame(g = rep(c("a", "b"), c(1500, 2600)))
+#' table_categorical(df, g, style = spicy_style(big_mark = ","))
+#'
 #' # Every abbreviation defined, for readers outside the field.
 #' table_continuous(mtcars, c(mpg, wt),
 #'                  style = spicy_style(abbreviations = "all"))
@@ -630,6 +651,7 @@ spicy_style <- function(
   abbreviations = NULL,
   sample_size = NULL,
   minus_sign = NULL,
+  big_mark = NULL,
   v_digits
 ) {
   # Renamed in 0.14.0; refused with the new name before anything else.
@@ -731,11 +753,13 @@ spicy_style <- function(
     note_label = note_label,
     abbreviations = abbreviations,
     sample_size = sample_size,
-    minus_sign = minus_sign
+    minus_sign = minus_sign,
+    big_mark = big_mark
   )
   out <- out[!vapply(out, is.null, logical(1))]
 
   if (is.null(base)) {
+    .style_check_big_mark(out$big_mark, out$decimal_mark)
     return(structure(out, class = "spicy_style"))
   }
 
@@ -753,6 +777,7 @@ spicy_style <- function(
     merged$p_bands <- NULL
   }
   merged[names(out)] <- out
+  .style_check_big_mark(merged$big_mark, merged$decimal_mark)
   prov <- attr(base_style, "provenance")
   if (!is.null(prov) && length(out) > 0L) {
     prov$overrides <- names(out)
@@ -847,6 +872,42 @@ spicy_style <- function(
     )
   }
   x
+}
+
+# A thousands separator is one character that no number could already
+# hold: not a digit, not the style's decimal mark (default "."), not a
+# minus sign. Checked on the style as composed, a theme's decimal mark
+# included.
+.style_check_big_mark <- function(
+  x,
+  decimal_mark = NULL,
+  call = rlang::caller_env()
+) {
+  if (is.null(x)) {
+    return(invisible(NULL))
+  }
+  if (!.is_single_char(x)) {
+    spicy_abort(
+      "`big_mark` must be `NULL` or a single character.",
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  dm <- decimal_mark %||% "."
+  if (grepl("[0-9]", x) || x %in% c(dm, "-", intToUtf8(0x2212L))) {
+    spicy_abort(
+      c(
+        sprintf("`big_mark` cannot be \"%s\".", x),
+        "i" = sprintf(
+          "A digit, the decimal mark (\"%s\") or a minus sign would make the number unreadable.",
+          dm
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(x)
 }
 
 .style_check_string <- function(x, field, call = rlang::caller_env()) {
@@ -1808,4 +1869,12 @@ print.spicy_style <- function(x, ...) {
 .style_minus_sign <- function() {
   fmt <- .style_fmt() %||% .style_resolve(NULL)
   fmt$minus_sign %||% "typographic"
+}
+
+# The thousands separator of the counts, or NULL (the default: none).
+# Inside a table call, the style in force; outside one, the style of
+# `options(spicy.style)`: `freq()` and `cross_tab()` take no `style`.
+.style_big_mark <- function() {
+  fmt <- .style_fmt() %||% .style_resolve(NULL)
+  fmt$big_mark
 }

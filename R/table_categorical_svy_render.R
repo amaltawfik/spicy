@@ -128,7 +128,7 @@
     v <- x[[e$key]]
     cell <- switch(
       e$base,
-      n = ifelse(is.na(v), spicy_str("cell_undefined"), as.character(v)),
+      n = .fmt_count(v, na = spicy_str("cell_undefined")),
       p = vapply(
         v,
         function(p) format_p_value(p, decimal_mark, digits = p_digits),
