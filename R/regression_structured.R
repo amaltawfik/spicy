@@ -2053,19 +2053,18 @@ build_structured_body <- function(
   if (!is.null(cfmt$threshold)) {
     precision <- .style_p_decimals(val, precision)
   }
+  # A fit-statistic row is a count by its own token, as in the console:
+  # an AIC in the Events/N column takes no separator.
+  is_count <- if (is.null(cfmt$fit_stat)) {
+    isTRUE(col_meta_entry$token %in% c("n", "n_events"))
+  } else {
+    isTRUE(cfmt$fit_stat %in% .COUNT_FIT_TOKENS)
+  }
   # A nested-comparison difference (Delta R^2, Delta AIC, ...) carries
   # its sign, as in the console: the token set is the shared one.
   s <- if (isTRUE(cfmt$fit_stat %in% .NESTED_SIGNED_TOKENS)) {
     format_signed(val, precision, decimal_mark)
-  } else if (
-    # A fit-statistic row is a count by its own token, as in the
-    # console: an AIC in the Events/N column takes no separator.
-    if (is.null(cfmt$fit_stat)) {
-      isTRUE(col_meta_entry$token %in% c("n", "n_events"))
-    } else {
-      isTRUE(cfmt$fit_stat %in% .COUNT_FIT_TOKENS)
-    }
-  ) {
+  } else if (is_count) {
     .fmt_count(val, precision, decimal_mark)
   } else if (
     !is.null(cfmt$fit_stat) ||
