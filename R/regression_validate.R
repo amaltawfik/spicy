@@ -3072,8 +3072,12 @@ validate_class_appropriate_tokens <- function(
   # covariates, so its parameter is not one number.
   nb2_tokens <- intersect(show_fit_stats, c("theta", "alpha"))
   if (length(nb2_tokens) > 0L) {
+    # A fit of the family whose dispersion has covariates is refused for
+    # that reason first; otherwise the registry says which models carry
+    # the rows (.reg_offers(); theta and alpha share their conditions).
     is_nb2 <- vapply(models, .is_nb2_fit, logical(1))
-    if (!any(is_nb2)) {
+    .abort_modeled_dispersion(models[is_nb2], nb2_tokens, "theta", call)
+    if (!.reg_any_offers(models, nb2_tokens[1L])) {
       spicy_abort(
         c(
           .token_msg(
@@ -3096,7 +3100,6 @@ validate_class_appropriate_tokens <- function(
         call = call
       )
     }
-    .abort_modeled_dispersion(models[is_nb2], nb2_tokens, "theta", call)
   }
 
   if ("delta" %in% show_fit_stats) {
