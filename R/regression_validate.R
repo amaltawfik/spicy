@@ -100,6 +100,9 @@
     "pseudo_r2_mcfadden",
     "pseudo_r2_nagelkerke",
     "pseudo_r2_tjur",
+    # Pseudo-R\u00B2 of a beta regression (betareg only; Ferrari &
+    # Cribari-Neto 2004): summary()'s pseudo.r.squared.
+    "pseudo_r2_ferrari",
     # Deviance R\u00B2 of a glm, 1 - D / D0 (Cameron & Windmeijer 1997):
     # every family but the binomial.
     "r2_deviance",
@@ -3450,6 +3453,30 @@ validate_class_appropriate_tokens <- function(
         call = call
       )
     }
+  }
+
+  # The pseudo-R^2 of a beta regression, which betareg alone computes.
+  # ANY-gate: the other columns of a mixed set take an empty cell.
+  if (
+    "pseudo_r2_ferrari" %in%
+      show_fit_stats &&
+      !any(vapply(eff_models, inherits, logical(1), "betareg"))
+  ) {
+    spicy_abort(
+      c(
+        paste0(
+          "Token 'pseudo_r2_ferrari' in `show_fit_stats` is defined only ",
+          "for beta regressions fitted with `betareg::betareg()`."
+        ),
+        "i" = paste0(
+          "It is the squared correlation between the linear predictor ",
+          "and the link-transformed response (Ferrari & Cribari-Neto ",
+          "2004), which `summary()` of a betareg fit reports."
+        )
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
   }
 
   # McFadden's and Nagelkerke's R^2 of a continuous family (gaussian,

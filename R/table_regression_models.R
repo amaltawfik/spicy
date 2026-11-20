@@ -518,7 +518,7 @@
     "pseudo_r2_tjur (binomial), r2_deviance (not binomial), sigma, aic,",
     "aicc, bic, deviance, log_lik"
   ),
-  betareg = "nobs, phi, aic, aicc, bic, log_lik",
+  betareg = "nobs, pseudo_r2_ferrari, phi, aic, aicc, bic, log_lik",
   selection = "nobs, aic, aicc, bic, log_lik",
   ols = "nobs, r2, sigma, aic, aicc, bic, deviance, log_lik",
   lrm = paste(

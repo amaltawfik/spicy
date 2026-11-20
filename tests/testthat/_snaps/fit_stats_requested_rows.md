@@ -443,6 +443,22 @@
             svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
+        Token 'pseudo_r2_ferrari' in `show_fit_stats` is defined only for beta regressions fitted with `betareg::betareg()`.
+        i It is the squared correlation between the linear predictor and the link-transformed response (Ferrari & Cribari-Neto 2004), which `summary()` of a betareg fit reports.
+      Received by 70:
+        "pseudo_r2_ferrari": bam, clm, clm_nominal, clm_scale, clmm, coxph,
+            coxph_strata, cph, cph_xy, feols, feols_iv, feols_nofe, fepois,
+            fepois_nofe, flexsurvreg, gam, gam_logit, geeglm, glm.nb, glm_gamma,
+            glm_gaussian, glm_logit, glm_poisson, glm_probit, glm_quasi, glmer,
+            glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_ordinal, glmmTMB_reml,
+            glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm,
+            lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts, lmer,
+            lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols,
+            ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
+            survreg, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
         Token 'pseudo_r2_tjur' in `show_fit_stats` is defined only for binomial models (binary outcomes), and no model in the set is a binomial-family `glm` or a binary `rms::lrm()`.
         i Tjur's R<U+00B2> (2009) is mean(fitted | y = 1) - mean(fitted | y = 0), which needs a binary outcome (the trials of a grouped binomial response count as such). Use `"pseudo_r2_mcfadden"` or `"r2_deviance"` for other families.
       Received by 40:
@@ -1996,6 +2012,12 @@
         i A phi fixed in the call (mgcv `betar(theta)` with theta > 0) is not an estimate and has no row.
       Received by 2:
         "phi": brmsfit, stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token 'pseudo_r2_ferrari' in `show_fit_stats` is defined only for beta regressions fitted with `betareg::betareg()`.
+        i It is the squared correlation between the linear predictor and the link-transformed response (Ferrari & Cribari-Neto 2004), which `summary()` of a betareg fit reports.
+      Received by 2:
+        "pseudo_r2_ferrari": brmsfit, stanreg
       ----
       error: spicy_invalid_input, spicy_error
         Token(s) "adj_r2" in `show_fit_stats` are not defined for Bayesian fits.

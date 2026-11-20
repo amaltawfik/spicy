@@ -185,6 +185,11 @@
 #'     binomial). What each one computes, and which a family shows by
 #'     default, is in *R-squared of glm and categorical models* in
 #'     [table_regression()].
+#'   \item Pseudo-\eqn{R^2}{R^2} of a beta regression
+#'     (`betareg::betareg` only, on request): `"pseudo_r2_ferrari"`, the
+#'     squared correlation between the linear predictor of the mean and
+#'     the response on the scale of the mean link (Ferrari &
+#'     Cribari-Neto 2004), the value `summary()` reports.
 #'   \item Residual scale: `"sigma"`, `"rmse"`. `"sigma"` is the lm
 #'     \eqn{\hat{\sigma}}{sigma-hat}. For glm and the GLM-like `fixest`
 #'     fits, it is the square root of the dispersion (so a gaussian glm

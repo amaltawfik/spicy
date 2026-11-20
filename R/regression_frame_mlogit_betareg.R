@@ -699,6 +699,9 @@ as_regression_frame.betareg <- function(
     deviance = NA_real_,
     sigma = NA_real_,
     nobs = as.integer(stats::nobs(fit)),
+    # Opt-in token: Ferrari & Cribari-Neto's pseudo-R^2, NA when betareg
+    # gives none (an extended-support xbetax fit).
+    pseudo_r2_ferrari = as.numeric(fit$pseudo.r.squared %||% NA_real_),
     # Opt-in show_fit_stats token; the validator refuses "phi" for
     # variable-precision fits, so a rendered phi is always the scalar.
     phi = precision_phi

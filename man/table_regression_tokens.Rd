@@ -183,6 +183,11 @@ binomial models only), \code{"pseudo_r2_mcfadden"} (McFadden 1974),
 binomial). What each one computes, and which a family shows by
 default, is in \emph{R-squared of glm and categorical models} in
 \code{\link[=table_regression]{table_regression()}}.
+\item Pseudo-\eqn{R^2}{R^2} of a beta regression
+(\code{betareg::betareg} only, on request): \code{"pseudo_r2_ferrari"}, the
+squared correlation between the linear predictor of the mean and
+the response on the scale of the mean link (Ferrari &
+Cribari-Neto 2004), the value \code{summary()} reports.
 \item Residual scale: \code{"sigma"}, \code{"rmse"}. \code{"sigma"} is the lm
 \eqn{\hat{\sigma}}{sigma-hat}. For glm and the GLM-like \code{fixest}
 fits, it is the square root of the dispersion (so a gaussian glm
@@ -443,7 +448,7 @@ tokens need
 \strong{Additive, proportions, selection}
 \itemize{
 \item \code{gam}. Default: \code{"nobs"}, \code{"pseudo_r2_tjur"} (binomial logit, binary outcome), \code{"pseudo_r2_mcfadden"} (binomial, Poisson, negative binomial), \code{"r2_deviance"} (Gaussian, Gamma, Tweedie), \code{"aic"} (not quasi). Available: \code{"nobs"}, \code{"adj_r2"}, \code{"pseudo_r2_mcfadden"} (binomial, Poisson, negative binomial), \code{"pseudo_r2_nagelkerke"} (binomial, Poisson, negative binomial), \code{"pseudo_r2_tjur"} (binomial), \code{"r2_deviance"} (not binomial), \code{"sigma"}, \code{"aic"}, \code{"aicc"}, \code{"bic"}, \code{"deviance"}, \code{"log_lik"}.
-\item \code{betareg}. Default: \code{"nobs"}, \code{"aic"}. Available: \code{"nobs"}, \code{"phi"}, \code{"aic"}, \code{"aicc"}, \code{"bic"}, \code{"log_lik"}.
+\item \code{betareg}. Default: \code{"nobs"}, \code{"aic"}. Available: \code{"nobs"}, \code{"pseudo_r2_ferrari"}, \code{"phi"}, \code{"aic"}, \code{"aicc"}, \code{"bic"}, \code{"log_lik"}.
 \item \code{selection}. Default: \code{"nobs"}, \code{"aic"}. Available: \code{"nobs"}, \code{"aic"}, \code{"aicc"}, \code{"bic"}, \code{"log_lik"}.
 }
 

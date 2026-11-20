@@ -1423,6 +1423,7 @@ build_abbreviations_footer_block_from_frames <- function(
     pseudo_r2_mcfadden = ,
     pseudo_r2_nagelkerke = ,
     pseudo_r2_tjur = ,
+    pseudo_r2_ferrari = ,
     r2_bayes = list(.abbr("pseudo_r2", symbol = fit_stat_label(tk))),
     adj_r2 = list(adj_r2),
     omega2 = list(.abbr(
