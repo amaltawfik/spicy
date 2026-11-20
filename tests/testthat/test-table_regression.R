@@ -733,6 +733,87 @@ test_that("labels – mixed term + coef-style keys both honored", {
   expect_true("  Six" %in% out$Variable)
 })
 
+# The reference level is named as its coefficient would be ("cyl4"); the
+# reference mark stays.
+test_that("labels - the reference level is named as its coefficient", {
+  skip_on_cran()
+  fit <- lm(mpg ~ wt + cyl + am, data = transform(mt, am = factor(am)))
+  lab <- c(cyl4 = "Four", am0 = "Automatic")
+  expect_no_warning(out <- table_regression(fit, labels = lab))
+  expect_true(all(c("  Four (ref.)", "  Automatic (ref.)") %in% out$Variable))
+  out <- table_regression(fit, labels = lab, reference_label = "= ref")
+  expect_true("  Four = ref" %in% out$Variable)
+  expect_no_warning(
+    out <- table_regression(fit, labels = lab, factor_layout = "flat")
+  )
+  expect_true("Four (ref.)" %in% out$Variable)
+  # inline() finds the row by its level, not by its label.
+  tbl <- table_regression(lm(mpg ~ cyl, data = mt), labels = lab[1L])
+  err <- tryCatch(inline(tbl, cyl, "4", "b"), error = identity)
+  expect_match(conditionMessage(err), "reference category")
+  # Two models whose references differ: the row is renamed in both.
+  m4 <- lm(mpg ~ cyl, data = mt)
+  m6 <- lm(mpg ~ cyl, data = transform(mt, cyl = relevel(cyl, "6")))
+  out <- table_regression(list(m4, m6), labels = lab[1L])
+  expect_true("  Four (ref.)" %in% out$Variable)
+  expect_false(any(grepl("^  4", out$Variable)))
+  # A factor with no reference row keeps its unknown-name warning.
+  ord <- lm(mpg ~ cyl, data = transform(mt, cyl = factor(cyl, ordered = TRUE)))
+  expect_warning(
+    suppressMessages(table_regression(ord, labels = lab[1L])),
+    class = "spicy_unknown_name"
+  )
+})
+
+test_that("labels - the reference level across model classes", {
+  skip_on_cran()
+  skip_if_not_installed("nnet")
+  skip_if_not_installed("rms")
+  skip_if_not_installed("survival")
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("MASS")
+  set.seed(3)
+  n <- 150
+  d <- data.frame(
+    y = rnorm(n),
+    yb = rbinom(n, 1, 0.5),
+    sex = factor(sample(c("Male", "Female"), n, TRUE), c("Male", "Female")),
+    x = rnorm(n),
+    o = factor(sample(c("A", "B", "C"), n, TRUE)),
+    time = rexp(n),
+    ev = rbinom(n, 1, 0.7),
+    id = factor(rep(1:15, each = 10))
+  )
+  d$y <- d$y + rnorm(15)[d$id]
+  d$ord <- factor(sample(c("lo", "mid", "hi"), n, TRUE), c("lo", "mid", "hi"))
+  fits <- list(
+    multinom = nnet::multinom(o ~ sex + x, data = d, trace = FALSE),
+    lrm = rms::lrm(yb ~ sex + x, data = d),
+    ols = rms::ols(y ~ sex + x, data = d),
+    coxph = survival::coxph(survival::Surv(time, ev) ~ sex + x, data = d),
+    lmer = lme4::lmer(y ~ sex + x + (1 | id), data = d),
+    polr = MASS::polr(ord ~ sex + x, data = d, Hess = TRUE)
+  )
+  for (nm in names(fits)) {
+    out <- suppressMessages(
+      table_regression(fits[[nm]], labels = c(sexMale = "Men"))
+    )
+    expect_true("  Men (ref.)" %in% out$Variable, label = nm)
+  }
+  # Multinomial in rows (with another model): the reference row of the
+  # other model takes the label; the category rows are not named.
+  out <- table_regression(
+    list(fits$multinom, lm(y ~ sex + x, data = d)),
+    labels = c(sexMale = "Men")
+  )
+  expect_true("  Men (ref.)" %in% out$Variable)
+  expect_true("  B: Male (ref.)" %in% out$Variable)
+  expect_warning(
+    table_regression(fits$multinom, labels = c("B: sexMale" = "X")),
+    class = "spicy_unknown_name"
+  )
+})
+
 test_that("labels – a key that exists in only ONE model applies there only", {
   skip_on_cran()
   # Mundlak-style comparison: the within / between decomposition exists
