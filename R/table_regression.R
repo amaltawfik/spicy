@@ -4298,12 +4298,19 @@ table_regression <- function(
 
 # How a message about one model names it: "model 2 (class glm)" among
 # several, "this model class (`glm`)" in a table of one.
-.reg_model_tag <- function(models, i, panel = NULL) {
-  cls <- class(models[[i]])[1L]
+.reg_model_tag <- function(models, i, panel = NULL, cls = NULL, detail = NULL) {
+  # `cls` names a fit the model stands for (one fit of a univariable
+  # screen), `detail` follows the class (the family of a glm).
+  what <- paste0(
+    "`",
+    cls %||% class(models[[i]])[1L],
+    "`",
+    if (length(detail)) paste0(", ", detail)
+  )
   if (.reg_model_count(length(models), panel) > 1L) {
-    sprintf("model %d (class `%s`)", .reg_model_index(i, panel), cls)
+    sprintf("model %d (class %s)", .reg_model_index(i, panel), what)
   } else {
-    sprintf("this model class (`%s`)", cls)
+    sprintf("this model class (%s)", what)
   }
 }
 

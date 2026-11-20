@@ -365,7 +365,7 @@ test_that("a term-level token no model of the table carries is refused", {
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "not defined for the model (`glm`, Gamma)",
+    "not defined for this model class (`glm`, Gamma)",
     fixed = TRUE
   )
   expect_match(conditionMessage(err), "Use `\"partial_f\"`.", fixed = TRUE)
@@ -428,7 +428,7 @@ test_that("a term-level token no model of the table carries is refused", {
     expect_s3_class(err, "spicy_invalid_input")
     expect_match(
       conditionMessage(err),
-      "Token `\"partial_f\"` in `show_columns` is not defined for model 1 (`coxph`) and model 2 (`glm`, poisson).",
+      "Token `\"partial_f\"` in `show_columns` is not defined for model 1 (class `coxph`) and model 2 (class `glm`, poisson).",
       fixed = TRUE
     )
   }
@@ -444,7 +444,7 @@ test_that("a term-level token no model of the table carries is refused", {
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "model 1 (`svyglm`, gaussian)",
+    "model 1 (class `svyglm`, gaussian)",
     fixed = TRUE
   )
 })
@@ -455,16 +455,16 @@ test_that("a token that would leave a model of the table without its test is ref
   pois <- glm(carb ~ wt + cyl, data = d, family = poisson)
   fl <- lm(mpg ~ wt + cyl, data = d)
   cases <- list(
-    list(list(gam_fit, pois), "partial_chi2", "Model 1 (`glm`, Gamma)"),
-    list(list(fl, pois), "partial_chi2", "Model 1 (`lm`)"),
-    list(list(pois, fl), "partial_f", "Model 1 (`glm`, poisson)")
+    list(list(gam_fit, pois), "partial_chi2", "Model 1 (class `glm`, Gamma)"),
+    list(list(fl, pois), "partial_chi2", "Model 1 (class `lm`)"),
+    list(list(pois, fl), "partial_f", "Model 1 (class `glm`, poisson)")
   )
   if (requireNamespace("lme4", quietly = TRUE)) {
     mer <- lme4::lmer(mpg ~ wt + (1 | cyl), data = d)
     cases <- c(
       cases,
       list(
-        list(list(gam_fit, mer), "partial_chi2", "Model 1 (`glm`, Gamma)")
+        list(list(gam_fit, mer), "partial_chi2", "Model 1 (class `glm`, Gamma)")
       )
     )
   }
@@ -517,7 +517,7 @@ test_that("a token that would leave a model of the table without its test is ref
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "`\"partial_f\"` for model 1 (`glm`, Gamma), `\"partial_chi2\"` for model 2 (`glm`, poisson)",
+    "`\"partial_f\"` for model 1 (class `glm`, Gamma), `\"partial_chi2\"` for model 2 (class `glm`, poisson)",
     fixed = TRUE
   )
   err <- tryCatch(

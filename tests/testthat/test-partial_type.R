@@ -348,14 +348,14 @@ test_that("an aliased coefficient under Type III is an error that names the mode
     .pt_tr(list(lm(y ~ A * B, d), f), show_columns = c("b", "partial_f")),
     error = function(e) conditionMessage(e)
   )
-  expect_match(err, "model 2 (`lm`)", fixed = TRUE)
+  expect_match(err, "model 2 (class `lm`)", fixed = TRUE)
   expect_match(err, "partial_type = \"II\"", fixed = TRUE)
   # Two aliased models: both named, and the verb agrees.
   err2 <- tryCatch(
     .pt_tr(list(f, lm(y ~ A * B + x, e)), show_columns = c("b", "partial_f")),
     error = function(e) conditionMessage(e)
   )
-  expect_match(err2, "model 1 (`lm`), model 2 (`lm`) have an", fixed = TRUE)
+  expect_match(err2, "model 1 (class `lm`) and model 2 (class `lm`) have an", fixed = TRUE)
   # Type II is defined on the same model.
   expect_no_error(table_regression(f, show_columns = c("b", "partial_f")))
   # The same for a glm and an lmer.
@@ -416,7 +416,7 @@ test_that("Type III refuses a user contrast of too few columns, and Type II matc
   msg <- refused(fl, "partial_f")
   expect_match(
     msg,
-    "`A` (3 levels, 1 column) in the model (`lm`)",
+    "`A` (3 levels, 1 column) in this model class (`lm`)",
     fixed = TRUE
   )
   expect_match(msg, "partial_type = \"II\"", fixed = TRUE)
