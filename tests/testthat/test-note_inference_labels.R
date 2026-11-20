@@ -89,8 +89,10 @@ nl_acronyms <- function(s, lang) {
 }
 
 nl_parens <- function(s) {
-  c(lengths(regmatches(s, gregexpr("(", s, fixed = TRUE))),
-    lengths(regmatches(s, gregexpr(")", s, fixed = TRUE))))
+  c(
+    lengths(regmatches(s, gregexpr("(", s, fixed = TRUE))),
+    lengths(regmatches(s, gregexpr(")", s, fixed = TRUE)))
+  )
 }
 
 for (id in names(.CLASS_FIXTURES)) {

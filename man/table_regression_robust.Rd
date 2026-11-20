@@ -109,11 +109,15 @@ computed with, estimatr's \verb{se_type =} and whatever fixest's own \code{vcov}
 interface produced, and spicy never overwrites it. A \code{vcov} request
 other than \code{"classical"} is refused; set the estimator through the
 fitting package instead: \verb{se_type =} (with \verb{clusters =}) for estimatr,
-\verb{vcov =} at estimation or in \code{summary()} for fixest. The note carries
-fixest's own label of the estimator (clustered, Newey-West, Conley,
-...), fixest's "IID" written as "Classical". With IID errors, fixest's
-default small-sample correction (\code{\link[fixest:ssc]{fixest::ssc()}}) multiplies the
-standard errors of a \code{feglm()} fit by sqrt((n - 1) / (n - K)) over
+\verb{vcov =} at estimation or in \code{summary()} for fixest. The note names
+their estimators as it names those of \code{lm}: fixest's "IID" and
+estimatr's classical \code{se_type} are "classical (OLS)" ("(2SLS)" for an
+instrumented fit, "(Fisher information)" for \code{fepois} and \code{feglm}), a
+cluster variance is "cluster-robust" with its clusters, and
+Newey-West, Driscoll-Kraay and Conley keep their names. With IID
+errors, fixest's default small-sample correction (\code{\link[fixest:ssc]{fixest::ssc()}})
+multiplies the standard errors of a \code{feglm()} fit by
+sqrt((n - 1) / (n - K)) over
 those of its \code{glm()} twin with the fixed effects as dummies (a \code{feols()}
 fit already matches \code{lm()}), and
 \code{summary(fit, ssc = fixest::ssc(K.adj = FALSE))} gives the \code{glm()}

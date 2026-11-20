@@ -2179,7 +2179,10 @@ test_that("the classical line of rms, fixest and estimatr follows the language",
   for (fit in fits) {
     expect_identical(
       .se_line_en_fr(fit),
-      c("Std. errors: classical (OLS).", "Erreurs standards\u00A0: classiques (MCO).")
+      c(
+        "Std. errors: classical (OLS).",
+        "Erreurs standards\u00A0: classiques (MCO)."
+      )
     )
   }
 })

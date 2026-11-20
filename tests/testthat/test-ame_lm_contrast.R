@@ -210,7 +210,8 @@ test_that("the note names Satterthwaite only for the AME rows that took its df",
     fixed = TRUE
   )
   # A Path A failure: the AME rows fall back, and the note says nothing
-  # of Satterthwaite.
+  # of Satterthwaite for them. The coefficient rows keep their cluster-
+  # robust Satterthwaite df, which the p-value sentence names.
   testthat::local_mocked_bindings(
     extract_ame_satterthwaite = function(...) stop("synthetic failure"),
     .package = "spicy"
@@ -224,7 +225,12 @@ test_that("the note names Satterthwaite only for the AME rows that took its df",
     ),
     class = "spicy_fallback"
   )
-  expect_no_match(note(tb), "Satterthwaite", fixed = TRUE)
+  expect_no_match(note(tb), "AME inference", fixed = TRUE)
+  expect_match(
+    note(tb),
+    "P-values: Satterthwaite t-test, cluster-robust df.",
+    fixed = TRUE
+  )
 })
 
 test_that("the note says the AME of a tobit model is on the latent outcome", {

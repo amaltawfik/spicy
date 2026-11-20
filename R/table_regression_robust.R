@@ -82,11 +82,15 @@
 #' interface produced, and spicy never overwrites it. A `vcov` request
 #' other than `"classical"` is refused; set the estimator through the
 #' fitting package instead: `se_type =` (with `clusters =`) for estimatr,
-#' `vcov =` at estimation or in `summary()` for fixest. The note carries
-#' fixest's own label of the estimator (clustered, Newey-West, Conley,
-#' ...), fixest's "IID" written as "Classical". With IID errors, fixest's
-#' default small-sample correction ([fixest::ssc()]) multiplies the
-#' standard errors of a `feglm()` fit by sqrt((n - 1) / (n - K)) over
+#' `vcov =` at estimation or in `summary()` for fixest. The note names
+#' their estimators as it names those of `lm`: fixest's "IID" and
+#' estimatr's classical `se_type` are "classical (OLS)" ("(2SLS)" for an
+#' instrumented fit, "(Fisher information)" for `fepois` and `feglm`), a
+#' cluster variance is "cluster-robust" with its clusters, and
+#' Newey-West, Driscoll-Kraay and Conley keep their names. With IID
+#' errors, fixest's default small-sample correction ([fixest::ssc()])
+#' multiplies the standard errors of a `feglm()` fit by
+#' sqrt((n - 1) / (n - K)) over
 #' those of its `glm()` twin with the fixed effects as dummies (a `feols()`
 #' fit already matches `lm()`), and
 #' `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the `glm()`

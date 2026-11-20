@@ -1134,7 +1134,8 @@ such a model keeps its fit statistics beside the others.
 \code{vcov} selects the variance-covariance estimator:
 
 \itemize{
-\item \code{"classical"} -- OLS (lm) / Fisher information (glm).
+\item \code{"classical"} -- OLS, or WLS for a weighted fit (lm) /
+Fisher information (glm).
 \item \code{"HC0"} to \code{"HC5"} -- heteroskedasticity-consistent
 (via \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}).
 \item \code{"CR0"} to \code{"CR3"} -- cluster-robust with
@@ -1149,6 +1150,19 @@ For multi-model use, both \code{vcov} and \code{cluster} accept a single
 value (recycled to all models) or a list (one per model). The
 same fit can appear several times with different estimators to
 compare standard errors side-by-side.
+
+The note names the estimator of each model under the name every
+class shares, "classical" followed by what it rests on
+("classical (OLS)", "classical (Fisher information)" for every fit by
+maximum likelihood, "classical (model-based)" for \code{lmer}, \code{lme} and
+\code{gls}), "heteroskedasticity-robust (HC3)" or "cluster-robust (CR2),
+clusters by id". The test is named once, by a sentence of its own,
+where it is not read off the class: "P-values: Satterthwaite t-test,
+cluster-robust df." under \code{"CR0"} to \code{"CR3"}. In a table of several
+models, a sentence that holds for some of them only opens with their
+names ("Model 1: P-values: ..."). An \code{rms::Glm} with an estimated
+dispersion keeps the z test rms gives it, where its \code{glm} twin is
+tested on t.
 
 Inferential regimes for \code{lm} / \code{glm} (B and AME share the same
 regime):

@@ -263,7 +263,8 @@
 #' `vcov` selects the variance-covariance estimator:
 #'
 #' \itemize{
-#'   \item `"classical"` -- OLS (lm) / Fisher information (glm).
+#'   \item `"classical"` -- OLS, or WLS for a weighted fit (lm) /
+#'     Fisher information (glm).
 #'   \item `"HC0"` to `"HC5"` -- heteroskedasticity-consistent
 #'     (via [sandwich::vcovHC()]).
 #'   \item `"CR0"` to `"CR3"` -- cluster-robust with
@@ -278,6 +279,19 @@
 #' value (recycled to all models) or a list (one per model). The
 #' same fit can appear several times with different estimators to
 #' compare standard errors side-by-side.
+#'
+#' The note names the estimator of each model under the name every
+#' class shares, "classical" followed by what it rests on
+#' ("classical (OLS)", "classical (Fisher information)" for every fit by
+#' maximum likelihood, "classical (model-based)" for `lmer`, `lme` and
+#' `gls`), "heteroskedasticity-robust (HC3)" or "cluster-robust (CR2),
+#' clusters by id". The test is named once, by a sentence of its own,
+#' where it is not read off the class: "P-values: Satterthwaite t-test,
+#' cluster-robust df." under `"CR0"` to `"CR3"`. In a table of several
+#' models, a sentence that holds for some of them only opens with their
+#' names ("Model 1: P-values: ..."). An `rms::Glm` with an estimated
+#' dispersion keeps the z test rms gives it, where its `glm` twin is
+#' tested on t.
 #'
 #' Inferential regimes for `lm` / `glm` (B and AME share the same
 #' regime):
