@@ -193,7 +193,12 @@ test_that("lm_robust under clustered CR2 names its Satterthwaite df", {
   expect_no_match(note, "LM: P-values", fixed = TRUE)
   # Under CR0 and "stata" estimatr tests on G - 1: no sentence.
   for (st in c("CR0", "stata")) {
-    f0 <- estimatr::lm_robust(mpg ~ wt, data = mtcars, clusters = cyl, se_type = st)
+    f0 <- estimatr::lm_robust(
+      mpg ~ wt,
+      data = mtcars,
+      clusters = cyl,
+      se_type = st
+    )
     expect_identical(unique(f0$df), 2)
     expect_no_match(
       attr(table_regression(f0, output = "data.frame"), "note"),

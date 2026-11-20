@@ -206,7 +206,9 @@
   if (identical(cls, "betareg")) {
     return("Beta regression")
   }
-  if (identical(cls, "glm") && identical(frame$info$family$family, "binomial")) {
+  if (
+    identical(cls, "glm") && identical(frame$info$family$family, "binomial")
+  ) {
     return("Binomial regression")
   }
   NA_character_
@@ -2563,7 +2565,8 @@ build_nested_gam_footer_block_from_frames <- function(
   # coefficient: `fit$df` fractional); under CR0 and "stata" it tests on
   # G - 1.
   if (
-    cls %in% c("lm_robust", "iv_robust") &&
+    cls %in%
+      c("lm_robust", "iv_robust") &&
       identical(frame$info$extras$se_type, "CR2") &&
       isTRUE(frame$info$extras$clustered)
   ) {

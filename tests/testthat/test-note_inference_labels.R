@@ -154,7 +154,10 @@ test_that("the standard-error labels of the selection models follow one form", {
       data = Mroz87
     )
   )
-  want <- c(heckit = "classical (two-step)", treatReg = "classical (Fisher information)")
+  want <- c(
+    heckit = "classical (two-step)",
+    treatReg = "classical (Fisher information)"
+  )
   for (id in names(fits)) {
     en <- nl_label(nl_note(fits[[id]], id, NULL, "en"), "en")
     fr <- nl_label(nl_note(fits[[id]], id, NULL, "fr"), "fr")
@@ -163,7 +166,10 @@ test_that("the standard-error labels of the selection models follow one form", {
     expect_identical(nl_acronyms(fr, "fr"), nl_acronyms(en, "en"), label = id)
   }
   expect_identical(
-    nl_label(nl_note(.class_fixture("selection"), "selection", NULL, "en"), "en"),
+    nl_label(
+      nl_note(.class_fixture("selection"), "selection", NULL, "en"),
+      "en"
+    ),
     nl_label(nl_note(.class_fixture("betareg"), "betareg", NULL, "en"), "en")
   )
 })
