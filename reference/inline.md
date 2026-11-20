@@ -46,7 +46,7 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   row. `"(Missing)"` addresses the missing-value category by role. A
   group of `by` is selected with `model`. In a regression table, the
   outcome category of a multinomial row or the equation of a Heckman
-  row, under the header of its term.
+  row, under the header of its term, when the model sits beside others.
 
 - column:
 
@@ -74,7 +74,11 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
 - model:
 
   A group of `by`, or in a multi-model table the model: its label (as
-  displayed) or its position. See *Groups and models*.
+  displayed) or its position. A value that is no displayed label is also
+  looked up among the identities of the models (`"M1"`, and the
+  equations `"outcome"` and `"selection"` of a selection model alone, in
+  any case), so a call survives the language of the table. See *Groups
+  and models*.
 
 ## Value
 
@@ -154,8 +158,12 @@ row of missing values. In a regression table, it also names the rows
 under the header of a term: the outcome categories of a multinomial
 model beside other models
 (`inline(tbl, age, "Student", model = "Adjusted")`) and the two
-equations of a Heckman selection model (`"selection"`, `"outcome"`).
-Until spicy 0.14.0 it also selected the groups of
+equations of a Heckman selection model beside other models
+(`"selection"`, `"outcome"`). Alone, a multinomial or selection model
+has its categories or equations as column groups, which `model` selects
+by their label or position (`inline(tbl, educ, model = "Outcome")`):
+there, `level = "outcome"` is an error that gives that call. Until spicy
+0.14.0 it also selected the groups of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
 and
@@ -187,9 +195,13 @@ The column is a **token** of the typed contract (`"b"`, `"se"`, `"p"`,
 `col_meta`), never a display header. `"ci"` composes the interval with
 the style's brackets and separator, and so does every other interval
 token the table carries (`"med_ci"`, `"ame_ci"`, `"assoc_ci"`): each
-addresses its own bounds. `"partial_chi2"` and `"partial_f"` cite the
-statistic alone, without the degrees of freedom the table prints beside
-it.
+addresses its own bounds. A statistic the table prints with its degrees
+of freedom has a token for each of them: `"<token>_df"` for one
+(`"partial_chi2_df"`), `"<token>_df_num"` and `"<token>_df_den"` for the
+numerator and the denominator of an F. They are formatted as the table
+prints them:
+`inline(tbl, sex, column = "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}")`
+quotes the whole test.
 
 ## Patterns
 

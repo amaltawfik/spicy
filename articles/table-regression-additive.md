@@ -686,6 +686,55 @@ fit_ml <- selection(lfp ~ age + I(age^2) + faminc + kids + educ,
                     wage ~ exper + I(exper^2) + educ + city, data = Mroz87)
 fit_2s <- heckit(lfp ~ age + I(age^2) + faminc + kids + educ,
                  wage ~ exper + I(exper^2) + educ + city, data = Mroz87)
+table_regression(fit_ml, digits = 3)
+#> Heckman selection model: wage
+#> 
+#>                                   Outcome               Selection       
+#>                            ──────────────────────  ──────────────────── 
+#>  Variable                │    B       SE      p      B      SE      p   
+#> ─────────────────────────┼──────────────────────────────────────────────
+#>  (Intercept)             │   -1.963  1.198   .102  -4.120  1.401   .003 
+#>  exper                   │    0.028  0.062   .651                       
+#>  I(exper^2)              │   -0.000  0.002   .955                       
+#>  educ                    │    0.457  0.073  <.001   0.095  0.023  <.001 
+#>  city                    │    0.447  0.316   .158                       
+#>  age                     │                          0.184  0.066   .005 
+#>  I(age^2)                │                         -0.002  0.001   .002 
+#>  faminc                  │                          0.006  0.004   .199 
+#>  kids:                   │                                              
+#>    FALSE (ref.)          │                           –      –      –    
+#>    TRUE                  │                         -0.451  0.130  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Error terms:            │                                              
+#>    σ (outcome error)     │    3.108  0.114   –                          
+#>    ρ (error correlation) │   -0.132  0.165   .424                       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │  753                                         
+#>  AIC                     │ 3188.5                                       
+#> 
+#> Note. Heckman selection model. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 740 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
+```
+
+A model alone sets its two equations side by side: the wage equation
+under `Outcome`, then the probit of participation under `Selection`. A
+variable fills the cells of the equations it enters. Education is in the
+two: it raises the probability of working and, among the women who work,
+the wage. `kids` is a logical variable and has a row for each of its
+values, the reference first. `outcome_labels` renames the two groups.
+
+The `Error terms` block holds what the model estimates beside its
+coefficients, and the note defines each of them. σ is the standard
+deviation of the error of the wage equation. ρ is the correlation
+between the errors of the two equations. If it is zero, the women who
+work are not selected on what the model does not observe, and a
+regression on them alone would do. Here ρ is −0.13, p = .424: these data
+give no sign of such a selection.
+
+Beside another model, the equations go back to rows: each variable has a
+`selection` row, an `outcome` row, or both.
+
+``` r
+
 table_regression(list(Likelihood = fit_ml, Heckit = fit_2s), digits = 3)
 #> Heckman selection model comparison: wage
 #> 
@@ -702,8 +751,9 @@ table_regression(list(Likelihood = fit_ml, Heckit = fit_2s), digits = 3)
 #>    selection               │   -0.002  0.001   .002   -0.002  0.001   .002 
 #>  faminc:                   │                                               
 #>    selection               │    0.006  0.004   .199    0.005  0.004   .277 
-#>  kidsTRUE:                 │                                               
-#>    selection               │   -0.451  0.130  <.001   -0.449  0.131  <.001 
+#>  kids:                     │                                               
+#>    selection: FALSE (ref.) │     –      –      –        –      –      –    
+#>    selection: TRUE         │   -0.451  0.130  <.001   -0.449  0.131  <.001 
 #>  educ:                     │                                               
 #>    selection               │    0.095  0.023  <.001    0.098  0.023  <.001 
 #>    outcome                 │    0.457  0.073  <.001    0.417  0.100  <.001 
@@ -724,18 +774,6 @@ table_regression(list(Likelihood = fit_ml, Heckit = fit_2s), digits = 3)
 #> 
 #> Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: Likelihood: classical (Fisher information), Heckit: classical (two-step). P-values and CIs: t distribution with 740 df. Error terms: λ, coefficient of the inverse Mills ratio, an estimate of ρσ; σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. In a two-step fit, σ and ρ are derived from the estimates and have no standard error. AIC = Akaike information criterion.
 ```
-
-Each variable has a `selection` row, an `outcome` row, or both,
-depending on the equations it enters. Education is in the two: it raises
-the probability of working and, among the women who work, the wage.
-
-The `Error terms` block holds what the model estimates beside its
-coefficients, and the note defines each of them. σ is the standard
-deviation of the error of the wage equation. ρ is the correlation
-between the errors of the two equations. If it is zero, the women who
-work are not selected on what the model does not observe, and a
-regression on them alone would do. Here ρ is −0.13, p = .424 by maximum
-likelihood: these data give no sign of such a selection.
 
 The two-step method does not estimate ρ directly. It adds a regressor to
 the wage equation, the inverse Mills ratio, whose coefficient λ
@@ -785,41 +823,42 @@ table_regression(list("Without city" = fit_ml0, "With city" = fit_ml),
                  nested = TRUE, show_columns = c("b", "se", "p"), digits = 3)
 #> Hierarchical Heckman selection model: wage
 #> 
-#>                                 Without city               With city          
-#>                            ──────────────────────  ────────────────────────── 
-#>  Variable                │    B       SE      p         B         SE      p   
-#> ─────────────────────────┼────────────────────────────────────────────────────
-#>  (Intercept):            │                                                    
-#>    selection             │   -4.122  1.400   .003    -4.120      1.401   .003 
-#>    outcome               │   -1.875  1.195   .117    -1.963      1.198   .102 
-#>  age:                    │                                                    
-#>    selection             │    0.184  0.066   .005     0.184      0.066   .005 
-#>  I(age^2):               │                                                    
-#>    selection             │   -0.002  0.001   .002    -0.002      0.001   .002 
-#>  faminc:                 │                                                    
-#>    selection             │    0.006  0.004   .193     0.006      0.004   .199 
-#>  kidsTRUE:               │                                                    
-#>    selection             │   -0.451  0.130  <.001    -0.451      0.130  <.001 
-#>  educ:                   │                                                    
-#>    selection             │    0.095  0.023  <.001     0.095      0.023  <.001 
-#>    outcome               │    0.471  0.073  <.001     0.457      0.073  <.001 
-#>  exper:                  │                                                    
-#>    outcome               │    0.032  0.062   .605     0.028      0.062   .651 
-#>  I(exper^2):             │                                                    
-#>    outcome               │   -0.000  0.002   .908    -0.000      0.002   .955 
-#>  city:                   │                                                    
-#>    outcome               │                            0.447      0.316   .158 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Error terms:            │                                                    
-#>    σ (outcome error)     │    3.116  0.114   –        3.108      0.114   –    
-#>    ρ (error correlation) │   -0.135  0.163   .409    -0.132      0.165   .424 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                       │  753                     753                       
-#>  AIC                     │ 3188.5                  3188.5                     
-#>  Δχ²                     │     –                      1.993 (1)               
-#>  p (change)              │     –                       .158                   
+#>                                   Without city               With city          
+#>                              ──────────────────────  ────────────────────────── 
+#>  Variable                  │    B       SE      p         B         SE      p   
+#> ───────────────────────────┼────────────────────────────────────────────────────
+#>  (Intercept):              │                                                    
+#>    selection               │   -4.122  1.400   .003    -4.120      1.401   .003 
+#>    outcome                 │   -1.875  1.195   .117    -1.963      1.198   .102 
+#>  age:                      │                                                    
+#>    selection               │    0.184  0.066   .005     0.184      0.066   .005 
+#>  I(age^2):                 │                                                    
+#>    selection               │   -0.002  0.001   .002    -0.002      0.001   .002 
+#>  faminc:                   │                                                    
+#>    selection               │    0.006  0.004   .193     0.006      0.004   .199 
+#>  kids:                     │                                                    
+#>    selection: FALSE (ref.) │     –      –      –         –          –      –    
+#>    selection: TRUE         │   -0.451  0.130  <.001    -0.451      0.130  <.001 
+#>  educ:                     │                                                    
+#>    selection               │    0.095  0.023  <.001     0.095      0.023  <.001 
+#>    outcome                 │    0.471  0.073  <.001     0.457      0.073  <.001 
+#>  exper:                    │                                                    
+#>    outcome                 │    0.032  0.062   .605     0.028      0.062   .651 
+#>  I(exper^2):               │                                                    
+#>    outcome                 │   -0.000  0.002   .908    -0.000      0.002   .955 
+#>  city:                     │                                                    
+#>    outcome                 │                            0.447      0.316   .158 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Error terms:              │                                                    
+#>    σ (outcome error)       │    3.116  0.114   –        3.108      0.114   –    
+#>    ρ (error correlation)   │   -0.135  0.163   .409    -0.132      0.165   .424 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                         │  753                     753                       
+#>  AIC                       │ 3188.5                  3188.5                     
+#>  Δχ²                       │     –                      1.993 (1)               
+#>  p (change)                │     –                       .158                   
 #> 
-#> Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution; residual degrees of freedom: 741 (Without city), 740 (With city). Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
+#> Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution; degrees of freedom: 741 (Without city), 740 (With city). Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
 ```
 
 Living in a city does not improve the wage equation: 1.99 on 1 degree of
@@ -838,40 +877,33 @@ fit_bin <- selection(lfp ~ educ + age + kids5 + kids618 + nwifeinc,
 table_regression(fit_bin)
 #> Heckman selection model (binary outcome): wage >= 5
 #> 
-#>  Variable                │    B      SE       95% CI        p   
-#> ─────────────────────────┼──────────────────────────────────────
-#>  (Intercept):            │                                      
-#>    selection             │    0.43  0.48  [-0.50,  1.36]   .366 
-#>    outcome               │   -4.52  0.56  [-5.62, -3.42]  <.001 
-#>  educ:                   │                                      
-#>    selection             │    0.16  0.02  [ 0.11,  0.20]  <.001 
-#>    outcome               │    0.29  0.04  [ 0.22,  0.36]  <.001 
-#>  age:                    │                                      
-#>    selection             │   -0.03  0.01  [-0.05, -0.02]  <.001 
-#>  kids5:                  │                                      
-#>    selection             │   -0.89  0.11  [-1.11, -0.67]  <.001 
-#>  kids618:                │                                      
-#>    selection             │   -0.04  0.04  [-0.12,  0.04]   .332 
-#>  nwifeinc:               │                                      
-#>    selection             │   -0.02  0.00  [-0.03, -0.01]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Error terms:            │                                      
-#>    ρ (error correlation) │    0.12  0.27  [-0.41,  0.65]   .667 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                       │  753                                 
-#>  AIC                     │ 1324.4                               
+#>                                  Outcome             Selection      
+#>                            ────────────────────  ────────────────── 
+#>  Variable                │    B      SE     p      B     SE     p   
+#> ─────────────────────────┼──────────────────────────────────────────
+#>  (Intercept)             │   -4.52  0.56  <.001   0.43  0.48   .366 
+#>  educ                    │    0.29  0.04  <.001   0.16  0.02  <.001 
+#>  age                     │                       -0.03  0.01  <.001 
+#>  kids5                   │                       -0.89  0.11  <.001 
+#>  kids618                 │                       -0.04  0.04   .332 
+#>  nwifeinc                │                       -0.02  0.00  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Error terms:            │                                          
+#>    ρ (error correlation) │    0.12  0.27   .667                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │  753                                     
+#>  AIC                     │ 1324.4                                   
 #> 
-#> Note. Heckman selection model (binary outcome). Outcome observed for 428 of 753. Outcome equation: probit. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 744 df. Error terms: ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Heckman selection model (binary outcome). Outcome observed for 428 of 753. Outcome equation: probit. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 744 df. Error terms: ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
 ```
 
 ### Treatment-effects models
 
 [`treatReg()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
 estimates the effect of a binary treatment that the units choose. The
-outcome is observed for everyone, and the first equation, labeled
-`selection` in the table, is that of the treatment. The example takes
-the college attendance of the wife and the logarithm of the family
-income.
+outcome is observed for everyone, and the equation under `Selection` is
+that of the treatment. The example takes the college attendance of the
+wife and the logarithm of the family income.
 
 ``` r
 
@@ -882,33 +914,28 @@ fit_tr <- treatReg(college ~ motheduc + fatheduc + age,
 table_regression(fit_tr)
 #> Treatment-effects model: log(faminc)
 #> 
-#>  Variable                │    B      SE       95% CI        p   
-#> ─────────────────────────┼──────────────────────────────────────
-#>  (Intercept):            │                                      
-#>    selection             │   -2.73  0.37  [-3.46, -1.99]  <.001 
-#>    outcome               │    1.88  0.13  [ 1.63,  2.12]  <.001 
-#>  motheduc:               │                                      
-#>    selection             │    0.10  0.02  [ 0.07,  0.14]  <.001 
-#>  fatheduc:               │                                      
-#>    selection             │    0.10  0.02  [ 0.07,  0.13]  <.001 
-#>  age:                    │                                      
-#>    selection             │    0.01  0.01  [-0.01,  0.02]   .434 
-#>    outcome               │    0.01  0.00  [ 0.00,  0.01]   .001 
-#>  collegeTRUE:            │                                      
-#>    outcome               │    0.30  0.09  [ 0.12,  0.47]  <.001 
-#>  huseduc:                │                                      
-#>    outcome               │    0.05  0.01  [ 0.04,  0.06]  <.001 
-#>  city:                   │                                      
-#>    outcome               │    0.19  0.04  [ 0.12,  0.26]  <.001 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Error terms:            │                                      
-#>    σ (outcome error)     │    0.45  0.01  [ 0.43,  0.47]   –    
-#>    ρ (error correlation) │   -0.15  0.12  [-0.38,  0.08]   .195 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                       │  753                                 
-#>  AIC                     │ 1711.5                               
+#>                                  Outcome             Selection      
+#>                            ────────────────────  ────────────────── 
+#>  Variable                │    B      SE     p      B     SE     p   
+#> ─────────────────────────┼──────────────────────────────────────────
+#>  (Intercept)             │    1.88  0.13  <.001  -2.73  0.37  <.001 
+#>  college:                │                                          
+#>    FALSE (ref.)          │     –     –     –                        
+#>    TRUE                  │    0.30  0.09  <.001                     
+#>  huseduc                 │    0.05  0.01  <.001                     
+#>  age                     │    0.01  0.00   .001   0.01  0.01   .434 
+#>  city                    │    0.19  0.04  <.001                     
+#>  motheduc                │                        0.10  0.02  <.001 
+#>  fatheduc                │                        0.10  0.02  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Error terms:            │                                          
+#>    σ (outcome error)     │    0.45  0.01   –                        
+#>    ρ (error correlation) │   -0.15  0.12   .195                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │  753                                     
+#>  AIC                     │ 1711.5                                   
 #> 
-#> Note. Treatment-effects model. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 742 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Treatment-effects model. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 742 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
 ```
 
 ### Dropping an error term
@@ -924,34 +951,27 @@ table_regression(fit_ml, drop = "sigma", show_columns = c("b", "se", "p"),
                  digits = 3)
 #> Heckman selection model: wage
 #> 
-#>  Variable                │    B       SE      p   
-#> ─────────────────────────┼────────────────────────
-#>  (Intercept):            │                        
-#>    selection             │   -4.120  1.401   .003 
-#>    outcome               │   -1.963  1.198   .102 
-#>  age:                    │                        
-#>    selection             │    0.184  0.066   .005 
-#>  I(age^2):               │                        
-#>    selection             │   -0.002  0.001   .002 
-#>  faminc:                 │                        
-#>    selection             │    0.006  0.004   .199 
-#>  kidsTRUE:               │                        
-#>    selection             │   -0.451  0.130  <.001 
-#>  educ:                   │                        
-#>    selection             │    0.095  0.023  <.001 
-#>    outcome               │    0.457  0.073  <.001 
-#>  exper:                  │                        
-#>    outcome               │    0.028  0.062   .651 
-#>  I(exper^2):             │                        
-#>    outcome               │   -0.000  0.002   .955 
-#>  city:                   │                        
-#>    outcome               │    0.447  0.316   .158 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Error terms:            │                        
-#>    ρ (error correlation) │   -0.132  0.165   .424 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                       │  753                   
-#>  AIC                     │ 3188.5                 
+#>                                   Outcome               Selection       
+#>                            ──────────────────────  ──────────────────── 
+#>  Variable                │    B       SE      p      B      SE      p   
+#> ─────────────────────────┼──────────────────────────────────────────────
+#>  (Intercept)             │   -1.963  1.198   .102  -4.120  1.401   .003 
+#>  exper                   │    0.028  0.062   .651                       
+#>  I(exper^2)              │   -0.000  0.002   .955                       
+#>  educ                    │    0.457  0.073  <.001   0.095  0.023  <.001 
+#>  city                    │    0.447  0.316   .158                       
+#>  age                     │                          0.184  0.066   .005 
+#>  I(age^2)                │                         -0.002  0.001   .002 
+#>  faminc                  │                          0.006  0.004   .199 
+#>  kids:                   │                                              
+#>    FALSE (ref.)          │                           –      –      –    
+#>    TRUE                  │                         -0.451  0.130  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Error terms:            │                                              
+#>    ρ (error correlation) │   -0.132  0.165   .424                       
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │  753                                         
+#>  AIC                     │ 3188.5                                       
 #> 
 #> Note. Heckman selection model. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 740 df. Error terms: ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
 ```

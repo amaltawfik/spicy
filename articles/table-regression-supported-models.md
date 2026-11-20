@@ -137,7 +137,7 @@ to get it as a data frame.
 |  | `svyolr` | [`survey::svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) | per category (design-based) | OR (logit) | Thresholds | classical (design-based) |
 |  | `svycoxph` | [`survey::svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) | no | HR | \- | classical (design-based) |
 | Population-averaged (GEE) | `geeglm` | [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | yes | OR / IRR / RR / MR / HR (link) | \- | classical (the fit’s own) |
-| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | Smooth terms | classical, CR1 |
+| Additive, proportions, selection | `gam` | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | yes | OR / IRR (link) | Smooth terms | classical, CR1 (classical only for an mgcv extended family other than nb) |
 |  | `betareg` | [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) | yes | OR (mean link) | Precision (y ~ x \| z) | classical, CR1 |
 |  | `selection` | [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) | no | \- | Error terms | classical |
 | rms | `ols` | [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) | yes | \- | \- | classical, CR0 (classical only without x = TRUE, y = TRUE) |
@@ -220,7 +220,7 @@ values of `vcov` each class accepts come from the same registry:
 |  | `svyolr` | classical (design-based) |
 |  | `svycoxph` | classical (design-based) |
 | Population-averaged (GEE) | `geeglm` | classical (the fit’s own) |
-| Additive, proportions, selection | `gam` | classical, CR1 |
+| Additive, proportions, selection | `gam` | classical, CR1 (classical only for an mgcv extended family other than nb) |
 |  | `betareg` | classical, CR1 |
 |  | `selection` | classical |
 | rms | `ols` | classical, CR0 (classical only without x = TRUE, y = TRUE) |

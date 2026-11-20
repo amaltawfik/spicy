@@ -23,9 +23,12 @@ Each token = one displayed column.
   smooth term, which have no t, show a dash, as in the `"t"` column. The
   header reads df, ddl in French. Opt-in: no group token holds it.
 
-- Marginal effects: `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`. `"p"`
-  always refers to the B-coefficient p-value; for the AME-specific
-  p-value use `"ame_p"`.
+- Marginal effects: `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`,
+  `"ame_df"`. `"p"` always refers to the B-coefficient p-value; for the
+  AME-specific p-value use `"ame_p"`. `"ame_df"` gives the degrees of
+  freedom of each AME's t test (the Satterthwaite df under
+  `vcov = "CR2"`), under the header of `"df"` and with its rules: blank
+  under a z test, refused when no AME of the table has a t test.
 
 - Partial effect sizes – `lm` only: `"partial_f2"`, `"partial_eta2"`,
   `"partial_omega2"`, each with a paired `_ci` companion
@@ -474,9 +477,11 @@ lists are the columns `fit_stats_default` and `fit_stats` of
   `"r2"` (feols, not IV), `"within_r2"` (feols with fixed effects, not
   IV), `"pseudo_r2_mcfadden"` (GLM family), `"aic"` (not IV). Available:
   `"nobs"`, `"r2"` (feols), `"adj_r2"` (feols), `"pseudo_r2_mcfadden"`
-  (GLM family), `"fixed_effects"` (with fixed effects), `"within_r2"`
+  (GLM family), `"theta"` (negative binomial), `"alpha"` (negative
+  binomial), `"fixed_effects"` (with fixed effects), `"within_r2"`
   (feols with fixed effects), `"n_groups"` (with fixed effects),
-  `"sigma"`, `"aic"`, `"aicc"`, `"bic"`, `"deviance"`, `"log_lik"`.
+  `"sigma"` (not negative binomial), `"aic"`, `"aicc"`, `"bic"`,
+  `"deviance"`, `"log_lik"`.
 
 **Mixed effects**
 
@@ -485,21 +490,28 @@ lists are the columns `fit_stats_default` and `fit_stats` of
   `"r2_marginal"`, `"r2_conditional"`, `"n_groups"`, `"icc"`, `"sigma"`,
   `"aic"`, `"aicc"`, `"bic"`, `"deviance"`, `"log_lik"`.
 
-- `glmerMod`. Default: `"nobs"`, `"n_groups"`, `"icc"`, `"r2_marginal"`,
-  `"r2_conditional"`, `"aic"`, `"bic"`. Available: `"nobs"`,
-  `"r2_marginal"`, `"r2_conditional"`, `"n_groups"`, `"icc"`, `"sigma"`,
-  `"aic"`, `"aicc"`, `"bic"`, `"deviance"`, `"log_lik"`.
+- `glmerMod`. Default: `"nobs"`, `"n_groups"`, `"icc"` (binomial or
+  Poisson family), `"r2_marginal"`, `"r2_conditional"`, `"aic"`,
+  `"bic"`. Available: `"nobs"`, `"theta"` (negative binomial), `"alpha"`
+  (negative binomial), `"r2_marginal"`, `"r2_conditional"`,
+  `"n_groups"`, `"icc"` (binomial or Poisson family), `"sigma"` (not
+  negative binomial), `"aic"`, `"aicc"`, `"bic"`, `"deviance"`,
+  `"log_lik"`.
 
 - `glmmTMB`. Default: `"nobs"`, `"n_groups"`, `"icc"` (Gaussian, no
-  zero-inflation or dispersion formula), `"r2_marginal"` (no ordinal
-  family, zero-inflation or dispersion formula), `"r2_conditional"`
-  (Gaussian, no zero-inflation or dispersion formula), `"aic"`, `"bic"`.
-  Available: `"nobs"`, `"r2_marginal"` (no ordinal family,
-  zero-inflation or dispersion formula), `"r2_conditional"` (Gaussian,
-  no zero-inflation or dispersion formula), `"n_groups"`, `"icc"`
-  (Gaussian, no zero-inflation or dispersion formula), `"sigma"` (no
-  ordinal family or dispersion formula), `"aic"`, `"aicc"`, `"bic"`,
-  `"deviance"` (no ordinal or truncated family), `"log_lik"`.
+  dispersion formula), `"r2_marginal"` (no ordinal or beta family,
+  zero-inflation or dispersion formula), `"r2_conditional"` (no ordinal,
+  beta or truncated family, zero-inflation or dispersion formula),
+  `"aic"`, `"bic"`. Available: `"nobs"`, `"theta"` (NB2 family, no
+  dispersion formula), `"alpha"` (NB2 family, no dispersion formula),
+  `"delta"` (NB1 family, no dispersion formula), `"phi"` (beta family,
+  no dispersion formula), `"r2_marginal"` (no ordinal or beta family,
+  zero-inflation or dispersion formula), `"r2_conditional"` (no ordinal,
+  beta or truncated family, zero-inflation or dispersion formula),
+  `"n_groups"`, `"icc"` (Gaussian, no dispersion formula), `"sigma"`
+  (Gaussian, Gamma, Poisson, binomial or Tweedie family, no dispersion
+  formula), `"aic"`, `"aicc"`, `"bic"`, `"deviance"` (no ordinal,
+  truncated or beta family), `"log_lik"`.
 
 - `lme`. Default: `"nobs"`, `"n_groups"`, `"icc"`, `"r2_marginal"`,
   `"r2_conditional"`, `"aic"`, `"bic"`. Available: `"nobs"`,
@@ -535,11 +547,11 @@ lists are the columns `fit_stats_default` and `fit_stats` of
 **Counts, two-part**
 
 - `zeroinfl`. Default: `"nobs"`, `"aic"`. Available: `"nobs"`, `"theta"`
-  (negative-binomial), `"alpha"` (negative-binomial), `"aic"`, `"aicc"`,
+  (negative binomial), `"alpha"` (negative binomial), `"aic"`, `"aicc"`,
   `"bic"`, `"log_lik"`.
 
 - `hurdle`. Default: `"nobs"`, `"aic"`. Available: `"nobs"`, `"theta"`
-  (negative-binomial), `"alpha"` (negative-binomial), `"aic"`, `"aicc"`,
+  (negative binomial), `"alpha"` (negative binomial), `"aic"`, `"aicc"`,
   `"bic"`, `"log_lik"`.
 
 **Survival**
@@ -582,8 +594,9 @@ lists are the columns `fit_stats_default` and `fit_stats` of
   quasi). Available: `"nobs"`, `"adj_r2"`, `"pseudo_r2_mcfadden"`
   (binomial, Poisson, negative binomial), `"pseudo_r2_nagelkerke"`
   (binomial, Poisson, negative binomial), `"pseudo_r2_tjur"` (binomial),
-  `"r2_deviance"` (not binomial), `"sigma"`, `"aic"`, `"aicc"`, `"bic"`,
-  `"deviance"`, `"log_lik"`.
+  `"r2_deviance"` (nb, tw or a glm family but binomial), `"theta"`
+  (nb()), `"alpha"` (nb()), `"phi"` (betar()), `"sigma"` (glm family or
+  tw()), `"aic"`, `"aicc"`, `"bic"`, `"deviance"`, `"log_lik"`.
 
 - `betareg`. Default: `"nobs"`, `"aic"`. Available: `"nobs"`,
   `"pseudo_r2_ferrari"`, `"phi"`, `"aic"`, `"aicc"`, `"bic"`,

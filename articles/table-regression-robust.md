@@ -737,7 +737,7 @@ table_regression(
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │ 428                    428                   428                   428                  
 #> 
-#> Note. OLS: linear regression; ivreg(): IV regression (2SLS); iv_robust(): IV regression (robust SE); feols(): IV regression (2SLS). Std. errors: OLS: heteroskedasticity-robust (HC1), ivreg(): classical (2SLS), iv_robust(): heteroskedasticity-robust (HC1), feols(): heteroskedasticity-robust.
+#> Note. OLS: linear regression; ivreg(), feols(): IV regression (2SLS); iv_robust(): IV regression (robust SE). Std. errors: OLS, iv_robust(): heteroskedasticity-robust (HC1); ivreg(): classical (2SLS); feols(): heteroskedasticity-robust.
 ```
 
 The return to a year of education falls from 0.107 to 0.061, and its
@@ -858,10 +858,10 @@ table_regression(
 #>  Variable        │    B       AME          95% CI        
 #> ─────────────────┼───────────────────────────────────────
 #>  (Intercept)     │  965.31                               
-#>  education       │   80.65    80.65  [   38.35,  122.95] 
+#>  education       │   80.65    80.65  [   38.34,  122.95] 
 #>  experience      │  131.56    91.93  [   76.26,  107.60] 
 #>  I(experience^2) │   -1.86                               
-#>  youngkids       │ -894.02  -894.02  [-1113.30, -674.75] 
+#>  youngkids       │ -894.02  -894.02  [-1113.32, -674.73] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │  753                                  
 #>  AIC             │ 7656.2                                
@@ -915,7 +915,7 @@ table_regression(
 #>  R²              │     0.33               –                 –                 –           
 #>  Adj. R²         │     0.33               –                 –                 –           
 #> 
-#> Note. Mean: linear regression; Q10: quantile regression (τ = 0.10); Median: quantile regression (τ = 0.50); Q90: quantile regression (τ = 0.90). Std. errors: Mean: heteroskedasticity-robust (HC3); Q10: quantile sandwich (nid, Hall-Sheather); Median: quantile sandwich (nid, Hall-Sheather); Q90: quantile sandwich (nid, Hall-Sheather).
+#> Note. Mean: linear regression; Q10: quantile regression (τ = 0.10); Median: quantile regression (τ = 0.50); Q90: quantile regression (τ = 0.90). Std. errors: Mean: heteroskedasticity-robust (HC3); Q10, Median, Q90: quantile sandwich (nid, Hall-Sheather).
 ```
 
 The wage gap of African-American men is −0.283 at the first decile and
@@ -1009,7 +1009,7 @@ table_regression(
 #>                ─────────────────────────────────────  ───────────────────────────────────── 
 #>  Variable    │    B      SE        95% CI        p       B      SE        95% CI        p   
 #> ─────────────┼──────────────────────────────────────────────────────────────────────────────
-#>  (Intercept) │   1.654  0.116  [1.426, 1.882]  <.001    1.654  0.154  [1.353, 1.955]  <.001 
+#>  (Intercept) │   1.654  0.116  [1.426, 1.882]  <.001    1.654  0.154  [1.352, 1.955]  <.001 
 #>  beertax     │   0.424  0.060  [0.306, 0.542]  <.001    0.424  0.202  [0.028, 0.820]   .036 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n           │ 336                                    336                                   

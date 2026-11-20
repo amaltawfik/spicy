@@ -744,7 +744,52 @@ in thousands of dollars here, and the tables show three decimals.</p>
 <span>                    <span class="va">wage</span> <span class="op">~</span> <span class="va">exper</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">exper</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="va">educ</span> <span class="op">+</span> <span class="va">city</span>, data <span class="op">=</span> <span class="va">Mroz87</span><span class="op">)</span></span>
 <span><span class="va">fit_2s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">heckit</a></span><span class="op">(</span><span class="va">lfp</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="va">faminc</span> <span class="op">+</span> <span class="va">kids</span> <span class="op">+</span> <span class="va">educ</span>,</span>
 <span>                 <span class="va">wage</span> <span class="op">~</span> <span class="va">exper</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">exper</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="va">educ</span> <span class="op">+</span> <span class="va">city</span>, data <span class="op">=</span> <span class="va">Mroz87</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Likelihood <span class="op">=</span> <span class="va">fit_ml</span>, Heckit <span class="op">=</span> <span class="va">fit_2s</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_ml</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Heckman selection model: wage</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;                                   Outcome               Selection       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ──────────────────────  ──────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B       SE      p      B      SE      p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>   -1.963  1.198   .102  -4.120  1.401   .003 </span></span>
+<span><span class="co">#&gt;  exper                   <span style="color: #9E9E9E;">│</span>    0.028  0.062   .651                       </span></span>
+<span><span class="co">#&gt;  I(exper^2)              <span style="color: #9E9E9E;">│</span>   -0.000  0.002   .955                       </span></span>
+<span><span class="co">#&gt;  educ                    <span style="color: #9E9E9E;">│</span>    0.457  0.073  &lt;.001   0.095  0.023  &lt;.001 </span></span>
+<span><span class="co">#&gt;  city                    <span style="color: #9E9E9E;">│</span>    0.447  0.316   .158                       </span></span>
+<span><span class="co">#&gt;  age                     <span style="color: #9E9E9E;">│</span>                          0.184  0.066   .005 </span></span>
+<span><span class="co">#&gt;  I(age^2)                <span style="color: #9E9E9E;">│</span>                         -0.002  0.001   .002 </span></span>
+<span><span class="co">#&gt;  faminc                  <span style="color: #9E9E9E;">│</span>                          0.006  0.004   .199 </span></span>
+<span><span class="co">#&gt;  kids:                   <span style="color: #9E9E9E;">│</span>                                              </span></span>
+<span><span class="co">#&gt;    FALSE (ref.)          <span style="color: #9E9E9E;">│</span>                           –      –      –    </span></span>
+<span><span class="co">#&gt;    TRUE                  <span style="color: #9E9E9E;">│</span>                         -0.451  0.130  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                                              </span></span>
+<span><span class="co">#&gt;    σ (outcome error)     <span style="color: #9E9E9E;">│</span>    3.108  0.114   –                          </span></span>
+<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>   -0.132  0.165   .424                       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                                         </span></span>
+<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 3188.5                                       </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Heckman selection model. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 740 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<p>A model alone sets its two equations side by side: the wage equation
+under <code>Outcome</code>, then the probit of participation under
+<code>Selection</code>. A variable fills the cells of the equations it
+enters. Education is in the two: it raises the probability of working
+and, among the women who work, the wage. <code>kids</code> is a logical
+variable and has a row for each of its values, the reference first.
+<code>outcome_labels</code> renames the two groups.</p>
+<p>The <code>Error terms</code> block holds what the model estimates
+beside its coefficients, and the note defines each of them. σ is the
+standard deviation of the error of the wage equation. ρ is the
+correlation between the errors of the two equations. If it is zero, the
+women who work are not selected on what the model does not observe, and
+a regression on them alone would do. Here ρ is −0.13, p = .424: these
+data give no sign of such a selection.</p>
+<p>Beside another model, the equations go back to rows: each variable
+has a <code>selection</code> row, an <code>outcome</code> row, or
+both.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Likelihood <span class="op">=</span> <span class="va">fit_ml</span>, Heckit <span class="op">=</span> <span class="va">fit_2s</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Heckman selection model comparison: wage</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                                    Likelihood               Heckit         </span></span>
@@ -760,8 +805,9 @@ in thousands of dollars here, and the tables show three decimals.</p>
 <span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>   -0.002  0.001   .002   -0.002  0.001   .002 </span></span>
 <span><span class="co">#&gt;  faminc:                   <span style="color: #9E9E9E;">│</span>                                               </span></span>
 <span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>    0.006  0.004   .199    0.005  0.004   .277 </span></span>
-<span><span class="co">#&gt;  kidsTRUE:                 <span style="color: #9E9E9E;">│</span>                                               </span></span>
-<span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>   -0.451  0.130  &lt;.001   -0.449  0.131  &lt;.001 </span></span>
+<span><span class="co">#&gt;  kids:                     <span style="color: #9E9E9E;">│</span>                                               </span></span>
+<span><span class="co">#&gt;    selection: FALSE (ref.) <span style="color: #9E9E9E;">│</span>     –      –      –        –      –      –    </span></span>
+<span><span class="co">#&gt;    selection: TRUE         <span style="color: #9E9E9E;">│</span>   -0.451  0.130  &lt;.001   -0.449  0.131  &lt;.001 </span></span>
 <span><span class="co">#&gt;  educ:                     <span style="color: #9E9E9E;">│</span>                                               </span></span>
 <span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>    0.095  0.023  &lt;.001    0.098  0.023  &lt;.001 </span></span>
 <span><span class="co">#&gt;    outcome                 <span style="color: #9E9E9E;">│</span>    0.457  0.073  &lt;.001    0.417  0.100  &lt;.001 </span></span>
@@ -781,17 +827,6 @@ in thousands of dollars here, and the tables show three decimals.</p>
 <span><span class="co">#&gt;  AIC                       <span style="color: #9E9E9E;">│</span> 3188.5                     –                  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: Likelihood: classical (Fisher information), Heckit: classical (two-step). P-values and CIs: t distribution with 740 df. Error terms: λ, coefficient of the inverse Mills ratio, an estimate of ρσ; σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. In a two-step fit, σ and ρ are derived from the estimates and have no standard error. AIC = Akaike information criterion.</span></span></span></code></pre></div>
-<p>Each variable has a <code>selection</code> row, an
-<code>outcome</code> row, or both, depending on the equations it enters.
-Education is in the two: it raises the probability of working and, among
-the women who work, the wage.</p>
-<p>The <code>Error terms</code> block holds what the model estimates
-beside its coefficients, and the note defines each of them. σ is the
-standard deviation of the error of the wage equation. ρ is the
-correlation between the errors of the two equations. If it is zero, the
-women who work are not selected on what the model does not observe, and
-a regression on them alone would do. Here ρ is −0.13, p = .424 by
-maximum likelihood: these data give no sign of such a selection.</p>
 <p>The two-step method does not estimate ρ directly. It adds a regressor
 to the wage equation, the inverse Mills ratio, whose coefficient λ
 estimates ρσ, and it is the test of λ that plays this role (p = .386). σ
@@ -801,7 +836,7 @@ two-step fit has no likelihood, hence no AIC.</p>
 observed, the standard errors of each model, and the reference
 distribution of the tests. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports the same
 values.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_ml</span><span class="op">)</span><span class="op">$</span><span class="va">estimate</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"educ"</span>, <span class="st">"sigma"</span>, <span class="st">"rho"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt;         Estimate Std. Error    t value      Pr(&gt;|t|)</span></span>
 <span><span class="co">#&gt; educ   0.0952808 0.02315342  4.1151936  4.303375e-05</span></span>
@@ -823,48 +858,49 @@ equation and not the outcome equation.</p>
 </h3>
 <p>Two models estimated by maximum likelihood are compared by a
 likelihood-ratio test.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_ml0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">selection</a></span><span class="op">(</span><span class="va">lfp</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="va">faminc</span> <span class="op">+</span> <span class="va">kids</span> <span class="op">+</span> <span class="va">educ</span>,</span>
 <span>                     <span class="va">wage</span> <span class="op">~</span> <span class="va">exper</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">exper</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="va">educ</span>, data <span class="op">=</span> <span class="va">Mroz87</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Without city"</span> <span class="op">=</span> <span class="va">fit_ml0</span>, <span class="st">"With city"</span> <span class="op">=</span> <span class="va">fit_ml</span><span class="op">)</span>,</span>
 <span>                 nested <span class="op">=</span> <span class="cn">TRUE</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Hierarchical Heckman selection model: wage</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                                 Without city               With city          </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ──────────────────────  ────────────────────────── </span></span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B       SE      p         B         SE      p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept):            <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -4.122  1.400   .003    -4.120      1.401   .003 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>   -1.875  1.195   .117    -1.963      1.198   .102 </span></span>
-<span><span class="co">#&gt;  age:                    <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.184  0.066   .005     0.184      0.066   .005 </span></span>
-<span><span class="co">#&gt;  I(age^2):               <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.002  0.001   .002    -0.002      0.001   .002 </span></span>
-<span><span class="co">#&gt;  faminc:                 <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.006  0.004   .193     0.006      0.004   .199 </span></span>
-<span><span class="co">#&gt;  kidsTRUE:               <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.451  0.130  &lt;.001    -0.451      0.130  &lt;.001 </span></span>
-<span><span class="co">#&gt;  educ:                   <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.095  0.023  &lt;.001     0.095      0.023  &lt;.001 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.471  0.073  &lt;.001     0.457      0.073  &lt;.001 </span></span>
-<span><span class="co">#&gt;  exper:                  <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.032  0.062   .605     0.028      0.062   .651 </span></span>
-<span><span class="co">#&gt;  I(exper^2):             <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>   -0.000  0.002   .908    -0.000      0.002   .955 </span></span>
-<span><span class="co">#&gt;  city:                   <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>                            0.447      0.316   .158 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                                                    </span></span>
-<span><span class="co">#&gt;    σ (outcome error)     <span style="color: #9E9E9E;">│</span>    3.116  0.114   –        3.108      0.114   –    </span></span>
-<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>   -0.135  0.163   .409    -0.132      0.165   .424 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                     753                       </span></span>
-<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 3188.5                  3188.5                     </span></span>
-<span><span class="co">#&gt;  Δχ²                     <span style="color: #9E9E9E;">│</span>     –                      1.993 (1)               </span></span>
-<span><span class="co">#&gt;  p (change)              <span style="color: #9E9E9E;">│</span>     –                       .158                   </span></span>
+<span><span class="co">#&gt;                                   Without city               With city          </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                             ──────────────────────  ────────────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span>    B       SE      p         B         SE      p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept):              <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>   -4.122  1.400   .003    -4.120      1.401   .003 </span></span>
+<span><span class="co">#&gt;    outcome                 <span style="color: #9E9E9E;">│</span>   -1.875  1.195   .117    -1.963      1.198   .102 </span></span>
+<span><span class="co">#&gt;  age:                      <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>    0.184  0.066   .005     0.184      0.066   .005 </span></span>
+<span><span class="co">#&gt;  I(age^2):                 <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>   -0.002  0.001   .002    -0.002      0.001   .002 </span></span>
+<span><span class="co">#&gt;  faminc:                   <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>    0.006  0.004   .193     0.006      0.004   .199 </span></span>
+<span><span class="co">#&gt;  kids:                     <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    selection: FALSE (ref.) <span style="color: #9E9E9E;">│</span>     –      –      –         –          –      –    </span></span>
+<span><span class="co">#&gt;    selection: TRUE         <span style="color: #9E9E9E;">│</span>   -0.451  0.130  &lt;.001    -0.451      0.130  &lt;.001 </span></span>
+<span><span class="co">#&gt;  educ:                     <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    selection               <span style="color: #9E9E9E;">│</span>    0.095  0.023  &lt;.001     0.095      0.023  &lt;.001 </span></span>
+<span><span class="co">#&gt;    outcome                 <span style="color: #9E9E9E;">│</span>    0.471  0.073  &lt;.001     0.457      0.073  &lt;.001 </span></span>
+<span><span class="co">#&gt;  exper:                    <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    outcome                 <span style="color: #9E9E9E;">│</span>    0.032  0.062   .605     0.028      0.062   .651 </span></span>
+<span><span class="co">#&gt;  I(exper^2):               <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    outcome                 <span style="color: #9E9E9E;">│</span>   -0.000  0.002   .908    -0.000      0.002   .955 </span></span>
+<span><span class="co">#&gt;  city:                     <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    outcome                 <span style="color: #9E9E9E;">│</span>                            0.447      0.316   .158 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Error terms:              <span style="color: #9E9E9E;">│</span>                                                    </span></span>
+<span><span class="co">#&gt;    σ (outcome error)       <span style="color: #9E9E9E;">│</span>    3.116  0.114   –        3.108      0.114   –    </span></span>
+<span><span class="co">#&gt;    ρ (error correlation)   <span style="color: #9E9E9E;">│</span>   -0.135  0.163   .409    -0.132      0.165   .424 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                         <span style="color: #9E9E9E;">│</span>  753                     753                       </span></span>
+<span><span class="co">#&gt;  AIC                       <span style="color: #9E9E9E;">│</span> 3188.5                  3188.5                     </span></span>
+<span><span class="co">#&gt;  Δχ²                       <span style="color: #9E9E9E;">│</span>     –                      1.993 (1)               </span></span>
+<span><span class="co">#&gt;  p (change)                <span style="color: #9E9E9E;">│</span>     –                       .158                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution; residual degrees of freedom: 741 (Without city), 740 (With city). Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution; degrees of freedom: 741 (Without city), 740 (With city). Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Living in a city does not improve the wage equation: 1.99 on 1 degree
 of freedom, p = .158. The comparison is refused for a two-step fit,
 which has no likelihood.</p>
@@ -874,46 +910,40 @@ which has no likelihood.</p>
 </h3>
 <p>When the outcome is binary, its equation is a probit too, which the
 title and the note state, and the model has no σ.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_bin</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">selection</a></span><span class="op">(</span><span class="va">lfp</span> <span class="op">~</span> <span class="va">educ</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">kids5</span> <span class="op">+</span> <span class="va">kids618</span> <span class="op">+</span> <span class="va">nwifeinc</span>,</span>
 <span>                     <span class="va">wage</span> <span class="op">&gt;=</span> <span class="fl">5</span> <span class="op">~</span> <span class="va">educ</span>, data <span class="op">=</span> <span class="va">Mroz87</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_bin</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Heckman selection model (binary outcome): wage &gt;= 5</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept):            <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.43  0.48  [-0.50,  1.36]   .366 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>   -4.52  0.56  [-5.62, -3.42]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  educ:                   <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.16  0.02  [ 0.11,  0.20]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.29  0.04  [ 0.22,  0.36]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  age:                    <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.03  0.01  [-0.05, -0.02]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  kids5:                  <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.89  0.11  [-1.11, -0.67]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  kids618:                <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.04  0.04  [-0.12,  0.04]   .332 </span></span>
-<span><span class="co">#&gt;  nwifeinc:               <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.02  0.00  [-0.03, -0.01]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>    0.12  0.27  [-0.41,  0.65]   .667 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                                 </span></span>
-<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 1324.4                               </span></span>
+<span><span class="co">#&gt;                                  Outcome             Selection      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ────────────────────  ────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B      SE     p      B     SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>   -4.52  0.56  &lt;.001   0.43  0.48   .366 </span></span>
+<span><span class="co">#&gt;  educ                    <span style="color: #9E9E9E;">│</span>    0.29  0.04  &lt;.001   0.16  0.02  &lt;.001 </span></span>
+<span><span class="co">#&gt;  age                     <span style="color: #9E9E9E;">│</span>                       -0.03  0.01  &lt;.001 </span></span>
+<span><span class="co">#&gt;  kids5                   <span style="color: #9E9E9E;">│</span>                       -0.89  0.11  &lt;.001 </span></span>
+<span><span class="co">#&gt;  kids618                 <span style="color: #9E9E9E;">│</span>                       -0.04  0.04   .332 </span></span>
+<span><span class="co">#&gt;  nwifeinc                <span style="color: #9E9E9E;">│</span>                       -0.02  0.00  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>    0.12  0.27   .667                     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                                     </span></span>
+<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 1324.4                                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Heckman selection model (binary outcome). Outcome observed for 428 of 753. Outcome equation: probit. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 744 df. Error terms: ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Heckman selection model (binary outcome). Outcome observed for 428 of 753. Outcome equation: probit. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 744 df. Error terms: ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="treatment-effects-models">Treatment-effects models<a class="anchor" aria-label="anchor" href="#treatment-effects-models"></a>
 </h3>
 <p><code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">treatReg()</a></code> estimates the effect of a binary treatment
 that the units choose. The outcome is observed for everyone, and the
-first equation, labeled <code>selection</code> in the table, is that of
-the treatment. The example takes the college attendance of the wife and
-the logarithm of the family income.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+equation under <code>Selection</code> is that of the treatment. The
+example takes the college attendance of the wife and the logarithm of
+the family income.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Mroz87</span><span class="op">$</span><span class="va">college</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="va">Mroz87</span><span class="op">$</span><span class="va">wifecoll</span><span class="op">)</span> <span class="op">==</span> <span class="st">"TRUE"</span></span>
 <span><span class="va">fit_tr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">treatReg</a></span><span class="op">(</span><span class="va">college</span> <span class="op">~</span> <span class="va">motheduc</span> <span class="op">+</span> <span class="va">fatheduc</span> <span class="op">+</span> <span class="va">age</span>,</span>
 <span>                   <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">faminc</span><span class="op">)</span> <span class="op">~</span> <span class="va">college</span> <span class="op">+</span> <span class="va">huseduc</span> <span class="op">+</span> <span class="va">age</span> <span class="op">+</span> <span class="va">city</span>,</span>
@@ -921,33 +951,28 @@ the logarithm of the family income.</p>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_tr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Treatment-effects model: log(faminc)</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept):            <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -2.73  0.37  [-3.46, -1.99]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    1.88  0.13  [ 1.63,  2.12]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  motheduc:               <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.10  0.02  [ 0.07,  0.14]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  fatheduc:               <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.10  0.02  [ 0.07,  0.13]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  age:                    <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.01  0.01  [-0.01,  0.02]   .434 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.01  0.00  [ 0.00,  0.01]   .001 </span></span>
-<span><span class="co">#&gt;  collegeTRUE:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.30  0.09  [ 0.12,  0.47]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  huseduc:                <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.05  0.01  [ 0.04,  0.06]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  city:                   <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.19  0.04  [ 0.12,  0.26]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    σ (outcome error)     <span style="color: #9E9E9E;">│</span>    0.45  0.01  [ 0.43,  0.47]   –    </span></span>
-<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>   -0.15  0.12  [-0.38,  0.08]   .195 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                                 </span></span>
-<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 1711.5                               </span></span>
+<span><span class="co">#&gt;                                  Outcome             Selection      </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ────────────────────  ────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B      SE     p      B     SE     p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>    1.88  0.13  &lt;.001  -2.73  0.37  &lt;.001 </span></span>
+<span><span class="co">#&gt;  college:                <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    FALSE (ref.)          <span style="color: #9E9E9E;">│</span>     –     –     –                        </span></span>
+<span><span class="co">#&gt;    TRUE                  <span style="color: #9E9E9E;">│</span>    0.30  0.09  &lt;.001                     </span></span>
+<span><span class="co">#&gt;  huseduc                 <span style="color: #9E9E9E;">│</span>    0.05  0.01  &lt;.001                     </span></span>
+<span><span class="co">#&gt;  age                     <span style="color: #9E9E9E;">│</span>    0.01  0.00   .001   0.01  0.01   .434 </span></span>
+<span><span class="co">#&gt;  city                    <span style="color: #9E9E9E;">│</span>    0.19  0.04  &lt;.001                     </span></span>
+<span><span class="co">#&gt;  motheduc                <span style="color: #9E9E9E;">│</span>                        0.10  0.02  &lt;.001 </span></span>
+<span><span class="co">#&gt;  fatheduc                <span style="color: #9E9E9E;">│</span>                        0.10  0.02  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                                          </span></span>
+<span><span class="co">#&gt;    σ (outcome error)     <span style="color: #9E9E9E;">│</span>    0.45  0.01   –                        </span></span>
+<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>   -0.15  0.12   .195                     </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                                     </span></span>
+<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 1711.5                                   </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Treatment-effects model. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 742 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Treatment-effects model. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 742 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dropping-an-error-term">Dropping an error term<a class="anchor" aria-label="anchor" href="#dropping-an-error-term"></a>
@@ -956,39 +981,32 @@ the logarithm of the family income.</p>
 and <code>drop</code> select them by their name in <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>:
 <code>"sigma"</code>, <code>"rho"</code>,
 <code>"invMillsRatio"</code>.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_ml</span>, drop <span class="op">=</span> <span class="st">"sigma"</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"se"</span>, <span class="st">"p"</span><span class="op">)</span>,</span>
 <span>                 digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Heckman selection model: wage</span></span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B       SE      p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept):            <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -4.120  1.401   .003 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>   -1.963  1.198   .102 </span></span>
-<span><span class="co">#&gt;  age:                    <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.184  0.066   .005 </span></span>
-<span><span class="co">#&gt;  I(age^2):               <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.002  0.001   .002 </span></span>
-<span><span class="co">#&gt;  faminc:                 <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.006  0.004   .199 </span></span>
-<span><span class="co">#&gt;  kidsTRUE:               <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>   -0.451  0.130  &lt;.001 </span></span>
-<span><span class="co">#&gt;  educ:                   <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    selection             <span style="color: #9E9E9E;">│</span>    0.095  0.023  &lt;.001 </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.457  0.073  &lt;.001 </span></span>
-<span><span class="co">#&gt;  exper:                  <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.028  0.062   .651 </span></span>
-<span><span class="co">#&gt;  I(exper^2):             <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>   -0.000  0.002   .955 </span></span>
-<span><span class="co">#&gt;  city:                   <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    outcome               <span style="color: #9E9E9E;">│</span>    0.447  0.316   .158 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                        </span></span>
-<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>   -0.132  0.165   .424 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                   </span></span>
-<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 3188.5                 </span></span>
+<span><span class="co">#&gt;                                   Outcome               Selection       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">                           ──────────────────────  ──────────────────── </span></span></span>
+<span><span class="co">#&gt;  Variable                <span style="color: #9E9E9E;">│</span>    B       SE      p      B      SE      p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────────────────┼──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  (Intercept)             <span style="color: #9E9E9E;">│</span>   -1.963  1.198   .102  -4.120  1.401   .003 </span></span>
+<span><span class="co">#&gt;  exper                   <span style="color: #9E9E9E;">│</span>    0.028  0.062   .651                       </span></span>
+<span><span class="co">#&gt;  I(exper^2)              <span style="color: #9E9E9E;">│</span>   -0.000  0.002   .955                       </span></span>
+<span><span class="co">#&gt;  educ                    <span style="color: #9E9E9E;">│</span>    0.457  0.073  &lt;.001   0.095  0.023  &lt;.001 </span></span>
+<span><span class="co">#&gt;  city                    <span style="color: #9E9E9E;">│</span>    0.447  0.316   .158                       </span></span>
+<span><span class="co">#&gt;  age                     <span style="color: #9E9E9E;">│</span>                          0.184  0.066   .005 </span></span>
+<span><span class="co">#&gt;  I(age^2)                <span style="color: #9E9E9E;">│</span>                         -0.002  0.001   .002 </span></span>
+<span><span class="co">#&gt;  faminc                  <span style="color: #9E9E9E;">│</span>                          0.006  0.004   .199 </span></span>
+<span><span class="co">#&gt;  kids:                   <span style="color: #9E9E9E;">│</span>                                              </span></span>
+<span><span class="co">#&gt;    FALSE (ref.)          <span style="color: #9E9E9E;">│</span>                           –      –      –    </span></span>
+<span><span class="co">#&gt;    TRUE                  <span style="color: #9E9E9E;">│</span>                         -0.451  0.130  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  Error terms:            <span style="color: #9E9E9E;">│</span>                                              </span></span>
+<span><span class="co">#&gt;    ρ (error correlation) <span style="color: #9E9E9E;">│</span>   -0.132  0.165   .424                       </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span>  753                                         </span></span>
+<span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 3188.5                                       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Heckman selection model. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 740 df. Error terms: ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
@@ -997,7 +1015,7 @@ and <code>drop</code> select them by their name in <code><a href="https://rdrr.i
 </h3>
 <p>A tobit-5 model has two outcome equations, one for each regime. A
 table of one outcome cannot show it, and it is refused.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span></span>
 <span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>z <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
@@ -1018,7 +1036,7 @@ table of one outcome cannot show it, and it is refused.</p>
 </h2>
 <p>The blocks and their notes follow
 <code>options(spicy.language = )</code>.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>spicy.language <span class="op">=</span> <span class="st">"fr"</span>, width <span class="op">=</span> <span class="fl">92</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Linear <span class="op">=</span> <span class="va">fit_glm</span>, GAM <span class="op">=</span> <span class="va">fit_gam</span><span class="op">)</span>, nested <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Régression — modèles emboîtés : type</span></span></span>
@@ -1051,27 +1069,27 @@ table of one outcome cannot show it, and it is refused.</p>
 </h2>
 <p>The blocks are part of the table in every output engine. Here the
 first table as a gt object, with odds ratios.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Linear <span class="op">=</span> <span class="va">fit_glm</span>, GAM <span class="op">=</span> <span class="va">fit_gam</span><span class="op">)</span>,</span>
 <span>                                 exponentiate <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                                 show_intercept <span class="op">=</span> <span class="cn">FALSE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmpQy76S9-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmpQy76S9-1 table {
+<div id="spicy-gt-RtmpPaMCpe-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-RtmpPaMCpe-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmpQy76S9-1 thead, #spicy-gt-RtmpQy76S9-1 tbody, #spicy-gt-RtmpQy76S9-1 tfoot, #spicy-gt-RtmpQy76S9-1 tr, #spicy-gt-RtmpQy76S9-1 td, #spicy-gt-RtmpQy76S9-1 th {
+#spicy-gt-RtmpPaMCpe-1 thead, #spicy-gt-RtmpPaMCpe-1 tbody, #spicy-gt-RtmpPaMCpe-1 tfoot, #spicy-gt-RtmpPaMCpe-1 tr, #spicy-gt-RtmpPaMCpe-1 td, #spicy-gt-RtmpPaMCpe-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmpQy76S9-1 p {
+#spicy-gt-RtmpPaMCpe-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_table {
+#spicy-gt-RtmpPaMCpe-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1097,12 +1115,12 @@ first table as a gt object, with odds ratios.</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_caption {
+#spicy-gt-RtmpPaMCpe-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_title {
+#spicy-gt-RtmpPaMCpe-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -1114,7 +1132,7 @@ first table as a gt object, with odds ratios.</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_subtitle {
+#spicy-gt-RtmpPaMCpe-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1126,7 +1144,7 @@ first table as a gt object, with odds ratios.</p>
   border-top-width: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_heading {
+#spicy-gt-RtmpPaMCpe-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1138,13 +1156,13 @@ first table as a gt object, with odds ratios.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_bottom_border {
+#spicy-gt-RtmpPaMCpe-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_col_headings {
+#spicy-gt-RtmpPaMCpe-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1159,7 +1177,7 @@ first table as a gt object, with odds ratios.</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_col_heading {
+#spicy-gt-RtmpPaMCpe-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1179,7 +1197,7 @@ first table as a gt object, with odds ratios.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_column_spanner_outer {
+#spicy-gt-RtmpPaMCpe-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1191,15 +1209,15 @@ first table as a gt object, with odds ratios.</p>
   padding-right: 4px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpPaMCpe-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-RtmpPaMCpe-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_column_spanner {
+#spicy-gt-RtmpPaMCpe-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -1211,11 +1229,11 @@ first table as a gt object, with odds ratios.</p>
   width: 100%;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_spanner_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_group_heading {
+#spicy-gt-RtmpPaMCpe-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1241,7 +1259,7 @@ first table as a gt object, with odds ratios.</p>
   text-align: left;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_empty_group_heading {
+#spicy-gt-RtmpPaMCpe-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1256,15 +1274,15 @@ first table as a gt object, with odds ratios.</p>
   vertical-align: middle;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_from_md > :first-child {
+#spicy-gt-RtmpPaMCpe-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_from_md > :last-child {
+#spicy-gt-RtmpPaMCpe-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1283,7 +1301,7 @@ first table as a gt object, with odds ratios.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_stub {
+#spicy-gt-RtmpPaMCpe-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1296,7 +1314,7 @@ first table as a gt object, with odds ratios.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_stub_row_group {
+#spicy-gt-RtmpPaMCpe-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1310,15 +1328,15 @@ first table as a gt object, with odds ratios.</p>
   vertical-align: top;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_row_group_first td {
+#spicy-gt-RtmpPaMCpe-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_row_group_first th {
+#spicy-gt-RtmpPaMCpe-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_summary_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1328,16 +1346,16 @@ first table as a gt object, with odds ratios.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_first_summary_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_first_summary_row.thick {
+#spicy-gt-RtmpPaMCpe-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_last_summary_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1347,7 +1365,7 @@ first table as a gt object, with odds ratios.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_grand_summary_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1357,7 +1375,7 @@ first table as a gt object, with odds ratios.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_first_grand_summary_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1367,7 +1385,7 @@ first table as a gt object, with odds ratios.</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_last_grand_summary_row_top {
+#spicy-gt-RtmpPaMCpe-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1377,11 +1395,11 @@ first table as a gt object, with odds ratios.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_striped {
+#spicy-gt-RtmpPaMCpe-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_table_body {
+#spicy-gt-RtmpPaMCpe-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1390,7 +1408,7 @@ first table as a gt object, with odds ratios.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_footnotes {
+#spicy-gt-RtmpPaMCpe-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1404,7 +1422,7 @@ first table as a gt object, with odds ratios.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_footnote {
+#spicy-gt-RtmpPaMCpe-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1413,7 +1431,7 @@ first table as a gt object, with odds ratios.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_sourcenotes {
+#spicy-gt-RtmpPaMCpe-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1427,7 +1445,7 @@ first table as a gt object, with odds ratios.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_sourcenote {
+#spicy-gt-RtmpPaMCpe-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1435,112 +1453,112 @@ first table as a gt object, with odds ratios.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_left {
+#spicy-gt-RtmpPaMCpe-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_center {
+#spicy-gt-RtmpPaMCpe-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_right {
+#spicy-gt-RtmpPaMCpe-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_font_normal {
+#spicy-gt-RtmpPaMCpe-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_font_bold {
+#spicy-gt-RtmpPaMCpe-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_font_italic {
+#spicy-gt-RtmpPaMCpe-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_super {
+#spicy-gt-RtmpPaMCpe-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_footnote_marks {
+#spicy-gt-RtmpPaMCpe-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_asterisk {
+#spicy-gt-RtmpPaMCpe-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_indent_1 {
+#spicy-gt-RtmpPaMCpe-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_indent_2 {
+#spicy-gt-RtmpPaMCpe-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_indent_3 {
+#spicy-gt-RtmpPaMCpe-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_indent_4 {
+#spicy-gt-RtmpPaMCpe-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_indent_5 {
+#spicy-gt-RtmpPaMCpe-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .katex-display {
+#spicy-gt-RtmpPaMCpe-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmpQy76S9-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-RtmpPaMCpe-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_sourcenote {
+#spicy-gt-RtmpPaMCpe-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_sourcenote {
+#spicy-gt-RtmpPaMCpe-1 .gt_sourcenote {
   padding-top: 0;
   padding-bottom: 0;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-RtmpPaMCpe-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-RtmpPaMCpe-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpQy76S9-1 .gt_spanner_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpPaMCpe-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_col_heading {
+#spicy-gt-RtmpPaMCpe-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_table tbody .gt_row {
+#spicy-gt-RtmpPaMCpe-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_column_spanner {
+#spicy-gt-RtmpPaMCpe-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmpQy76S9-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-RtmpPaMCpe-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1549,12 +1567,12 @@ first table as a gt object, with odds ratios.</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpQy76S9-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-RtmpPaMCpe-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-RtmpQy76S9-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpPaMCpe-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 

@@ -89,6 +89,27 @@
   namespace prefix is dropped: `survival::Surv(time, status)` reads
   `Surv(time, status)`.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a sample-selection model alone
+  ([`selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+  [`heckit()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+  [`treatReg()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
+  shows its two equations as column groups, “Outcome” then “Selection”,
+  with its error terms, n and AIC under the first, as a multinomial
+  model alone shows its categories. Its default columns are B, SE and p:
+  ask for the interval with `show_columns`. A factor or a logical
+  predictor has a header, its levels and a reference row, where the
+  table read `kidsTRUE`. Beside other models, or under `nested = TRUE`,
+  the equations stay in rows. `outcome_labels` renames the two groups.
+  `keep` and `drop` match the terms of such a table without their prefix
+  (`"educ"`), and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  selects the equation with `model`, under its name in any language
+  (`inline(tbl, educ, model = "outcome")`), no longer with `level`.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"` keep the prefixed terms and fill `factor_term` and
+  `factor_level`; the long output gains the reference rows.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   names the rows of a fixest model as
   [`lm()`](https://rdrr.io/r/stats/lm.html) and
@@ -552,7 +573,15 @@
   for [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html), those of the
   design for [`svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html).
   The cell is empty under a z test, and the token is refused when no
-  model of the table has a t test.
+  model of the table has a t test. `"ame_df"` does the same for the test
+  of each average marginal effect.
+
+- [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites the degrees of freedom a table prints beside a partial test,
+  with the tokens `partial_f_df_num`, `partial_f_df_den` and
+  `partial_chi2_df`:
+  `inline(tbl, sex, "Male", "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}")`
+  gives “F(1, 1197) = 18.94”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `show_fit_stats = "pseudo_r2_ferrari"` shows on request the pseudo-R²
@@ -916,6 +945,13 @@
   AME uses it.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  under a `CR*` variance, the p-values and intervals of the AME of an
+  [`lm()`](https://rdrr.io/r/stats/lm.html) asked without the `"ame"`
+  column itself, as in `show_columns = c("b", "ame_p")`, used the
+  residual degrees of freedom. They use the Satterthwaite degrees of
+  freedom, as they do beside `"ame"`, and the note says so.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a note says that the AME of a tobit model is computed on the latent
   outcome.
 
@@ -970,7 +1006,13 @@
   Satterthwaite degrees of freedom.
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   says it too under `"CR0"` to `"CR3"`, and names its F test
-  “approximate Hotelling’s T² F-test”. A weighted
+  “approximate Hotelling’s T² F-test”. Under `CR0`, the note of a
+  clustered
+  [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
+  or
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
+  model gives the degrees of freedom of its t tests, the number of
+  clusters minus one. A weighted
   [`lm()`](https://rdrr.io/r/stats/lm.html) is labeled “classical
   (WLS)”. A clustered
   [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
@@ -980,11 +1022,14 @@
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   in a table of several models, a sentence on p-values, on the design or
-  on intervals that holds for some models only names them. Models on the
-  same survey design give their residual degrees of freedom in one
-  sentence, and so do selection models tested on t distributions with
-  different degrees of freedom. Model names are separated by a semicolon
-  when one of them holds a comma.
+  on intervals that holds for some models only names them. The sentences
+  on the type of the models and on their standard errors name together
+  the models that say the same: “Std. errors: A, B, C: classical
+  (model-based); D: classical (OLS)”. Models on the same survey design
+  give their residual degrees of freedom in one sentence, and so do
+  models tested on t distributions with different degrees of freedom.
+  Model names are separated by a semicolon when one of them holds a
+  comma.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a comparison of beta regressions, or of binomial
@@ -1001,6 +1046,26 @@
   write a token as it is typed (`"aic"`), agree in number, point to the
   help page of the model family, and suggest only the statistics and
   columns the model accepts.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  an error or a warning about `vcov` lists the values the model accepts,
+  and no longer one it refuses. A `cluster` passed without a
+  cluster-robust `vcov` to a model that has none, such as
+  [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) or
+  [`nls()`](https://rdrr.io/r/stats/nls.html), says so instead of
+  suggesting `"CR0"` to `"CR3"`. A model that could take one under a
+  condition gets the condition: “Its class also supports CR0 (classical
+  only without x = TRUE, y = TRUE)” for an rms model. A survey-design
+  model under `vcov = "CR1S"` is pointed to its design instead of to
+  `"CR2"`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `labels` names the reference level of a factor by the name its
+  coefficient would have. With `Male` as the reference,
+  `labels = c(sexMale = "Men")` gives the row “Men (ref.)”, the header
+  “sex: \[ref: Men\]” under `reference_style = "annotation"` and “sex =
+  Men” in the note under `"footer"`. The name was refused with a
+  warning.
 
 - `table_regression(nested = TRUE)` compares two instrumental-variables
   [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
@@ -1298,11 +1363,15 @@
 - gt tables: the label of the first column and the note start at the
   left edge of the labels of the body, in a PDF too, where the label sat
   6 pt to the right. A table knitted to LaTeX or to Typst loses the
-  empty line between its column labels and the rule under them.
+  empty line between its column labels and the rule under them. Knitted
+  to Typst, a table of several models draws the rule under the name of
+  each model, which was missing, and the columns take a width in
+  proportion to their content: they all had the same, and “(Intercept)”
+  was hyphenated.
 
-- In HTML, a tinytable table wider than the page scrolls within its
-  frame. In a reveal.js slide it takes 16 px, as a gt table does, and no
-  longer the size of the text of the slide.
+- In HTML, a tinytable or flextable table wider than the page scrolls
+  within its frame. In a reveal.js slide a tinytable table takes 16 px,
+  as a gt table does, and no longer the size of the text of the slide.
 
 - In LaTeX, the note of a tinytable table takes the line spacing of its
   own size. It kept the spacing of the text around it, too loose for a
@@ -1583,8 +1652,9 @@
   an `estimatr` model
   ([`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html),
   [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html))
-  with `clusters` and `se_type = "stata"` is labeled “Cluster-robust
-  (Stata CR1)” instead of “Robust (Stata HC1)”.
+  with `clusters` and `se_type = "stata"` takes the label of
+  `vcov = "CR1S"`, “cluster-robust (CR1S, Stata vce(cluster), t(G−1))”,
+  instead of “Robust (Stata HC1)”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses with a clear error an mgcv model fitted from a list of
@@ -1841,11 +1911,11 @@
   them in English.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  a multinomial model beside other models, and a Heckman selection
-  model, name each row under the header of a term by its outcome
-  category (or equation) alone: “Upper secondary” under “age:”, where
-  the row read “Upper secondary: age”. A factor level keeps its category
-  (“Upper secondary: Male”).
+  a multinomial model or a Heckman selection model beside other models
+  names each row under the header of a term by its outcome category (or
+  equation) alone: “Upper secondary” under “age:”, where the row read
+  “Upper secondary: age”. A factor level keeps its category (“Upper
+  secondary: Male”).
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
   `output = "long"` keep the prefixed terms.
   [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) gives

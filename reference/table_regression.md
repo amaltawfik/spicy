@@ -372,15 +372,16 @@ table_regression(
   Bayesian fits only), `"rhat"` / `"ess_bulk"` / `"ess_tail"` / `"mcse"`
   (per-coefficient sampler diagnostics and the Monte Carlo standard
   error of the displayed posterior median, all-Bayesian tables only),
-  `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`, `"rmst"` + `"rmst_se"` /
-  `"rmst_ci"` / `"rmst_p"`, `"risk_diff"` + its `_se` / `_ci` / `_p`
-  companions, `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
-  `"partial_eta2_ci"`, `"partial_omega2"` + `"partial_omega2_ci"`,
-  `"partial_chi2"`, `"partial_f"` (`lm`, and `glm` whose dispersion is
-  estimated), `"r2"` / `"adj_r2"` (per-fit variance explained, `lm`
-  screens)) and **group tokens** (`"all_b"`, `"all_b_compact"`,
-  `"all_b_full"`, `"all_beta"`, `"all_ame"`, `"all_ame_compact"`,
-  `"all_f2"`, `"all_eta2"`, `"all_omega2"`). See
+  `"ame"`, `"ame_se"`, `"ame_ci"`, `"ame_p"`, `"ame_df"` (the `"df"` of
+  the AMEs), `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
+  `"risk_diff"` + its `_se` / `_ci` / `_p` companions, `"partial_f2"` +
+  `"partial_f2_ci"`, `"partial_eta2"` + `"partial_eta2_ci"`,
+  `"partial_omega2"` + `"partial_omega2_ci"`, `"partial_chi2"`,
+  `"partial_f"` (`lm`, and `glm` whose dispersion is estimated), `"r2"`
+  / `"adj_r2"` (per-fit variance explained, `lm` screens)) and **group
+  tokens** (`"all_b"`, `"all_b_compact"`, `"all_b_full"`, `"all_beta"`,
+  `"all_ame"`, `"all_ame_compact"`, `"all_f2"`, `"all_eta2"`,
+  `"all_omega2"`). See
   [table_regression_tokens](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md)
   for the full enumeration. Default `NULL` selects a context-aware
   layout: `"all_b"` (single model) or `"all_b_compact"` (multi-model,
@@ -409,10 +410,13 @@ table_regression(
   removes the `Smooth terms` block with its note. The `Error terms` of a
   sample-selection model are coefficients of
   [`coef()`](https://rdrr.io/r/stats/coef.html) and follow `keep` and
-  `drop` under those names (`"sigma"`, `"rho"`, `"invMillsRatio"`).
-  Mutually exclusive with `drop`. Filtering is a display choice;
-  `p_adjust` runs against the full coefficient family before filtering.
-  Default `NULL` (no filter).
+  `drop` under those names (`"sigma"`, `"rho"`, `"invMillsRatio"`). A
+  multinomial or sample-selection model alone, whose categories or
+  equations are column groups, matches its terms without their prefix
+  (`"educ"`, `"cityyes"`); beside other models, with it
+  (`"Student: age"`, `"outcome: educ"`). Mutually exclusive with `drop`.
+  Filtering is a display choice; `p_adjust` runs against the full
+  coefficient family before filtering. Default `NULL` (no filter).
 
 - drop:
 
@@ -645,8 +649,8 @@ table_regression(
   Word renderers). `NULL` (default) resolves automatically; see
   *Multi-model semantics* for the full rule. A character vector of
   length `length(models)` overrides. Refused (error) for a single
-  multinomial model: there the column groups are outcome categories,
-  relabeled via `outcome_labels`
+  multinomial or sample-selection model: there the column groups are
+  outcome categories or equations, relabeled via `outcome_labels`
   ([table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md)).
 
 - outcome_labels:
@@ -677,6 +681,8 @@ table_regression(
   label widens that column. For a single multinomial model, the labels
   of the category spanners; see
   [table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md).
+  For a single sample-selection model, the labels of its two equation
+  groups, in their order (outcome, selection).
 
 - stars:
 
@@ -801,18 +807,22 @@ table_regression(
   names (`"(Intercept)"`, `"sexMale"`; those of an `rms` fit in the
   spelling of [`lm()`](https://rdrr.io/r/stats/lm.html), `"sexMale"` for
   rms's `"sex=Male"` and `"age:sexMale"` for `"age * sex=Male"`), each
-  naming one row. They keep that form whatever the language of the
-  table. Classes with no `terms` component
-  ([`nls()`](https://rdrr.io/r/stats/nls.html),
-  [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
-  are keyed on their coefficient (or parameter) names alone. With
-  several models, a name is looked up in the terms of all of them and
-  lands on the rows where it exists. A name that matches nothing in the
-  table warns (class `spicy_unknown_name`), with the list of its terms,
-  and is left out, so one vector can still serve every table of a
-  project. The headers of the subordinate blocks (`Random effects`,
-  `Thresholds`, `Zero-inflation`, ...) are set by the package and cannot
-  be relabeled here.
+  naming one row. The reference level of a factor takes the name its
+  coefficient would have: `c(sexFemale = "Women")` renames the row
+  `Female (ref.)` to `Women (ref.)` when `Female` is the reference, the
+  mark of `reference_label` kept. They keep that form whatever the
+  language of the table. A class with no `terms` component
+  ([`nls()`](https://rdrr.io/r/stats/nls.html)) is keyed on its
+  parameter names alone. A sample-selection model is keyed on the term
+  labels of its two equations (`"city"` for the header of a factor) and
+  on its coefficient names (`"cityyes"`). With several models, a name is
+  looked up in the terms of all of them and lands on the rows where it
+  exists. A name that matches nothing in the table warns (class
+  `spicy_unknown_name`), with the list of its terms, and is left out, so
+  one vector can still serve every table of a project. The headers of
+  the subordinate blocks (`Random effects`, `Thresholds`,
+  `Zero-inflation`, ...) are set by the package and cannot be relabeled
+  here.
 
   The default reads `options(spicy.var_labels)`, and a `TRUE` or `FALSE`
   typed in the call wins over it. Any other value, `NULL` included, is
@@ -1342,6 +1352,13 @@ reference distribution (e.g. `glmmTMB`, survival, ordinal, `betareg`,
 A single [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html)
 model sets its outcome categories as column groups; see
 [table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md).
+A single sample-selection model
+([`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+`heckit()`, `treatReg()`) sets its two equations as column groups,
+"Outcome" then "Selection", in the language of the table, with its
+`Error terms`, n and AIC under the first; beside other models, or under
+`nested = TRUE`, each term has a `selection` and an `outcome` row; see
+[table_regression_models](https://amaltawfik.github.io/spicy/reference/table_regression_models.md).
 
 ### Robust SE availability by model class
 
@@ -1385,7 +1402,7 @@ accepts, the `vcov` column of
 | Survey-weighted | `svyolr` | classical (design-based) |
 | Survey-weighted | `svycoxph` | classical (design-based) |
 | Population-averaged (GEE) | `geeglm` | classical (the fit's own) |
-| Additive, proportions, selection | `gam` | classical, CR1 |
+| Additive, proportions, selection | `gam` | classical, CR1 (classical only for an mgcv extended family other than nb) |
 | Additive, proportions, selection | `betareg` | classical, CR1 |
 | Additive, proportions, selection | `selection` | classical |
 | rms | `ols` | classical, CR0 (classical only without x = TRUE, y = TRUE) |

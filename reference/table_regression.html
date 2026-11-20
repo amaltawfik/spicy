@@ -475,7 +475,8 @@ direction, Bayesian fits only), <code>"rhat"</code> / <code>"ess_bulk"</code> /
 <code>"ess_tail"</code> / <code>"mcse"</code> (per-coefficient sampler diagnostics and
 the Monte Carlo standard error of the displayed posterior
 median, all-Bayesian tables only), <code>"ame"</code>, <code>"ame_se"</code>, <code>"ame_ci"</code>,
-<code>"ame_p"</code>, <code>"rmst"</code> + <code>"rmst_se"</code> / <code>"rmst_ci"</code> / <code>"rmst_p"</code>,
+<code>"ame_p"</code>, <code>"ame_df"</code> (the <code>"df"</code> of the AMEs), <code>"rmst"</code> +
+<code>"rmst_se"</code> / <code>"rmst_ci"</code> / <code>"rmst_p"</code>,
 <code>"risk_diff"</code> + its <code>_se</code> / <code>_ci</code> / <code>_p</code> companions,
 <code>"partial_f2"</code> + <code>"partial_f2_ci"</code>, <code>"partial_eta2"</code> +
 <code>"partial_eta2_ci"</code>, <code>"partial_omega2"</code> +
@@ -512,7 +513,10 @@ they match by their mgcv label (<code>"s(age)"</code>, <code>"te(bmi,ped)"</code
 <code>drop = "^s\\("</code> removes the <code>Smooth terms</code> block with its note.
 The <code>Error terms</code> of a sample-selection model are coefficients of
 <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and follow <code>keep</code> and <code>drop</code> under those names (<code>"sigma"</code>,
-<code>"rho"</code>, <code>"invMillsRatio"</code>).
+<code>"rho"</code>, <code>"invMillsRatio"</code>). A multinomial or sample-selection
+model alone, whose categories or equations are column groups,
+matches its terms without their prefix (<code>"educ"</code>, <code>"cityyes"</code>);
+beside other models, with it (<code>"Student: age"</code>, <code>"outcome: educ"</code>).
 Mutually exclusive with <code>drop</code>. Filtering is a display
 choice; <code>p_adjust</code> runs against the full coefficient family
 before filtering. Default <code>NULL</code> (no filter).</p></dd>
@@ -725,9 +729,9 @@ flextable / tinytable / Excel / Word renderers). <code>NULL</code>
 (default) resolves automatically; see <em>Multi-model semantics</em>
 for the full rule. A character vector of length
 <code>length(models)</code> overrides. Refused (error) for a single
-multinomial model: there the column groups are outcome
-categories, relabeled via <code>outcome_labels</code>
-(<a href="table_regression_categorical.html">table_regression_categorical</a>).</p></dd>
+multinomial or sample-selection model: there the column groups
+are outcome categories or equations, relabeled via
+<code>outcome_labels</code> (<a href="table_regression_categorical.html">table_regression_categorical</a>).</p></dd>
 
 
 <dt id="arg-outcome-labels">outcome_labels<a class="anchor" aria-label="anchor" href="#arg-outcome-labels"></a></dt>
@@ -755,7 +759,9 @@ spans the columns of its model, under the model's name. A stacked gt
 table and the markdown grid of tinytable keep the label in the first
 column of the model, so a long label widens that column.
 For a single multinomial model, the labels of the category
-spanners; see <a href="table_regression_categorical.html">table_regression_categorical</a>.</p></dd>
+spanners; see <a href="table_regression_categorical.html">table_regression_categorical</a>. For a single
+sample-selection model, the labels of its two equation groups, in
+their order (outcome, selection).</p></dd>
 
 
 <dt id="arg-stars">stars<a class="anchor" aria-label="anchor" href="#arg-stars"></a></dt>
@@ -881,10 +887,16 @@ it has one row), and the coefficient names
 (<code>"(Intercept)"</code>, <code>"sexMale"</code>; those of an <code>rms</code> fit in the spelling
 of <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, <code>"sexMale"</code> for rms's <code>"sex=Male"</code> and <code>"age:sexMale"</code>
 for <code>"age * sex=Male"</code>), each naming one
-row. They keep that form whatever the language of the table.
-Classes with no <code>terms</code>
-component (<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">nls()</a></code>, <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>) are keyed on
-their coefficient (or parameter) names alone. With several models,
+row. The reference level of a factor takes the name its coefficient
+would have: <code>c(sexFemale = "Women")</code> renames the row
+<code>Female (ref.)</code> to <code>Women (ref.)</code> when <code>Female</code> is the reference,
+the mark of <code>reference_label</code> kept.
+They keep that form whatever the language of the table.
+A class with no <code>terms</code>
+component (<code><a href="https://rdrr.io/r/stats/nls.html" class="external-link">nls()</a></code>) is keyed on its parameter names alone. A
+sample-selection model is keyed on the term labels of its two
+equations (<code>"city"</code> for the header of a factor) and on its
+coefficient names (<code>"cityyes"</code>). With several models,
 a name is looked up in the terms of all of them and lands on the
 rows where it exists. A name that matches nothing in the table warns
 (class <code>spicy_unknown_name</code>), with the list of its terms, and is left
@@ -1362,7 +1374,12 @@ The df differ from one coefficient to the next:
 reference distribution (e.g. <code>glmmTMB</code>, survival, ordinal,
 <code>betareg</code>, <code>mlogit</code> use z; <code>lm</code>, <code>lme</code>, <code>lmer</code>, <code><a href="https://rdrr.io/pkg/rms/man/ols.html" class="external-link">rms::ols</a></code> use t).</p>
 <p>A single <code><a href="https://rdrr.io/pkg/nnet/man/multinom.html" class="external-link">nnet::multinom</a></code> model sets its outcome categories as column
-groups; see <a href="table_regression_categorical.html">table_regression_categorical</a>.</p><div class="section">
+groups; see <a href="table_regression_categorical.html">table_regression_categorical</a>. A single sample-selection
+model (<code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>, <code>heckit()</code>, <code>treatReg()</code>) sets
+its two equations as column groups, "Outcome" then "Selection", in the
+language of the table, with its <code>Error terms</code>, n and AIC under the
+first; beside other models, or under <code>nested = TRUE</code>, each term has a
+<code>selection</code> and an <code>outcome</code> row; see <a href="table_regression_models.html">table_regression_models</a>.</p><div class="section">
 <h3 id="robust-se-availability-by-model-class">Robust SE availability by model class<a class="anchor" aria-label="anchor" href="#robust-se-availability-by-model-class"></a></h3>
 
 
@@ -1370,7 +1387,7 @@ groups; see <a href="table_regression_categorical.html">table_regression_categor
 the class cannot honor is refused with <code>spicy_unsupported_vcov</code>,
 instead of a model-based result under a robust label. The
 values each class accepts, the <code>vcov</code> column of
-<code><a href="table_regression_models.html">table_regression_models()</a></code>:</p><table class="table table"><tr><td>Family</td><td>Class</td><td>vcov</td></tr><tr><td>Linear and generalized linear</td><td><code>lm</code></td><td>classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife</td></tr><tr><td>Linear and generalized linear</td><td><code>glm</code></td><td>classical, HC0-HC5, CR0-CR3, bootstrap, jackknife</td></tr><tr><td>Linear and generalized linear</td><td><code>negbin</code></td><td>classical, HC0-HC5, CR0-CR3, bootstrap, jackknife</td></tr><tr><td>Linear and generalized linear</td><td><code>rlm</code></td><td>classical</td></tr><tr><td>Linear and generalized linear</td><td><code>nls</code></td><td>classical</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>lm_robust</code></td><td>classical (the fit's own)</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>iv_robust</code></td><td>classical (the fit's own)</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>ivreg</code></td><td>classical, HC0, HC1, CR0-CR3, CR1S</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>tobit</code></td><td>classical, CR1</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>rq</code></td><td>classical (= nid), nid, iid, ker, rank, bootstrap</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>fixest</code></td><td>classical (the fit's own)</td></tr><tr><td>Mixed effects</td><td><code>lmerMod</code></td><td>classical, CR0-CR3</td></tr><tr><td>Mixed effects</td><td><code>glmerMod</code></td><td>classical</td></tr><tr><td>Mixed effects</td><td><code>glmmTMB</code></td><td>classical, CR0, CR1 (classical only for REML or the ordinal family)</td></tr><tr><td>Mixed effects</td><td><code>lme</code></td><td>classical, CR0-CR3 (classical only with contrasts other than the session's)</td></tr><tr><td>Mixed effects</td><td><code>gls</code></td><td>classical</td></tr><tr><td>Ordinal</td><td><code>polr</code></td><td>classical, CR1</td></tr><tr><td>Ordinal</td><td><code>clm</code></td><td>classical, CR1 (classical only with scale or nominal terms)</td></tr><tr><td>Ordinal</td><td><code>clmm</code></td><td>classical</td></tr><tr><td>Categorical</td><td><code>multinom</code></td><td>classical, CR1</td></tr><tr><td>Categorical</td><td><code>mlogit</code></td><td>classical, CR1</td></tr><tr><td>Counts, two-part</td><td><code>zeroinfl</code></td><td>classical, CR1 (classical only for a negative-binomial part)</td></tr><tr><td>Counts, two-part</td><td><code>hurdle</code></td><td>classical, CR1 (classical only for a negative-binomial part)</td></tr><tr><td>Survival</td><td><code>coxph</code></td><td>classical, CR0</td></tr><tr><td>Survival</td><td><code>survreg</code></td><td>classical, CR1</td></tr><tr><td>Survival</td><td><code>cph</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>Survival</td><td><code>flexsurvreg</code></td><td>classical</td></tr><tr><td>Survey-weighted</td><td><code>svyglm</code></td><td>classical (design-based)</td></tr><tr><td>Survey-weighted</td><td><code>svyolr</code></td><td>classical (design-based)</td></tr><tr><td>Survey-weighted</td><td><code>svycoxph</code></td><td>classical (design-based)</td></tr><tr><td>Population-averaged (GEE)</td><td><code>geeglm</code></td><td>classical (the fit's own)</td></tr><tr><td>Additive, proportions, selection</td><td><code>gam</code></td><td>classical, CR1</td></tr><tr><td>Additive, proportions, selection</td><td><code>betareg</code></td><td>classical, CR1</td></tr><tr><td>Additive, proportions, selection</td><td><code>selection</code></td><td>classical</td></tr><tr><td>rms</td><td><code>ols</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>rms</td><td><code>lrm</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>rms</td><td><code>Glm</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>Bayesian</td><td><code>stanreg</code></td><td>classical (the posterior)</td></tr><tr><td>Bayesian</td><td><code>brmsfit</code></td><td>classical (the posterior)</td></tr></table><p><code>"classical"</code> is the model-based variance, or the variance the fit
+<code><a href="table_regression_models.html">table_regression_models()</a></code>:</p><table class="table table"><tr><td>Family</td><td>Class</td><td>vcov</td></tr><tr><td>Linear and generalized linear</td><td><code>lm</code></td><td>classical, HC0-HC5, CR0-CR3, CR1S, bootstrap, jackknife</td></tr><tr><td>Linear and generalized linear</td><td><code>glm</code></td><td>classical, HC0-HC5, CR0-CR3, bootstrap, jackknife</td></tr><tr><td>Linear and generalized linear</td><td><code>negbin</code></td><td>classical, HC0-HC5, CR0-CR3, bootstrap, jackknife</td></tr><tr><td>Linear and generalized linear</td><td><code>rlm</code></td><td>classical</td></tr><tr><td>Linear and generalized linear</td><td><code>nls</code></td><td>classical</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>lm_robust</code></td><td>classical (the fit's own)</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>iv_robust</code></td><td>classical (the fit's own)</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>ivreg</code></td><td>classical, HC0, HC1, CR0-CR3, CR1S</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>tobit</code></td><td>classical, CR1</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>rq</code></td><td>classical (= nid), nid, iid, ker, rank, bootstrap</td></tr><tr><td>Robust, IV, quantile, panel</td><td><code>fixest</code></td><td>classical (the fit's own)</td></tr><tr><td>Mixed effects</td><td><code>lmerMod</code></td><td>classical, CR0-CR3</td></tr><tr><td>Mixed effects</td><td><code>glmerMod</code></td><td>classical</td></tr><tr><td>Mixed effects</td><td><code>glmmTMB</code></td><td>classical, CR0, CR1 (classical only for REML or the ordinal family)</td></tr><tr><td>Mixed effects</td><td><code>lme</code></td><td>classical, CR0-CR3 (classical only with contrasts other than the session's)</td></tr><tr><td>Mixed effects</td><td><code>gls</code></td><td>classical</td></tr><tr><td>Ordinal</td><td><code>polr</code></td><td>classical, CR1</td></tr><tr><td>Ordinal</td><td><code>clm</code></td><td>classical, CR1 (classical only with scale or nominal terms)</td></tr><tr><td>Ordinal</td><td><code>clmm</code></td><td>classical</td></tr><tr><td>Categorical</td><td><code>multinom</code></td><td>classical, CR1</td></tr><tr><td>Categorical</td><td><code>mlogit</code></td><td>classical, CR1</td></tr><tr><td>Counts, two-part</td><td><code>zeroinfl</code></td><td>classical, CR1 (classical only for a negative-binomial part)</td></tr><tr><td>Counts, two-part</td><td><code>hurdle</code></td><td>classical, CR1 (classical only for a negative-binomial part)</td></tr><tr><td>Survival</td><td><code>coxph</code></td><td>classical, CR0</td></tr><tr><td>Survival</td><td><code>survreg</code></td><td>classical, CR1</td></tr><tr><td>Survival</td><td><code>cph</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>Survival</td><td><code>flexsurvreg</code></td><td>classical</td></tr><tr><td>Survey-weighted</td><td><code>svyglm</code></td><td>classical (design-based)</td></tr><tr><td>Survey-weighted</td><td><code>svyolr</code></td><td>classical (design-based)</td></tr><tr><td>Survey-weighted</td><td><code>svycoxph</code></td><td>classical (design-based)</td></tr><tr><td>Population-averaged (GEE)</td><td><code>geeglm</code></td><td>classical (the fit's own)</td></tr><tr><td>Additive, proportions, selection</td><td><code>gam</code></td><td>classical, CR1 (classical only for an mgcv extended family other than nb)</td></tr><tr><td>Additive, proportions, selection</td><td><code>betareg</code></td><td>classical, CR1</td></tr><tr><td>Additive, proportions, selection</td><td><code>selection</code></td><td>classical</td></tr><tr><td>rms</td><td><code>ols</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>rms</td><td><code>lrm</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>rms</td><td><code>Glm</code></td><td>classical, CR0 (classical only without x = TRUE, y = TRUE)</td></tr><tr><td>Bayesian</td><td><code>stanreg</code></td><td>classical (the posterior)</td></tr><tr><td>Bayesian</td><td><code>brmsfit</code></td><td>classical (the posterior)</td></tr></table><p><code>"classical"</code> is the model-based variance, or the variance the fit
 carries for the classes marked so: <code>estimatr</code> and <code>fixest</code> fits keep
 the estimator they were computed with, a GEE fit its own sandwich, a
 survey fit its design-based variance, a Bayesian fit its posterior.

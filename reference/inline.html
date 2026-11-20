@@ -125,7 +125,8 @@ fit-statistic token (<code>"nobs"</code>, <code>"r2"</code>, ...) or label (<cod
 category shown as a row. <code>"(Missing)"</code> addresses the missing-value
 category by role. A group of <code>by</code> is selected with <code>model</code>. In a
 regression table, the outcome category of a multinomial row or the
-equation of a Heckman row, under the header of its term.</p></dd>
+equation of a Heckman row, under the header of its term, when the
+model sits beside others.</p></dd>
 
 
 <dt id="arg-column">column<a class="anchor" aria-label="anchor" href="#arg-column"></a></dt>
@@ -147,7 +148,11 @@ refuses and gives the address of a mean.</p></dd>
 
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
 <dd><p>A group of <code>by</code>, or in a multi-model table the model:
-its label (as displayed) or its position. See <em>Groups and models</em>.</p></dd>
+its label (as displayed) or its position. A value that is no
+displayed label is also looked up among the identities of the
+models (<code>"M1"</code>, and the equations <code>"outcome"</code> and <code>"selection"</code> of a
+selection model alone, in any case), so a call survives the language
+of the table. See <em>Groups and models</em>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -211,7 +216,11 @@ Asked with <code>model</code>, whichever group it names, they are an error (clas
 its row of missing values. In a regression table, it also names the
 rows under the header of a term: the outcome categories of a
 multinomial model beside other models (<code>inline(tbl, age, "Student", model = "Adjusted")</code>) and the two equations of a Heckman selection
-model (<code>"selection"</code>, <code>"outcome"</code>). Until spicy 0.14.0 it also
+model beside other models (<code>"selection"</code>, <code>"outcome"</code>). Alone, a
+multinomial or selection model has its categories or equations as
+column groups, which <code>model</code> selects by their label or position
+(<code>inline(tbl, educ, model = "Outcome")</code>): there, <code>level = "outcome"</code>
+is an error that gives that call. Until spicy 0.14.0 it also
 selected the groups of <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>
 and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>: that use is an error (class
 <code>spicy_defunct</code>) whose message gives the call to use instead.</p>
@@ -236,8 +245,12 @@ the item <code>p</code> are cited without <code>level</code>.</p>
 composes the interval with the style's brackets and separator, and
 so does every other interval token the table carries (<code>"med_ci"</code>,
 <code>"ame_ci"</code>, <code>"assoc_ci"</code>): each addresses its own bounds.
-<code>"partial_chi2"</code> and <code>"partial_f"</code> cite the statistic alone, without
-the degrees of freedom the table prints beside it.</p>
+A statistic the table prints with its degrees of freedom has a token
+for each of them: <code>"&lt;token&gt;_df"</code> for one (<code>"partial_chi2_df"</code>),
+<code>"&lt;token&gt;_df_num"</code> and <code>"&lt;token&gt;_df_den"</code> for the numerator and the
+denominator of an F. They are formatted as the table prints them:
+<code>inline(tbl, sex, column = "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}")</code>
+quotes the whole test.</p>
     </div>
     <div class="section level2">
     <h2 id="patterns">Patterns<a class="anchor" aria-label="anchor" href="#patterns"></a></h2>
