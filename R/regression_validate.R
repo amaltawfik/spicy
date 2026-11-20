@@ -1040,10 +1040,13 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
   vcov_check <- if (is.list(vcov)) unlist(vcov) else vcov
   bad <- setdiff(vcov_check, valid_vcov)
   if (length(bad) > 0L) {
-    usable <- unique(unlist(lapply(models, function(m) {
-      tryCatch(.robust_vcov_support(m), error = function(e) character(0))
-    })))
-    usable <- intersect(valid_vcov, usable)
+    cited <- lapply(models, function(m) {
+      tryCatch(.vcov_cited(m), error = function(e) list())
+    })
+    usable <- intersect(valid_vcov, unlist(lapply(cited, `[[`, "values")))
+    # One model: the values of its class it cannot take, with the
+    # condition the registry gives them.
+    others <- if (length(models) == 1L) cited[[1L]]$others
     spicy_abort(
       c(
         sprintf(
@@ -1051,7 +1054,7 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
           paste(.quote_val(bad), collapse = ", ")
         ),
         "i" = sprintf(
-          "Valid types for %s: %s.",
+          "Valid types for %s: %s.%s",
           if (length(models) == 1L) {
             sprintf("`%s`", class(models[[1L]])[1L])
           } else {
@@ -1060,7 +1063,12 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
           paste(
             .quote_val(if (length(usable) > 0L) usable else valid_vcov),
             collapse = ", "
-          )
+          ),
+          if (is.null(others)) {
+            ""
+          } else {
+            sprintf(" Its class also supports %s.", others)
+          }
         )
       ),
       class = "spicy_invalid_input",
@@ -1109,6 +1117,40 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
       # (geeglm's `std.err =`), not in the table call.
       if (inherits(models[[i]], "geeglm")) {
         .gee_refuse_vcov(vt, call = call)
+      }
+      # Survey fits are refused on the same principle: the design-based
+      # Taylor / replicate variance IS the robust variance, and clustering
+      # belongs in the design (clubSandwich has no vcovCR.svyglm; the call
+      # would silently dispatch to vcovCR.glm, ignoring strata, FPC and
+      # calibration).
+      # `.is_design_fit()`, not `inherits(fit, "svyglm")`: svyolr and
+      # svycoxph are refused on exactly the same principle and used to
+      # fall through to the generic "This class supports: classical."
+      # The class named is the fit's own, so a `svyglm` request keeps
+      # the message it has always had.
+      # Before the cluster branches below: their advice (CR2, CR1) does
+      # not apply to a design fit.
+      if (.is_design_fit(models[[i]])) {
+        spicy_abort(
+          c(
+            sprintf(
+              "`vcov = \"%s\"` is not available for `%s` models.",
+              vt,
+              class(models[[i]])[1L]
+            ),
+            "i" = paste0(
+              "The fit's own design-based (Taylor / replicate) ",
+              "variance is already the robust variance for the ",
+              "declared design."
+            ),
+            "i" = paste0(
+              "To account for clustering, declare it in the design: ",
+              "survey::svydesign(ids = ~cluster, ...), then refit."
+            )
+          ),
+          class = "spicy_unsupported_vcov",
+          call = call
+        )
       }
       # A class that computes one cluster estimator (CR1 for the
       # sandwich::vcovCL() classes, CR0 for coxph and the rms fits) refuses
@@ -1294,38 +1336,6 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
           call = call
         )
       }
-      # Survey fits are refused on the same principle: the design-based
-      # Taylor / replicate variance IS the robust variance, and clustering
-      # belongs in the design (clubSandwich has no vcovCR.svyglm; the call
-      # would silently dispatch to vcovCR.glm, ignoring strata, FPC and
-      # calibration).
-      # `.is_design_fit()`, not `inherits(fit, "svyglm")`: svyolr and
-      # svycoxph are refused on exactly the same principle and used to
-      # fall through to the generic "This class supports: classical."
-      # The class named is the fit's own, so a `svyglm` request keeps
-      # the message it has always had.
-      if (.is_design_fit(models[[i]])) {
-        spicy_abort(
-          c(
-            sprintf(
-              "`vcov = \"%s\"` is not available for `%s` models.",
-              vt,
-              class(models[[i]])[1L]
-            ),
-            "i" = paste0(
-              "The fit's own design-based (Taylor / replicate) ",
-              "variance is already the robust variance for the ",
-              "declared design."
-            ),
-            "i" = paste0(
-              "To account for clustering, declare it in the design: ",
-              "survey::svydesign(ids = ~cluster, ...), then refit."
-            )
-          ),
-          class = "spicy_unsupported_vcov",
-          call = call
-        )
-      }
       # estimatr and fixest carry the variance they were COMPUTED with:
       # estimatr bakes se_type into the fit object, and fixest owns its
       # own vcov interface (IID unless the user asked otherwise at
@@ -1425,10 +1435,9 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
                 "least-squares model."
               )
             },
-            "i" = sprintf(
-              "This class supports: %s. See %s.",
-              paste(supported, collapse = ", "),
-              .reg_help_page(models[[i]])
+            "i" = paste(
+              .vcov_supports_sentence(models[[i]]),
+              sprintf("See %s.", .reg_help_page(models[[i]]))
             )
           ),
           class = "spicy_unsupported_vcov",
@@ -1442,10 +1451,9 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
             vt,
             class(models[[i]])[1L]
           ),
-          "i" = sprintf(
-            "This class supports: %s. See %s.",
-            paste(supported, collapse = ", "),
-            .reg_help_page(models[[i]])
+          "i" = paste(
+            .vcov_supports_sentence(models[[i]]),
+            sprintf("See %s.", .reg_help_page(models[[i]]))
           )
         ),
         class = "spicy_unsupported_vcov",
@@ -1635,11 +1643,6 @@ validate_cluster_lists <- function(
           "`fixest::feols(..., vcov = ~cluster_var)`, or ",
           "`summary(fit, vcov = ~cluster_var)`."
         )
-      } else if (inherits(models[[i]], "glmmTMB")) {
-        paste0(
-          "Set `vcov` to `\"CR0\"` or `\"CR1\"` to use the cluster vector ",
-          "for cluster-robust SE."
-        )
       } else if (.pscl_is_negbin(models[[i]])) {
         # Its one cluster token, CR1, is refused (R/vcov.R).
         if (.pscl_count_is_negbin(models[[i]])) {
@@ -1655,16 +1658,32 @@ validate_cluster_lists <- function(
             "`vcov = \"CR1\"` with the cluster vector."
           )
         }
-      } else if (!is.null(.single_cluster_token(models[[i]]))) {
-        sprintf(
-          "Set `vcov` to `\"%s\"` to use the cluster vector for cluster-robust SE.",
-          .single_cluster_token(models[[i]])
-        )
       } else {
-        paste0(
-          "Set `vcov` to `\"CR0\"`, `\"CR1\"`, `\"CR2\"`, or `\"CR3\"` ",
-          "to use the cluster vector for cluster-robust SE."
-        )
+        # The cluster values this fit accepts (CR1S, Stata's variant of
+        # CR1, left out), or why it has none.
+        v <- .vcov_cited(models[[i]])
+        cr <- sprintf("`\"%s\"`", grep("^CR[0-9]$", v$values, value = TRUE))
+        n <- length(cr)
+        if (n > 0L) {
+          sprintf(
+            "Set `vcov` to %s to use the cluster vector for cluster-robust SE.",
+            if (n < 3L) {
+              paste(cr, collapse = " or ")
+            } else {
+              paste0(paste(cr[-n], collapse = ", "), ", or ", cr[n])
+            }
+          )
+        } else if (!is.null(v$others)) {
+          sprintf(
+            "This fit has no cluster-robust `vcov`. Its class supports %s.",
+            v$others
+          )
+        } else {
+          sprintf(
+            "`%s` models have no cluster-robust `vcov`.",
+            class(models[[i]])[1L]
+          )
+        }
       }
       spicy_warn(
         c(

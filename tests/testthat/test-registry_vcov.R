@@ -96,9 +96,16 @@ test_that("the 'classical only' cells are those of the predicate table", {
   only <- names(.REG_VCOV)[grepl("(classical only", .REG_VCOV, fixed = TRUE)]
   expect_setequal(names(.REG_VCOV_CLASSICAL_ONLY), only)
   expect_identical(
-    unname(vapply(.REG_VCOV[only], function(cell) {
-      lengths(regmatches(cell, gregexpr("(classical only", cell, fixed = TRUE)))
-    }, integer(1))),
+    unname(vapply(
+      .REG_VCOV[only],
+      function(cell) {
+        lengths(regmatches(
+          cell,
+          gregexpr("(classical only", cell, fixed = TRUE)
+        ))
+      },
+      integer(1)
+    )),
     rep(1L, length(only))
   )
 })
@@ -201,7 +208,10 @@ for (id in names(.CLASS_FIXTURES)) {
               c(list(fit, output = "data.frame"), cases[[key]])
             )),
             warning = function(w) {
-              if (inherits(w, "spicy_warning") && grepl("`cluster`", conditionMessage(w))) {
+              if (
+                inherits(w, "spicy_warning") &&
+                  grepl("`cluster`", conditionMessage(w))
+              ) {
                 .refusal_note("vcov_args", id, key, w, kind = "warning")
               }
               invokeRestart("muffleWarning")

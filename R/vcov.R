@@ -1206,6 +1206,44 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
   if (cls %in% names(.REG_VCOV)) cls else NA_character_
 }
 
+# The `vcov` values a message cites for a fit: `values`, those the fit
+# accepts, and `others`, the values of its class it cannot take with the
+# condition the registry gives them (`CR0 (classical only without x =
+# TRUE, y = TRUE)`), NULL when there are none.
+.vcov_cited <- function(fit) {
+  if (identical(class(fit)[1L], "spicy_uv_screen")) {
+    fit <- fit$fits[[1L]]
+  }
+  cls <- .reg_vcov_class(fit)
+  if (is.na(cls)) {
+    return(list(values = "classical", others = NULL))
+  }
+  values <- .reg_vcov_values(cls, fit)
+  rest <- setdiff(.reg_vcov_values(cls), values)
+  cell <- .REG_VCOV[[cls]]
+  others <- if (length(rest) > 0L) {
+    why <- regmatches(cell, regexpr("classical only[^)]*", cell))
+    sprintf("%s (%s)", paste(rest, collapse = ", "), why)
+  }
+  list(values = values, others = others)
+}
+
+# The sentence of a refusal that lists the `vcov` values of a fit.
+.vcov_supports_sentence <- function(fit) {
+  v <- .vcov_cited(fit)
+  if (is.null(v$others)) {
+    return(sprintf(
+      "This class supports: %s.",
+      paste(v$values, collapse = ", ")
+    ))
+  }
+  sprintf(
+    "This fit supports: %s. Its class also supports %s.",
+    paste(v$values, collapse = ", "),
+    v$others
+  )
+}
+
 
 # ---- quantreg::rq vcov backends -------------------------------------------
 
@@ -1485,10 +1523,7 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
         class(fit)[1L]
       ),
       "i" = why,
-      "i" = sprintf(
-        "This class supports: %s.",
-        paste(.robust_vcov_support(fit), collapse = ", ")
-      )
+      "i" = .vcov_supports_sentence(fit)
     ),
     class = "spicy_unsupported_vcov",
     call = call
