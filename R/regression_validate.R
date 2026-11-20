@@ -2597,7 +2597,10 @@ validate_class_appropriate_tokens <- function(
               "pseudo_r2_tjur",
               "r2_deviance"
             ),
-            "Use the R\u00B2 of a `glm` instead: %s.",
+            sprintf(
+              "Use the R\u00B2 of %s fits instead: %%s.",
+              .fit_classes_label(eff_models)
+            ),
             notes = c(
               pseudo_r2_mcfadden = "(McFadden 1974)",
               pseudo_r2_nagelkerke = "(Nagelkerke 1991)",
