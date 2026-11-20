@@ -1157,11 +1157,17 @@ residual degrees of freedom when the dispersion is estimated
 (binomial, Poisson, \code{MASS::glm.nb}).
 \item \code{bootstrap}, \code{jackknife} -> z asymptotic.
 \item \code{CR0}-\code{CR3} -> t with \strong{Satterthwaite-corrected df} (B
-via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; AME via
-\code{\link[clubSandwich:linear_contrast]{clubSandwich::linear_contrast()}}; Pustejovsky & Tipton
-2018). Under non-linear terms (\code{poly()}, \code{I()}, \code{log()},
-\code{splines::ns()}), AME falls back to z-asymptotic with a
-\code{spicy_fallback} warning.
+via \code{\link[clubSandwich:coef_test]{clubSandwich::coef_test()}}; Pustejovsky & Tipton 2018).
+The AME of an \code{lm} is a linear contrast of the coefficients
+whatever the formula (\code{poly()}, \code{I()}, \code{log()}, \code{splines::ns()}
+and interactions included), tested by
+\code{\link[clubSandwich:linear_contrast]{clubSandwich::linear_contrast()}} with its own Satterthwaite df.
+The AME of a \code{glm} is computed by marginaleffects under the same
+variance, and each row takes the Satterthwaite df of the
+coefficient of the same name (a predictor entered as itself, a
+factor level). A row without such a coefficient (a transformed
+predictor, \code{poly(x, 2)}) keeps the test of the \code{glm}: t on the
+residual df when the dispersion is estimated, z otherwise.
 }
 For other classes the t-vs-z axis follows the estimator's native
 reference distribution (e.g. \code{glmmTMB}, survival, ordinal,

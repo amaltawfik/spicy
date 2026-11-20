@@ -290,11 +290,17 @@
 #'     (binomial, Poisson, `MASS::glm.nb`).
 #'   \item `bootstrap`, `jackknife` -> z asymptotic.
 #'   \item `CR0`-`CR3` -> t with **Satterthwaite-corrected df** (B
-#'     via [clubSandwich::coef_test()]; AME via
-#'     [clubSandwich::linear_contrast()]; Pustejovsky & Tipton
-#'     2018). Under non-linear terms (`poly()`, `I()`, `log()`,
-#'     `splines::ns()`), AME falls back to z-asymptotic with a
-#'     `spicy_fallback` warning.
+#'     via [clubSandwich::coef_test()]; Pustejovsky & Tipton 2018).
+#'     The AME of an `lm` is a linear contrast of the coefficients
+#'     whatever the formula (`poly()`, `I()`, `log()`, `splines::ns()`
+#'     and interactions included), tested by
+#'     [clubSandwich::linear_contrast()] with its own Satterthwaite df.
+#'     The AME of a `glm` is computed by marginaleffects under the same
+#'     variance, and each row takes the Satterthwaite df of the
+#'     coefficient of the same name (a predictor entered as itself, a
+#'     factor level). A row without such a coefficient (a transformed
+#'     predictor, `poly(x, 2)`) keeps the test of the `glm`: t on the
+#'     residual df when the dispersion is estimated, z otherwise.
 #' }
 #' For other classes the t-vs-z axis follows the estimator's native
 #' reference distribution (e.g. `glmmTMB`, survival, ordinal,
