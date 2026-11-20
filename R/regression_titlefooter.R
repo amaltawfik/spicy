@@ -333,6 +333,7 @@ build_regression_footer_from_frames <- function(
   parts = FALSE,
   show_intercept = TRUE,
   intercept_label = "(Intercept)",
+  term_labels = NULL,
   fit_only = FALSE
 ) {
   # `fit_only` (`show_columns = "none"`): the table shows fit statistics
@@ -508,7 +509,7 @@ build_regression_footer_from_frames <- function(
         if (thresholds_as_rows) thresholds,
         build_scale_effects_footer_block_from_frames(frames),
         build_selection_error_terms_footer_block_from_frames(frames),
-        build_component_blocks_footer_block_from_frames(frames),
+        build_component_blocks_footer_block_from_frames(frames, term_labels),
         build_smooth_terms_footer_block_from_frames(
           frames,
           displayed_parent_vars
@@ -2526,7 +2527,10 @@ build_nested_gam_footer_block_from_frames <- function(
 # its scale under exponentiate. A robust vcov covers the component rows too
 # (pscl: the whole-model vcovCL; glmmTMB: its full cluster sandwich), so the
 # Std. errors line speaks for every row and no disclosure is needed here.
-build_component_blocks_footer_block_from_frames <- function(frames) {
+build_component_blocks_footer_block_from_frames <- function(
+  frames,
+  term_labels = NULL
+) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
@@ -2547,23 +2551,28 @@ build_component_blocks_footer_block_from_frames <- function(frames) {
       if (isTRUE(blk$exp_applied)) {
         gl <- paste0(gl, " ", spicy_str("note_component_exp_or"))
         # A block is exponentiated only under a logit link: its
-        # intercept is the baseline odds of the event its gloss names.
-        # Its row keeps the label "(Intercept)", which `labels` does not
-        # reach.
-        has_int <- any(
-          cf$is_component %in%
-            TRUE &
-            cf$parent_var %in% blk$label &
-            cf$label %in% "(Intercept)" &
-            !is.na(cf$estimate)
-        )
-        if (has_int) {
+        # intercept is the baseline odds of the event its gloss names. The
+        # note names its row as the row shows: "(Intercept)", or the label
+        # `labels` gives its term ("Zero-inflation::(Intercept)").
+        int_row <- cf$is_component %in%
+          TRUE &
+          cf$parent_var %in% blk$label &
+          cf$label %in% "(Intercept)" &
+          !is.na(cf$estimate)
+        if (any(int_row)) {
+          int_lab <- resolve_label(cf$term[which(int_row)[1L]], term_labels)
+          if (
+            identical(int_lab, cf$term[which(int_row)[1L]]) ||
+              !nzchar(trimws(int_lab))
+          ) {
+            int_lab <- "(Intercept)"
+          }
           gl <- paste0(
             gl,
             " ",
             spicy_fmt(
               "note_exp_intercept",
-              "(Intercept)",
+              int_lab,
               spicy_str("note_exp_intercept_odds")
             )
           )

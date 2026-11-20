@@ -397,3 +397,21 @@ test_that("the gam part of a gamm() fit is refused", {
     "spicy_regression_table"
   )
 })
+
+# ---- 10. The note names a relabeled component intercept ------------------
+
+test_that("the exponentiated component intercept is named as its row shows", {
+  skip_if_not_installed("pscl")
+  e <- new.env()
+  utils::data("bioChemists", package = "pscl", envir = e)
+  fit <- pscl::zeroinfl(art ~ fem + ment | ment, data = e$bioChemists)
+  out <- fu_print(table_regression(fit, exponentiate = TRUE))
+  expect_match(out, "The (Intercept) row estimates", fixed = TRUE)
+  out <- fu_print(table_regression(
+    fit,
+    exponentiate = TRUE,
+    labels = c("Zero-inflation::(Intercept)" = "ZI constant")
+  ))
+  expect_match(out, "ZI constant", fixed = TRUE)
+  expect_match(out, "The ZI constant row estimates", fixed = TRUE)
+})

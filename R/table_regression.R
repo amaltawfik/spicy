@@ -3910,6 +3910,9 @@ table_regression <- function(
     show_intercept = show_intercept,
     # The label the intercept row shows, which the note names.
     intercept_label = resolve_label("(Intercept)", var_labs$terms),
+    # The labels of the other rows, for the intercept of a component
+    # block ("Zero-inflation::(Intercept)").
+    term_labels = var_labs$terms,
     fit_only = fit_only
   )
   footer_main <- .compose_note_parts(footer_parts)
