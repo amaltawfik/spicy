@@ -4,8 +4,9 @@
 #
 # The sweep runs on the fixtures of helper-class-fixtures.R and holds the
 # rows to the registry: a token gives a row if and only if the column
-# `fit_stats` of its class lists it, and the default table shows the rows
-# of the column `fit_stats_default`, in their order
+# `fit_stats` of its class lists it and the fit meets the condition of
+# its parenthesis, and the default table shows the rows of the column
+# `fit_stats_default` read the same way, in their order
 # (dev/decisions/2026-11-19-capability-registry.md).
 
 .refusal_reset("fit_stats")
@@ -16,300 +17,30 @@ rr_rows <- function(fit, tokens) {
   )))
 }
 
-# The registry tokens a fixture does not show, each with its reason. An
-# item of a registry cell with a parenthesis holds for some fits of the
-# class only: every fixture outside those fits is named here. `rows` is
-# for the column `fit_stats`, `default` for `fit_stats_default`.
-rr_absent <- list(
-  lm = list(
-    rows = "weighted_nobs",
-    why = "the fit has no weights"
-  ),
-  glm_gaussian = list(
-    rows = c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur"),
-    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden"),
-    why = "the pseudo-R-squared are for binomial and Poisson families"
-  ),
-  glm_logit = list(
-    rows = "r2_deviance",
-    default = "r2_deviance",
-    why = "a binomial glm has the pseudo-R-squared instead"
-  ),
-  glm_probit = list(
-    rows = "r2_deviance",
-    default = c("pseudo_r2_tjur", "r2_deviance"),
-    why = "a binomial glm has the pseudo-R-squared instead; Tjur's is a default of the logit only"
-  ),
-  glm_poisson = list(
-    rows = "pseudo_r2_tjur",
-    default = c("pseudo_r2_tjur", "r2_deviance"),
-    why = "Tjur's R-squared needs a binary outcome; a count glm defaults to McFadden's"
-  ),
-  glm_gamma = list(
-    rows = c("pseudo_r2_mcfadden", "pseudo_r2_nagelkerke", "pseudo_r2_tjur"),
-    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden"),
-    why = "the pseudo-R-squared are for binomial and Poisson families"
-  ),
-  glm_quasi = list(
-    rows = c(
-      "pseudo_r2_mcfadden",
-      "pseudo_r2_nagelkerke",
-      "pseudo_r2_tjur",
-      "aic",
-      "aicc",
-      "bic",
-      "log_lik"
-    ),
-    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden", "r2_deviance", "aic"),
-    why = "a quasi family has no likelihood, and no R-squared by default"
-  ),
-  lm_robust = list(
-    rows = c("fixed_effects", "within_r2", "n_groups"),
-    default = "fixed_effects",
-    why = "the fit absorbs no fixed effects"
-  ),
-  feols = list(
-    rows = c("pseudo_r2_mcfadden", "theta", "alpha"),
-    default = "pseudo_r2_mcfadden",
-    why = "McFadden's R-squared is for the GLM families of fixest"
-  ),
-  feols_nofe = list(
-    rows = c(
-      "pseudo_r2_mcfadden",
-      "theta",
-      "alpha",
-      "fixed_effects",
-      "within_r2",
-      "n_groups"
-    ),
-    default = c("fixed_effects", "within_r2", "pseudo_r2_mcfadden"),
-    why = "a linear fit without fixed effects"
-  ),
-  feols_iv = list(
-    rows = c(
-      "pseudo_r2_mcfadden",
-      "theta",
-      "alpha",
-      "fixed_effects",
-      "within_r2",
-      "n_groups"
-    ),
-    default = c(
-      "fixed_effects",
-      "r2",
-      "within_r2",
-      "pseudo_r2_mcfadden",
-      "aic"
-    ),
-    why = "an IV fit without fixed effects: no R-squared or AIC by default"
-  ),
-  fepois = list(
-    rows = c("r2", "adj_r2", "theta", "alpha", "within_r2"),
-    default = c("r2", "within_r2"),
-    why = "a GLM-family fit has McFadden's R-squared instead"
-  ),
-  fepois_nofe = list(
-    rows = c(
-      "r2",
-      "adj_r2",
-      "theta",
-      "alpha",
-      "fixed_effects",
-      "within_r2",
-      "n_groups"
-    ),
-    default = c("fixed_effects", "r2", "within_r2"),
-    why = "a GLM-family fit without fixed effects"
-  ),
-  fenegbin = list(
-    rows = c("r2", "adj_r2", "within_r2", "sigma"),
-    default = c("r2", "within_r2"),
-    why = "a negative-binomial fit has McFadden's R-squared and theta instead"
-  ),
-  glmer = list(
-    rows = c("theta", "alpha"),
-    why = "a binomial glmer has no dispersion"
-  ),
-  glmer_nb = list(
-    rows = c("icc", "sigma"),
-    default = "icc",
-    why = "a negative-binomial glmer has theta instead of a residual scale"
-  ),
-  glmmTMB = list(
-    rows = c("theta", "alpha", "delta", "phi"),
-    why = "a Gaussian family has sigma as its dispersion"
-  ),
-  glmmTMB_reml = list(
-    rows = c("theta", "alpha", "delta", "phi"),
-    why = "a Gaussian family has sigma as its dispersion"
-  ),
-  glmmTMB_ordinal = list(
-    rows = c(
-      "theta",
-      "alpha",
-      "delta",
-      "phi",
-      "r2_marginal",
-      "r2_conditional",
-      "icc",
-      "sigma",
-      "deviance"
-    ),
-    default = c("icc", "r2_marginal", "r2_conditional"),
-    why = "the ordinal family has no residual variance and no deviance"
-  ),
-  glmmTMB_zi = list(
-    rows = c(
-      "theta",
-      "alpha",
-      "delta",
-      "phi",
-      "r2_marginal",
-      "r2_conditional",
-      "icc"
-    ),
-    default = c("icc", "r2_marginal", "r2_conditional"),
-    why = "a zero-inflated fit has no R-squared or ICC"
-  ),
-  glmmTMB_hurdle = list(
-    rows = c(
-      "theta",
-      "alpha",
-      "delta",
-      "phi",
-      "r2_conditional",
-      "icc",
-      "deviance"
-    ),
-    default = c("icc", "r2_conditional"),
-    why = "a truncated family has a marginal R-squared only, and no deviance"
-  ),
-  glmmTMB_disp = list(
-    rows = c(
-      "theta",
-      "alpha",
-      "delta",
-      "phi",
-      "r2_marginal",
-      "r2_conditional",
-      "icc",
-      "sigma"
-    ),
-    default = c("icc", "r2_marginal", "r2_conditional"),
-    why = "a dispersion formula gives no single residual variance"
-  ),
-  glmmTMB_nbinom2 = list(
-    rows = c("delta", "phi", "icc", "sigma"),
-    default = "icc",
-    why = "an NB2 family has theta as its dispersion, and no ICC"
-  ),
-  glmmTMB_nbinom1 = list(
-    rows = c("theta", "alpha", "phi", "icc", "sigma"),
-    default = "icc",
-    why = "an NB1 family has delta as its dispersion, and no ICC"
-  ),
-  glmmTMB_beta = list(
-    rows = c(
-      "theta",
-      "alpha",
-      "delta",
-      "r2_marginal",
-      "r2_conditional",
-      "icc",
-      "sigma",
-      "deviance"
-    ),
-    default = c("icc", "r2_marginal", "r2_conditional"),
-    why = "a beta family has phi as its dispersion, no R-squared and no deviance"
-  ),
-  zeroinfl = list(
-    rows = c("theta", "alpha"),
-    why = "a Poisson count part has no dispersion"
-  ),
-  hurdle = list(
-    rows = c("theta", "alpha"),
-    why = "a Poisson count part has no dispersion"
-  ),
-  gam = list(
-    rows = c(
-      "pseudo_r2_mcfadden",
-      "pseudo_r2_nagelkerke",
-      "pseudo_r2_tjur",
-      "theta",
-      "alpha",
-      "phi"
-    ),
-    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden"),
-    why = "a Gaussian GAM has the deviance R-squared of its glm twin"
-  ),
-  gam_logit = list(
-    rows = c("r2_deviance", "theta", "alpha", "phi"),
-    default = "r2_deviance",
-    why = "a binomial GAM has the pseudo-R-squared of its glm twin instead"
-  ),
-  bam = list(
-    rows = c("pseudo_r2_tjur", "theta", "alpha", "phi"),
-    default = c("pseudo_r2_tjur", "r2_deviance"),
-    why = "a Poisson GAM defaults to McFadden's R-squared, as its glm twin"
-  ),
-  gam_nb = list(
-    rows = c("pseudo_r2_tjur", "phi", "sigma"),
-    default = c("pseudo_r2_tjur", "r2_deviance"),
-    why = "an nb() GAM has theta instead of a residual scale"
-  ),
-  gam_betar = list(
-    rows = c(
-      "pseudo_r2_mcfadden",
-      "pseudo_r2_nagelkerke",
-      "pseudo_r2_tjur",
-      "r2_deviance",
-      "theta",
-      "alpha",
-      "sigma"
-    ),
-    default = c("pseudo_r2_tjur", "pseudo_r2_mcfadden", "r2_deviance"),
-    why = "a betar() GAM has phi instead of a residual scale, and no R-squared"
-  ),
-  survreg_strata = list(
-    rows = "sigma",
-    why = "strata give one scale per stratum"
-  ),
-  lrm_ordinal = list(
-    rows = "pseudo_r2_tjur",
-    default = "pseudo_r2_tjur",
-    why = "Tjur's R-squared needs a binary outcome"
-  ),
-  rms_Glm = list(
-    rows = "pseudo_r2_tjur",
-    default = c("pseudo_r2_tjur", "r2_deviance"),
-    why = "a Poisson Glm defaults to McFadden's R-squared, as its glm twin"
-  ),
-  rms_Glm_xy = list(
-    rows = "pseudo_r2_tjur",
-    default = c("pseudo_r2_tjur", "r2_deviance"),
-    why = "a Poisson Glm defaults to McFadden's R-squared, as its glm twin"
-  ),
-  rms_Glm_logit = list(
-    rows = "r2_deviance",
-    default = "r2_deviance",
-    why = "a binomial Glm has the pseudo-R-squared of its glm twin instead"
-  )
-)
-
-rr_expected <- function(id, column) {
+# The rows a fixture shows: the tokens of its class cell that the
+# registry offers for the fit (.reg_offers(): an item without a
+# condition, or one whose condition the predicate of
+# .REG_FIT_STATS_CONDITIONS finds in the fit). `column` is `fit_stats`
+# or `fit_stats_default`.
+rr_expected <- function(fit, id, column) {
   reg <- .supported_models_registry()
   cl <- .CLASS_FIXTURES[[id]]$class
   toks <- .reg_cell_tokens(reg[[column]][reg$class == cl])
-  key <- if (column == "fit_stats") "rows" else "default"
-  setdiff(toks, rr_absent[[id]][[key]])
+  toks[vapply(
+    toks,
+    function(tk) .reg_offers(fit, tk, column),
+    logical(1),
+    USE.NAMES = FALSE
+  )]
 }
 
 # Every token of the vocabulary, read from the package so that a token
 # added later is swept as well: refused, or one row more than "nobs", and
-# a row if and only if the registry lists it for the fixture.
+# a row if and only if the registry offers it for the fixture.
 rr_sweep <- function(fit, id) {
+  expect_identical(.reg_registry_class(fit), .CLASS_FIXTURES[[id]]$class)
   base <- rr_rows(fit, "nobs")
-  rows <- rr_expected(id, "fit_stats")
+  rows <- rr_expected(fit, id, "fit_stats")
   for (tk in setdiff(.regression_tokens$show_fit_stats, "nobs")) {
     k <- tryCatch(
       rr_rows(fit, c("nobs", tk)),
@@ -334,33 +65,28 @@ rr_sweep <- function(fit, id) {
   ])
   expect_identical(
     shown,
-    rr_expected(id, "fit_stats_default"),
+    rr_expected(fit, id, "fit_stats_default"),
     label = paste(id, "default rows")
   )
 }
 
-test_that("every class of the registry has a fixture, and every exception names one", {
+test_that("every class of the registry has a fixture, and every condition a predicate", {
   reg <- .supported_models_registry()
   fx_classes <- vapply(.CLASS_FIXTURES, `[[`, character(1), "class")
   expect_setequal(unique(fx_classes), reg$class)
-  expect_true(all(names(rr_absent) %in% names(.CLASS_FIXTURES)))
-  for (id in names(rr_absent)) {
-    cl <- fx_classes[[id]]
-    # An exception names tokens of the class cell, never others.
-    expect_true(all(
-      rr_absent[[id]]$rows %in%
-        .reg_cell_tokens(reg$fit_stats[reg$class == cl])
-    ))
-    expect_true(all(
-      rr_absent[[id]]$default %in%
-        .reg_cell_tokens(reg$fit_stats_default[reg$class == cl])
-    ))
-    expect_true(nzchar(rr_absent[[id]]$why))
-  }
+  cells <- c(reg$fit_stats, reg$fit_stats_default)
   vocab <- .regression_tokens$show_fit_stats
-  for (cell in c(reg$fit_stats, reg$fit_stats_default)) {
+  for (cell in cells) {
     expect_true(all(.reg_cell_tokens(cell) %in% vocab), label = cell)
+    expect_identical(names(.reg_cell_conditions(cell)), .reg_cell_tokens(cell))
   }
+  # The texts of the parentheses of both columns and the predicates are
+  # one set: each condition has its predicate, and each predicate serves.
+  conds <- unlist(lapply(cells, .reg_cell_conditions), use.names = FALSE)
+  conds <- unique(conds[!is.na(conds)])
+  expect_setequal(names(.REG_FIT_STATS_CONDITIONS), conds)
+  expect_false(anyDuplicated(names(.REG_FIT_STATS_CONDITIONS)) > 0L)
+  expect_true(all(vapply(.REG_FIT_STATS_CONDITIONS, is.function, logical(1))))
 })
 
 for (id in names(.CLASS_FIXTURES)) {

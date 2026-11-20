@@ -362,12 +362,7 @@ as_regression_frame.gam <- function(
   # keeps the glm rule, and has no theta row.
   fam_obj <- fit$family
   is_nb <- .gam_is_nb_estimated(fit)
-  nb_fixed <- .gam_is_nb(fit) && !is_nb
-  if (
-    inherits(fam_obj, "extended.family") &&
-      !isTRUE(fam_obj$scale < 0) &&
-      !nb_fixed
-  ) {
+  if (!.gam_has_sigma(fit)) {
     fit_stats$sigma <- NA_real_
   }
   # nb() estimates the NB2 theta: the theta / alpha rows of glm.nb.
@@ -632,6 +627,16 @@ build_smooth_terms_footer_block_from_frames <- function(
 # negbin(theta) does. A negative theta is a starting value.
 .gam_is_nb_estimated <- function(fit) {
   .gam_is_nb(fit) && isTRUE(fit$family$n.theta > 0)
+}
+
+# TRUE for a GAM with a residual scale (the sigma row): a glm family, an
+# extended family whose scale is estimated (tw()), or nb(theta) with
+# theta fixed, which keeps the glm rule.
+.gam_has_sigma <- function(fit) {
+  fam <- fit$family
+  !inherits(fam, "extended.family") ||
+    isTRUE(fam$scale < 0) ||
+    (.gam_is_nb(fit) && !.gam_is_nb_estimated(fit))
 }
 
 # TRUE for a GAM whose beta precision is estimated: mgcv's betar(), whose

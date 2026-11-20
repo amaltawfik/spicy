@@ -392,9 +392,10 @@
 # the vocabulary; the change tokens, which need `nested = TRUE`, are left
 # out). Read from the behavior on 2026-11-19: one light fit per class and
 # the variants of tests/testthat/helper-class-fixtures.R, every token of
-# the vocabulary. A parenthesis gives the fits a token is limited to, as
-# measured on those fixtures; tests/testthat/test-fit_stats_requested_rows.R
-# names the fixture behind each one.
+# the vocabulary. A parenthesis gives the fits a token is limited to; its
+# text is the key of a predicate of .REG_FIT_STATS_CONDITIONS, and
+# tests/testthat/test-fit_stats_requested_rows.R holds each predicate to
+# the rows of the fixtures.
 .REG_FIT_STATS_DEFAULT <- c(
   lm = "nobs, r2, adj_r2",
   glm = paste(
@@ -417,15 +418,15 @@
   ),
   lmerMod = "nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic",
   glmerMod = paste(
-    "nobs, n_groups, icc (binomial, Poisson), r2_marginal, r2_conditional,",
-    "aic, bic"
+    "nobs, n_groups, icc (binomial or Poisson family), r2_marginal,",
+    "r2_conditional, aic, bic"
   ),
   glmmTMB = paste(
-    "nobs, n_groups,",
-    "icc (Gaussian, no zero-inflation or dispersion formula),",
-    "r2_marginal (no ordinal family, zero-inflation or dispersion formula),",
-    "r2_conditional (Gaussian, no zero-inflation or dispersion formula),",
-    "aic, bic"
+    "nobs, n_groups, icc (Gaussian, no dispersion formula),",
+    "r2_marginal (no ordinal or beta family, zero-inflation or dispersion",
+    "formula),",
+    "r2_conditional (no ordinal, beta or truncated family, zero-inflation",
+    "or dispersion formula), aic, bic"
   ),
   lme = "nobs, n_groups, icc, r2_marginal, r2_conditional, aic, bic",
   gls = "nobs, aic",
@@ -502,7 +503,7 @@
   ),
   glmerMod = paste(
     "nobs, theta (negative binomial), alpha (negative binomial),",
-    "r2_marginal, r2_conditional, n_groups, icc (binomial, Poisson),",
+    "r2_marginal, r2_conditional, n_groups, icc (binomial or Poisson family),",
     "sigma (not negative binomial), aic, aicc, bic, deviance, log_lik"
   ),
   glmmTMB = paste(
@@ -510,11 +511,14 @@
     "alpha (NB2 family, no dispersion formula),",
     "delta (NB1 family, no dispersion formula),",
     "phi (beta family, no dispersion formula),",
-    "r2_marginal (no ordinal family, zero-inflation or dispersion formula),",
-    "r2_conditional (Gaussian, no zero-inflation or dispersion formula),",
-    "n_groups, icc (Gaussian, no zero-inflation or dispersion formula),",
-    "sigma (no ordinal family or dispersion formula), aic, aicc, bic,",
-    "deviance (no ordinal or truncated family), log_lik"
+    "r2_marginal (no ordinal or beta family, zero-inflation or dispersion",
+    "formula),",
+    "r2_conditional (no ordinal, beta or truncated family, zero-inflation",
+    "or dispersion formula),",
+    "n_groups, icc (Gaussian, no dispersion formula),",
+    "sigma (Gaussian, Gamma, Poisson, binomial or Tweedie family, no",
+    "dispersion formula), aic, aicc, bic,",
+    "deviance (no ordinal, truncated or beta family), log_lik"
   ),
   lme = paste(
     "nobs, r2_marginal, r2_conditional, n_groups, icc, sigma, aic, aicc,",
@@ -555,7 +559,8 @@
     "nobs, adj_r2,",
     "pseudo_r2_mcfadden (binomial, Poisson, negative binomial),",
     "pseudo_r2_nagelkerke (binomial, Poisson, negative binomial),",
-    "pseudo_r2_tjur (binomial), r2_deviance (not binomial), theta (nb()),",
+    "pseudo_r2_tjur (binomial),",
+    "r2_deviance (nb, tw or a glm family but binomial), theta (nb()),",
     "alpha (nb()), phi (betar()), sigma (glm family or tw()), aic, aicc,",
     "bic, deviance, log_lik"
   ),
@@ -574,6 +579,139 @@
   stanreg = "nobs, r2_bayes, elpd_loo, looic, waic",
   brmsfit = "nobs, r2_bayes, elpd_loo, looic, waic"
 )
+
+# The predicate of each condition of the cells of fit statistics: the text
+# of a parenthesis of .REG_FIT_STATS_DEFAULT or .REG_FIT_STATS, and a
+# function of the fit, TRUE when the fit meets it. A predicate calls the
+# function the frame or the validation reads the property with; the same
+# text holds for every class whose cell writes it. .reg_offers() reads
+# them.
+.REG_FIT_STATS_CONDITIONS <- list(
+  "weighted fit" = function(fit) .has_real_weights(stats::weights(fit)),
+  "not quasi" = function(fit) has_usable_loglik(fit),
+  "binomial" = function(fit) {
+    identical(.glm_r2_kind(.reg_glm_twin(fit)), "binomial")
+  },
+  "binary outcome" = function(fit) length(.lrm_levels(fit)) == 2L,
+  "binomial, Poisson" = function(fit) {
+    .glm_r2_kind(.reg_glm_twin(fit)) %in% c("binomial", "count")
+  },
+  "binomial, Poisson, negative binomial" = function(fit) {
+    .glm_r2_kind(.reg_glm_twin(fit)) %in% c("binomial", "count")
+  },
+  "binomial logit, binary outcome" = function(fit) {
+    "pseudo_r2_tjur" %in% .glm_default_r2_kind(fit)
+  },
+  "Gaussian, Gamma" = function(fit) {
+    "r2_deviance" %in% .glm_default_r2_kind(fit)
+  },
+  "Gaussian, Gamma, Tweedie" = function(fit) {
+    "r2_deviance" %in% .glm_default_r2_kind(fit)
+  },
+  "not binomial" = function(fit) .glm_carries_r2_deviance(fit),
+  "nb, tw or a glm family but binomial" = function(fit) {
+    .glm_carries_r2_deviance(fit)
+  },
+  "with fixed_effects =" = function(fit) absorbs_fixed_effects(fit),
+  "with fixed effects" = function(fit) .fixest_has_fe(fit),
+  "feols" = function(fit) is.null(fit$family),
+  "feols, not IV" = function(fit) {
+    is.null(fit$family) && !.fixest_is_iv_second_stage(fit)
+  },
+  "feols with fixed effects" = function(fit) {
+    is.null(fit$family) && .fixest_has_fe(fit)
+  },
+  "feols with fixed effects, not IV" = function(fit) {
+    is.null(fit$family) &&
+      .fixest_has_fe(fit) &&
+      !.fixest_is_iv_second_stage(fit)
+  },
+  "not IV" = function(fit) !.fixest_is_iv_second_stage(fit),
+  "GLM family" = function(fit) !is.null(fit$family),
+  "negative binomial" = function(fit) .is_nb2_fit(fit),
+  "not negative binomial" = function(fit) !.is_nb2_fit(fit),
+  "nb()" = function(fit) .is_nb2_fit(fit),
+  "betar()" = function(fit) .is_beta_fit(fit),
+  "glm family or tw()" = function(fit) .gam_has_sigma(fit),
+  "binomial or Poisson family" = function(fit) {
+    is.finite(.merMod_link_distribution_variance(fit, 1))
+  },
+  "no strata" = function(fit) .survreg_single_scale(fit),
+  # glmmTMB: the dispersion parameters and the scale, as
+  # .glmmTMB_dispersion_stats() gives them, and the rows the frame takes
+  # from the fit.
+  "NB2 family, no dispersion formula" = function(fit) {
+    is.finite(.glmmTMB_dispersion_stats(fit, stats::family(fit))$theta)
+  },
+  "NB1 family, no dispersion formula" = function(fit) {
+    is.finite(.glmmTMB_dispersion_stats(fit, stats::family(fit))$delta)
+  },
+  "beta family, no dispersion formula" = function(fit) {
+    is.finite(.glmmTMB_dispersion_stats(fit, stats::family(fit))$phi)
+  },
+  "Gaussian, Gamma, Poisson, binomial or Tweedie family, no dispersion formula" = function(
+    fit
+  ) {
+    is.finite(.glmmTMB_dispersion_stats(fit, stats::family(fit))$sigma)
+  },
+  "Gaussian, no dispersion formula" = function(fit) {
+    fam <- stats::family(fit)
+    identical(fam$family, "gaussian") &&
+      identical(fam$link, "identity") &&
+      .glmmTMB_constant_dispersion(fit)
+  },
+  "no ordinal or beta family, zero-inflation or dispersion formula" = function(
+    fit
+  ) {
+    !.glmmTMB_is_ordinal(fit) && is.finite(.nakagawa_r2(fit)$marginal)
+  },
+  "no ordinal, beta or truncated family, zero-inflation or dispersion formula" = function(
+    fit
+  ) {
+    !.glmmTMB_is_ordinal(fit) && is.finite(.nakagawa_r2(fit)$conditional)
+  },
+  "no ordinal, truncated or beta family" = function(fit) {
+    is.finite(tryCatch(
+      suppressWarnings(stats::deviance(fit)),
+      error = function(e) NA_real_
+    ))
+  }
+)
+
+# An rms::Glm read through its glm twin, as the R-squared rules read it.
+.reg_glm_twin <- function(fit) {
+  if (inherits(fit, "Glm")) .rms_as_glm(fit) else fit
+}
+
+# The items of a cell of fit statistics, each with its condition: the
+# tokens as names, the text of their parenthesis as values (NA for an
+# item without one).
+.reg_cell_conditions <- function(cell) {
+  items <- trimws(strsplit(cell, ",(?![^()]*\\))", perl = TRUE)[[1L]])
+  items <- items[nzchar(items)]
+  has <- grepl("(", items, fixed = TRUE)
+  stats::setNames(
+    ifelse(has, sub("^[^(]*\\((.*)\\)$", "\\1", items), NA_character_),
+    trimws(sub("\\s*\\(.*$", "", items))
+  )
+}
+
+# TRUE when the registry offers `token` for `fit`: the cell of its class
+# in `column` lists the token without a condition, or with a condition
+# the fit meets (.REG_FIT_STATS_CONDITIONS).
+.reg_offers <- function(fit, token, column = "fit_stats") {
+  cl <- .reg_registry_class(fit)
+  if (is.na(cl)) {
+    return(FALSE)
+  }
+  cells <- if (column == "fit_stats") .REG_FIT_STATS else .REG_FIT_STATS_DEFAULT
+  cond <- .reg_cell_conditions(cells[[cl]])
+  if (!token %in% names(cond)) {
+    return(FALSE)
+  }
+  cond <- cond[[token]]
+  is.na(cond) || isTRUE(.REG_FIT_STATS_CONDITIONS[[cond]](fit))
+}
 
 # The arguments of table_regression() that belong to some families only,
 # each with the families whose page documents it. Every other argument is

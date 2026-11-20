@@ -613,7 +613,7 @@ as_regression_frame.survreg <- function(
   # log-time distribution (the AFT error scale), of T itself for the
   # others. strata() give each stratum its own scale: there is then no single
   # value, and the sigma row and the footer's scale stay blank.
-  aft_scale <- if (length(fit$scale) == 1L) {
+  aft_scale <- if (.survreg_single_scale(fit)) {
     as.numeric(fit$scale)
   } else {
     NA_real_
@@ -736,6 +736,11 @@ as_regression_frame.survreg <- function(
 # a survey::svycoxph fit, which inherits coxph. Not rms::cph, which also
 # inherits coxph: on a stratified cph, survival::concordance() and
 # (Dxy + 1) / 2 both give a C other than that of the coxph twin.
+# A survreg fit with one scale: strata() give each stratum its own.
+.survreg_single_scale <- function(fit) {
+  length(fit$scale) == 1L
+}
+
 .carries_concordance <- function(m) {
   inherits(m, "coxph") && !inherits(m, "cph")
 }

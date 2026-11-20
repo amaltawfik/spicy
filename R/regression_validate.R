@@ -2302,60 +2302,14 @@ absorbs_fixed_effects <- function(model) {
 # The fit-statistic tokens of `tokens` that some model of `models` shows a
 # row for, to name in a remedy: a remedy never names a token the table
 # would refuse. Read from the column `fit_stats` of the registry
-# (R/table_regression_models.R): a token the class lists without a
-# condition is shown; one it lists with a condition is shown when the
-# fit meets it, read as the guards of validate_class_appropriate_tokens()
-# read it; a token the class does not list is not.
+# (.reg_offers(), R/table_regression_models.R).
 .fit_stats_offered <- function(models, tokens) {
-  reg <- .supported_models_registry()
-  offered <- function(m, tk) {
-    cell <- reg$fit_stats[match(.reg_registry_class(m), reg$class)]
-    if (is.na(cell) || !tk %in% .reg_cell_tokens(cell)) {
-      return(FALSE)
-    }
-    if (tk %in% .reg_cell_tokens(cell, conditional = FALSE)) {
-      return(TRUE)
-    }
-    g <- if (inherits(m, "Glm")) .rms_as_glm(m) else m
-    switch(
-      tk,
-      pseudo_r2_mcfadden = ,
-      pseudo_r2_nagelkerke = if (inherits(m, "fixest")) {
-        is.character(m$family) || is.list(m$family)
-      } else {
-        .glm_r2_kind(g) %in% c("binomial", "count")
-      },
-      pseudo_r2_tjur = if (inherits(m, "lrm")) {
-        length(.lrm_levels(m)) == 2L
-      } else {
-        identical(.glm_r2_kind(g), "binomial")
-      },
-      r2_deviance = .glm_carries_r2_deviance(m),
-      # The Nakagawa R^2 of a glmmTMB fit, where the family and the
-      # components decide: asked of the fit, as its frame asks.
-      r2_marginal = ,
-      # (the ordinal family has none, as its frame says).
-      r2_conditional = !.glmmTMB_is_ordinal(m) &&
-        is.finite(
-          tryCatch(
-            .nakagawa_r2(m)[[sub("^r2_", "", tk)]],
-            error = function(e) NA_real_
-          ) %||%
-            NA_real_
-        ),
-      # Any other token the class lists with a condition answers FALSE,
-      # as if the fit did not meet it: r2, adj_r2 and within_r2 of a
-      # fixest fit have no case here, and no remedy asks them of a fixest
-      # fit today (the r2 remedy is for tables of lm fits only). A remedy
-      # that names one for such a fit needs its case first.
-      FALSE # nocov
-    )
-  }
-  tokens[vapply(
-    tokens,
-    function(tk) any(vapply(models, offered, logical(1), tk = tk)),
-    logical(1)
-  )]
+  tokens[vapply(tokens, .reg_any_offers, logical(1), models = models)]
+}
+
+# TRUE when the registry offers `token` for some model of `models`.
+.reg_any_offers <- function(models, token) {
+  any(vapply(models, .reg_offers, logical(1), token = token))
 }
 
 # The line of a refusal that proposes other fit statistics: `fmt` with the

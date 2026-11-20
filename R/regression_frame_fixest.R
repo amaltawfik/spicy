@@ -428,7 +428,7 @@ as_regression_frame.fixest <- function(
     title_prefix = .fixest_title_prefix(
       fam,
       is_glm,
-      has_fe = length(fit$fixef_vars) > 0L,
+      has_fe = .fixest_has_fe(fit),
       is_iv = .fixest_is_iv_second_stage(fit)
     ),
     exp_applied = FALSE,
@@ -766,6 +766,11 @@ as_regression_frame.fixest <- function(
 # the endogenous regressor on the instruments.
 .fixest_is_iv_second_stage <- function(fit) {
   isTRUE(fit$is_iv) && !isTRUE(fit$iv_stage == 1)
+}
+
+# TRUE for a fixest fit with fixed effects.
+.fixest_has_fe <- function(fit) {
+  length(fit$fixef_vars) > 0L
 }
 
 
