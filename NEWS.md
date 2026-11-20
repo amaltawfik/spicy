@@ -705,6 +705,15 @@
   (`"aic"`), agree in number, point to the help page of the model
   family, and suggest only the statistics and columns the model accepts.
 
+* `table_regression()`: an error or a warning about `vcov` lists the
+  values the model accepts, and no longer one it refuses. A `cluster`
+  passed without a cluster-robust `vcov` to a model that has none, such
+  as `glmer()` or `nls()`, says so instead of suggesting `"CR0"` to
+  `"CR3"`. A model that could take one under a condition gets the
+  condition: "Its class also supports CR0 (classical only without x =
+  TRUE, y = TRUE)" for an rms model. A survey-design model under `vcov =
+  "CR1S"` is pointed to its design instead of to `"CR2"`.
+
 * `table_regression(nested = TRUE)` compares two instrumental-variables
   `feols()` models of the same outcome, which it took for models of
   different outcomes. A model without a predictor can open a hierarchy
