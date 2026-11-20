@@ -448,7 +448,12 @@ as_regression_frame.selection <- function(
       est_mat[selection_idx, , drop = FALSE],
       outcome_label = "selection",
       ci_level = ci_level,
-      df = df
+      df = df,
+      design = .selection_design(
+        fit,
+        "selection",
+        rownames(est_mat)[selection_idx]
+      )
     )
   }
   if (length(outcome_idx) > 0L) {
@@ -456,7 +461,8 @@ as_regression_frame.selection <- function(
       est_mat[outcome_idx, , drop = FALSE],
       outcome_label = "outcome",
       ci_level = ci_level,
-      df = df
+      df = df,
+      design = .selection_design(fit, "outcome", rownames(est_mat)[outcome_idx])
     )
   }
   if (length(blocks) == 0L) {
@@ -472,10 +478,103 @@ as_regression_frame.selection <- function(
 }
 
 
+# The design of one equation, shaped as the parts of an lm() that the
+# factor helpers read (terms, xlevels, coefficients, model, contrasts), so
+# that its factor and logical predictors take a header, their levels and a
+# reference row. A fit by maximum likelihood keeps the terms of each
+# equation (termsS, termsO), and its data are found in the environment of
+# its formula; treatReg() keeps the model frame of each equation (mfs,
+# mfo), its call naming the data of its own frame. A two-step fit keeps
+# its formulas in the call only, and the model frame of each equation in
+# the frame of heckit(), the environment of the terms of its second-step
+# lm() (mfS, mfO). Else the data are those the AME guard finds
+# (.ame_model_data()). Kept only when the design rebuilt from them gives
+# back the coefficient names of the equation exactly; NULL otherwise, and
+# the rows keep their coefficient names.
+.selection_design <- function(fit, eq, cf_names) {
+  trms <- .selection_equation_terms(fit, eq)
+  if (is.null(trms)) {
+    return(NULL)
+  }
+  sources <- list(
+    function() fit[[c(selection = "mfs", outcome = "mfo")[[eq]]]],
+    function() eval(fit$call$data, environment(trms)),
+    function() {
+      get(
+        c(selection = "mfS", outcome = "mfO")[[eq]],
+        envir = environment(fit$lm$terms),
+        inherits = FALSE
+      )
+    },
+    function() .ame_model_data(fit)
+  )
+  for (src in sources) {
+    design <- tryCatch(
+      {
+        mf <- src()
+        # A model frame is taken as it is; data are framed by the terms.
+        if (is.null(attr(mf, "terms"))) {
+          mf <- stats::model.frame(trms, data = mf)
+        }
+        mm <- stats::model.matrix(trms, mf)
+        if (!identical(colnames(mm), cf_names)) {
+          stop("no match")
+        }
+        xlev <- stats::.getXlevels(trms, mf)
+        lgl <- names(mf)[vapply(mf, is.logical, logical(1))]
+        for (v in intersect(lgl, attr(trms, "term.labels"))) {
+          xlev[[v]] <- c("FALSE", "TRUE")
+        }
+        list(
+          terms = trms,
+          xlevels = xlev,
+          coefficients = stats::setNames(numeric(length(cf_names)), cf_names),
+          model = mf,
+          contrasts = attr(mm, "contrasts")
+        )
+      },
+      error = function(e) NULL
+    )
+    if (!is.null(design)) {
+      return(design)
+    }
+  }
+  NULL
+}
+
+
+# The terms of one equation ("selection" or "outcome"); NULL when the fit
+# keeps neither its terms nor a formula in its call.
+.selection_equation_terms <- function(fit, eq) {
+  fit[[c(selection = "termsS", outcome = "termsO")[[eq]]]] %||%
+    tryCatch(
+      stats::terms(stats::as.formula(fit$call[[eq]])),
+      error = function(e) NULL
+    )
+}
+
+
 # Helper: build a coefs block from a slice of summary$estimate. The test
-# is summary()'s own t on `df`, and the interval uses the same t.
-.selection_block <- function(mat, outcome_label, ci_level, df) {
+# is summary()'s own t on `df`, and the interval uses the same t. With the
+# design of the equation (.selection_design()), a factor level is named by
+# its level under the header of its factor, and the factor has its
+# reference row, as in a multinomial model.
+.selection_block <- function(mat, outcome_label, ci_level, df, design = NULL) {
   nm <- rownames(mat)
+  parent <- nm
+  lvl <- nm
+  pos <- rep(NA_integer_, length(nm))
+  if (!is.null(design)) {
+    meta <- detect_factor_term_meta(design)[nm]
+    has <- !vapply(meta, is.null, logical(1))
+    parent[has] <- vapply(meta[has], `[[`, "", "factor_term")
+    lvl[has] <- vapply(meta[has], `[[`, "", "factor_level")
+    pos[has] <- vapply(
+      meta[has],
+      function(m) as.integer(m$factor_level_pos),
+      1L
+    )
+  }
   est <- unname(mat[, "Estimate"])
   se <- unname(mat[, "Std. Error"])
   stat <- unname(mat[, "t value"])
@@ -490,14 +589,15 @@ as_regression_frame.selection <- function(
   # prefix, the (Intercept) from the selection equation and the
   # (Intercept) from the outcome equation collide on `term` and the
   # body builder collapses them into a single row. parent_var stays
-  # bare so the body groups predictor-by-predictor; the indented label
+  # bare (the predictor, or the factor of a level) so the body groups
+  # predictor-by-predictor; the indented label
   # carries the block prefix (visual: "selection: (Intercept)" /
   # "outcome: (Intercept)" under an "(Intercept):" section header).
-  data.frame(
+  out <- data.frame(
     term = paste0(outcome_label, ": ", nm),
-    parent_var = nm,
-    label = paste0(outcome_label, ": ", nm),
-    factor_level_pos = rep(NA_integer_, length(nm)),
+    parent_var = parent,
+    label = paste0(outcome_label, ": ", lvl),
+    factor_level_pos = pos,
     is_ref = rep(FALSE, length(nm)),
     estimate_type = rep("B", length(nm)),
     estimate = est,
@@ -515,6 +615,10 @@ as_regression_frame.selection <- function(
     is_intercept = nm == "(Intercept)",
     stringsAsFactors = FALSE
   )
+  if (is.null(design)) {
+    return(out)
+  }
+  rbind(out, .multinom_reference_rows(design, outcome = outcome_label))
 }
 
 

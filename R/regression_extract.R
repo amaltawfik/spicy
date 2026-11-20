@@ -958,6 +958,17 @@ detect_factor_term_meta <- function(fit) {
       error = function(e) NULL
     ))
   }
+  # A selection model: the term labels of its two equations, which
+  # `labels` keys a factor header by, as for any other model.
+  if (inherits(fit, "selection")) {
+    tl <- unlist(lapply(c("selection", "outcome"), function(eq) {
+      attr(.selection_equation_terms(fit, eq), "term.labels")
+    }))
+    return(tryCatch(
+      stats::terms(stats::reformulate(unique(tl))),
+      error = function(e) NULL
+    ))
+  }
   # Reachable for any non-brmsfit whose stats::terms(fit) errors:
   # trms stays NULL, the class branches are skipped, and execution
   # falls through to here.

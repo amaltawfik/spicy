@@ -117,17 +117,20 @@ test_that("every row tests on summary()'s t with the residual df", {
   for (fit in list(.sel_ml(), .sel_2s())) {
     est <- summary(fit)$estimate
     fr <- as_regression_frame(fit)
-    expect_true(all(fr$coefs$test_type == "t"))
-    expect_true(all(fr$coefs$df == fit$param$df))
-    n <- nrow(fr$coefs)
+    # The reference row of the logical `kids` has no test.
+    cf <- fr$coefs[!fr$coefs$is_ref, ]
+    expect_identical(sum(fr$coefs$is_ref), 1L)
+    expect_true(all(cf$test_type == "t"))
+    expect_true(all(cf$df == fit$param$df))
+    n <- nrow(cf)
     expect_equal(
-      fr$coefs$p_value,
+      cf$p_value,
       unname(est[seq_len(n), "Pr(>|t|)"]),
       tolerance = 1e-10
     )
     q <- stats::qt(0.975, fit$param$df)
     expect_equal(
-      fr$coefs$ci_lower,
+      cf$ci_lower,
       unname(est[seq_len(n), 1] - q * est[seq_len(n), 2]),
       tolerance = 1e-10
     )
@@ -331,12 +334,15 @@ test_that("the title names a binary outcome and a treatment-effects model", {
   )
   fr <- as_regression_frame(tr)
   expect_identical(fr$info$extras$title_prefix, "Treatment-effects model")
-  # Its rows are summary()'s, equations and error terms.
+  # Its rows are summary()'s, equations and error terms, beside the
+  # reference row of the logical `kids`.
   est <- summary(tr)$estimate
-  n <- nrow(fr$coefs)
-  expect_equal(fr$coefs$estimate, unname(est[seq_len(n), 1]), tolerance = 1e-10)
+  cf <- fr$coefs[!fr$coefs$is_ref, ]
+  expect_identical(fr$coefs$term[fr$coefs$is_ref], "selection: kidsFALSE")
+  n <- nrow(cf)
+  expect_equal(cf$estimate, unname(est[seq_len(n), 1]), tolerance = 1e-10)
   expect_equal(
-    fr$coefs$std_error,
+    cf$std_error,
     unname(est[seq_len(n), 2]),
     tolerance = 1e-10
   )
