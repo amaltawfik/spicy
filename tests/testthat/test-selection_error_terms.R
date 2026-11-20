@@ -273,6 +273,35 @@ test_that("an OLS fit on the selected cases sits beside the selection model", {
   expect_equal(sum(.sel_tidy(tab)$factor_term %in% "Error terms"), 2L)
 })
 
+test_that("selection models at different df share one P-values sentence", {
+  d <- .mroz()
+  ml0 <- sampleSelection::selection(
+    lfp ~ age + I(age^2) + faminc + kids5 + educ,
+    wage ~ exper + I(exper^2) + educ,
+    data = d
+  )
+  tab <- table_regression(list("Without, city" = ml0, City = .sel_ml(d)))
+  note <- .sel_note(tab)
+  expect_match(
+    note,
+    paste0(
+      "P-values and CIs: t distribution; residual degrees of freedom: ",
+      "741 (Without, city); 740 (City)."
+    ),
+    fixed = TRUE
+  )
+  expect_no_match(note, "City: P-values", fixed = TRUE)
+  withr::local_options(spicy.language = "fr")
+  expect_match(
+    .sel_note(table_regression(list(A = ml0, B = .sel_ml(d)))),
+    paste0(
+      "Valeurs p et IC : loi t ; degrés de liberté ",
+      "résiduels : 741 (A), 740 (B)."
+    ),
+    fixed = TRUE
+  )
+})
+
 test_that("the title names a binary outcome and a treatment-effects model", {
   d <- .mroz()
   mb <- sampleSelection::selection(

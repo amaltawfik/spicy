@@ -685,6 +685,8 @@
   note_pvalues_wald = "Valeurs p\u00A0: test z de Wald, approximation pour grands \u00E9chantillons.",
   note_pvalues_containment = "Valeurs p\u00A0: test t, degr\u00E9s de libert\u00E9 \u00AB\u00A0containment\u00A0\u00BB.",
   note_pvalues_t_df = "Valeurs p et IC\u00A0: loi t \u00E0 %s degr\u00E9s de libert\u00E9.",
+  note_pvalues_t_df_models = "Valeurs p et IC\u00A0: loi t\u00A0; degr\u00E9s de libert\u00E9 r\u00E9siduels\u00A0: %s.",
+  note_pvalues_t_df_item = "%s (%s)",
   note_ci_profile = "IC \u00E0 %s\u00A0%%\u00A0: vraisemblance profil\u00E9e.",
   note_ci_bootstrap_percentile = "IC \u00E0 %s\u00A0%%\u00A0: bootstrap percentile.",
   note_ci_posterior_mixed = "L'IC \u00E0 %s\u00A0%% est un intervalle de cr\u00E9dibilit\u00E9 a posteriori \u00E0 queues \u00E9gales.",

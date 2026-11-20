@@ -2357,6 +2357,29 @@ build_mixed_inference_footer_block_from_frames <- function(frames) {
   if (length(per_model) == 0L) {
     return(NULL)
   }
+  # Every model tested on a t whose residual df differ (two selection fits
+  # with different predictors): one sentence, the df of each model after
+  # the distribution they share, as the design sentence gives them.
+  dfs <- lapply(per_model, function(pm) attr(pm$text, "t_df"))
+  if (
+    length(per_model) == length(frames) &&
+      length(frames) > 1L &&
+      !any(vapply(dfs, is.null, logical(1))) &&
+      length(unique(unlist(dfs))) > 1L
+  ) {
+    items <- vapply(
+      per_model,
+      function(pm) {
+        spicy_fmt(
+          "note_pvalues_t_df_item",
+          attr(pm$text, "t_df"),
+          .model_ref(frames, pm$idx)
+        )
+      },
+      character(1)
+    )
+    return(spicy_fmt("note_pvalues_t_df_models", .join_note_vars(items)))
+  }
 
   # One bare line when every model of the table is tested the same way
   # (three lmer fits without lmerTest); otherwise each line names the
@@ -2516,12 +2539,11 @@ build_nested_gam_footer_block_from_frames <- function(
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {
     return(spicy_str("note_pvalues_satterthwaite"))
   }
-  # A selection model tests on summary()'s t with the residual df.
+  # A selection model tests on summary()'s t with the residual df, which
+  # the sentence carries (`t_df`) for the builder to merge.
   if (cls == "selection" && isTRUE(is.finite(frame$info$extras$selection_df))) {
-    return(spicy_fmt(
-      "note_pvalues_t_df",
-      format(frame$info$extras$selection_df, scientific = FALSE)
-    ))
+    df <- format(frame$info$extras$selection_df, scientific = FALSE)
+    return(structure(spicy_fmt("note_pvalues_t_df", df), t_df = df))
   }
   switch(
     cls,
