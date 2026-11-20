@@ -136,3 +136,64 @@ test_that("the refusals of the vcov sweep keep their text and class: Stan", {
   .skip_unless_local_stan()
   .refusal_snapshot("vcov", .refusal_ids(stan = TRUE))
 })
+
+# Two more messages of the variances, on every fixture: what a `cluster`
+# passed with the default `vcov` gets (a warning, or a refusal), and the
+# refusal of an unknown value with its list of valid ones.
+.refusal_reset("vcov_args")
+
+vc_args_cases <- function(fit, id) {
+  clu <- .CLASS_FIXTURES[[id]]$cluster
+  list(
+    "cluster with vcov = \"classical\"" = list(
+      cluster = if (is.null(clu)) {
+        rep(1:2, length.out = stats::nobs(fit))
+      } else if (is.function(clu)) {
+        clu(fit)
+      } else {
+        clu
+      }
+    ),
+    "vcov = \"HC9\"" = list(vcov = "HC9")
+  )
+}
+
+for (id in names(.CLASS_FIXTURES)) {
+  local({
+    id <- id
+    test_that(paste0("the cluster and unknown-vcov messages of ", id), {
+      skip_on_cran()
+      fit <- .class_fixture(id)
+      cases <- vc_args_cases(fit, id)
+      for (key in names(cases)) {
+        tryCatch(
+          withCallingHandlers(
+            suppressMessages(do.call(
+              table_regression,
+              c(list(fit, output = "data.frame"), cases[[key]])
+            )),
+            warning = function(w) {
+              if (inherits(w, "spicy_warning") && grepl("`cluster`", conditionMessage(w))) {
+                .refusal_note("vcov_args", id, key, w, kind = "warning")
+              }
+              invokeRestart("muffleWarning")
+            }
+          ),
+          spicy_error = function(e) .refusal_note("vcov_args", id, key, e)
+        )
+      }
+      .refusal_ran("vcov_args", id)
+      succeed()
+    })
+  })
+}
+
+test_that("the cluster and unknown-vcov messages keep their text and class", {
+  skip_on_cran()
+  .refusal_snapshot("vcov_args", .refusal_ids())
+})
+
+test_that("the cluster and unknown-vcov messages keep their text and class: Stan", {
+  .skip_unless_local_stan()
+  .refusal_snapshot("vcov_args", .refusal_ids(stan = TRUE))
+})

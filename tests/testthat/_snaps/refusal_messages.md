@@ -2100,6 +2100,538 @@
             survreg, svycoxph, svyglm, svyolr, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
+        `ci_method = "boot_percentile"` requires `vcov = "bootstrap"` for every model.
+        i Percentile CIs are quantiles of the bootstrap replicates; they reuse the same resamples as the bootstrap SEs (no second resampling pass).
+        i Set `vcov = "bootstrap"` (tune with `boot_n`), or drop `ci_method = "boot_percentile"`.
+      Received by 71:
+        ci_method = "boot_percentile": bam, betareg, clm, clm_nominal, clm_scale,
+            clmm, coxph, coxph_strata, cph, cph_xy, feols, feols_iv, feols_nofe,
+            fepois, fepois_nofe, flexsurvreg, gam, gam_logit, geeglm, glm.nb,
+            glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
+            glm_quasi, glmer, glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
+            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
+            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
+            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
+            tobit, zeroinfl, zeroinfl_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `Glm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 3:
+        ci_method = "hdi": rms_Glm, rms_Glm_logit, rms_Glm_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `bam` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": bam
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `betareg` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": betareg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `clm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 3:
+        ci_method = "hdi": clm, clm_nominal, clm_scale
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `clmm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `coxph` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": coxph, coxph_strata
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `cph` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": cph, cph_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `fixest` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 5:
+        ci_method = "hdi": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `flexsurvreg` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": flexsurvreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `gam` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": gam, gam_logit
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `geeglm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": geeglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `glm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 6:
+        ci_method = "hdi": glm_gamma, glm_gaussian, glm_logit, glm_poisson,
+            glm_probit, glm_quasi
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `glmerMod` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": glmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `glmmTMB` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 6:
+        ci_method = "hdi": glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `gls` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": gls
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `hurdle` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": hurdle, hurdle_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `iv_robust` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": iv_robust
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `ivreg` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": ivreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `lm_robust` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": lm_robust, lm_robust_fe
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `lm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": lm, lm_weighted
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `lme` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": lme, lme_contrasts
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `lmerMod` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": lmer, lmer_ml
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `lrm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 3:
+        ci_method = "hdi": lrm, lrm_ordinal, lrm_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `mlogit` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `multinom` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": multinom
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `negbin` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": glm.nb
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `nls` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": nls
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `ols` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": ols, ols_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `polr` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": polr
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `rlm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": rlm
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `rq` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": rq
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `selection` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": selection
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `survreg` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": survreg, survreg_strata
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `svycoxph` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `svyglm` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 3:
+        ci_method = "hdi": svyglm, svyglm_binomial, svyglm_quasibinomial
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `svyolr` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": svyolr
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `tobit` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 1:
+        ci_method = "hdi": tobit
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "hdi"` is defined only for Bayesian fits (`stanreg` / `brmsfit`).
+        x `zeroinfl` has no posterior draws to take a highest-density interval of.
+        i Frequentist fits use `ci_method = "wald"` (default), `"profile"`, or `"boot_percentile"`.
+      Received by 2:
+        ci_method = "hdi": zeroinfl, zeroinfl_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `Glm` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 3:
+        ci_method = "profile": rms_Glm, rms_Glm_logit, rms_Glm_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `bam` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": bam
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `betareg` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": betareg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `clmm` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `coxph` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": coxph, coxph_strata
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `cph` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": cph, cph_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `fixest` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 5:
+        ci_method = "profile": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `flexsurvreg` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": flexsurvreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `gam` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": gam, gam_logit
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `geeglm` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": geeglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `glmerMod` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": glmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `glmmTMB` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 6:
+        ci_method = "profile": glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `gls` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": gls
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `hurdle` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": hurdle, hurdle_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `iv_robust` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": iv_robust
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `ivreg` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": ivreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `lm_robust` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": lm_robust, lm_robust_fe
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `lm` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": lm, lm_weighted
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `lme` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": lme, lme_contrasts
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `lmerMod` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": lmer, lmer_ml
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `lrm` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 3:
+        ci_method = "profile": lrm, lrm_ordinal, lrm_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `mlogit` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `multinom` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": multinom
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `negbin` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": glm.nb
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `nls` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": nls
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `ols` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": ols, ols_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `rlm` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": rlm
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `rq` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": rq
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `selection` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": selection
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `survreg` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": survreg, survreg_strata
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `svycoxph` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `svyglm` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 3:
+        ci_method = "profile": svyglm, svyglm_binomial, svyglm_quasibinomial
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `svyolr` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": svyolr
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `tobit` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 1:
+        ci_method = "profile": tobit
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is available only for `glm` and ordinal (`polr` / `clm`) fits.
+        x `zeroinfl` has no profile-likelihood path; its CIs would silently fall back to Wald.
+        i Use `ci_method = "wald"` (default), or a robust `vcov` for robust (Wald) CIs.
+      Received by 2:
+        ci_method = "profile": zeroinfl, zeroinfl_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
         `exponentiate = TRUE` is not meaningful for a model with link "probit" (Model 1).
         i Probit coefficients are shifts on a latent standard-normal scale; their exponential has no interpretation.
         i exp(B) is a ratio only for logit (odds ratio), log (rate / risk / mean ratio), and binomial or ordinal cloglog (hazard ratio) links.
@@ -3782,6 +4314,20 @@
         i Or remove `"beta"` from `show_columns`.
       Received by 2:
         show_columns = "beta": brmsfit, stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "boot_percentile"` is not defined for Bayesian fits.
+        i A posterior has no profile likelihood or bootstrap replicates; the credible interval is computed from the posterior draws.
+        i Use the default equal-tailed credible interval, or `ci_method = "hdi"` for the highest-density interval.
+      Received by 2:
+        ci_method = "boot_percentile": brmsfit, stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        `ci_method = "profile"` is not defined for Bayesian fits.
+        i A posterior has no profile likelihood or bootstrap replicates; the credible interval is computed from the posterior draws.
+        i Use the default equal-tailed credible interval, or `ci_method = "hdi"` for the highest-density interval.
+      Received by 2:
+        ci_method = "profile": brmsfit, stanreg
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `stanreg`.

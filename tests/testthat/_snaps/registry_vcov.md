@@ -4506,3 +4506,368 @@
       Received by 1:
         vcov = "rank": stanreg
 
+# the cluster and unknown-vcov messages keep their text and class
+
+    Code
+      cat(.refusal_render(rows), sep = "\n")
+    Output
+      ----
+      error: spicy_invalid_input, spicy_error
+        Model 1: `cluster` is not used for `geeglm` models.
+        i Clustering in GEE is defined by the model's own `id =` argument, and the sandwich covariance over those clusters is already the default inference.
+        i Refit with a different `id =` to change the clustering.
+      Received by 1:
+        cluster with vcov = "classical": geeglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `Glm`: "classical", "CR0".
+      Received by 3:
+        vcov = "HC9": rms_Glm, rms_Glm_logit, rms_Glm_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `bam`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": bam
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `betareg`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": betareg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `clm`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": clm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `clm`: "classical".
+      Received by 2:
+        vcov = "HC9": clm_nominal, clm_scale
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `clmm`: "classical".
+      Received by 1:
+        vcov = "HC9": clmm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `coxph`: "classical", "CR0".
+      Received by 2:
+        vcov = "HC9": coxph, coxph_strata
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `cph`: "classical", "CR0".
+      Received by 2:
+        vcov = "HC9": cph, cph_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `fixest`: "classical".
+      Received by 5:
+        vcov = "HC9": feols, feols_iv, feols_nofe, fepois, fepois_nofe
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `flexsurvreg`: "classical".
+      Received by 1:
+        vcov = "HC9": flexsurvreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `gam`: "classical", "CR1".
+      Received by 2:
+        vcov = "HC9": gam, gam_logit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `geeglm`: "classical".
+      Received by 1:
+        vcov = "HC9": geeglm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `glm`: "classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC5", "CR0", "CR1", "CR2", "CR3", "bootstrap", "jackknife".
+      Received by 6:
+        vcov = "HC9": glm_gamma, glm_gaussian, glm_logit, glm_poisson,
+            glm_probit, glm_quasi
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `glmerMod`: "classical".
+      Received by 1:
+        vcov = "HC9": glmer
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `glmmTMB`: "classical", "CR0", "CR1".
+      Received by 4:
+        vcov = "HC9": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_zi
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `glmmTMB`: "classical".
+      Received by 2:
+        vcov = "HC9": glmmTMB_ordinal, glmmTMB_reml
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `gls`: "classical".
+      Received by 1:
+        vcov = "HC9": gls
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `hurdle`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": hurdle
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `hurdle`: "classical".
+      Received by 1:
+        vcov = "HC9": hurdle_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `iv_robust`: "classical".
+      Received by 1:
+        vcov = "HC9": iv_robust
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `ivreg`: "classical", "HC0", "HC1", "CR0", "CR1", "CR2", "CR3", "CR1S".
+      Received by 1:
+        vcov = "HC9": ivreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `lm_robust`: "classical".
+      Received by 2:
+        vcov = "HC9": lm_robust, lm_robust_fe
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `lm`: "classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC5", "CR0", "CR1", "CR2", "CR3", "CR1S", "bootstrap", "jackknife".
+      Received by 2:
+        vcov = "HC9": lm, lm_weighted
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `lme`: "classical", "CR0", "CR1", "CR2", "CR3".
+      Received by 2:
+        vcov = "HC9": lme, lme_contrasts
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `lmerMod`: "classical", "CR0", "CR1", "CR2", "CR3".
+      Received by 2:
+        vcov = "HC9": lmer, lmer_ml
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `lrm`: "classical", "CR0".
+      Received by 3:
+        vcov = "HC9": lrm, lrm_ordinal, lrm_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `mlogit`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `multinom`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": multinom
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `negbin`: "classical", "HC0", "HC1", "HC2", "HC3", "HC4", "HC5", "CR0", "CR1", "CR2", "CR3", "bootstrap", "jackknife".
+      Received by 1:
+        vcov = "HC9": glm.nb
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `nls`: "classical".
+      Received by 1:
+        vcov = "HC9": nls
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `ols`: "classical", "CR0".
+      Received by 2:
+        vcov = "HC9": ols, ols_xy
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `polr`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": polr
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `rlm`: "classical".
+      Received by 1:
+        vcov = "HC9": rlm
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `rq`: "classical", "bootstrap", "nid", "iid", "ker", "rank".
+      Received by 1:
+        vcov = "HC9": rq
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `selection`: "classical".
+      Received by 1:
+        vcov = "HC9": selection
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `survreg`: "classical", "CR1".
+      Received by 2:
+        vcov = "HC9": survreg, survreg_strata
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `svycoxph`: "classical".
+      Received by 1:
+        vcov = "HC9": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `svyglm`: "classical".
+      Received by 3:
+        vcov = "HC9": svyglm, svyglm_binomial, svyglm_quasibinomial
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `svyolr`: "classical".
+      Received by 1:
+        vcov = "HC9": svyolr
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `tobit`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": tobit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `zeroinfl`: "classical", "CR1".
+      Received by 1:
+        vcov = "HC9": zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `zeroinfl`: "classical".
+      Received by 1:
+        vcov = "HC9": zeroinfl_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
+        `cluster` has length 240 but the model requires length 292.
+        i Supply one `cluster` value per observation.
+      Received by 1:
+        cluster with vcov = "classical": svyolr
+      ----
+      error: spicy_unsupported_vcov, spicy_error
+        Model 1: `cluster` with `vcov = "classical"` is not available for quantile regression.
+        i rq has no analytic cluster-robust estimator; use `vcov = "bootstrap"` with `cluster =` (wild gradient cluster bootstrap).
+      Received by 1:
+        cluster with vcov = "classical": rq
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i Set `vcov` to `"CR0"` or `"CR1"` to use the cluster vector for cluster-robust SE.
+      Received by 6:
+        cluster with vcov = "classical": glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i Set `vcov` to `"CR0"` to use the cluster vector for cluster-robust SE.
+      Received by 12:
+        cluster with vcov = "classical": coxph, coxph_strata, cph, cph_xy, lrm,
+            lrm_ordinal, lrm_xy, ols, ols_xy, rms_Glm, rms_Glm_logit, rms_Glm_xy
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i Set `vcov` to `"CR0"`, `"CR1"`, `"CR2"`, or `"CR3"` to use the cluster vector for cluster-robust SE.
+      Received by 21:
+        cluster with vcov = "classical": clmm, flexsurvreg, glm.nb, glm_gamma,
+            glm_gaussian, glm_logit, glm_poisson, glm_probit, glm_quasi, glmer,
+            gls, ivreg, lm, lm_weighted, lme, lme_contrasts, lmer, lmer_ml, nls,
+            rlm, selection
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i Set `vcov` to `"CR1"` to use the cluster vector for cluster-robust SE.
+      Received by 15:
+        cluster with vcov = "classical": bam, betareg, clm, clm_nominal,
+            clm_scale, gam, gam_logit, hurdle, mlogit, multinom, polr, survreg,
+            survreg_strata, tobit, zeroinfl
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i The survey design carries the clustering: declare it with survey::svydesign(ids = ~cluster_var, ...) and refit. The fit's own design-based variance is already cluster-robust for the declared design.
+      Received by 4:
+        cluster with vcov = "classical": svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i This negative-binomial fit has no cluster-robust `vcov`: fit it with glmmTMB to use `vcov = "CR1"` with the cluster vector.
+      Received by 2:
+        cluster with vcov = "classical": hurdle_negbin, zeroinfl_negbin
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i estimatr clusters at fit time: `estimatr::iv_robust(..., clusters = <var>, se_type = "CR2")`.
+      Received by 1:
+        cluster with vcov = "classical": iv_robust
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i estimatr clusters at fit time: `estimatr::lm_robust(..., clusters = <var>, se_type = "CR2")`.
+      Received by 2:
+        cluster with vcov = "classical": lm_robust, lm_robust_fe
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i fixest clusters through its own `vcov` interface: `fixest::feols(..., vcov = ~cluster_var)`, or `summary(fit, vcov = ~cluster_var)`.
+      Received by 5:
+        cluster with vcov = "classical": feols, feols_iv, feols_nofe, fepois,
+            fepois_nofe
+
+# the cluster and unknown-vcov messages keep their text and class: Stan
+
+    Code
+      cat(.refusal_render(rows), sep = "\n")
+    Output
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `brmsfit`: "classical".
+      Received by 1:
+        vcov = "HC9": brmsfit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Unknown `vcov` type(s): "HC9".
+        i Valid types for `stanreg`: "classical".
+      Received by 1:
+        vcov = "HC9": stanreg
+      ----
+      warning: spicy_ignored_arg, spicy_warning
+        Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
+        i Set `vcov` to `"CR0"`, `"CR1"`, `"CR2"`, or `"CR3"` to use the cluster vector for cluster-robust SE.
+      Received by 2:
+        cluster with vcov = "classical": brmsfit, stanreg
+

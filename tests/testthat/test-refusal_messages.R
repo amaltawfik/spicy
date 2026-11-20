@@ -57,6 +57,9 @@ rm_cases <- function() {
       standardized = s
     )
   }
+  for (m in c("hdi", "profile", "boot_percentile")) {
+    cs[[paste0("ci_method = \"", m, "\"")]] <- list(ci_method = m)
+  }
   cs[["p_adjust = \"holm\""]] <- list(p_adjust = "holm")
   cs[["re_test = \"lrt\""]] <- list(re_test = "lrt")
   cs[["re_test = \"rlrt\""]] <- list(re_test = "rlrt")
@@ -98,7 +101,13 @@ rm_estimands_computed <- c("coxph", "coxph_strata", "survreg")
 
 rm_swept <- function(id, key) {
   fx <- .CLASS_FIXTURES[[id]]
-  if (isTRUE(fx$stan) || identical(key, "nested = TRUE")) {
+  # `ci_method` is checked on the first class of the fit, which differs
+  # within some classes of the registry: swept on every fixture.
+  if (
+    isTRUE(fx$stan) ||
+      identical(key, "nested = TRUE") ||
+      startsWith(key, "ci_method")
+  ) {
     return(TRUE)
   }
   if (id %in% rm_estimands_computed && grepl("\"(rmst|risk_diff)", key)) {
