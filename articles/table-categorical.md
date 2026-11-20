@@ -1002,7 +1002,7 @@ table_categorical(
 
 [TABLE]
 
-Categorical table by sex {#tinytable_cpmt5xh8r2j6roy9d9ji .table
+Categorical table by sex {#tinytable_02rnpafc63zcgtxli2vv .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

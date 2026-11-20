@@ -141,9 +141,11 @@ for a maximum-likelihood fit (\\\rho\\ alone for a binary outcome), the
 inverse Mills ratio \\\lambda\\ followed by \\\sigma\\ and \\\rho\\
 without standard errors for a two-step fit. Tests and intervals use the
 t distribution with the residual df that
-[`summary()`](https://rdrr.io/r/base/summary.html) uses, and the note
-names the estimation method and the number of cases with an observed
-outcome. A tobit-5 (switching regression) fit is refused.
+[`summary()`](https://rdrr.io/r/base/summary.html) uses. The note names
+the standard errors, "classical (Fisher information)" for a
+maximum-likelihood fit and "classical (two-step)" for a two-step fit,
+and the number of cases with an observed outcome. A tobit-5 (switching
+regression) fit is refused.
 
 ## Shared semantics (all classes)
 

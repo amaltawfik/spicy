@@ -541,7 +541,7 @@ does the title of a table of one model.
 fit_probit <- update(fit_beta, link = "probit")
 table_regression(list(Logit = fit_beta, Probit = fit_probit), digits = 3,
                  show_fit_stats = c("nobs", "phi", "pseudo_r2_ferrari", "aic"))
-#> Regression comparison: share
+#> Beta regression comparison: share
 #> 
 #>                                        Logit                 Probit         
 #>                                ─────────────────────  ───────────────────── 
@@ -722,7 +722,7 @@ table_regression(list(Likelihood = fit_ml, Heckit = fit_2s), digits = 3)
 #>  n                         │  753                    753                   
 #>  AIC                       │ 3188.5                     –                  
 #> 
-#> Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: Likelihood: maximum likelihood, Heckit: two-step. P-values and CIs: t distribution with 740 df. Error terms: λ, coefficient of the inverse Mills ratio, an estimate of ρσ; σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. In a two-step fit, σ and ρ are derived from the estimates and have no standard error. AIC = Akaike information criterion.
+#> Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: Likelihood: classical (Fisher information), Heckit: classical (two-step). P-values and CIs: t distribution with 740 df. Error terms: λ, coefficient of the inverse Mills ratio, an estimate of ρσ; σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. In a two-step fit, σ and ρ are derived from the estimates and have no standard error. AIC = Akaike information criterion.
 ```
 
 Each variable has a `selection` row, an `outcome` row, or both,
@@ -744,7 +744,7 @@ and ρ are then derived from the estimates, without a standard error. A
 two-step fit has no likelihood, hence no AIC.
 
 The note also gives the number of observations whose outcome is
-observed, the estimation method of each model, and the reference
+observed, the standard errors of each model, and the reference
 distribution of the tests.
 [`summary()`](https://rdrr.io/r/base/summary.html) reports the same
 values.
@@ -819,7 +819,7 @@ table_regression(list("Without city" = fit_ml0, "With city" = fit_ml),
 #>  Δχ²                     │     –                      1.993 (1)               
 #>  p (change)              │     –                       .158                   
 #> 
-#> Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: maximum likelihood. Without city: P-values and CIs: t distribution with 741 df. With city: P-values and CIs: t distribution with 740 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
+#> Note. Heckman selection models. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution; residual degrees of freedom: 741 (Without city), 740 (With city). Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
 ```
 
 Living in a city does not improve the wage equation: 1.99 on 1 degree of
@@ -861,7 +861,7 @@ table_regression(fit_bin)
 #>  n                       │  753                                 
 #>  AIC                     │ 1324.4                               
 #> 
-#> Note. Heckman selection model (binary outcome). Outcome observed for 428 of 753. Outcome equation: probit. Std. errors: maximum likelihood. P-values and CIs: t distribution with 744 df. Error terms: ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Heckman selection model (binary outcome). Outcome observed for 428 of 753. Outcome equation: probit. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 744 df. Error terms: ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 ### Treatment-effects models
@@ -908,7 +908,7 @@ table_regression(fit_tr)
 #>  n                       │  753                                 
 #>  AIC                     │ 1711.5                               
 #> 
-#> Note. Treatment-effects model. Std. errors: maximum likelihood. P-values and CIs: t distribution with 742 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Treatment-effects model. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 742 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 ### Dropping an error term
@@ -953,7 +953,7 @@ table_regression(fit_ml, drop = "sigma", show_columns = c("b", "se", "p"),
 #>  n                       │  753                   
 #>  AIC                     │ 3188.5                 
 #> 
-#> Note. Heckman selection model. Outcome observed for 428 of 753. Std. errors: maximum likelihood. P-values and CIs: t distribution with 740 df. Error terms: ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
+#> Note. Heckman selection model. Outcome observed for 428 of 753. Std. errors: classical (Fisher information). P-values and CIs: t distribution with 740 df. Error terms: ρ, correlation of the selection and outcome errors. AIC = Akaike information criterion.
 ```
 
 ### What is refused

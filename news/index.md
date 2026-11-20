@@ -523,8 +523,9 @@
   in an “Error terms” block: σ and ρ with their standard error and
   interval, and the inverse Mills ratio of a two-step fit. `keep` and
   `drop` select these rows by coefficient name, and
-  `show_components = FALSE` omits the block. The note names the
-  estimation method, maximum likelihood or two-step, and the number of
+  `show_components = FALSE` omits the block. The note names the standard
+  errors, “classical (Fisher information)” for a maximum-likelihood fit
+  and “classical (two-step)” for a two-step fit, and the number of
   observations whose outcome is observed. With a binary outcome, it says
   that the outcome equation is a probit.
 
@@ -961,8 +962,15 @@
   an [`lm()`](https://rdrr.io/r/stats/lm.html),
   [`glm()`](https://rdrr.io/r/stats/glm.html) or
   [`glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) model under
-  `vcov = "CR0"` to `"CR3"` says in the note that its p-values use
-  Satterthwaite degrees of freedom. A weighted
+  `vcov = "CR0"` to `"CR3"`, and a clustered
+  [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
+  or
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
+  model under `CR2`, say in the note that their p-values use
+  Satterthwaite degrees of freedom.
+  [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
+  says it too under `"CR0"` to `"CR3"`, and names its F test
+  “approximate Hotelling’s T² F-test”. A weighted
   [`lm()`](https://rdrr.io/r/stats/lm.html) is labeled “classical
   (WLS)”. A clustered
   [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
@@ -974,7 +982,19 @@
   in a table of several models, a sentence on p-values, on the design or
   on intervals that holds for some models only names them. Models on the
   same survey design give their residual degrees of freedom in one
-  sentence.
+  sentence, and so do selection models tested on t distributions with
+  different degrees of freedom. Model names are separated by a semicolon
+  when one of them holds a comma.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a comparison of beta regressions, or of binomial
+  [`glm()`](https://rdrr.io/r/stats/glm.html) models, with different
+  links is titled “Beta regression comparison” or “Binomial regression
+  comparison” instead of “Regression comparison”.
+
+- A console table too wide for the console repeats the header of a block
+  (“Fixed effects:”) in its second panel, where the rows of the block
+  stood without it.
 
 - The errors of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)

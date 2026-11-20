@@ -114,7 +114,7 @@ table_continuous_lm(
 #> ──────────┼────────────────────────────────────────────────────
 #>  extra    │ 0.75  2.33  1.58  0.70  2.46  4.06  .003  0.16  20 
 #> 
-#> Note. N = 20: 1 (n = 10), 2 (n = 10). P-value: t-test from the linear model. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 20: 1 (n = 10), 2 (n = 10). P-value: Satterthwaite t-test, cluster-robust df. Std. errors: cluster-robust (CR2), clusters by ID. Δ = 2 − 1. CI = confidence interval; LL = lower limit; UL = upper limit.
 ```
 
 `"CR2"` is the bias-reduced estimator of Bell & McCaffrey (2002), which

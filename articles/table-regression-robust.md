@@ -275,7 +275,7 @@ table_regression(
 #>  R²          │   0.09                         0.09                      
 #>  Adj. R²     │   0.09                         0.09                      
 #> 
-#> Note. lm(), CR2: linear regression; lm_robust(), CR2: linear regression (robust SE). Std. errors: cluster-robust (CR2), clusters by state. lm(), CR2: P-values: Satterthwaite t-test, cluster-robust df.
+#> Note. lm(), CR2: linear regression; lm_robust(), CR2: linear regression (robust SE). Std. errors: cluster-robust (CR2), clusters by state. P-values: Satterthwaite t-test, cluster-robust df.
 ```
 
 The `df` column prints the degrees of freedom of each test.
@@ -538,22 +538,23 @@ table_regression(
 #>  R² (within)    │     –                                        –                                         –    
 #>  AIC            │ -118.1                                   -118.1                                    -118.1   
 #> 
-#>                          LSDV, CR2                         feols, cluster             
-#>                ──────────────────────────────  ────────────────────────────────────── 
-#>  Variable    │ SE (B)    95% CI (B)     p (B)     B       SE        95% CI        p   
-#> ─────────────┼────────────────────────────────────────────────────────────────────────
-#>  (Intercept) │  0.625  [ 2.045, 4.977]  <.001                                         
-#>  beertax     │  0.375  [-1.517, 0.237]   .129    -0.640  0.357  [-1.358, 0.078]  .080 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>    state     │                                    Yes                                 
-#>    year      │                                    Yes                                 
-#>  n           │                                  336                                   
-#>  R²          │                                    0.91                                
-#>  Adj. R²     │                                    0.89                                
-#>  R² (within) │                                    0.04                                
-#>  AIC         │                                 -118.1                                 
+#>                             LSDV, CR2                         feols, cluster             
+#>                   ──────────────────────────────  ────────────────────────────────────── 
+#>  Variable       │ SE (B)    95% CI (B)     p (B)     B       SE        95% CI        p   
+#> ────────────────┼────────────────────────────────────────────────────────────────────────
+#>  (Intercept)    │  0.625  [ 2.045, 4.977]  <.001                                         
+#>  beertax        │  0.375  [-1.517, 0.237]   .129    -0.640  0.357  [-1.358, 0.078]  .080 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Fixed effects: │                                                                        
+#>    state        │                                    Yes                                 
+#>    year         │                                    Yes                                 
+#>  n              │                                  336                                   
+#>  R²             │                                    0.91                                
+#>  Adj. R²        │                                    0.89                                
+#>  R² (within)    │                                    0.04                                
+#>  AIC            │                                 -118.1                                 
 #> 
-#> Note. Linear regression models. Std. errors: LSDV, CR1: cluster-robust (CR1), clusters by state; LSDV, CR1S: cluster-robust (CR1S, Stata vce(cluster), t(G−1)), clusters by state; LSDV, CR2: cluster-robust (CR2), clusters by state; feols, cluster: cluster-robust, clusters by state. LSDV, CR1, LSDV, CR2: P-values: Satterthwaite t-test, cluster-robust df. CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Linear regression models. Std. errors: LSDV, CR1: cluster-robust (CR1), clusters by state; LSDV, CR1S: cluster-robust (CR1S, Stata vce(cluster), t(G−1)), clusters by state; LSDV, CR2: cluster-robust (CR2), clusters by state; feols, cluster: cluster-robust, clusters by state. LSDV, CR1; LSDV, CR2: P-values: Satterthwaite t-test, cluster-robust df. CI = confidence interval; AIC = Akaike information criterion.
 ```
 
 fixest counts fewer parameters than Stata’s formula applied to the
