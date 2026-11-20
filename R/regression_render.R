@@ -397,12 +397,11 @@ render_regression_table <- function(
   } else {
     # A fit-only table: the header of the columns, then its fit
     # statistics alone.
-    as.data.frame(
+    .cells_row(
       stats::setNames(
         rep(list(character(0)), length(col_spec) + 1L),
         c(.REG_KEY_VARIABLE, vapply(col_spec, `[[`, character(1), "col_name"))
-      ),
-      check.names = FALSE
+      )
     )
   }
 
@@ -1143,6 +1142,13 @@ make_unique_col_name <- function(spec_so_far, candidate) {
 
 # ---- Body row builder ----------------------------------------------------
 
+# One row of the character body from its cells, named by column. Not
+# `as.data.frame()`: it passes the names through a call, which translates
+# them to the native encoding, and a column named with a Greek letter
+# (beta, partial eta-squared, chi-square) warned "unable to translate"
+# in a locale that is not UTF-8.
+.cells_row <- function(cells) list2DF(cells)
+
 build_body_row <- function(
   term_row,
   coefs,
@@ -1255,7 +1261,7 @@ build_body_row <- function(
     )
   }
 
-  as.data.frame(cells, stringsAsFactors = FALSE, check.names = FALSE)
+  .cells_row(cells)
 }
 
 
@@ -2095,7 +2101,7 @@ build_outcome_row <- function(outcome_labels, model_ids, label_map, col_spec) {
     }
     cells[[target_col]] <- outcome_labels[i]
   }
-  as.data.frame(cells, stringsAsFactors = FALSE, check.names = FALSE)
+  .cells_row(cells)
 }
 
 # The Outcome row added to a table already built, the row
@@ -2210,11 +2216,7 @@ build_fit_stats_rows <- function(
     cells
   }
   push_row <- function(rows, cells) {
-    rows[[length(rows) + 1L]] <- as.data.frame(
-      cells,
-      stringsAsFactors = FALSE,
-      check.names = FALSE
-    )
+    rows[[length(rows) + 1L]] <- .cells_row(cells)
     rows
   }
 
@@ -2661,7 +2663,7 @@ build_factor_header_row <- function(
   for (cs in col_spec) {
     cells[[cs$col_name]] <- ""
   }
-  as.data.frame(cells, stringsAsFactors = FALSE, check.names = FALSE)
+  .cells_row(cells)
 }
 
 

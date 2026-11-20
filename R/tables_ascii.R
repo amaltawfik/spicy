@@ -400,7 +400,10 @@ build_ascii_table <- function(
 
   header_line <- build_line(colnames(df), w, is_header = TRUE)
   data_lines <- lapply(seq_len(nrow(df)), function(i) {
-    build_line(df[i, ], ws[[row_group[[i]]]])
+    # The cells as a plain vector: `is.na()` of a one-row data frame
+    # passes its column names through a call, which warned "unable to
+    # translate" for a Greek column name in a locale that is not UTF-8.
+    build_line(unlist(df[i, ], use.names = FALSE), ws[[row_group[[i]]]])
   })
 
   full_width <- max(c(

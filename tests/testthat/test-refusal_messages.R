@@ -117,19 +117,6 @@ rm_swept <- function(id, key) {
 # defects to fix, and a list that may not grow.
 rm_unclassed <- list()
 
-# In a locale that is not UTF-8, base R warns "unable to translate '<U+03B2>'
-# to native encoding" when build_body_row() makes a data frame whose column
-# names carry a Greek letter (beta, partial eta and chi-square columns). A
-# defect of its own, set apart here so that the list above holds in every
-# locale.
-rm_locale_warning <- function(cnd) {
-  !isTRUE(l10n_info()[["UTF-8"]]) &&
-    grepl(
-      "^unable to translate '.*' to native encoding$",
-      conditionMessage(cnd)
-    )
-}
-
 # The smaller model of a nested pair: the fit without `x`, rebuilt in an
 # environment that has the data and the namespace of the fitting package.
 rm_reduced <- function(fit, id) {
@@ -224,7 +211,7 @@ rm_sweep <- function(fit, id) {
           cnd,
           kind = if (inherits(cnd, "error")) "error" else "warning"
         )
-      } else if (!rm_locale_warning(cnd)) {
+      } else {
         unclassed <- c(unclassed, key)
       }
     }

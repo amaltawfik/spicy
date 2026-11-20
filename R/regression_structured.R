@@ -600,16 +600,14 @@ build_structured_body <- function(
   #   1. outcome row (optional)
   #   2. for each term: optional factor header + coef row
   #   3. fit-stat rows
-  empty_row <- as.data.frame(
+  empty_row <- .cells_row(
     c(
       list(Variable = NA_character_),
       stats::setNames(
         rep(list(NA_real_), length(struct_col_names)),
         struct_col_names
       )
-    ),
-    stringsAsFactors = FALSE,
-    check.names = FALSE
+    )
   )
 
   rows <- list()
