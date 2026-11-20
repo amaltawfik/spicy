@@ -953,7 +953,8 @@
 #'   `"ess_tail"` / `"mcse"` (per-coefficient sampler diagnostics and
 #'   the Monte Carlo standard error of the displayed posterior
 #'   median, all-Bayesian tables only), `"ame"`, `"ame_se"`, `"ame_ci"`,
-#'   `"ame_p"`, `"ame_df"` (the `"df"` of the AMEs), `"rmst"` + `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
+#'   `"ame_p"`, `"ame_df"` (the `"df"` of the AMEs), `"rmst"` +
+#'   `"rmst_se"` / `"rmst_ci"` / `"rmst_p"`,
 #'   `"risk_diff"` + its `_se` / `_ci` / `_p` companions,
 #'   `"partial_f2"` + `"partial_f2_ci"`, `"partial_eta2"` +
 #'   `"partial_eta2_ci"`, `"partial_omega2"` +

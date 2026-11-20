@@ -385,7 +385,14 @@
   freedom of the t test of each coefficient: Satterthwaite under a `CR*`
   variance, containment for `lme()`, those of the design for `svyglm()`.
   The cell is empty under a z test, and the token is refused when no
-  model of the table has a t test.
+  model of the table has a t test. `"ame_df"` does the same for the test
+  of each average marginal effect.
+
+* `inline()` cites the degrees of freedom a table prints beside a
+  partial test, with the tokens `partial_f_df_num`, `partial_f_df_den`
+  and `partial_chi2_df`:
+  `inline(tbl, sex, "Male", "F({partial_f_df_num}, {partial_f_df_den}) = {partial_f}")`
+  gives "F(1, 1197) = 18.94".
 
 * `table_regression()`: `show_fit_stats = "pseudo_r2_ferrari"` shows on
   request the pseudo-R² of a `betareg()` model, the one `summary()`
@@ -641,6 +648,12 @@
   function call fell back to a z test while the note still named
   Satterthwaite. The note names it only for the models whose AME uses
   it.
+
+* `table_regression()`: under a `CR*` variance, the p-values and
+  intervals of the AME of an `lm()` asked without the `"ame"` column
+  itself, as in `show_columns = c("b", "ame_p")`, used the residual
+  degrees of freedom. They use the Satterthwaite degrees of freedom, as
+  they do beside `"ame"`, and the note says so.
 
 * `table_regression()`: a note says that the AME of a tobit model is
   computed on the latent outcome.
