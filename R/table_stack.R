@@ -893,7 +893,7 @@ table_stack <- function(
           spicy_fmt(
             "note_model_line",
             panel_labels[[i]],
-            lowercase_first(parts[[i]]$models$vcov)
+            parts[[i]]$models$vcov
           )
         },
         character(1)

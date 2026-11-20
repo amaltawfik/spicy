@@ -778,7 +778,7 @@
 #   * everything else built by `svydesign()` -- including calibrated,
 #     post-stratified and without-replacement pps designs, whose
 #     `ppsvar()` IS a linearization -- by Taylor linearization;
-#   * a detached or unknown design: "Design-based", never `class(des)`.
+#   * a detached or unknown design: "design-based", never `class(des)`.
 #     An R class name is an implementation detail, not a variance
 #     estimator, and it is not something a reader of a table can act on.
 .design_vcov_label <- function(fit) {
@@ -1119,7 +1119,7 @@
   # The variance sentence is the regression footer's, built from the
   # same template and the same labels: one table calling it "Standard
   # errors: Taylor linearization (survey)." while its regression
-  # neighbor called it "Std. errors: Design-based (Taylor
+  # neighbor called it "Std. errors: design-based (Taylor
   # linearization)." made the reader work out that the two were the
   # same fact.
   vcov_label <- if (identical(meta$kind, "replicate")) {

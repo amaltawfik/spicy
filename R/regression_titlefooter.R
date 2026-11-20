@@ -779,9 +779,8 @@ build_regression_type_footer_block_from_frames <- function(
 # Poisson regression" -- lowercasing a surname is a typo, not style.
 # So does a title that starts with an acronym ("IV regression (2SLS)").
 # "Gamma" is the name of a distribution, not of a person: mid-title it
-# is "gamma regression". The same rule writes a standard-error label
-# after a model's name: "classical (OLS)", but "Wald asymptotic (z)",
-# "HC1", "Newey-West (L=1)".
+# is "gamma regression". The standard-error labels do not go through it:
+# they are stored in their final case (`.note_std_errors()`).
 lowercase_first <- function(s) {
   if (!length(s) || !nzchar(s)) {
     return(s)
@@ -800,14 +799,7 @@ lowercase_first <- function(s) {
     "Bell",
     "Royston",
     "Heckman",
-    "Tobit",
-    "Wald",
-    "Satterthwaite",
-    "Kenward",
-    "Newey",
-    "Driscoll",
-    "Conley",
-    "Stata"
+    "Tobit"
   )
   first_word <- sub("[ -].*$", "", s)
   if (first_word %in% proper || grepl("^[A-Z]{2,}[0-9A-Z]*$", first_word)) {
@@ -950,12 +942,13 @@ build_vcov_footer_block_from_frames <- function(frames) {
   # of each model in the order of the columns ("Std. errors: Model 1:
   # classical (OLS), Model 2: heteroskedasticity-robust (HC3)."), so the
   # general note stays one paragraph. The items take a semicolon when
-  # one of them holds a comma (`.join_note_vars()`).
+  # one of them holds a comma (`.join_note_vars()`). The labels are stored
+  # in their final case, a lowercase initial unless they open on a proper
+  # name ("Bayesian", "Newey-West"), so they read the same alone and after
+  # a model's name.
   per <- vapply(
     seq_along(labels),
-    function(i) {
-      spicy_fmt("note_model_line", refs[[i]], lowercase_first(labels[[i]]))
-    },
+    function(i) spicy_fmt("note_model_line", refs[[i]], labels[[i]]),
     character(1)
   )
   spicy_fmt("note_std_errors_single", .join_note_vars(per))

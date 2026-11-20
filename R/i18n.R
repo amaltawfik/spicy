@@ -1370,7 +1370,7 @@
   # regression footer's, `note_std_errors_single` filled with one of the
   # `note_vcov_design_*` labels below. Two spellings of one fact
   # ("Standard errors: Taylor linearization (survey)." here against
-  # "Std. errors: Design-based (Taylor linearization)." three lines
+  # "Std. errors: design-based (Taylor linearization)." three lines
   # down in a regression table) is a difference the reader has to
   # resolve for nothing.
   note_design_df_used = "Confidence intervals and tests use the design degrees of freedom.",
@@ -1528,10 +1528,10 @@
   note_vcov_classical_model_corr = "classical (model-based, %s)",
   # The sandwich of an rms fit passed through robcov() without clusters.
   # One hole: its author ("Huber", "Lin-Wei") or "sandwich".
-  note_vcov_robust_plain = "Robust (%s)",
+  note_vcov_robust_plain = "robust (%s)",
   # An estimatr fit with `se_type = "none"`, which computes no standard
   # errors.
-  note_vcov_none_plain = "None (se_type = \"none\")",
+  note_vcov_none_plain = "none (se_type = \"none\")",
   # fixest's own estimators. The holes keep fixest's detail: the cluster
   # variables ("id & period"), the estimator and its lag ("Newey-West",
   # "2"), the Conley cutoff and its unit ("100", "km"). "Custom" is a
@@ -1540,7 +1540,7 @@
   note_vcov_fixest_cluster = "cluster-robust, clusters by %s",
   note_vcov_fixest_lag = "%s (L=%s)",
   note_vcov_fixest_conley = "Conley (%s%s)",
-  note_vcov_fixest_custom = "Custom",
+  note_vcov_fixest_custom = "custom",
   # The default of mgcv::gam() and bam(): the Bayesian posterior
   # covariance of the coefficients (mgcv's Vp), whatever the smoothing
   # method (GCV, REML, ML). The note names the method, not the package.
@@ -1569,32 +1569,30 @@
   # MECHANISM the design actually uses -- not by the design's R class,
   # which is never shown to a reader, and not by whether the descriptive
   # twins support it (a without-replacement pps design is linearized and
-  # unsupported there). `note_vcov_design_taylor` holds the value the
-  # label had while it was a literal, so the linearized case stays
-  # byte-identical.
+  # unsupported there).
   #
   # One hole on the replicate line: the scheme identifier survey stores
   # (JK1 / JKn / BRR / bootstrap / ...), never translated. The bare
   # variant covers a design whose scheme is absent or `"other"` -- a
   # legal value of `svrepdesign(type = )` that names nothing.
-  note_vcov_design_taylor = "Design-based (Taylor linearization)",
-  note_vcov_design_replicate = "Design-based (replicate weights, %s)",
-  note_vcov_design_replicate_bare = "Design-based (replicate weights)",
-  note_vcov_design_twophase = "Design-based (two-phase design)",
-  note_vcov_design_bare = "Design-based",
+  note_vcov_design_taylor = "design-based (Taylor linearization)",
+  note_vcov_design_replicate = "design-based (replicate weights, %s)",
+  note_vcov_design_replicate_bare = "design-based (replicate weights)",
+  note_vcov_design_twophase = "design-based (two-phase design)",
+  note_vcov_design_bare = "design-based",
   note_vcov_cluster_by = ", clusters by %s",
   # The estimator a geeglm fit computed (its `std.err`), before the
   # clusters suffix above.
-  note_vcov_gee_sandwich = "Robust sandwich (GEE)",
-  note_vcov_gee_jack = "Approximate jackknife (GEE)",
-  note_vcov_gee_j1s = "One-step jackknife (GEE)",
-  note_vcov_gee_fij = "Fully iterated jackknife (GEE)",
+  note_vcov_gee_sandwich = "robust sandwich (GEE)",
+  note_vcov_gee_jack = "approximate jackknife (GEE)",
+  note_vcov_gee_j1s = "one-step jackknife (GEE)",
+  note_vcov_gee_fij = "fully iterated jackknife (GEE)",
   # The rq standard-error methods. One hole in the bootstrap labels: the
   # replicate count. The clustered bootstrap takes `note_vcov_cluster_by`
   # when the name of the cluster variable is known.
-  note_vcov_rq_nid = "Quantile sandwich (nid, Hall-Sheather)",
-  note_vcov_rq_iid = "Quantile (iid)",
-  note_vcov_rq_ker = "Quantile kernel (ker)",
+  note_vcov_rq_nid = "quantile sandwich (nid, Hall-Sheather)",
+  note_vcov_rq_iid = "quantile (iid)",
+  note_vcov_rq_ker = "quantile kernel (ker)",
   note_vcov_rq_rank = "rank-test inversion (CIs only)",
   note_vcov_rq_boot_cluster = "wild gradient cluster bootstrap (%d replicates)",
   note_vcov_rq_boot = "bootstrap (xy pairs, %d replicates)",
