@@ -744,7 +744,7 @@ validate_nested_alignment <- function(
             "other model classes."
           ),
           "i" = paste0(
-            "The check-loss objective has no R-squared or ",
+            "The check-loss objective has no R\u00B2 or ",
             "likelihood shared with the other fits; compare ",
             "rq models with rq models."
           )
@@ -3224,7 +3224,7 @@ validate_class_appropriate_tokens <- function(
           "i" = paste0(
             "`\"fixed_effects\"` discloses the absorbed fixed effects ",
             "(one Yes/No row per factor) and `\"within_r2\"` is the ",
-            "FE-partialed R-squared; other classes have neither."
+            "FE-partialed R\u00B2; other classes have neither."
           )
         ),
         class = "spicy_invalid_input",
@@ -3295,7 +3295,7 @@ validate_class_appropriate_tokens <- function(
           ),
           "i" = paste0(
             "GEE is estimated by quasi-likelihood: no likelihood, so ",
-            "no (pseudo-)R-squared and no likelihood-based ",
+            "no (pseudo-)R\u00B2 and no likelihood-based ",
             "information criteria."
           ),
           "i" = "Use `\"qic\"` / `\"qicu\"` (Pan 2001) instead."
@@ -3357,11 +3357,11 @@ validate_class_appropriate_tokens <- function(
             "{Tokens} in `show_fit_stats` {are} not defined for mixed-effects models.",
             bad_fit
           ),
-          "i" = "Classical / pseudo R^2 do not apply to mixed-effects models.",
+          "i" = "Classical / pseudo R\u00B2 do not apply to mixed-effects models.",
           "i" = .fit_stats_remedy(
             eff_models,
             c("r2_marginal", "r2_conditional"),
-            "Use the Nakagawa R^2 instead: %s (Nakagawa et al. 2017)."
+            "Use the Nakagawa R\u00B2 instead: %s (Nakagawa et al. 2017)."
           )
         ),
         class = "spicy_invalid_input",
