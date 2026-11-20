@@ -279,7 +279,12 @@ print.spicy_continuous_lm_table <- function(x, ...) {
   show_p <- isTRUE(attr(x, "show_p_value"))
   show_es <- !identical(attr(x, "effect_size") %||% "none", "none")
   inference <- if (show_p || isTRUE(attr(x, "show_statistic")) || show_es) {
-    .tclm_test_note(x, outcome_labels, p_shown = show_p)
+    .tclm_test_note(
+      x,
+      outcome_labels,
+      p_shown = show_p,
+      cluster_robust = startsWith(vcov_type, "CR")
+    )
   }
   if (!identical(vcov_type, "classical")) {
     inference <- c(
@@ -403,7 +408,16 @@ print.spicy_continuous_lm_table <- function(x, ...) {
 # An outcome whose model did not run carries no test and is not named;
 # NULL when none ran. `outcome_labels`, named by outcome, names them in
 # the apparatus; NULL reads the labels of their rows.
-.tclm_test_note <- function(x, outcome_labels = NULL, p_shown = TRUE) {
+#
+# Under `vcov = "CR0"` to `"CR3"` (`cluster_robust`), the t is
+# clubSandwich's coef_test() on Satterthwaite df and the F its Wald_test()
+# HTZ, which the sentence names in the words of table_regression().
+.tclm_test_note <- function(
+  x,
+  outcome_labels = NULL,
+  p_shown = TRUE,
+  cluster_robust = FALSE
+) {
   vars <- unique(x$variable)
   types <- vapply(
     vars,
@@ -436,6 +450,9 @@ print.spicy_continuous_lm_table <- function(x, ...) {
     F = "test_lm_f",
     chi2 = "test_lm_chi2"
   )
+  if (isTRUE(cluster_robust)) {
+    keys[c("t", "F")] <- c("test_lm_t_satterthwaite_cr", "test_lm_f_htz_cr")
+  }
   ran <- !is.na(types) & types %in% names(keys)
   if (!any(ran)) {
     return(NULL)

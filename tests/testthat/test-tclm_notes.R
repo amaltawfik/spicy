@@ -249,6 +249,37 @@ test_that("cluster_name attr is stored and disclosed for CR vcov", {
   expect_null(attr(as.data.frame(tbl), "cluster_name"))
 })
 
+test_that("a CR vcov names the Satterthwaite df of its tests", {
+  skip_if_not_installed("clubSandwich")
+  note_of <- function(by, vcov) {
+    tbl <- table_continuous_lm(
+      sochealth,
+      select = wellbeing_score,
+      by = by,
+      vcov = vcov,
+      cluster = if (startsWith(vcov, "CR")) "region"
+    )
+    paste(capture.output(print(tbl)), collapse = "\n")
+  }
+  for (v in c("CR0", "CR2")) {
+    expect_match(
+      note_of("physical_activity", v),
+      "P-value: Satterthwaite t-test, cluster-robust df.",
+      fixed = TRUE
+    )
+  }
+  expect_match(
+    note_of("education", "CR2"),
+    "approximate Hotelling T² F-test (HTZ), cluster-robust df.",
+    fixed = TRUE
+  )
+  expect_match(
+    note_of("physical_activity", "HC3"),
+    "P-value: t-test from the linear model.",
+    fixed = TRUE
+  )
+})
+
 test_that("cluster_name attr is NA for an anonymous cluster vector", {
   skip_if_not_installed("clubSandwich")
   cl <- sochealth$region
