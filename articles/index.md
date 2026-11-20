@@ -134,6 +134,16 @@
   Filter rows programmatically, aggregate raw values, or build a custom
   renderer – against one schema for all of them.
 
+- [Robust, IV, quantile and panel regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-robust.md):
+
+  Publication-ready tables in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  for heteroskedasticity- and cluster-robust standard errors,
+  [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html),
+  fixed-effects models with fixest, instrumental variables, tobit and
+  quantile regression.
+
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.md):
 
@@ -204,6 +214,42 @@
   the reference category, nested comparison by likelihood-ratio test,
   and the [`nnet::multinom`](https://rdrr.io/pkg/nnet/man/multinom.html)
   engine plus the `mlogit` discrete-choice engine.
+
+- [Additive, beta and selection regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-additive.md):
+
+  Publication-ready tables in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  for generalized additive models
+  ([`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html), `bam()`),
+  beta regression
+  ([`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html))
+  and sample-selection models
+  ([`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+  `heckit()`, `treatReg()`): smooth terms with their effective degrees
+  of freedom, the precision submodel, the error terms of a selection
+  model, and what each note says.
+
+- [Regression tables for rms
+  fits](https://amaltawfik.github.io/spicy/articles/table-regression-rms.md):
+
+  Publication-ready tables for models fitted with the rms package in R
+  with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `lrm()`, `ols()`, `Glm()` and `cph()` fits, restricted cubic splines
+  and how to test and read them, Nagelkerke’s R², robust and bootstrap
+  variance, penalized estimation.
+
+- [Regression tables for survey
+  designs](https://amaltawfik.github.io/spicy/articles/table-regression-survey.md):
+
+  Publication-ready tables for design-based regression in R with
+  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html),
+  `svyolr()` and `svycoxph()` fits with the variance and the degrees of
+  freedom of the design, weights compared with a declared design, odds
+  ratios and average marginal effects under the design, tests of a term,
+  the design-based AIC, subpopulations and replicate weights.
 
 - [Bayesian regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md):

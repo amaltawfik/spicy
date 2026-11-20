@@ -52,16 +52,26 @@ regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.md)
 for multinomial models (`multinom`, `mlogit`), [*Survival regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
-for survival models (`coxph`, `survreg`), and [*Bayesian regression
+for survival models (`coxph`, `survreg`), [*Robust, IV, quantile and
+panel regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-robust.md)
+for robust standard errors, `estimatr`, `fixest`, instrumental
+variables, tobit and quantile regression, [*Additive, beta and selection
+regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-additive.md)
+for `mgcv`, `betareg` and `sampleSelection` fits, [*Regression tables
+for rms
+fits*](https://amaltawfik.github.io/spicy/articles/table-regression-rms.md)
+for `lrm`, `ols`, `Glm` and `cph`, [*Regression tables for survey
+designs*](https://amaltawfik.github.io/spicy/articles/table-regression-survey.md)
+for `svyglm`, `svyolr` and `svycoxph`, and [*Bayesian regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
 for Bayesian fits (`rstanarm`, `brms`). The mechanics covered here —
 confidence levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods — apply
 across every supported class; variance-estimator availability varies by
 family, and the complete map — every supported class with its estimands,
-variance estimators and fit statistics, including the families without a
-dedicated article (quantile regression, `fixest`, `betareg`, …) — is
-[*Supported
+variance estimators and fit statistics — is [*Supported
 models*](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.md).
 One decision cuts across all of them — how to code, test, and present
 categorical *predictors* — and has its own article: [*Categorical
@@ -2016,6 +2026,29 @@ Model-family articles build on the mechanics shown here:
   tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md)
   for survival models: Cox hazard ratios with events and concordance,
   accelerated failure time models, and survival estimands.
+- [*Robust, IV, quantile and panel regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-robust.md)
+  for robust and clustered standard errors,
+  [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html),
+  fixed effects with fixest, instrumental variables, tobit and quantile
+  regression.
+- [*Additive, beta and selection regression
+  tables*](https://amaltawfik.github.io/spicy/articles/table-regression-additive.md)
+  for generalized additive models, beta regression and sample-selection
+  models: smooth terms, the precision submodel and the error terms as
+  blocks of rows.
+- [*Regression tables for rms
+  fits*](https://amaltawfik.github.io/spicy/articles/table-regression-rms.md)
+  for [`lrm()`](https://rdrr.io/pkg/rms/man/lrm.html),
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html),
+  [`Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) and
+  [`cph()`](https://rdrr.io/pkg/rms/man/cph.html) fits: restricted cubic
+  splines, robust and bootstrap variance, penalized estimation.
+- [*Regression tables for survey
+  designs*](https://amaltawfik.github.io/spicy/articles/table-regression-survey.md)
+  for design-based fits: degrees of freedom, weights compared with a
+  declared design, tests of a term, subpopulations and replicate
+  weights.
 - [*Bayesian regression
   tables*](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.md)
   for Bayesian fits: posterior medians and credible intervals, the

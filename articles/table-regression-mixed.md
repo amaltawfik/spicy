@@ -713,11 +713,12 @@ use the numerical Hessian of the deviance in the standard deviations and
 correlations (the cells fall back to NA when the fit is singular),
 `glmmTMB` its native Wald
 [`confint()`](https://rdrr.io/r/stats/confint.html), and
-[`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) its `intervals()`.
-The Wald interval of an `lmer` or `glmer` correlation (`ρ`) is built on
-atanh ρ and stays inside (−1, 1), as in `nlme`. Switching `re_scale`
-transports SE and CI between the SD and variance scales by the delta
-method (`SE(σ) = SE(σ²) / 2σ`), so the displayed values agree with
+[`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) its
+[`intervals()`](https://rdrr.io/pkg/nlme/man/intervals.html). The Wald
+interval of an `lmer` or `glmer` correlation (`ρ`) is built on atanh ρ
+and stays inside (−1, 1), as in `nlme`. Switching `re_scale` transports
+SE and CI between the SD and variance scales by the delta method
+(`SE(σ) = SE(σ²) / 2σ`), so the displayed values agree with
 [`VarCorr()`](https://rdrr.io/pkg/nlme/man/VarCorr.html) on either scale
 up to rounding.
 
@@ -1193,13 +1194,14 @@ opt out with `show_components = FALSE`.
 
 ## `nlme::lme`
 
-Beyond legacy code, `lme()` remains the engine of choice when the
-residuals need structure `lme4` cannot fit — heteroscedasticity across
-groups (`weights = varIdent()`) or serial correlation within them
-(`correlation = corAR1()`). Such fits flow through the same layout, and
-the footer’s boundary-corrected test refits the null carrying the same
-residual structure. Its fixed-effect inference is the **containment-df
-t-test** native to `nlme`, and the footer says so:
+Beyond legacy code, [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html)
+remains the engine of choice when the residuals need structure `lme4`
+cannot fit — heteroscedasticity across groups (`weights = varIdent()`)
+or serial correlation within them (`correlation = corAR1()`). Such fits
+flow through the same layout, and the footer’s boundary-corrected test
+refits the null carrying the same residual structure. Its fixed-effect
+inference is the **containment-df t-test** native to `nlme`, and the
+footer says so:
 
 ``` r
 

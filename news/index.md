@@ -30,9 +30,10 @@
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses the AME columns in two cases where their value was wrong: a
   `glmmTMB()` model estimated by REML, whose AME standard error came out
-  near zero, and an instrumental-variables `feols()` model without an
-  exogenous regressor (`y ~ 1 | x ~ z`), whose AME came out as 0. The
-  error says what to do.
+  near zero, and an instrumental-variables
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  model without an exogenous regressor (`y ~ 1 | x ~ z`), whose AME came
+  out as 0. The error says what to do.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   no longer computes an AME on data that changed after the model was
@@ -62,8 +63,11 @@
   “classical (Fisher information)” replaces “Wald asymptotic (z)” for
   the models fitted by likelihood, and “classical (model-based)”
   replaces “Wald (model-based)” for
-  [`lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html), `lme()` and
-  `gls()`. `ols()`, `ivreg()`,
+  [`lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html),
+  [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html) and
+  [`gls()`](https://rdrr.io/pkg/nlme/man/gls.html).
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html),
+  [`ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html),
   [`nls()`](https://rdrr.io/r/stats/nls.html), estimatr and fixest
   models say “classical (OLS)”, “classical (2SLS)”, “classical
   (nonlinear least squares)”, “heteroskedasticity-robust” and
@@ -77,8 +81,9 @@
   [`glm()`](https://rdrr.io/r/stats/glm.html) only: the title, the
   Outcome row and the `outcome` column of
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
-  `glance()` read `log(wage)`, `I(parttime == "yes")` or
-  `cbind(succ, fail)` where they read `wage`, `parttime` or `succ`. A
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) read
+  `log(wage)`, `I(parttime == "yes")` or `cbind(succ, fail)` where they
+  read `wage`, `parttime` or `succ`. A
   [`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
   model is titled by its outcome variable instead of “outcome”. A
   namespace prefix is dropped: `survival::Surv(time, status)` reads
@@ -86,10 +91,14 @@
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   names the rows of a fixest model as
-  [`lm()`](https://rdrr.io/r/stats/lm.html) and `ivreg()` name them:
-  `education` for the endogenous regressor of an IV `feols()` model, not
-  fixest’s `fit_education`, and `I(x^2)` where fixest writes
-  `I(I(x^2))`. The rows align with those of `ivreg()` and `iv_robust()`,
+  [`lm()`](https://rdrr.io/r/stats/lm.html) and
+  [`ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) name them:
+  `education` for the endogenous regressor of an IV
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  model, not fixest’s `fit_education`, and `I(x^2)` where fixest writes
+  `I(I(x^2))`. The rows align with those of
+  [`ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) and
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html),
   and `keep`, `drop` and `labels` take these names.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
@@ -97,8 +106,9 @@
   labeled “Precision” instead of “Dispersion”, since that parameter is
   the precision, and its terms are keyed `"Precision::"` in
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
-  `output = "long"`. A `betareg()` and a `glmmTMB()` fit of the same
-  model share its rows.
+  `output = "long"`. A
+  [`betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html) and a
+  `glmmTMB()` fit of the same model share its rows.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a transformed term of an rms model reads as in the formula,
@@ -106,8 +116,10 @@
   [`glm()`](https://rdrr.io/r/stats/glm.html) or
   [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) model. This
   is the name of the row and the name `keep`, `drop` and `labels` take.
-  The terms of `rcs()`, `pol()` and `lsp()` keep rms’s names (`age`,
-  `age'`).
+  The terms of [`rcs()`](https://rdrr.io/pkg/rms/man/rms.trans.html),
+  [`pol()`](https://rdrr.io/pkg/rms/man/rms.trans.html) and
+  [`lsp()`](https://rdrr.io/pkg/rms/man/rms.trans.html) keep rms’s names
+  (`age`, `age'`).
 
 - `table_regression(nested = TRUE)` compares two
   [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) models as their
@@ -115,9 +127,11 @@
   R-squared and the F test of the change, the F that
   [`anova()`](https://rdrr.io/r/stats/anova.html) reports, instead of a
   likelihood-ratio chi-square. `f_change` and `r2_change` are accepted
-  for them. A hierarchy that holds an `ols()` or `lrm()` model fitted
-  with `penalty =` is rendered without change statistics, with a
-  warning: neither test is valid for penalized estimates.
+  for them. A hierarchy that holds an
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html) or
+  [`lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) model fitted with
+  `penalty =` is rendered without change statistics, with a warning:
+  neither test is valid for penalized estimates.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   computes the fit statistics of a penalized
@@ -132,16 +146,17 @@
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the random-effects rows follow one convention whatever the engine, so
   the same model fitted with
-  [`lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html), `lme()` or
-  `glmmTMB()` shows the same standard error and interval. The standard
-  error of an `lme`, `glmmTMB` or `clmm` row is the delta-method one on
-  the scale the engine estimates on, as for `lmer`: it was the
-  half-width of the interval divided by z, about 2% larger on a
-  well-estimated variance and more on a poorly estimated one. The Wald
-  interval of an `lmer` or `glmer` standard deviation is symmetric on
-  the log scale, as `lme` and `glmmTMB` build theirs, and is no longer
-  clamped at 0. The residual row of a gaussian `glmmTMB` model gains its
-  standard error and interval.
+  [`lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html),
+  [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html) or `glmmTMB()` shows
+  the same standard error and interval. The standard error of an `lme`,
+  `glmmTMB` or `clmm` row is the delta-method one on the scale the
+  engine estimates on, as for `lmer`: it was the half-width of the
+  interval divided by z, about 2% larger on a well-estimated variance
+  and more on a poorly estimated one. The Wald interval of an `lmer` or
+  `glmer` standard deviation is symmetric on the log scale, as `lme` and
+  `glmmTMB` build theirs, and is no longer clamped at 0. The residual
+  row of a gaussian `glmmTMB` model gains its standard error and
+  interval.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   and
@@ -176,7 +191,9 @@
   follow. With `nested = TRUE`, the change test of such a pair is the F
   test [`anova()`](https://rdrr.io/r/stats/anova.html) reports
   (`f_change`; `lrt_change` is refused), and under an `HC*` vcov a Wald
-  F-change. `feglm()` fits of these families follow their
+  F-change.
+  [`feglm()`](https://lrberge.github.io/fixest/reference/feglm.html)
+  fits of these families follow their
   [`glm()`](https://rdrr.io/r/stats/glm.html) twins. Binomial, Poisson
   and [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) fits
   keep their z test and likelihood-ratio test.
@@ -199,11 +216,15 @@
   `"Zero-inflation"`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  the terms of an rms model (`ols()`, `lrm()`, `cph()`, `Glm()`) are
-  spelled as in [`lm()`](https://rdrr.io/r/stats/lm.html): `"cyl6"`, not
-  rms’s `"cyl=6"`, `"age:sexmale"`, not `"age * sex=male"`, and a
-  logical predictor is `"youngTRUE"` under a `FALSE (ref.)` row. This is
-  the name of the row in
+  the terms of an rms model
+  ([`ols()`](https://rdrr.io/pkg/rms/man/ols.html),
+  [`lrm()`](https://rdrr.io/pkg/rms/man/lrm.html),
+  [`cph()`](https://rdrr.io/pkg/rms/man/cph.html),
+  [`Glm()`](https://rdrr.io/pkg/rms/man/Glm.html)) are spelled as in
+  [`lm()`](https://rdrr.io/r/stats/lm.html): `"cyl6"`, not rms’s
+  `"cyl=6"`, `"age:sexmale"`, not `"age * sex=male"`, and a logical
+  predictor is `"youngTRUE"` under a `FALSE (ref.)` row. This is the
+  name of the row in
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html),
   `output = "long"` and `factor_layout = "flat"`, and the name `keep`,
   `drop` and `labels` take. An rms term now shares its row with its AME
@@ -229,20 +250,28 @@
   [`lm()`](https://rdrr.io/r/stats/lm.html) does (“FALSE (ref.)”, then
   “TRUE”) instead of one “xTRUE” row, and likewise a
   [`factor()`](https://rdrr.io/r/base/factor.html) term or a factor or
-  character predictor beside a transformed term or `i()`: a parent row,
-  then one row per level, the reference first.
+  character predictor beside a transformed term or
+  [`i()`](https://lrberge.github.io/fixest/reference/i.html): a parent
+  row, then one row per level, the reference first.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   no longer turns on the R-squared, within R-squared and AIC rows for an
-  IV `feols()` model, as for `ivreg()` and `iv_robust()`: the 2SLS
-  R-squared is not the classical one and 2SLS is not a likelihood fit.
-  Asked for, or turned on by another model of the table, the R-squared
-  is the one `ivreg()` and `iv_robust()` report, computed on the
-  structural residuals, and the within R-squared is blank. The first
-  stage keeps its R-squared.
+  IV [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  model, as for [`ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) and
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html):
+  the 2SLS R-squared is not the classical one and 2SLS is not a
+  likelihood fit. Asked for, or turned on by another model of the table,
+  the R-squared is the one
+  [`ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) and
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
+  report, computed on the structural residuals, and the within R-squared
+  is blank. The first stage keeps its R-squared.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  adds “fixed effects” to the title of an `lm_robust()` or `iv_robust()`
+  adds “fixed effects” to the title of an
+  [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
+  or
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
   model with `fixed_effects`, as for fixest (“Linear regression (robust
   SE, fixed effects)”). Beside a fixest model with fixed effects, the
   table takes their common title (“Linear regression (fixed effects)
@@ -299,7 +328,9 @@
   [`nobs()`](https://rdrr.io/r/stats/nobs.html) does. So do the `n`
   column of
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  and the `nobs` of its `glance()`. Weighted statistics do not change.
+  and the `nobs` of its
+  [`glance()`](https://generics.r-lib.org/reference/glance.html).
+  Weighted statistics do not change.
 
 - Every table with `by` refuses a level of `by` that is the empty
   string.
@@ -325,11 +356,12 @@
   beta-binomial model went to 1 as the overdispersion vanished instead
   of joining that of the binomial model.
 
-- `glance()` of
+- [`glance()`](https://generics.r-lib.org/reference/glance.html) of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   counts rows in `nobs` under `weights`, a row of zero weight left out;
   it gave the rounded sum of the weights. That weighted count is the new
-  column `weighted_nobs`, which the `glance()` of
+  column `weighted_nobs`, which the
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) of
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
@@ -409,15 +441,17 @@
   [`lm()`](https://rdrr.io/r/stats/lm.html).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  an [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) or `bam()`
-  model shows the R-squared rows of the
-  [`glm()`](https://rdrr.io/r/stats/glm.html) of its family and link,
-  computed the same way and with the same defaults: Tjur’s then
-  McFadden’s for a logit on a binary outcome, McFadden’s for the other
-  binomial, Poisson and `nb()` models, the deviance R-squared for the
-  gaussian, Gamma, inverse Gaussian and Tweedie families. The default
-  table of a GAM showed no R-squared, and `pseudo_r2_mcfadden`,
-  `pseudo_r2_nagelkerke` and `pseudo_r2_tjur` gave no row.
+  an [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) or
+  [`bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) model shows the
+  R-squared rows of the [`glm()`](https://rdrr.io/r/stats/glm.html) of
+  its family and link, computed the same way and with the same defaults:
+  Tjur’s then McFadden’s for a logit on a binary outcome, McFadden’s for
+  the other binomial, Poisson and
+  [`nb()`](https://rdrr.io/pkg/mgcv/man/negbin.html) models, the
+  deviance R-squared for the gaussian, Gamma, inverse Gaussian and
+  Tweedie families. The default table of a GAM showed no R-squared, and
+  `pseudo_r2_mcfadden`, `pseudo_r2_nagelkerke` and `pseudo_r2_tjur` gave
+  no row.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the partial chi-square (`partial_chi2`) takes its decimals from
@@ -459,12 +493,12 @@
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   shows the smooth terms of an
-  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) or `bam()`
-  model in a “Smooth terms (edf)” block: one row per term, with its
-  effective degrees of freedom in the B column and the p-value of its
-  approximate test. A model made of smooth terms only showed its
-  intercept alone. The rows follow `keep` and `drop`, and their tests
-  count in `p_adjust`. In
+  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) or
+  [`bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) model in a “Smooth
+  terms (edf)” block: one row per term, with its effective degrees of
+  freedom in the B column and the p-value of its approximate test. A
+  model made of smooth terms only showed its intercept alone. The rows
+  follow `keep` and `drop`, and their tests count in `p_adjust`. In
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
   `output = "long"` they have `estimate_type = "edf"`, with the
   reference degrees of freedom in `df` and the test in `statistic` and
@@ -478,14 +512,18 @@
   model (`y ~ x | z`) in a “Precision” block, on the scale of its link,
   which `show_components = FALSE` omits. The title names a mean link
   other than the logit (“Probit beta regression”), and a weighted model
-  reports its weighted count (`"weighted_nobs"`, `glance()`).
+  reports its weighted count (`"weighted_nobs"`,
+  [`glance()`](https://generics.r-lib.org/reference/glance.html)).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  shows the error terms of a sample-selection model (`selection()`,
-  `heckit()`, `treatReg()`) in an “Error terms” block: σ and ρ with
-  their standard error and interval, and the inverse Mills ratio of a
-  two-step fit. `keep` and `drop` select these rows by coefficient name,
-  and `show_components = FALSE` omits the block. The note names the
+  shows the error terms of a sample-selection model
+  ([`selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+  [`heckit()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+  [`treatReg()`](https://rdrr.io/pkg/sampleSelection/man/selection.html))
+  in an “Error terms” block: σ and ρ with their standard error and
+  interval, and the inverse Mills ratio of a two-step fit. `keep` and
+  `drop` select these rows by coefficient name, and
+  `show_components = FALSE` omits the block. The note names the
   estimation method, maximum likelihood or two-step, and the number of
   observations whose outcome is observed. With a binary outcome, it says
   that the outcome equation is a probit.
@@ -504,20 +542,22 @@
   the standard errors and degrees of freedom that
   [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
   reports. `"HC2"` to `"HC5"` stay refused, since the leverage of a 2SLS
-  fit has more than one definition; the error points to `iv_robust()`.
+  fit has more than one definition; the error points to
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `show_columns = "df"` shows the degrees of freedom of the t test of
   each coefficient: Satterthwaite under a `CR*` variance, containment
-  for `lme()`, those of the design for
-  [`svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html). The cell is
-  empty under a z test, and the token is refused when no model of the
-  table has a t test.
+  for [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html), those of the
+  design for [`svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html).
+  The cell is empty under a z test, and the token is refused when no
+  model of the table has a t test.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `show_fit_stats = "pseudo_r2_ferrari"` shows on request the pseudo-R²
-  of a `betareg()` model, the one
-  [`summary()`](https://rdrr.io/r/base/summary.html) prints.
+  of a [`betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html)
+  model, the one [`summary()`](https://rdrr.io/r/base/summary.html)
+  prints.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `show_fit_stats = "log_lik"` shows the log-likelihood of each model,
@@ -538,7 +578,7 @@
   model of the table has random effects. These arguments were ignored
   silently.
 
-- `glance()` of a
+- [`glance()`](https://generics.r-lib.org/reference/glance.html) of a
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   table gains `logLik` for each model, and `concordance` and
   `std.error.concordance` for a Cox model, under broom’s names. They are
@@ -632,7 +672,8 @@
   and
   [`table_battery_svy()`](https://amaltawfik.github.io/spicy/reference/table_battery_svy.md)
   gain [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
-  `glance()` methods.
+  [`glance()`](https://generics.r-lib.org/reference/glance.html)
+  methods.
 
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   of
@@ -715,9 +756,10 @@
   of the model alone, its confidence interval included. Under
   `nested = TRUE` the change statistics of each model sit in its panel,
   labeled “vs” the model before it.
-  [`tidy()`](https://generics.r-lib.org/reference/tidy.html), `glance()`
-  and `output = "long"` return the rows of the models side by side, with
-  a leading `panel` column.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html),
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) and
+  `output = "long"` return the rows of the models side by side, with a
+  leading `panel` column.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   gains `show_columns = "none"`: the fit statistics of the models alone,
@@ -742,14 +784,16 @@
   work for
   [`lme4::glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html),
   [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html),
-  mgcv `nb()`, glmmTMB `nbinom2` models and negative-binomial
+  mgcv [`nb()`](https://rdrr.io/pkg/mgcv/man/negbin.html), glmmTMB
+  `nbinom2` models and negative-binomial
   [`pscl::zeroinfl()`](https://rdrr.io/pkg/pscl/man/zeroinfl.html) and
   [`pscl::hurdle()`](https://rdrr.io/pkg/pscl/man/hurdle.html) models
-  (the theta of the count part), and `"phi"` for mgcv `betar()` and
-  glmmTMB `beta_family()`, `betabinomial()` and `ordbeta()` models.
-  These rows accept a table that also holds models without the parameter
-  (Poisson next to negative binomial, NB1 next to NB2), whose cells stay
-  blank. A theta or phi fixed in the call (`negative.binomial(theta)` in
+  (the theta of the count part), and `"phi"` for mgcv
+  [`betar()`](https://rdrr.io/pkg/mgcv/man/Beta.html) and glmmTMB
+  `beta_family()`, `betabinomial()` and `ordbeta()` models. These rows
+  accept a table that also holds models without the parameter (Poisson
+  next to negative binomial, NB1 next to NB2), whose cells stay blank. A
+  theta or phi fixed in the call (`negative.binomial(theta)` in
   [`glm()`](https://rdrr.io/r/stats/glm.html), mgcv `nb(theta)` or
   `betar(theta)`) has no row. A negative-binomial
   [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) always
@@ -794,12 +838,24 @@
   and fixest models are translated (“robustes à l’hétéroscédasticité
   (HC2)”, “robustes aux grappes (id)”, “Newey-West (L = 2)”).
 
+- Four new articles on the package site: robust standard errors with IV,
+  panel, tobit and quantile models; generalized additive, beta and
+  sample-selection models; rms fits; regression under a survey design.
+
 ### Improvements and bug fixes
+
+- The article *Summary tables from a survey design* said that the normal
+  interval of
+  [`survey::svyby()`](https://rdrr.io/pkg/survey/man/svyby.html) is
+  about 3% narrower than the interval of the tables on 14 degrees of
+  freedom. The interval of the tables is 9% wider. Its section on
+  regression is now a pointer to the new article.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `tau` passed with a
   [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) model and
-  no survival column says that the quantile of the fit is set in `rq()`.
+  no survival column says that the quantile of the fit is set in
+  [`rq()`](https://rdrr.io/pkg/quantreg/man/rq.html).
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the p-values and intervals of a sample-selection model use the t
@@ -812,9 +868,10 @@
   an internal error. A two-step fit is refused with a message.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  a selection model with a binary outcome and a `treatReg()` model have
-  titles of their own, and `exponentiate = TRUE` on a selection model no
-  longer mentions an identity link.
+  a selection model with a binary outcome and a
+  [`treatReg()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
+  model have titles of their own, and `exponentiate = TRUE` on a
+  selection model no longer mentions an identity link.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the standard errors of the average marginal effects of a
@@ -829,13 +886,15 @@
   [`scale()`](https://rdrr.io/r/base/scale.html) or an offset are
   computed on the fitted basis and with the offset, and those of an
   [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) model with
-  `rcs()` on the fitted knots. They were taken on a basis rebuilt from
-  the data, or without the offset.
+  [`rcs()`](https://rdrr.io/pkg/rms/man/rms.trans.html) on the fitted
+  knots. They were taken on a basis rebuilt from the data, or without
+  the offset.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   leaves the AME cells of a survey or rms model empty, with a warning,
   when the model cannot reproduce its fitted values on new data, as an
-  `lrm()` or `ols()` model with `ns()` or
+  [`lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) or
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html) model with `ns()` or
   [`poly()`](https://rdrr.io/r/stats/poly.html): rms rebuilds such a
   basis on the data it predicts from.
 
@@ -905,8 +964,11 @@
   `vcov = "CR0"` to `"CR3"` says in the note that its p-values use
   Satterthwaite degrees of freedom. A weighted
   [`lm()`](https://rdrr.io/r/stats/lm.html) is labeled “classical
-  (WLS)”. A clustered `lm_robust()` model and the cluster bootstrap of
-  `rq()` name their cluster variable.
+  (WLS)”. A clustered
+  [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
+  model and the cluster bootstrap of
+  [`rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) name their cluster
+  variable.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   in a table of several models, a sentence on p-values, on the design or
@@ -921,9 +983,11 @@
   columns the model accepts.
 
 - `table_regression(nested = TRUE)` compares two instrumental-variables
-  `feols()` models of the same outcome, which it took for models of
-  different outcomes. A model without a predictor can open a hierarchy
-  for `lm_robust()` with fixed effects,
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  models of the same outcome, which it took for models of different
+  outcomes. A model without a predictor can open a hierarchy for
+  [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
+  with fixed effects,
   [`svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html) and
   `flexsurvreg()` models; alone it gets a plain error, where it stopped
   on an internal one.
@@ -933,9 +997,10 @@
   also when it names a variable of the design that is not in the model,
   which gave an unrelated error.
 
-- `table_regression(re_test = "rlrt")` on an `lme()` model keeps its
-  test when a column the model does not use has missing values. The test
-  came out empty, without a word.
+- `table_regression(re_test = "rlrt")` on an
+  [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html) model keeps its test
+  when a column the model does not use has missing values. The test came
+  out empty, without a word.
 
 - A table with a β, η² or χ² column no longer warns “unable to
   translate” in a locale that is not UTF-8.
@@ -944,16 +1009,20 @@
   singular.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  the note of an rms model passed through `robcov()` or `bootcov()`
-  names that variance, where it said “Wald asymptotic”. For an `ols()`
-  model it says “sandwich”, since the fit does not record whether
-  `robcov()` used Huber’s or Efron’s method. `vcov = "CR0"` on such a
-  model starts again from the model-based variance instead of building a
-  sandwich on a sandwich.
+  the note of an rms model passed through
+  [`robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) or
+  [`bootcov()`](https://rdrr.io/pkg/rms/man/bootcov.html) names that
+  variance, where it said “Wald asymptotic”. For an
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html) model it says
+  “sandwich”, since the fit does not record whether
+  [`robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) used Huber’s or
+  Efron’s method. `vcov = "CR0"` on such a model starts again from the
+  model-based variance instead of building a sandwich on a sandwich.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  a note says that an `lrm()` or `ols()` model fitted with `penalty =`
-  is penalized, and gives the penalty.
+  a note says that an [`lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) or
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html) model fitted with
+  `penalty =` is penalized, and gives the penalty.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   beside another survival model, the concordance note of a Cox model
@@ -977,7 +1046,8 @@
   computes it.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  shows the correlation row of an `lme()` model fitted under
+  shows the correlation row of an
+  [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html) model fitted under
   `lmeControl(natural = FALSE)` or with a `pdCompSymm` block, and the
   standard deviation of such a block has its standard error and
   interval.
@@ -999,7 +1069,8 @@
   error-term row without a test has `test_type` and `df` `NA`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  keeps the random-effect correlation row of an `lme()` model whose
+  keeps the random-effect correlation row of an
+  [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html) model whose
   approximate covariance matrix of the variance parameters is not
   positive definite, and a note under the table says why the block has
   no standard error and no interval. The row was dropped without a word.
@@ -1027,7 +1098,8 @@
   R error.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  a robust `vcov` with `cluster` on a survey-design, `selection()`,
+  a robust `vcov` with `cluster` on a survey-design,
+  [`selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
   `stanreg` or `brmsfit` model is refused with the reason of the class
   (the variance comes from the design or the posterior). An error about
   the cluster variable came first.
@@ -1217,17 +1289,20 @@
   smaller note.
 
 - `table_regression(re_test = "lrt")` tests the random effects of an
-  `lme()` or glmmTMB model fitted inside a function or through
+  [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html) or glmmTMB model
+  fitted inside a function or through
   [`lapply()`](https://rdrr.io/r/base/lapply.html). The rows stayed
   empty, with a warning that the refit had failed.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  gives a `gls()` model fitted inside a function, or an `lme()` model
-  fitted there with `keep.data = FALSE`, the same table as the model
-  fitted outside it. The reference row of a factor, the conditional R²,
-  the test of the random effects in the note and the partial tests were
-  missing. When the data of such a model can no longer be found, a
-  warning now says what the table leaves out.
+  gives a [`gls()`](https://rdrr.io/pkg/nlme/man/gls.html) model fitted
+  inside a function, or an
+  [`lme()`](https://rdrr.io/pkg/nlme/man/lme.html) model fitted there
+  with `keep.data = FALSE`, the same table as the model fitted outside
+  it. The reference row of a factor, the conditional R², the test of the
+  random effects in the note and the partial tests were missing. When
+  the data of such a model can no longer be found, a warning now says
+  what the table leaves out.
 
 - `table_regression(show_columns = "partial_chi2")` tests an lme4 or
   glmmTMB model fitted with a user contrast of fewer columns than levels
@@ -1439,15 +1514,21 @@
   hazards)”), pscl models read “Zero-inflated Poisson regression”,
   family names follow sentence case (“Bayesian gamma regression”), and
   the survival notes name the distribution the same way (“Distribution:
-  Extreme value”). mgcv’s `cox.ph()`, `cnorm()`, `clog()`, `cpois()`,
-  `bcg()` and `gfam()` GAMs are titled “Cox proportional hazards GAM”,
-  “Censored normal GAM”, “Censored logistic GAM”, “Censored Poisson
-  GAM”, “Censored Box-Cox normal GAM” and “Grouped-family GAM” instead
-  of “Cox PH GAM”, “Cnorm(1.338) GAM” and the like; a family from
-  outside mgcv keeps the name its author gave it (“Generalized additive
-  model (GAM, myfam)”). The note of several GAMs or Heckman models of
-  one type names the model once: “Poisson GAMs.”, “Heckman selection
-  models.” instead of “Poisson GAM models.” and “… model models.”.
+  Extreme value”). mgcv’s
+  [`cox.ph()`](https://rdrr.io/pkg/mgcv/man/coxph.html),
+  [`cnorm()`](https://rdrr.io/pkg/mgcv/man/cnorm.html),
+  [`clog()`](https://rdrr.io/pkg/mgcv/man/clog.html),
+  [`cpois()`](https://rdrr.io/pkg/mgcv/man/cpois.html),
+  [`bcg()`](https://rdrr.io/pkg/mgcv/man/bcg.html) and
+  [`gfam()`](https://rdrr.io/pkg/mgcv/man/gfam.html) GAMs are titled
+  “Cox proportional hazards GAM”, “Censored normal GAM”, “Censored
+  logistic GAM”, “Censored Poisson GAM”, “Censored Box-Cox normal GAM”
+  and “Grouped-family GAM” instead of “Cox PH GAM”, “Cnorm(1.338) GAM”
+  and the like; a family from outside mgcv keeps the name its author
+  gave it (“Generalized additive model (GAM, myfam)”). The note of
+  several GAMs or Heckman models of one type names the model once:
+  “Poisson GAMs.”, “Heckman selection models.” instead of “Poisson GAM
+  models.” and “… model models.”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a
@@ -1479,26 +1560,33 @@
   titles it, instead of “Regression”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  an `estimatr` model (`lm_robust()`, `iv_robust()`) with `clusters` and
-  `se_type = "stata"` is labeled “Cluster-robust (Stata CR1)” instead of
-  “Robust (Stata HC1)”.
+  an `estimatr` model
+  ([`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html),
+  [`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html))
+  with `clusters` and `se_type = "stata"` is labeled “Cluster-robust
+  (Stata CR1)” instead of “Robust (Stata HC1)”.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses with a clear error an mgcv model fitted from a list of
-  formulas (`gaulss()`, `ziplss()`, `twlss()`,
-  [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html), `mvn()`,
-  …). It failed with an internal error about the response name.
+  formulas ([`gaulss()`](https://rdrr.io/pkg/mgcv/man/gaulss.html),
+  [`ziplss()`](https://rdrr.io/pkg/mgcv/man/ziplss.html),
+  [`twlss()`](https://rdrr.io/pkg/mgcv/man/twlss.html),
+  [`multinom()`](https://rdrr.io/pkg/nnet/man/multinom.html),
+  [`mvn()`](https://rdrr.io/pkg/mgcv/man/mvn.html), …). It failed with
+  an internal error about the response name.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a fixest model without fixed effects is titled as
   [`lm()`](https://rdrr.io/r/stats/lm.html) and
   [`glm()`](https://rdrr.io/r/stats/glm.html) title the same model
-  (“Linear regression”, “Poisson regression”), an IV `feols()` model as
-  `ivreg()` titles it (“IV regression (2SLS)”), and “(fixed effects)”
-  appears only in the title of a model that has fixed effects. A table
-  of pooled and fixed-effects models of one family takes the family’s
-  title (“Linear regression comparison: y”), in French too, and its
-  “Fixed effects” rows show which model absorbs which.
+  (“Linear regression”, “Poisson regression”), an IV
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  model as [`ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) titles it
+  (“IV regression (2SLS)”), and “(fixed effects)” appears only in the
+  title of a model that has fixed effects. A table of pooled and
+  fixed-effects models of one family takes the family’s title (“Linear
+  regression comparison: y”), in French too, and its “Fixed effects”
+  rows show which model absorbs which.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html)
@@ -1514,10 +1602,12 @@
   with fixest’s z tests and a title that names their family.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
-  fixest models tested with t (`feols()`, and `feglm()` with a family
-  whose dispersion is estimated: Gaussian, Gamma, inverse Gaussian or
-  quasi) take the degrees of freedom of fixest’s own p-values for their
-  confidence intervals, as
+  fixest models tested with t
+  ([`feols()`](https://lrberge.github.io/fixest/reference/feols.html),
+  and [`feglm()`](https://lrberge.github.io/fixest/reference/feglm.html)
+  with a family whose dispersion is estimated: Gaussian, Gamma, inverse
+  Gaussian or quasi) take the degrees of freedom of fixest’s own
+  p-values for their confidence intervals, as
   [`confint()`](https://rdrr.io/r/stats/confint.html) does, and for
   their AME. Under clustered standard errors the intervals used the
   residual degrees of freedom and the AME the normal distribution, so
@@ -1527,14 +1617,20 @@
   the AME of a fixest model sits on the row of its coefficient, as for
   [`lm()`](https://rdrr.io/r/stats/lm.html): on each level of a factor
   or logical, on the coefficient of a transformed variable (`log(x)`,
-  `factor(x)`), on the endogenous regressor of an IV `feols()` model,
-  also for a model fitted with `lean = TRUE` without fixed effects. Only
-  one contrast per factor used to appear, on a row of its own. The AME
-  of a factor in `i()` is contrasted with the reference `i()` gives its
+  `factor(x)`), on the endogenous regressor of an IV
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  model, also for a model fitted with `lean = TRUE` without fixed
+  effects. Only one contrast per factor used to appear, on a row of its
+  own. The AME of a factor in
+  [`i()`](https://lrberge.github.io/fixest/reference/i.html) is
+  contrasted with the reference
+  [`i()`](https://lrberge.github.io/fixest/reference/i.html) gives its
   coefficients; with `i(x, ref = )` it used to be contrasted with the
   first level of `x`, a reference the table did not show. A level that
-  `i()` leaves without a coefficient row, and a factor that `i()` enters
-  only in an interaction, get no AME, with a warning; a coefficient that
+  [`i()`](https://lrberge.github.io/fixest/reference/i.html) leaves
+  without a coefficient row, and a factor that
+  [`i()`](https://lrberge.github.io/fixest/reference/i.html) enters only
+  in an interaction, get no AME, with a warning; a coefficient that
   fixest drops for collinearity, and the response of an IV model with a
   transformed endogenous regressor, no longer show an AME of 0.
 
@@ -1543,16 +1639,22 @@
   values is weighted. It used to be unweighted.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-  refuses an AME on a fixest GLM with fixed effects (`feglm()`,
-  `fepois()`, `femlm()`, `fenegbin()`, whatever the family), as it does
-  for the other models that have none: marginaleffects, which computes
-  it, cannot take into account the uncertainty of the fixed effects. It
-  refuses it too for a `feols()` model with fixed effects fitted with
-  `lean = TRUE`, which marginaleffects cannot predict from, and says to
-  re-estimate it with `lean = FALSE`. It used to warn and leave the
-  column empty. Other `feols()` models and a GLM without fixed effects
-  keep their AME. When several models of a table are refused, the error
-  names each one with its reason.
+  refuses an AME on a fixest GLM with fixed effects
+  ([`feglm()`](https://lrberge.github.io/fixest/reference/feglm.html),
+  [`fepois()`](https://lrberge.github.io/fixest/reference/feglm.html),
+  [`femlm()`](https://lrberge.github.io/fixest/reference/femlm.html),
+  [`fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html),
+  whatever the family), as it does for the other models that have none:
+  marginaleffects, which computes it, cannot take into account the
+  uncertainty of the fixed effects. It refuses it too for a
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  model with fixed effects fitted with `lean = TRUE`, which
+  marginaleffects cannot predict from, and says to re-estimate it with
+  `lean = FALSE`. It used to warn and leave the column empty. Other
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  models and a GLM without fixed effects keep their AME. When several
+  models of a table are refused, the error names each one with its
+  reason.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses a fixest model with fixed effects only (`y ~ 1 | f`), which
@@ -1612,9 +1714,11 @@
   [`rms::lrm()`](https://rdrr.io/pkg/rms/man/lrm.html), an
   [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html) and an
   [`rms::Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) model take the
-  cluster-robust standard errors of the coefficients. The `lrm()` and
-  `ols()` AME fell back to the model-based ones with a warning, and a
-  `Glm()` table failed.
+  cluster-robust standard errors of the coefficients. The
+  [`lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) and
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html) AME fell back to the
+  model-based ones with a warning, and a
+  [`Glm()`](https://rdrr.io/pkg/rms/man/Glm.html) table failed.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   the null model of the pseudo-R² of a
@@ -1767,14 +1871,19 @@
   [`lm()`](https://rdrr.io/r/stats/lm.html),
   [`glm()`](https://rdrr.io/r/stats/glm.html) or
   [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) twin. A
-  `feols()` model counts its residual variance, a Gaussian, Gamma or
-  inverse-Gaussian `feglm()` its dispersion and a `fenegbin()` its
-  theta, which fixest’s own [`AIC()`](https://rdrr.io/r/stats/AIC.html)
-  leaves out. With `nested = TRUE`, the likelihood-ratio test of two
-  `feglm()` models is the test
-  [`anova()`](https://rdrr.io/r/stats/anova.html) gives their
-  [`glm()`](https://rdrr.io/r/stats/glm.html) twins, for a quasi-Poisson
-  or quasi-binomial pair too.
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  model counts its residual variance, a Gaussian, Gamma or
+  inverse-Gaussian
+  [`feglm()`](https://lrberge.github.io/fixest/reference/feglm.html) its
+  dispersion and a
+  [`fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html)
+  its theta, which fixest’s own
+  [`AIC()`](https://rdrr.io/r/stats/AIC.html) leaves out. With
+  `nested = TRUE`, the likelihood-ratio test of two
+  [`feglm()`](https://lrberge.github.io/fixest/reference/feglm.html)
+  models is the test [`anova()`](https://rdrr.io/r/stats/anova.html)
+  gives their [`glm()`](https://rdrr.io/r/stats/glm.html) twins, for a
+  quasi-Poisson or quasi-binomial pair too.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   with `nested = TRUE`, the AICc row of a model without an AICc of its
@@ -1882,12 +1991,17 @@
   whose theta has its own row (it showed 1 for
   [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html),
   [`lme4::glmer.nb()`](https://rdrr.io/pkg/lme4/man/glmer.nb.html) and
-  mgcv’s `nb()`) and for mgcv’s other extended families that fix the
-  scale at 1, such as `betar()`, `scat()`, `ziP()` and `ocat()` (it
-  showed 1); `tw()` keeps the square root of its estimated scale.
-  glmmTMB models no longer show their family’s dispersion parameter
-  under it. For fixest GLMs it is the square root of the dispersion, as
-  for [`glm()`](https://rdrr.io/r/stats/glm.html), instead of fixest’s
+  mgcv’s [`nb()`](https://rdrr.io/pkg/mgcv/man/negbin.html)) and for
+  mgcv’s other extended families that fix the scale at 1, such as
+  [`betar()`](https://rdrr.io/pkg/mgcv/man/Beta.html),
+  [`scat()`](https://rdrr.io/pkg/mgcv/man/scat.html),
+  [`ziP()`](https://rdrr.io/pkg/mgcv/man/ziP.html) and
+  [`ocat()`](https://rdrr.io/pkg/mgcv/man/ocat.html) (it showed 1);
+  [`tw()`](https://rdrr.io/pkg/mgcv/man/Tweedie.html) keeps the square
+  root of its estimated scale. glmmTMB models no longer show their
+  family’s dispersion parameter under it. For fixest GLMs it is the
+  square root of the dispersion, as for
+  [`glm()`](https://rdrr.io/r/stats/glm.html), instead of fixest’s
   [`sigma()`](https://rdrr.io/r/stats/sigma.html), the square root of
   the deviance over the residual degrees of freedom. A stratified
   [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html)
@@ -1986,9 +2100,10 @@
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   gives every reason when it refuses the AME of fixest fits: a lean
-  `feols()` with fixed effects beside a GLM with fixed effects names
-  both, and a lean GLM with fixed effects is no longer told to
-  re-estimate with `lean = FALSE`.
+  [`feols()`](https://lrberge.github.io/fixest/reference/feols.html)
+  with fixed effects beside a GLM with fixed effects names both, and a
+  lean GLM with fixed effects is no longer told to re-estimate with
+  `lean = FALSE`.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   no longer prints the line “Random effect variances not available” in
@@ -2122,7 +2237,8 @@ machine outputs take the `broom` names.
 
 - The long outputs,
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html), and
-  `glance()` take the `broom` names (see
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) take
+  the `broom` names (see
   [`?spicy`](https://amaltawfik.github.io/spicy/reference/spicy-package.md)):
   `test_type`, `statistic`, `df`, `df.residual`, and `p.value` (were
   `statistic_type`, `chi2`, `df1`, `df2`, `p`).
@@ -2142,7 +2258,8 @@ machine outputs take the `broom` names.
 
 - `variable` holds the column name and `label` the label;
   [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
-  `glance()` called `variable` `outcome` in
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) called
+  `variable` `outcome` in
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
   and
@@ -2177,7 +2294,7 @@ machine outputs take the `broom` names.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
   drops its always-`NA` SMD columns.
 
-- `glance()` of
+- [`glance()`](https://generics.r-lib.org/reference/glance.html) of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   lists the variables in the order of `select` and gives each measure in
   `es_type` (`"phi"`, `"cramer_v"`);
@@ -2187,7 +2304,8 @@ machine outputs take the `broom` names.
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   names `by` in the attributes `group_var` and `group_label`; a *t*,
   *z*, or chi-squared has its own `df` and an empty `df.residual`, and
-  `glance()` gives the test the table shows.
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) gives
+  the test the table shows.
 
 - Every table carries its whole note in `attr(x, "note")`, on the
   printed object and on the frames of `output = "data.frame"` and
@@ -2312,7 +2430,10 @@ machine outputs take the `broom` names.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses a robust `vcov` for the extended `mgcv` families other than
-  `nb()` (`tw()`, `betar()`, …), whose score is not the GLM score.
+  [`nb()`](https://rdrr.io/pkg/mgcv/man/negbin.html)
+  ([`tw()`](https://rdrr.io/pkg/mgcv/man/Tweedie.html),
+  [`betar()`](https://rdrr.io/pkg/mgcv/man/Beta.html), …), whose score
+  is not the GLM score.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   refuses a cluster-robust type a class does not compute: all but
@@ -2382,9 +2503,10 @@ machine outputs take the `broom` names.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gains `p_value` ([\#9](https://github.com/amaltawfik/spicy/issues/9)):
-  `FALSE` drops the test from every output but `glance()`, which keeps
-  its columns `NA`; with `assoc_measure = "none"` the table is purely
-  descriptive.
+  `FALSE` drops the test from every output but
+  [`glance()`](https://generics.r-lib.org/reference/glance.html), which
+  keeps its columns `NA`; with `assoc_measure = "none"` the table is
+  purely descriptive.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gains `percent = "row"`, whose percentages sum to 100 across the
@@ -2446,7 +2568,8 @@ machine outputs take the `broom` names.
   [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md)
   and
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md)
-  gains `weighted_n`, `median`, `q1`, and `q3`, and `glance()` of
+  gains `weighted_n`, `median`, `q1`, and `q3`, and
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) of
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   gains `smd_type` and `smd_value`.
 
@@ -2592,8 +2715,9 @@ machine outputs take the `broom` names.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   reads a list in `levels_keep` per variable (`list(smoking = "Yes")`),
-  as its survey twin does, and its `glance()` leaves the association
-  interval `NA` unless `assoc_ci = TRUE`.
+  as its survey twin does, and its
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) leaves
+  the association interval `NA` unless `assoc_ci = TRUE`.
 
 - [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md)
   and its survey twin show a dash, not a blank, in the test and
@@ -2621,7 +2745,8 @@ machine outputs take the `broom` names.
   `(Missing)` row shows.
 
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
-  names its test only when one ran, in the note and `glance()`, whose
+  names its test only when one ran, in the note and
+  [`glance()`](https://generics.r-lib.org/reference/glance.html), whose
   `nobs` counts the whole sample under `include_total = FALSE`; its note
   spells “chi-squared”.
 
@@ -2664,7 +2789,9 @@ machine outputs take the `broom` names.
   [`table_outcome()`](https://amaltawfik.github.io/spicy/reference/table_outcome.md),
   the survey twins, and
   [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
-  (default `NULL`); `glance()` keeps them `NA`.
+  (default `NULL`);
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) keeps
+  them `NA`.
 
 - [`table_continuous_lm()`](https://amaltawfik.github.io/spicy/reference/table_continuous_lm.md)
   fits no model to an outcome with no variance and shows a dash for what
@@ -2701,8 +2828,8 @@ machine outputs take the `broom` names.
   computes the cluster-robust standard errors of
   [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) and
   [`mgcv::bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) fits itself:
-  only a `gam()` with a canonical link and a fixed dispersion had them
-  right.
+  only a [`gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) with a
+  canonical link and a fixed dispersion had them right.
 
 - With a cluster-robust `vcov`,
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
@@ -2853,9 +2980,10 @@ package-wide. The walk-throughs live as articles at
   `cluster` containing `NA` is refused. It used to warn and label the
   classical variance robust.
 
-- `Weighted n` and `glance()`’s `weighted_nobs` are `NA` for an
-  unweighted [`glm()`](https://rdrr.io/r/stats/glm.html). They used to
-  repeat `n`.
+- `Weighted n` and
+  [`glance()`](https://generics.r-lib.org/reference/glance.html)’s
+  `weighted_nobs` are `NA` for an unweighted
+  [`glm()`](https://rdrr.io/r/stats/glm.html). They used to repeat `n`.
 
 - [`as_structured()`](https://amaltawfik.github.io/spicy/reference/as_structured.md)
   describes each row in the body itself (`body$.row_role`,

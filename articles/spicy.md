@@ -629,6 +629,10 @@ kept alongside the reference pages and rebuilt with each release.
   view](https://amaltawfik.github.io/spicy/articles/as-structured.html)
   — the typed view behind every regression table: filter, aggregate, or
   build a custom renderer.
+- [Robust, IV, quantile and panel regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-robust.html)
+  — robust and clustered standard errors, fixed effects, instrumental
+  variables, tobit and quantile regression.
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
   — mixed-effects (multilevel) models, random effects as table rows,
@@ -649,6 +653,18 @@ kept alongside the reference pages and rebuilt with each release.
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
   — multinomial logit with outcome categories as columns.
+- [Additive, beta and selection regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-additive.html)
+  — GAMs, beta regression and sample-selection models, with their smooth
+  terms, precision submodel and error terms as blocks of rows.
+- [Regression tables for rms
+  fits](https://amaltawfik.github.io/spicy/articles/table-regression-rms.html)
+  — `lrm()`, `ols()`, `Glm()` and `cph()` fits, restricted cubic
+  splines, penalized estimation.
+- [Regression tables for survey
+  designs](https://amaltawfik.github.io/spicy/articles/table-regression-survey.html)
+  — `svyglm()`, `svyolr()` and `svycoxph()` fits under a declared
+  design.
 - [Bayesian regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html)
   — posterior medians, credible intervals, convergence checks.

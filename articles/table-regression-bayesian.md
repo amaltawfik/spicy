@@ -583,11 +583,11 @@ silently wrong:
   explicit sd(Y) decomposition, the choice the frequentist mixed engines
   make by refitting on z-scored data — and so are `stan_polr` /
   `stan_betareg` (no validated convention) and brms formulas with
-  distributional, multivariate or special terms (`mo()`, `s()`, …).
-  Pre-standardizing predictors before fitting (Gelman, Hill & Vehtari
-  2020, ch. 12) remains the cleanest route when the whole analysis
-  should live on the standardized scale (and the route for every refused
-  case);
+  distributional, multivariate or special terms (`mo()`,
+  [`s()`](https://rdrr.io/pkg/mgcv/man/s.html), …). Pre-standardizing
+  predictors before fitting (Gelman, Hill & Vehtari 2020, ch. 12)
+  remains the cleanest route when the whole analysis should live on the
+  standardized scale (and the route for every refused case);
 - variational and optimizing fits
   (`stan_glm(..., algorithm = "meanfield")`, `"optimizing"`) — they
   carry an *approximate* posterior on which the MCMC diagnostics above

@@ -62,12 +62,16 @@
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
     <li><a class="dropdown-item" href="../articles/as-structured.html">The structured view (programmatic access)</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-robust.html">Robust, IV, quantile and panel regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-additive.html">Additive, beta and selection regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-rms.html">Regression tables for rms fits</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-survey.html">Regression tables for survey designs</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for reporting</a></li>
@@ -109,21 +113,20 @@
 
     
     
-<p>When a sample is not a simple random sample – when it is stratified,
-clustered, weighted to a population, or carried by replicate weights –
-the mean is still a weighted mean, but everything around it changes. The
-standard error depends on the strata and the clusters, the degrees of
-freedom are a count of sampling units rather than of rows, and the tests
-are corrected for the design. None of that can be recovered from a
-column of weights.</p>
-<p>spicy has three functions for that case, and they compute nothing
-themselves: <code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code>,
+<p>A sample that is stratified, clustered, weighted to a population or
+carried by replicate weights is not a simple random sample. Its mean is
+still a weighted mean. The standard error depends on the strata and the
+clusters, the degrees of freedom count sampling units and not rows, and
+the tests are corrected for the design. A column of weights does not
+carry that information.</p>
+<p>spicy has three functions for these samples:
+<code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code>,
 <code><a href="../reference/table_categorical_svy.html">table_categorical_svy()</a></code> and
-<code><a href="../reference/table_battery_svy.html">table_battery_svy()</a></code> delegate every number to the
-<strong>survey</strong> package (Lumley, 2004, 2010) and put spicy’s
-restitution layer around it – the same columns, the same nine output
-routes, the same typed view, plus a footer that says what design
-produced the numbers.</p>
+<code><a href="../reference/table_battery_svy.html">table_battery_svy()</a></code>. They compute nothing themselves. Every
+number comes from the survey package (Lumley, 2004, 2010), and spicy
+adds what its other tables have: the same columns, the same outputs and
+the same typed view, with a note that says which design produced the
+numbers.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://amaltawfik.github.io/spicy/">spicy</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://r-survey.r-forge.r-project.org/survey/" class="external-link">survey</a></span><span class="op">)</span></span>
@@ -152,14 +155,13 @@ throughout:</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>After the sample size, three sentences of the note describe the
-design, and each is there because the number above it cannot be read
-without them. The design is a one-stage cluster sample of 15 school
-districts with a finite population correction; the standard errors come
-from Taylor linearization; the interval is a <em>t</em> interval on 14
-degrees of freedom – the number of clusters minus one, not the 183
-schools.</p>
-<p>That last point is worth dwelling on. <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> on a
-survey object uses the <em>normal</em> distribution by default:</p>
+design. It is a one-stage cluster sample of 15 school districts with a
+finite population correction. The standard errors come from Taylor
+linearization. The interval is a <em>t</em> interval on 14 degrees of
+freedom, the number of clusters minus one. The 183 schools do not enter
+that count.</p>
+<p><code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> on a survey object uses the normal
+distribution by default:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean</a></span><span class="op">(</span><span class="op">~</span><span class="va">api00</span>, <span class="va">dclus1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>                    <span class="co"># survey's default: normal</span></span>
@@ -169,20 +171,20 @@ survey object uses the <em>normal</em> distribution by default:</p>
 <span><span class="co">#&gt;          2.5 %   97.5 %</span></span>
 <span><span class="co">#&gt; api00 593.6763 694.6625</span></span></code></pre></div>
 <p><code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code>, <code><a href="https://rdrr.io/pkg/survey/man/svyquantile.html" class="external-link">svyquantile()</a></code>,
-<code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> and <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> all take their
-degrees of freedom from the design, not from the row count, and so do
-the tables – everywhere. (Each spends them as its statistic requires:
-<code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> uses one on the estimated difference, so its
-<em>t</em> sits on <code>degf(design) - 1</code> – 13 here.) The footer
-says so rather than leaving the reader to find out.</p>
+<code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> and <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> take their
+degrees of freedom from the design, and so do the tables. Each spends
+them as its statistic requires: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> uses one on the
+estimated difference, so its <em>t</em> has
+<code>degf(design) - 1</code> degrees of freedom, 13 here. The note
+gives the number.</p>
 <div class="section level3">
 <h3 id="choosing-the-statistics">Choosing the statistics<a class="anchor" aria-label="anchor" href="#choosing-the-statistics"></a>
 </h3>
 <p><code>show_columns</code> takes the tokens of
-<code><a href="../reference/table_continuous.html">table_continuous()</a></code>, plus <code>"se"</code> (the
-design-based standard error) and <code>"deff"</code> (the design
-effect), and minus <code>"med_ci"</code>. As there, the columns follow
-the order the tokens are written in:</p>
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code>, with <code>"se"</code> (the
+design-based standard error) and <code>"deff"</code> (the design effect)
+added and <code>"med_ci"</code> removed. The columns follow the order of
+the tokens:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span></span>
 <span>  <span class="va">dclus1</span>,</span>
@@ -203,18 +205,16 @@ the order the tokens are written in:</p>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span>  6194.00    9.35 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; Q1 = first quartile; Q3 = third quartile; DEff = design effect.</span></span></span></code></pre></div>
-<p>The design effect of 9.35 is the point of the whole exercise: the
-variance of this cluster sample is nine times what a simple random
-sample of 183 schools would have given. A table that ignored the design
-would report a standard error three times too small.</p>
-<p><code>"med_ci"</code> is refused rather than approximated. The exact
-interval <code><a href="../reference/table_continuous.html">table_continuous()</a></code> reports inverts a binomial sign
-test, and its coverage guarantee rests on independent observations –
-which a clustered or stratified sample is not. The estimand (the
-population median) is not the problem; the interval construction is. For
-a design-based interval on that same estimand, call
-<code>survey::svyquantile(interval.type = )</code> on the design
-itself.</p>
+<p>The design effect is 9.35: the variance of this cluster sample is
+nine times that of a simple random sample of 183 schools. A table that
+ignored the design would report a standard error three times too
+small.</p>
+<p><code>"med_ci"</code> is refused. The exact interval of
+<code><a href="../reference/table_continuous.html">table_continuous()</a></code> inverts a binomial sign test, and its
+coverage rests on independent observations, which a clustered or
+stratified sample does not have. For a design-based interval on the
+population median, call
+<code>survey::svyquantile(interval.type = )</code> on the design.</p>
 </div>
 <div class="section level3">
 <h3 id="groups">Groups<a class="anchor" aria-label="anchor" href="#groups"></a>
@@ -222,7 +222,7 @@ itself.</p>
 <p><code>by =</code> cuts one domain per group. survey recomputes the
 degrees of freedom on the sampling units each domain retains, so a
 grouped table generally carries a different <em>df</em> per row, and the
-footer gives the span:</p>
+note gives their range:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">api00</span>, by <span class="op">=</span> <span class="va">stype</span>, statistic <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics by stype</span></span></span>
@@ -242,23 +242,20 @@ footer gives the span:</p>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> M                            </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
-<p>The comparison is one design-based test on the whole design, not a
-set of pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> with two observed groups,
-the Wald <em>F</em> of <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> with three or more,
-and <code><a href="https://rdrr.io/pkg/survey/man/svyranktest.html" class="external-link">svyranktest()</a></code> under
-<code>test = "nonparametric"</code>. Under a design there is no Welch /
-Student distinction – the variance is the design’s – so
+<p>The comparison is a single design-based test on the whole design:
+<code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> with two observed groups, the Wald <em>F</em> of
+<code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> with three or more, and
+<code><a href="https://rdrr.io/pkg/survey/man/svyranktest.html" class="external-link">svyranktest()</a></code> under <code>test = "nonparametric"</code>.
+Under a design the variance is that of the design, and the distinction
+between the Welch and the Student test does not exist.
 <code>test = "student"</code> warns and behaves like the default.</p>
-<p>The intervals are referred to those degrees of freedom, which is
-worth saying because survey’s own shortcut is not:
+<p>The intervals use those degrees of freedom.
 <code>svyby(vartype = "ci")</code> builds its interval with
-<code>confint.default</code>, i.e. a normal quantile, and so returns a
-slightly narrower interval than the tables here. The two differ by the
-ratio of <code>qnorm(0.975)</code> to
-<code>qt(0.975, degf(design))</code> – about 3% on the 14 degrees of
-freedom of <code>dclus1</code>. Neither is a mistake; they answer to
-different reference distributions, and this family answers to the
-design’s.</p>
+<code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint.default()</a></code>, on a normal quantile, and returns a
+narrower interval than the tables here. The two differ by the ratio of
+<code>qt(0.975, degf(design))</code> to <code>qnorm(0.975)</code>: the
+interval of the table is 9% wider on the 14 degrees of freedom of
+<code>dclus1</code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -280,10 +277,9 @@ design’s.</p>
 <span><span class="co">#&gt;    Yes      <span style="color: #9E9E9E;">│</span>  130    71.0  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
-<p><code>n</code> is the <em>observed</em> count: 144 schools of type E
-were sampled. The <code>78.7%</code> beside it is an <em>estimate</em>
-of the population share, and the two answer different questions – which
-is why the table shows both and the footer gives the estimated
+<p><code>n</code> is the observed count: 144 schools of type E were
+sampled. The <code>78.7%</code> beside it is an estimate of the share in
+the population. The table shows both, and the note gives the estimated
 population (6194) beside the sample size (183).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical_svy.html">table_categorical_svy</a></span><span class="op">(</span></span>
@@ -304,12 +300,12 @@ population (6194) beside the sample size (183).</p>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   25    13.7     8.4    21.3    1.40  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: Wald on the logit scale (logistic regression). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span></span></code></pre></div>
-<p>The percentage always comes from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> and the
-interval from <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code>. That is deliberate:
-<code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code> estimates on the transformed scale its method
-names, so a percentage taken from there would move – in the thirteenth
-decimal – with <code>ci_method</code>, which is a property of the
-interval and not of the proportion.</p>
+<p>The percentage comes from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> and the interval
+from <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code>. <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code> estimates on the
+transformed scale of its method, and a percentage taken from it would
+change with <code>ci_method</code>, in the thirteenth decimal.
+<code>ci_method</code> is a property of the interval, and the proportion
+should not depend on it.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_categorical_svy.html">table_categorical_svy</a></span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">stype</span>, by <span class="op">=</span> <span class="va">sch.wide</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Categorical table by sch.wide</span></span></span>
@@ -333,12 +329,12 @@ with the Rao-Scott second-order correction, referred to <em>F</em>(ndf,
 <code><a href="https://rdrr.io/pkg/survey/man/pchisqsum.html" class="external-link">?pchisqsum</a></code> documents as failing when the upper tail
 approaches machine epsilon, and <code>"wls-score"</code>, which has no
 reporting convention here.</p>
-<p>Association measures – Cramér’s <em>V</em>, phi, tau-b/c, gamma,
-Somers’ <em>D</em>, lambda – are absent, and that absence is a decision.
-None has an established design-based variance, and the intervals
-<code><a href="../reference/table_categorical.html">table_categorical()</a></code> gives them assume simple random
-sampling. The design-based measure of association is the test in the
-<code>p</code> column; for an effect size, model it:
+<p>The association measures of <code><a href="../reference/table_categorical.html">table_categorical()</a></code>
+(Cramér’s <em>V</em>, phi, tau-b and tau-c, gamma, Somers’ <em>D</em>,
+lambda) are not offered. None has an established design-based variance,
+and the intervals <code><a href="../reference/table_categorical.html">table_categorical()</a></code> gives them assume
+simple random sampling. The table reports the design-based test in the
+<code>p</code> column. For an effect size, fit a model:
 <code>table_regression(survey::svyglm(...))</code>.</p>
 </div>
 <div class="section level2">
@@ -416,8 +412,8 @@ per table, with the number of times survey raised it.</p>
 <h2 id="replicate-weights">Replicate weights<a class="anchor" aria-label="anchor" href="#replicate-weights"></a>
 </h2>
 <p>A replicate-weights design goes through the same functions. The point
-estimates depend on the weights alone and are therefore identical; the
-standard errors are not, and should not be:</p>
+estimates depend on the weights alone and are identical. The standard
+errors come from the replicates and differ:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span><span class="va">rclus1</span>, select <span class="op">=</span> <span class="va">api00</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Descriptive statistics</span></span></span>
@@ -433,27 +429,27 @@ standard errors are not, and should not be:</p>
 <div class="section level2">
 <h2 id="weights-or-a-design">Weights, or a design?<a class="anchor" aria-label="anchor" href="#weights-or-a-design"></a>
 </h2>
-<p>This is the question the two families answer differently, and the
-difference is an estimand rather than an approximation.</p>
-<p><code>table_continuous(weights = )</code> implements the
-<strong>frequency-expansion</strong> convention of decision 17: a weight
-is a number of copies, and <code>SD</code> has denominator
-<code>sum(w) - 1</code>. With integer weights the statistics are exactly
-those of the data repeated that many times.</p>
-<p><code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code> implements the
-<strong>sampling-weight</strong> convention: a weight is a number of
-units represented, and <code>SD</code> is
-<code>sqrt(survey::svyvar())</code>, whose denominator is
-<code>n - 1</code> on weights normalized to sum to <code>n</code>.</p>
-<p><code>rescale = TRUE</code> is the bridge between them, and it is an
-identity. Writing <code>w' = w * n / sum(w)</code>, so that
-<code>sum(w') = n</code>:</p>
+<p><code>table_continuous(weights = )</code> and
+<code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code> read a weight differently, and they
+do not estimate the same standard deviation.</p>
+<p><code>table_continuous(weights = )</code> follows the
+frequency-expansion convention: a weight is a number of copies, and
+<code>SD</code> has denominator <code>sum(w) - 1</code>. With integer
+weights the statistics are those of the data repeated that many
+times.</p>
+<p><code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code> follows the sampling-weight
+convention: a weight is a number of units represented, and
+<code>SD</code> is <code>sqrt(survey::svyvar())</code>, whose
+denominator is <code>n - 1</code> on weights normalized to sum to
+<code>n</code>.</p>
+<p><code>rescale = TRUE</code> makes the two agree, by an identity. With
+<code>w' = w * n / sum(w)</code>, so that <code>sum(w') = n</code>:</p>
 <pre><code>sum(w' (x - xbar)^2) / (sum(w') - 1)
   = (n / sum(w)) * sum(w (x - xbar)^2) / (n - 1)
   = n / (n - 1) * sum(w (x - xbar)^2) / sum(w)</code></pre>
 <p>and the right-hand side is what <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svyvar()</a></code>
-computes. So on a design that declares nothing but weights, the two
-tables agree:</p>
+computes. On a design that declares nothing but weights, the two tables
+agree:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_iid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign</a></span><span class="op">(</span>id <span class="op">=</span> <span class="op">~</span><span class="fl">1</span>, weights <span class="op">=</span> <span class="op">~</span><span class="va">pw</span>, data <span class="op">=</span> <span class="va">apiclus1</span><span class="op">)</span></span>
 <span></span>
@@ -464,8 +460,8 @@ tables agree:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>svy <span class="op">=</span> <span class="va">svy</span><span class="op">$</span><span class="va">sd</span>, weighted_rescaled <span class="op">=</span> <span class="va">wtd</span><span class="op">$</span><span class="va">sd</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               svy weighted_rescaled </span></span>
 <span><span class="co">#&gt;          105.7489          105.7489</span></span></code></pre></div>
-<p>Under the default <code>rescale = FALSE</code> they do not, and that
-is the estimand boundary, not a bug:</p>
+<p>Under the default <code>rescale = FALSE</code> they differ, each
+following its convention:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expanded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_continuous.html">table_continuous</a></span><span class="op">(</span></span>
 <span>  <span class="va">apiclus1</span>, select <span class="op">=</span> <span class="va">api00</span>, weights <span class="op">=</span> <span class="va">pw</span>, output <span class="op">=</span> <span class="st">"long"</span></span>
@@ -473,12 +469,11 @@ is the estimand boundary, not a bug:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>svy <span class="op">=</span> <span class="va">svy</span><span class="op">$</span><span class="va">sd</span>, weighted_default <span class="op">=</span> <span class="va">expanded</span><span class="op">$</span><span class="va">sd</span><span class="op">)</span></span>
 <span><span class="co">#&gt;              svy weighted_default </span></span>
 <span><span class="co">#&gt;         105.7489         105.4681</span></span></code></pre></div>
-<p>The <em>mean</em> is continuous across both regimes:
-<code>sum(w x) / sum(w)</code> does not move when the weights are
+<p>The mean is the same under both conventions:
+<code>sum(w x) / sum(w)</code> does not change when the weights are
 rescaled.</p>
-<p>And the whole point of the design functions is that a design carries
-more than weights. On the real cluster design, the same mean has a
-standard error the weights alone cannot produce:</p>
+<p>A design carries more than weights. On the cluster design, the same
+mean has a standard error that the weights alone do not give:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  iid_design <span class="op">=</span> <span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span><span class="va">d_iid</span>, select <span class="op">=</span> <span class="va">api00</span>, output <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span><span class="op">$</span><span class="va">se</span>,</span>
@@ -487,19 +482,17 @@ standard error the weights alone cannot produce:</p>
 <span><span class="co">#&gt;     iid_design cluster_design </span></span>
 <span><span class="co">#&gt;       7.817181      23.542241</span></span></code></pre></div>
 <p>Passing a design to <code><a href="../reference/table_continuous.html">table_continuous()</a></code>, or a data frame
-to <code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code>, is an error naming the other
-function. There is no silent coercion in either direction.</p>
+to <code><a href="../reference/table_continuous_svy.html">table_continuous_svy()</a></code>, is an error that names the other
+function.</p>
 </div>
 <div class="section level2">
 <h2 id="regression-under-a-design">Regression under a design<a class="anchor" aria-label="anchor" href="#regression-under-a-design"></a>
 </h2>
-<p><code><a href="../reference/table_regression.html">table_regression()</a></code> reads a design-based fit the same
-way, and delegates the same way: the coefficients, the variance and the
-degrees of freedom all come from survey.</p>
-<p>Three model classes are supported, on a linearized and on a
-replicate-weights design alike: <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code>,
-<code><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">survey::svyolr()</a></code> for a cumulative-link model, and
-<code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph()</a></code> for a design-weighted Cox model.</p>
+<p><code><a href="../reference/table_regression.html">table_regression()</a></code> reads a fit of
+<code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code>, <code><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">survey::svyolr()</a></code> or
+<code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">survey::svycoxph()</a></code>, on a linearized or a replicate-weights
+design. The coefficients, the variance and the degrees of freedom all
+come from survey.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">svyglm</a></span><span class="op">(</span><span class="va">api00</span> <span class="op">~</span> <span class="va">ell</span> <span class="op">+</span> <span class="va">meals</span> <span class="op">+</span> <span class="va">stype</span>, design <span class="op">=</span> <span class="va">dstrat</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">gl</span><span class="op">)</span></span>
@@ -520,157 +513,27 @@ replicate-weights design alike: <code><a href="https://rdrr.io/pkg/survey/man/sv
 <span><span class="co">#&gt;  AIC         <span style="color: #9E9E9E;">│</span> 2197.8                                    </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
-<p>Three things in that footer are worth naming.</p>
-<p>The design line says what the design is and how many degrees of
-freedom the table’s own tests use. That number is the <em>model’s</em>
-residual df – what survey writes on the fit, and what
-<code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">survey::regTermTest()</a></code> takes as its denominator – not the
-design’s own. It is read, never re-derived: the engines of survey do not
-share one expression, and a Cox fit ends one degree of freedom above
-what the same arithmetic would give for a <code>svyglm</code>. For this
-linear fit:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>design <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">degf</a></span><span class="op">(</span><span class="va">dstrat</span><span class="op">)</span>, model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/df.residual.html" class="external-link">df.residual</a></span><span class="op">(</span><span class="va">gl</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; design  model </span></span>
-<span><span class="co">#&gt;    197    193</span></span></code></pre></div>
-<p>The variance label names the estimator the design actually uses. On a
-replicate design there is no linearization anywhere, and the footer says
-so:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">svyglm</a></span><span class="op">(</span><span class="va">api00</span> <span class="op">~</span> <span class="va">ell</span>, design <span class="op">=</span> <span class="va">rclus1</span><span class="op">)</span>,</span>
-<span>  show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Survey-weighted linear regression: api00</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable    <span style="color: #9E9E9E;">│</span>    B          95% CI         p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">─────────────┼──────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  (Intercept) <span style="color: #9E9E9E;">│</span>  746.93  [684.12, 809.73]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  ell         <span style="color: #9E9E9E;">│</span>   -3.72  [ -4.77,  -2.67]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n           <span style="color: #9E9E9E;">│</span>  183                             </span></span>
-<span><span class="co">#&gt;  Weighted n  <span style="color: #9E9E9E;">│</span> 6194                             </span></span>
-<span><span class="co">#&gt;  AIC         <span style="color: #9E9E9E;">│</span> 2150.5                           </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: design-based (replicate weights, JK1). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
-<p>And the counts are both there: the observed <code>n</code> and the
-<code>Weighted n</code> the estimates describe, the same pair the
-descriptive tables print in their note.</p>
-<div class="section level3">
-<h3 id="ordinal-and-cox-fits">Ordinal and Cox fits<a class="anchor" aria-label="anchor" href="#ordinal-and-cox-fits"></a>
-</h3>
-<p>A <code><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">svyolr()</a></code> fit gets its cut-points as a Thresholds
-block, and its average marginal effects one column per response category
-– averaged over the population, not over the sample:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">apistrat</span><span class="op">$</span><span class="va">grade</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">ordered</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">apistrat</span><span class="op">$</span><span class="va">api00</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">600</span>, <span class="fl">700</span>, <span class="fl">1000</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">dg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign</a></span><span class="op">(</span></span>
-<span>  id <span class="op">=</span> <span class="op">~</span><span class="fl">1</span>, strata <span class="op">=</span> <span class="op">~</span><span class="va">stype</span>, weights <span class="op">=</span> <span class="op">~</span><span class="va">pw</span>, data <span class="op">=</span> <span class="va">apistrat</span>, fpc <span class="op">=</span> <span class="op">~</span><span class="va">fpc</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">svyolr</a></span><span class="op">(</span><span class="va">grade</span> <span class="op">~</span> <span class="va">ell</span> <span class="op">+</span> <span class="va">stype</span>, design <span class="op">=</span> <span class="va">dg</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Survey-weighted cumulative logit regression (proportional odds): grade</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable                  <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────────────────────┼──────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  ell                       <span style="color: #9E9E9E;">│</span>   -0.09  0.01  [-0.12, -0.07]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  stype:                    <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    E (ref.)                <span style="color: #9E9E9E;">│</span>     –     –          –          –    </span></span>
-<span><span class="co">#&gt;    H                       <span style="color: #9E9E9E;">│</span>   -1.86  0.37  [-2.60, -1.13]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    M                       <span style="color: #9E9E9E;">│</span>   -1.35  0.34  [-2.03, -0.68]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  Thresholds:               <span style="color: #9E9E9E;">│</span>                                      </span></span>
-<span><span class="co">#&gt;    (0,600] | (600,700]     <span style="color: #9E9E9E;">│</span>   -3.68  0.46  [-4.59, -2.78]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    (600,700] | (700,1e+03] <span style="color: #9E9E9E;">│</span>   -1.82  0.35  [-2.51, -1.14]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n                         <span style="color: #9E9E9E;">│</span>  200                                 </span></span>
-<span><span class="co">#&gt;  Weighted n                <span style="color: #9E9E9E;">│</span> 6194                                 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: design-based (Taylor linearization). Thresholds: latent-scale category cut-points. CI = confidence interval.</span></span></span></code></pre></div>
-<p>A <code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">svycoxph()</a></code> fit reports hazard ratios, the events, and
-the concordance:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">pbc</span>, package <span class="op">=</span> <span class="st">"survival"</span><span class="op">)</span></span>
-<span><span class="va">pbc</span><span class="op">$</span><span class="va">randomized</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">pbc</span>, <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">trt</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">trt</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="va">bias</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">randomized</span> <span class="op">~</span> <span class="va">age</span> <span class="op">*</span> <span class="va">edema</span>, data <span class="op">=</span> <span class="va">pbc</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
-<span><span class="va">pbc</span><span class="op">$</span><span class="va">randprob</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">bias</span><span class="op">)</span></span>
-<span><span class="va">dpbc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign</a></span><span class="op">(</span></span>
-<span>  id <span class="op">=</span> <span class="op">~</span><span class="fl">1</span>, prob <span class="op">=</span> <span class="op">~</span><span class="va">randprob</span>, strata <span class="op">=</span> <span class="op">~</span><span class="va">edema</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">pbc</span>, <span class="va">randomized</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">cx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">svycoxph</a></span><span class="op">(</span></span>
-<span>  <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">status</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">bili</span><span class="op">)</span> <span class="op">+</span> <span class="va">protime</span> <span class="op">+</span> <span class="va">albumin</span>,</span>
-<span>  design <span class="op">=</span> <span class="va">dpbc</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Survey-weighted Cox proportional hazards regression: Surv(time, status &gt; 0)</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>   HR       95% CI       p   </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼─────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  log(bili)  <span style="color: #9E9E9E;">│</span>   2.43  [2.03, 2.90]  &lt;.001 </span></span>
-<span><span class="co">#&gt;  protime    <span style="color: #9E9E9E;">│</span>   1.28  [1.09, 1.50]   .003 </span></span>
-<span><span class="co">#&gt;  albumin    <span style="color: #9E9E9E;">│</span>   0.35  [0.24, 0.53]  &lt;.001 </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
-<span><span class="co">#&gt;  n          <span style="color: #9E9E9E;">│</span> 312                         </span></span>
-<span><span class="co">#&gt;  Weighted n <span style="color: #9E9E9E;">│</span> 418                         </span></span>
-<span><span class="co">#&gt;  N events   <span style="color: #9E9E9E;">│</span> 144                         </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: design-based (Taylor linearization). HR = hazard ratio; CI = confidence interval.</span></span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="what-a-design-fit-refuses">What a design fit refuses<a class="anchor" aria-label="anchor" href="#what-a-design-fit-refuses"></a>
-</h3>
-<p>Statistics that need a likelihood are absent rather than
-approximated: <code><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">AIC()</a></code>, <code><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">BIC()</a></code>,
-<code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> and the pseudo-R-squared family are not defined
-for a design-weighted fit, and asking for them by token stops with an
-error rather than print a number without an interpretation. The one
-exception is <code>svyglm</code>, whose <code>AIC</code> row is the
-design-based criterion of Lumley &amp; Scott – and
-<code>show_fit_stats = "eff_p"</code> reports the effective number of
-parameters of the design beside it.</p>
-<p>A robust variance is refused for every design class: the design is
-the variance authority, and the way to change the estimator is to change
-the design.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">gl</span>, vcov <span class="op">=</span> <span class="st">"HC3"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `table_regression()`:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> `vcov = "HC3"` is not available for `svyglm` models.</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> The fit's own design-based (Taylor / replicate) variance is already the robust variance for the declared design.</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> To account for clustering, declare it in the design: survey::svydesign(ids = ~cluster, ...), then refit.</span></span></code></pre></div>
-<p>The RMST and risk-difference columns are refused for a design-based
-Cox fit. The estimands are not what is in question – they are validated
-against exact oracles for an unweighted Cox model – but their
-uncertainty comes from resampling subjects, and a row bootstrap ignores
-the strata and the clusters the design declares.</p>
-<p>How much that costs depends on the design and on the contrast, so no
-single figure describes it. Measured over five designs and three data
-seeds: a contrast <strong>between</strong> clusters has its standard
-error understated by roughly 1.5x-6x depending on cluster count and size
-(~3x on a 30 x 25 design with moderate intra-cluster correlation), while
-a contrast <strong>within</strong> clusters, and any design without
-clustering, come out about right. Nothing here is peculiar to these
-columns – the estimand-level ratios track the coefficient-level ones
-design by design, so this is the ordinary design effect of the Cox
-coefficient carried onto them.</p>
-<p>Putting the design’s own replicate weights in place of the row
-bootstrap is on the roadmap. Until then, use
-<code><a href="https://rdrr.io/pkg/survey/man/svykm.html" class="external-link">survey::svykm()</a></code> for a marginal survival curve, and
-<code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">survey::regTermTest()</a></code> to test a term.</p>
-<p>Average marginal effects are refused for a Cox fit, design-based or
-not: a proportional-hazards model has no natural response scale to
-average an effect on.</p>
-</div>
+<p>The note states the design and the residual degrees of freedom of the
+tests, and it names the variance estimator. The fit statistics give the
+observed <code>n</code> and the <code>Weighted n</code> the estimates
+describe, the pair the descriptive tables print in their note.</p>
+<p><a href="table-regression-survey.html"><em>Regression tables for
+survey designs</em></a> covers these models: the degrees of freedom,
+weights compared with a declared design, odds ratios and average
+marginal effects, the tests of a term, subpopulations, replicate
+weights, ordinal and Cox fits, and what a design-based fit refuses.</p>
 </div>
 <div class="section level2">
 <h2 id="quantiles">Quantiles<a class="anchor" aria-label="anchor" href="#quantiles"></a>
 </h2>
-<p><code>qrule</code> chooses the rule, and the footer always names the
-one in force. The default <code>"math"</code> estimates the quantile of
-the <em>population</em>, <code>inf{x : F(x) &gt;= p}</code>.
-<code>"spicy"</code> switches to the type-7 interpolation
-<code><a href="../reference/table_continuous.html">table_continuous()</a></code> uses, for a reader who needs the two
-tables to agree cell for cell; anything else – including a function – is
-handed to <code><a href="https://rdrr.io/pkg/survey/man/svyquantile.html" class="external-link">survey::svyquantile()</a></code> untouched.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<p><code>qrule</code> chooses the rule, and the note names the one in
+force. The default <code>"math"</code> estimates the quantile of the
+population, <code>inf{x : F(x) &gt;= p}</code>. <code>"spicy"</code>
+switches to the type-7 interpolation of <code><a href="../reference/table_continuous.html">table_continuous()</a></code>,
+for a reader who needs the two tables to agree cell for cell. Any other
+value, a function included, is passed to
+<code><a href="https://rdrr.io/pkg/survey/man/svyquantile.html" class="external-link">survey::svyquantile()</a></code> as it is.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">q</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">rule</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span></span>
 <span>    <span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">api00</span>, qrule <span class="op">=</span> <span class="va">rule</span>,</span>
@@ -689,7 +552,7 @@ handed to <code><a href="https://rdrr.io/pkg/survey/man/svyquantile.html" class=
 <p>These tables carry the typed view the rest of the package uses, so
 <code><a href="../reference/as_structured.html">as_structured()</a></code> and <code><a href="../reference/inline.html">inline()</a></code> work as they do
 elsewhere:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/table_categorical_svy.html">table_categorical_svy</a></span><span class="op">(</span><span class="va">dclus1</span>, select <span class="op">=</span> <span class="va">stype</span>, by <span class="op">=</span> <span class="va">sch.wide</span><span class="op">)</span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_structured.html">as_structured</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">)</span></span>
 <span><span class="va">s</span><span class="op">$</span><span class="va">body</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Variable"</span>, <span class="st">"Yes n"</span>, <span class="st">"Yes %"</span>, <span class="st">"p"</span>, <span class="st">".row_role"</span><span class="op">)</span><span class="op">]</span></span>
@@ -700,7 +563,7 @@ elsewhere:</p>
 <span><span class="co">#&gt; 4        M    17 10.625         NA         level</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">spanners</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "No"    "Yes"   "Total"</span></span></code></pre></div>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"stype"</span>, level <span class="op">=</span> <span class="st">"E"</span>, column <span class="op">=</span> <span class="st">"pct"</span>, model <span class="op">=</span> <span class="st">"Yes"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "82.5"</span></span>
 <span><span class="fu"><a href="../reference/inline.html">inline</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="st">"stype"</span>, column <span class="op">=</span> <span class="st">"p"</span><span class="op">)</span></span>
@@ -714,30 +577,30 @@ elsewhere:</p>
 <code>"excel"</code>, <code>"clipboard"</code>, plus
 <code>"data.frame"</code> for the displayed table with its numbers and
 <code>"long"</code> for one row per variable, level and group.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_continuous_svy.html">table_continuous_svy</a></span><span class="op">(</span></span>
 <span>  <span class="va">dstrat</span>,</span>
 <span>  select <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">api00</span>, <span class="va">api99</span><span class="op">)</span>,</span>
 <span>  by <span class="op">=</span> <span class="va">stype</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmprJqv8B-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmprJqv8B-1 table {
+<div id="spicy-gt-Rtmpw3s53t-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-Rtmpw3s53t-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmprJqv8B-1 thead, #spicy-gt-RtmprJqv8B-1 tbody, #spicy-gt-RtmprJqv8B-1 tfoot, #spicy-gt-RtmprJqv8B-1 tr, #spicy-gt-RtmprJqv8B-1 td, #spicy-gt-RtmprJqv8B-1 th {
+#spicy-gt-Rtmpw3s53t-1 thead, #spicy-gt-Rtmpw3s53t-1 tbody, #spicy-gt-Rtmpw3s53t-1 tfoot, #spicy-gt-Rtmpw3s53t-1 tr, #spicy-gt-Rtmpw3s53t-1 td, #spicy-gt-Rtmpw3s53t-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmprJqv8B-1 p {
+#spicy-gt-Rtmpw3s53t-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_table {
+#spicy-gt-Rtmpw3s53t-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -763,12 +626,12 @@ elsewhere:</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_caption {
+#spicy-gt-Rtmpw3s53t-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_title {
+#spicy-gt-Rtmpw3s53t-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: initial;
@@ -780,7 +643,7 @@ elsewhere:</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_subtitle {
+#spicy-gt-Rtmpw3s53t-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -792,7 +655,7 @@ elsewhere:</p>
   border-top-width: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_heading {
+#spicy-gt-Rtmpw3s53t-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -804,13 +667,13 @@ elsewhere:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_bottom_border {
+#spicy-gt-Rtmpw3s53t-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_col_headings {
+#spicy-gt-Rtmpw3s53t-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -825,7 +688,7 @@ elsewhere:</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_col_heading {
+#spicy-gt-Rtmpw3s53t-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -845,7 +708,7 @@ elsewhere:</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer {
+#spicy-gt-Rtmpw3s53t-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -857,15 +720,15 @@ elsewhere:</p>
   padding-right: 4px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-Rtmpw3s53t-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-Rtmpw3s53t-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_column_spanner {
+#spicy-gt-Rtmpw3s53t-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
@@ -877,11 +740,11 @@ elsewhere:</p>
   width: 100%;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_spanner_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_group_heading {
+#spicy-gt-Rtmpw3s53t-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -907,7 +770,7 @@ elsewhere:</p>
   text-align: left;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_empty_group_heading {
+#spicy-gt-Rtmpw3s53t-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -922,15 +785,15 @@ elsewhere:</p>
   vertical-align: middle;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_from_md > :first-child {
+#spicy-gt-Rtmpw3s53t-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_from_md > :last-child {
+#spicy-gt-Rtmpw3s53t-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -949,7 +812,7 @@ elsewhere:</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_stub {
+#spicy-gt-Rtmpw3s53t-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -962,7 +825,7 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_stub_row_group {
+#spicy-gt-Rtmpw3s53t-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -976,15 +839,15 @@ elsewhere:</p>
   vertical-align: top;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_row_group_first td {
+#spicy-gt-Rtmpw3s53t-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_row_group_first th {
+#spicy-gt-Rtmpw3s53t-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_summary_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -994,16 +857,16 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_first_summary_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_first_summary_row.thick {
+#spicy-gt-Rtmpw3s53t-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_last_summary_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1013,7 +876,7 @@ elsewhere:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_grand_summary_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1023,7 +886,7 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_first_grand_summary_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1033,7 +896,7 @@ elsewhere:</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_last_grand_summary_row_top {
+#spicy-gt-Rtmpw3s53t-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1043,11 +906,11 @@ elsewhere:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_striped {
+#spicy-gt-Rtmpw3s53t-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_table_body {
+#spicy-gt-Rtmpw3s53t-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1056,7 +919,7 @@ elsewhere:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_footnotes {
+#spicy-gt-Rtmpw3s53t-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1070,7 +933,7 @@ elsewhere:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_footnote {
+#spicy-gt-Rtmpw3s53t-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1079,7 +942,7 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_sourcenotes {
+#spicy-gt-Rtmpw3s53t-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1093,7 +956,7 @@ elsewhere:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_sourcenote {
+#spicy-gt-Rtmpw3s53t-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1101,112 +964,112 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_left {
+#spicy-gt-Rtmpw3s53t-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_center {
+#spicy-gt-Rtmpw3s53t-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_right {
+#spicy-gt-Rtmpw3s53t-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_font_normal {
+#spicy-gt-Rtmpw3s53t-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_font_bold {
+#spicy-gt-Rtmpw3s53t-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_font_italic {
+#spicy-gt-Rtmpw3s53t-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_super {
+#spicy-gt-Rtmpw3s53t-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_footnote_marks {
+#spicy-gt-Rtmpw3s53t-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_asterisk {
+#spicy-gt-Rtmpw3s53t-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_indent_1 {
+#spicy-gt-Rtmpw3s53t-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_indent_2 {
+#spicy-gt-Rtmpw3s53t-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_indent_3 {
+#spicy-gt-Rtmpw3s53t-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_indent_4 {
+#spicy-gt-Rtmpw3s53t-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_indent_5 {
+#spicy-gt-Rtmpw3s53t-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .katex-display {
+#spicy-gt-Rtmpw3s53t-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmprJqv8B-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-Rtmpw3s53t-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_sourcenote {
+#spicy-gt-Rtmpw3s53t-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_sourcenote {
+#spicy-gt-Rtmpw3s53t-1 .gt_sourcenote {
   padding-top: 0;
   padding-bottom: 0;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-Rtmpw3s53t-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-Rtmpw3s53t-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmprJqv8B-1 .gt_spanner_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_col_headings.gt_spanner_row, #spicy-gt-Rtmpw3s53t-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_col_heading {
+#spicy-gt-Rtmpw3s53t-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_table tbody .gt_row {
+#spicy-gt-Rtmpw3s53t-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_column_spanner {
+#spicy-gt-Rtmpw3s53t-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmprJqv8B-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-Rtmpw3s53t-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1215,12 +1078,12 @@ elsewhere:</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmprJqv8B-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-Rtmpw3s53t-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-Rtmpw3s53t-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 
@@ -1385,12 +1248,11 @@ elsewhere:</p>
 <h2 id="what-is-not-here-yet">What is not here yet<a class="anchor" aria-label="anchor" href="#what-is-not-here-yet"></a>
 </h2>
 <p>Two-phase, pps, database-backed and multiframe designs are refused
-with a classed error rather than approximated: the delegation map was
-measured on <code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign()</a></code> and <code><a href="https://rdrr.io/pkg/survey/man/as.svrepdesign.html" class="external-link">as.svrepdesign()</a></code>
-designs, and a plausible wrong number is worse than a refusal. Call
-survey directly for those – and if one of them matters for your work, an
-issue on the package’s tracker saying which design you need is the
-fastest way to move it up the roadmap.</p>
+with a classed error. The delegation to survey was verified on
+<code><a href="https://rdrr.io/pkg/survey/man/svydesign.html" class="external-link">svydesign()</a></code> and <code><a href="https://rdrr.io/pkg/survey/man/as.svrepdesign.html" class="external-link">as.svrepdesign()</a></code> designs only.
+Call survey directly for the others. If one of them matters for your
+work, open an issue on the tracker of the package and name the
+design.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -1400,9 +1262,6 @@ fastest way to move it up the roadmap.</p>
 of Statistical Software</em>, 9(8), 1–19.</li>
 <li>Lumley, T. (2010). <em>Complex surveys: A guide to analysis using
 R</em>. John Wiley &amp; Sons.</li>
-<li>Lumley, T., &amp; Scott, A. (2015). AIC and BIC for modeling with
-complex survey data. <em>Journal of Survey Statistics and
-Methodology</em>, 3(1), 1–18.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

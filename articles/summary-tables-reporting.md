@@ -1006,7 +1006,7 @@ tab |>
 
 [TABLE]
 
-Categorical table by education {#tinytable_1nakbttm6eliejouz1dy .table
+Categorical table by education {#tinytable_qbmnj24bmncc2xxncnrf .table
 .tinytable style="width: auto; margin-left: auto; margin-right: auto;"
 quarto-disable-processing="true"}
 

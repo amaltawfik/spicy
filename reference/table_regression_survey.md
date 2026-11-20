@@ -167,9 +167,11 @@ for the registry of supported classes and the other families;
 [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
 and
 [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
-for descriptive tables of a design; the [Summary tables from a survey
+for descriptive tables of a design; the [Regression tables for survey
+designs](https://amaltawfik.github.io/spicy/articles/table-regression-survey.html)
+and [Summary tables from a survey
 design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
-article.
+articles.
 
 ## Examples
 

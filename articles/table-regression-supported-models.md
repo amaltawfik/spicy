@@ -47,9 +47,9 @@ whichever defensible model you fit.
 | Time-to-event | independent observations | [`survival::coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) | HR – and adjusted RMST / risk-difference columns beyond it |
 | Time-to-event | a parametric survival-time model | [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) | time ratios (TR) via `exponentiate` |
 | Any of the above | clustered or repeated measures | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) / [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) **or** [`geepack::geeglm()`](https://rdrr.io/pkg/geepack/man/geeglm.html) | *the distinction below matters* |
-| Any of the above | many absorbed fixed effects (panel) | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html) / `feglm()` | the absorbed factors render as a Yes/No block |
+| Any of the above | many absorbed fixed effects (panel) | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html) / [`feglm()`](https://lrberge.github.io/fixest/reference/feglm.html) | the absorbed factors render as a Yes/No block |
 | Any of the above | a complex survey design | [`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html) | design-based SEs are the inference |
-| Any of the above | smooth non-linear terms | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` | smooth terms render as a labeled block (edf and test) |
+| Any of the above | smooth non-linear terms | [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / [`bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) | smooth terms render as a labeled block (edf and test) |
 | Any of the above | a Bayesian analysis | [`rstanarm::stan_glm()`](https://mc-stan.org/rstanarm/reference/stan_glm.html) / [`brms::brm()`](https://paulbuerkner.com/brms/reference/brm.html) | posterior medians, MAD SD, credible intervals – no p-values |
 | Any of the above | an endogenous predictor, an instrument | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) / [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) |  |
 
@@ -300,7 +300,8 @@ predictors*](https://amaltawfik.github.io/spicy/articles/categorical-predictors.
 
 **Robust, IV, quantile, panel.**
 [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
-/ `iv_robust()`,
+/
+[`iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html),
 [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) and
 [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html),
 [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) (defaulting
@@ -312,7 +313,8 @@ Absorbed fixed effects – a `fixest` fit, or an `estimatr` fit built with
 Yes / No row per factor, blank for models without the concept in a mixed
 table – with per-factor `N (<factor>)` counts through the opt-in
 `"n_groups"` token and the within R-squared through `"within_r2"` (a
-`fixest` default).
+`fixest` default). See [*Robust, IV, quantile and panel regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-robust.md).
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
 `glmmTMB` (with zero-inflation and dispersion blocks, and a `Thresholds`
@@ -384,24 +386,38 @@ come from the same likelihood. See [*Survival regression
 tables*](https://amaltawfik.github.io/spicy/articles/table-regression-survival.md).
 
 **Survey-weighted.**
-[`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html):
-design-based inference; the unweighted n and the sum of the design
-weights (`Weighted n`) are default fit statistics.
+[`survey::svyglm()`](https://rdrr.io/pkg/survey/man/svyglm.html),
+[`svyolr()`](https://rdrr.io/pkg/survey/man/svyolr.html) and
+[`svycoxph()`](https://rdrr.io/pkg/survey/man/svycoxph.html):
+design-based inference, with the unweighted n and the sum of the design
+weights (`Weighted n`) as default fit statistics. See [*Regression
+tables for survey
+designs*](https://amaltawfik.github.io/spicy/articles/table-regression-survey.md).
 
 **Additive, proportions, selection.**
-[`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) / `bam()` (a GAM
-shows the R² rows of the [`glm()`](https://rdrr.io/r/stats/glm.html) of
-its family and link, and its smooth terms as a block: the effective
-degrees of freedom and the p-value of the approximate test of each
-term),
+[`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html) /
+[`bam()`](https://rdrr.io/pkg/mgcv/man/bam.html) (a GAM shows the R²
+rows of the [`glm()`](https://rdrr.io/r/stats/glm.html) of its family
+and link, and its smooth terms as a block: the effective degrees of
+freedom and the p-value of the approximate test of each term),
 [`betareg::betareg()`](https://rdrr.io/pkg/betareg/man/betareg.html)
-(odds ratios on the logit mean link under `exponentiate`; the precision
-is the opt-in `phi` fit statistic), and
-[`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
-with its selection component as a block.
+(odds ratios on the logit mean link under `exponentiate`; a precision
+submodel as a `Precision` block, a constant precision as the opt-in
+`phi` fit statistic), and
+[`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
+[`heckit()`](https://rdrr.io/pkg/sampleSelection/man/selection.html) and
+[`treatReg()`](https://rdrr.io/pkg/sampleSelection/man/selection.html)
+(a row per equation under each variable, and σ, ρ and the inverse Mills
+ratio in an `Error terms` block). See [*Additive, beta and selection
+regression
+tables*](https://amaltawfik.github.io/spicy/articles/table-regression-additive.md).
 
-**rms.** `ols`, `lrm`, `Glm` and `cph` are first-class citizens, so
-Harrell-style workflows drop in directly.
+**rms.** `ols`, `lrm`, `Glm` and `cph` fits, with their restricted cubic
+splines, the variance of
+[`robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) and
+[`bootcov()`](https://rdrr.io/pkg/rms/man/bootcov.html), and penalized
+estimation. See [*Regression tables for rms
+fits*](https://amaltawfik.github.io/spicy/articles/table-regression-rms.md).
 
 **Bayesian.** `rstanarm` and `brms` fits are summarized from their
 posterior draws: posterior median, MAD SD, credible intervals,

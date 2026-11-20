@@ -67,12 +67,16 @@
     <li><a class="dropdown-item" href="../articles/table-regression.html">Publication-ready regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-supported-models.html">Supported models</a></li>
     <li><a class="dropdown-item" href="../articles/as-structured.html">The structured view (programmatic access)</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-robust.html">Robust, IV, quantile and panel regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-mixed.html">Mixed-effects regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-gee.html">GEE regression tables (population-averaged)</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-counts.html">Count and two-part regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-survival.html">Survival regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-ordinal.html">Ordinal regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-multinomial.html">Multinomial regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-additive.html">Additive, beta and selection regression tables</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-rms.html">Regression tables for rms fits</a></li>
+    <li><a class="dropdown-item" href="../articles/table-regression-survey.html">Regression tables for survey designs</a></li>
     <li><a class="dropdown-item" href="../articles/table-regression-bayesian.html">Bayesian regression tables</a></li>
     <li><a class="dropdown-item" href="../articles/categorical-predictors.html">Categorical predictors</a></li>
     <li><a class="dropdown-item" href="../articles/summary-tables-reporting.html">Summary tables for reporting</a></li>
@@ -278,7 +282,7 @@ the SEs</td>
 <td>Any of the above</td>
 <td>many absorbed fixed effects (panel)</td>
 <td>
-<code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code> / <code>feglm()</code>
+<code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code> / <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">feglm()</a></code>
 </td>
 <td>the absorbed factors render as a Yes/No block</td>
 </tr>
@@ -292,7 +296,7 @@ the SEs</td>
 <td>Any of the above</td>
 <td>smooth non-linear terms</td>
 <td>
-<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code>bam()</code>
+<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">bam()</a></code>
 </td>
 <td>smooth terms render as a labeled block (edf and test)</td>
 </tr>
@@ -1090,7 +1094,7 @@ all.</p>
 tables</em></a> and <a href="categorical-predictors.html"><em>Categorical
 predictors</em></a>.</p>
 <p><strong>Robust, IV, quantile, panel.</strong>
-<code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code> / <code>iv_robust()</code>,
+<code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code> / <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">iv_robust()</a></code>,
 <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code> and <code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code>,
 <code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code> (defaulting to the heteroskedasticity-robust
 <code>nid</code> sandwich – quantreg’s own large-sample default – with
@@ -1103,7 +1107,8 @@ clustered bootstrap as <code>vcov</code> options), and the
 for models without the concept in a mixed table – with per-factor
 <code>N (&lt;factor&gt;)</code> counts through the opt-in
 <code>"n_groups"</code> token and the within R-squared through
-<code>"within_r2"</code> (a <code>fixest</code> default).</p>
+<code>"within_r2"</code> (a <code>fixest</code> default). See <a href="table-regression-robust.html"><em>Robust, IV, quantile and panel
+regression tables</em></a>.</p>
 <p><strong>Mixed effects.</strong> <code>lmer</code> (Satterthwaite t
 via <code>lmerTest</code>), <code>glmer</code>, <code>glmmTMB</code>
 (with zero-inflation and dispersion blocks, and a
@@ -1158,21 +1163,29 @@ fit, exactly as <code><a href="https://rdrr.io/pkg/survival/man/survfit.html" cl
 Efron fit an Efron one – so the hazard-ratio column and the dRMST column
 always come from the same likelihood. See <a href="table-regression-survival.html"><em>Survival regression
 tables</em></a>.</p>
-<p><strong>Survey-weighted.</strong> <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code>:
-design-based inference; the unweighted n and the sum of the design
-weights (<code>Weighted n</code>) are default fit statistics.</p>
+<p><strong>Survey-weighted.</strong> <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm()</a></code>,
+<code><a href="https://rdrr.io/pkg/survey/man/svyolr.html" class="external-link">svyolr()</a></code> and <code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">svycoxph()</a></code>: design-based
+inference, with the unweighted n and the sum of the design weights
+(<code>Weighted n</code>) as default fit statistics. See <a href="table-regression-survey.html"><em>Regression tables for survey
+designs</em></a>.</p>
 <p><strong>Additive, proportions, selection.</strong>
-<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code>bam()</code> (a GAM shows the R² rows
+<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code> / <code><a href="https://rdrr.io/pkg/mgcv/man/bam.html" class="external-link">bam()</a></code> (a GAM shows the R² rows
 of the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> of its family and link, and its smooth terms
 as a block: the effective degrees of freedom and the p-value of the
 approximate test of each term), <code><a href="https://rdrr.io/pkg/betareg/man/betareg.html" class="external-link">betareg::betareg()</a></code> (odds
-ratios on the logit mean link under <code>exponentiate</code>; the
-precision is the opt-in <code>phi</code> fit statistic), and
-<code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code> with its selection component
-as a block.</p>
+ratios on the logit mean link under <code>exponentiate</code>; a
+precision submodel as a <code>Precision</code> block, a constant
+precision as the opt-in <code>phi</code> fit statistic), and
+<code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>, <code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">heckit()</a></code> and
+<code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">treatReg()</a></code> (a row per equation under each variable, and σ,
+ρ and the inverse Mills ratio in an <code>Error terms</code> block). See
+<a href="table-regression-additive.html"><em>Additive, beta and
+selection regression tables</em></a>.</p>
 <p><strong>rms.</strong> <code>ols</code>, <code>lrm</code>,
-<code>Glm</code> and <code>cph</code> are first-class citizens, so
-Harrell-style workflows drop in directly.</p>
+<code>Glm</code> and <code>cph</code> fits, with their restricted cubic
+splines, the variance of <code><a href="https://rdrr.io/pkg/rms/man/robcov.html" class="external-link">robcov()</a></code> and
+<code><a href="https://rdrr.io/pkg/rms/man/bootcov.html" class="external-link">bootcov()</a></code>, and penalized estimation. See <a href="table-regression-rms.html"><em>Regression tables for rms
+fits</em></a>.</p>
 <p><strong>Bayesian.</strong> <code>rstanarm</code> and
 <code>brms</code> fits are summarized from their posterior draws:
 posterior median, MAD SD, credible intervals, draws-native

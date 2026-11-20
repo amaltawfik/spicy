@@ -272,8 +272,8 @@ regression models. *Journal of the American Statistical Association*,
 for the arguments shared by all classes;
 [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
 for the registry of supported classes and the other families; the
-[Publication-ready regression
-tables](https://amaltawfik.github.io/spicy/articles/table-regression.html)
+[Robust, IV, quantile and panel regression
+tables](https://amaltawfik.github.io/spicy/articles/table-regression-robust.html)
 article.
 
 ## Examples
