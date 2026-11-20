@@ -371,7 +371,7 @@ estimates ρσ, and it is the test of λ that plays this role (p = .386).
 A two-step fit has no likelihood, hence no AIC.
 
 The note also gives the number of observations whose outcome is
-observed, the estimation method of each model, and the reference
+observed, the standard errors of each model, and the reference
 distribution of the tests. `summary()` reports the same values.
 
 ```{r sel-summary, eval = have_sel}

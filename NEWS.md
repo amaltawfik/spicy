@@ -363,9 +363,10 @@
   and ρ with their standard error and interval, and the inverse Mills
   ratio of a two-step fit. `keep` and `drop` select these rows by
   coefficient name, and `show_components = FALSE` omits the block. The
-  note names the estimation method, maximum likelihood or two-step, and
-  the number of observations whose outcome is observed. With a binary
-  outcome, it says that the outcome equation is a probit.
+  note names the standard errors, "classical (Fisher information)" for a
+  maximum-likelihood fit and "classical (two-step)" for a two-step fit,
+  and the number of observations whose outcome is observed. With a
+  binary outcome, it says that the outcome equation is a probit.
 
 * `keep` and `drop` of `table_regression()` take the exact name of a
   term as it is written, parentheses included (`keep = "log(bili)"`,
@@ -671,15 +672,29 @@
   refused for the class before a horizon is asked for.
 
 * `table_regression()`: an `lm()`, `glm()` or `glm.nb()` model under
-  `vcov = "CR0"` to `"CR3"` says in the note that its p-values use
-  Satterthwaite degrees of freedom. A weighted `lm()` is labeled
-  "classical (WLS)". A clustered `lm_robust()` model and the cluster
-  bootstrap of `rq()` name their cluster variable.
+  `vcov = "CR0"` to `"CR3"`, and a clustered `lm_robust()` or
+  `iv_robust()` model under `CR2`, say in the note that their p-values
+  use Satterthwaite degrees of freedom. `table_continuous_lm()` says it
+  too under `"CR0"` to `"CR3"`, and names its F test "approximate
+  Hotelling's T² F-test". A weighted `lm()` is labeled "classical
+  (WLS)". A clustered `lm_robust()` model and the cluster bootstrap of
+  `rq()` name their cluster variable.
 
 * `table_regression()`: in a table of several models, a sentence on
   p-values, on the design or on intervals that holds for some models
   only names them. Models on the same survey design give their residual
-  degrees of freedom in one sentence.
+  degrees of freedom in one sentence, and so do selection models tested
+  on t distributions with different degrees of freedom. Model names are
+  separated by a semicolon when one of them holds a comma.
+
+* `table_regression()`: a comparison of beta regressions, or of binomial
+  `glm()` models, with different links is titled "Beta regression
+  comparison" or "Binomial regression comparison" instead of "Regression
+  comparison".
+
+* A console table too wide for the console repeats the header of a block
+  ("Fixed effects:") in its second panel, where the rows of the block
+  stood without it.
 
 * The errors of `table_regression()` write a token as it is typed
   (`"aic"`), agree in number, point to the help page of the model
