@@ -45,15 +45,23 @@
 # HTML: the frame of every flextable the package returns. flextable
 # writes the table in a `<div class="tabwid">` with no width rule, so
 # in an R Markdown page 420px wide a two-model regression table (455px)
-# ran past its 375px frame and widened the page. flextable's own scroll box (`opts_html = list(scroll
-# = list())`, which writes `overflow-x:auto;width:100%;` on that div)
-# makes it scroll within its frame, as gt and tinytable tables do. The
-# layout is kept as built; the option touches HTML only.
+# ran past its 375px frame and widened the page. flextable's own scroll
+# box (`opts_html = list(scroll = list())`, which writes
+# `overflow-x:auto;width:100%;` on that div) makes it scroll within its
+# frame, as gt and tinytable tables do. The layout is kept as built; the
+# option touches HTML only. The option came with flextable 0.8.3 and
+# DESCRIPTION pins no version: where the call fails, the table is
+# returned as it was.
 .spicy_ft_html_frame <- function(ft) {
-  flextable::set_table_properties(
-    ft,
-    layout = ft$properties$layout,
-    opts_html = list(scroll = list())
+  # Forced first: an error of the builder is not this call's to catch.
+  force(ft)
+  tryCatch(
+    flextable::set_table_properties(
+      ft,
+      layout = ft$properties$layout,
+      opts_html = list(scroll = list())
+    ),
+    error = function(e) ft
   )
 }
 

@@ -353,6 +353,27 @@ test_that("every flextable scrolls within its frame in HTML", {
   expect_identical(fts[[1L]]$properties$layout, "fixed")
 })
 
+test_that("a flextable without the scroll option is returned as built", {
+  skip_if_not_installed("flextable")
+  ft <- flextable::flextable(head(datasets::cars))
+  # A flextable older than 0.8.3 does not know `opts_html$scroll`.
+  real <- flextable::set_table_properties
+  local_mocked_bindings(
+    set_table_properties = function(x, ..., opts_html = list()) {
+      if (!is.null(opts_html$scroll)) {
+        stop("unused argument (scroll)")
+      }
+      real(x, ..., opts_html = opts_html)
+    },
+    .package = "flextable"
+  )
+  expect_identical(.spicy_ft_html_frame(ft), ft)
+  d <- .pf_data()
+  out <- table_categorical(d, select = "smoking", output = "flextable")
+  expect_s3_class(out, "spicy_flextable")
+  expect_null(out$properties$opts_html$scroll)
+})
+
 test_that("the caption is the title the console prints, in the table font", {
   skip_if_not_installed("flextable")
   d <- .pf_data()
