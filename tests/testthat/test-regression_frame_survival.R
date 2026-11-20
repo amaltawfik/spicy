@@ -251,7 +251,7 @@ test_that("coxph null model: the first model of a hierarchy, refused alone", {
   expect_equal(nested$lrt_change, oracle[["Chisq"]][2], tolerance = 1e-8)
 
   err <- expect_error(table_regression(f0), class = "spicy_invalid_input")
-  expect_match(conditionMessage(err), "without a coefficient", fixed = TRUE)
+  expect_match(conditionMessage(err), "without a predictor", fixed = TRUE)
   expect_error(table_regression(s0), class = "spicy_invalid_input")
 })
 

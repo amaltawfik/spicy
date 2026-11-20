@@ -3168,25 +3168,35 @@ table_regression <- function(
     function(fr) nrow(fr$coefs) == 0L && !fit_only,
     logical(1)
   )
-  # A Cox null model (`~ 1`, strata() alone) has no coefficient to show,
-  # and is the legitimate first model of a hierarchy: beside a model with
-  # rows, its column carries the fit statistics alone.
-  null_cox <- vapply(
+  # A model without a predictor (`y ~ 1`, a Cox model with strata() alone,
+  # an estimatr fit that absorbs its fixed effects) has no coefficient to
+  # show, and is the legitimate first model of a hierarchy: beside a model
+  # with rows, its column carries the fit statistics alone. Its frame says
+  # so in `extras$no_coefficients`.
+  no_predictor <- vapply(
     frames,
     function(fr) isTRUE(fr$info$extras$no_coefficients),
     logical(1)
   )
   if (!all(empty_frames)) {
-    empty_frames <- empty_frames & !null_cox
-  } else if (all(null_cox)) {
+    empty_frames <- empty_frames & !no_predictor
+  } else if (all(no_predictor)) {
     spicy_abort(
       c(
-        "A Cox model without a coefficient has no row to show on its own.",
-        "i" = paste0(
-          "Give it as the first model of `nested = TRUE`, before a model ",
-          "with predictors: its column then shows the fit statistics and ",
-          "the next model its likelihood-ratio test against it."
-        )
+        "A model without a predictor has no row to show on its own.",
+        "i" = if (
+          all(vapply(
+            frames,
+            function(fr) isTRUE(fr$info$supports$nested_lrt),
+            logical(1)
+          ))
+        ) {
+          paste0(
+            "Give it as the first model of `nested = TRUE`, before a model ",
+            "with predictors: its column then shows the fit statistics and ",
+            "the next model its test against it."
+          )
+        }
       ),
       class = "spicy_invalid_input"
     )

@@ -311,6 +311,9 @@ as_regression_frame.flexsurvreg <- function(
     singular_terms = character(0),
     weighted_n = NA_real_,
     title_prefix = .flexsurv_title_prefix(dist_clean),
+    # A model without a covariate: read by the empty-table guard of
+    # table_regression().
+    no_coefficients = isTRUE(fit$ncovs == 0L),
     exp_applied = FALSE,
     exp_header = NA_character_,
     distribution = dist_clean,

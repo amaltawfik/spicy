@@ -855,3 +855,47 @@ test_that("the generic stays introspectable as an S3 generic", {
   expect_silent(m <- utils::methods("as_regression_frame"))
   expect_true(length(m) > 30L)
 })
+
+test_that("a model without a predictor is refused alone, and is the first model of a hierarchy", {
+  skip_if_not_installed("estimatr")
+  set.seed(14)
+  d <- data.frame(y = rnorm(60), x = rnorm(60), g = factor(rep(1:6, 10)))
+  m0 <- estimatr::lm_robust(y ~ 1, fixed_effects = ~g, data = d)
+  m1 <- estimatr::lm_robust(y ~ x, fixed_effects = ~g, data = d)
+  err <- expect_error(table_regression(m0), class = "spicy_invalid_input")
+  expect_match(conditionMessage(err), "without a predictor", fixed = TRUE)
+  # lm_robust has no nested test: no pointer to `nested = TRUE`.
+  expect_false(grepl("nested", conditionMessage(err), fixed = TRUE))
+  expect_no_error(table_regression(list(m0, m1), output = "data.frame"))
+
+  skip_if_not_installed("flexsurv")
+  lung <- survival::lung
+  f0 <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ 1,
+    data = lung,
+    dist = "weibull"
+  )
+  f1 <- flexsurv::flexsurvreg(
+    survival::Surv(time, status) ~ age,
+    data = lung,
+    dist = "weibull"
+  )
+  expect_error(
+    table_regression(f0),
+    "without a predictor",
+    class = "spicy_invalid_input"
+  )
+  out <- table_regression(list(f0, f1), nested = TRUE, output = "data.frame")
+  expect_true("lrt_change" %in% out$variable)
+
+  skip_if_not_installed("survey")
+  des <- survey::svydesign(ids = ~1, weights = ~1, data = lung)
+  s0 <- survey::svycoxph(survival::Surv(time, status) ~ 1, design = des)
+  s1 <- survey::svycoxph(survival::Surv(time, status) ~ age, design = des)
+  expect_error(
+    table_regression(s0),
+    "without a predictor",
+    class = "spicy_invalid_input"
+  )
+  expect_no_error(table_regression(list(s0, s1), output = "data.frame"))
+})

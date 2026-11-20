@@ -178,6 +178,12 @@ as_regression_frame.svycoxph <- function(
 # (the baseline hazard absorbs it), Wald-t at the design's residual
 # degrees of freedom.
 .svycoxph_coefs <- function(fit, ci_level, df) {
+  # A model without a predictor (`y ~ 1`) has no coefficient row: the
+  # empty frame of the schema, read by the empty-table guard of
+  # table_regression() through `extras$no_coefficients`.
+  if (length(stats::coef(fit)) == 0L) {
+    return(.empty_coefs_frame())
+  }
   est <- stats::coef(fit)
   nm <- names(est)
   # stats::vcov(fit) IS the design-based ("robust se") matrix -- the
@@ -304,6 +310,9 @@ as_regression_frame.svycoxph <- function(
     singular_terms = character(0),
     weighted_n = fit_stats$weighted_nobs,
     title_prefix = "Survey-weighted Cox proportional hazards regression",
+    # A model without a predictor: read by the empty-table guard of
+    # table_regression().
+    no_coefficients = length(stats::coef(fit)) == 0L,
     exp_applied = FALSE,
     exp_header = NA_character_,
     n_events = n_events,

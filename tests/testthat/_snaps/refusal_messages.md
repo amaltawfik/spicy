@@ -5,30 +5,11 @@
     Output
       ----
       error: spicy_empty_table, spicy_error
-        Model 1 has no rows to show.
-        i Every row the model could contribute has been switched off.
-        i Re-enable one of the row blocks (`show_thresholds`, `show_re`, `show_components`).
-      Received by 1:
-        nested = TRUE: flexsurvreg
-      ----
-      error: spicy_empty_table, spicy_error
         Model 1 has no rows to show: it has fixed effects only.
         i fixest absorbs fixed effects instead of reporting them as coefficients.
         i Add a predictor before the `|` of the formula.
       Received by 2:
         nested = TRUE: feols, fepois
-      ----
-      error: spicy_invalid_frame, spicy_error
-        Invalid regression frame: `coefs$parent_var` has wrong type.
-        x expected character, got logical
-      Received by 1:
-        nested = TRUE: lm_robust_fe
-      ----
-      error: spicy_invalid_frame, spicy_error
-        Invalid regression frame: `coefs` missing required column(s).
-        x missing: term, estimate
-      Received by 1:
-        nested = TRUE: svycoxph
       ----
       error: spicy_invalid_input, spicy_error
         AME columns are not available for `clmm`.
@@ -1943,8 +1924,16 @@
         `nested = TRUE` is not available for `lm_robust`.
         i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
         i Render the models side by side with `nested = FALSE`.
+      Received by 2:
+        nested = TRUE: lm_robust, lm_robust_fe
+      ----
+      error: spicy_invalid_input, spicy_error
+        `nested = TRUE` is not available for `svycoxph`.
+        i The change statistics compare each model with the one before it, and this class has no test of two nested fits here. One model that cannot be compared removes the comparison for the whole table.
+        i Render the models side by side with `nested = FALSE`.
+        i For a design-based fit, test a term with `survey::regTermTest(fit, ~term)`. Two nested `svyglm()` or `svycoxph()` fits are compared by `anova(fit0, fit)`.
       Received by 1:
-        nested = TRUE: lm_robust
+        nested = TRUE: svycoxph
       ----
       error: spicy_invalid_input, spicy_error
         `nested = TRUE` is not available for `svyglm`.

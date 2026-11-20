@@ -134,6 +134,12 @@ as_regression_frame.iv_robust <- function(
 # from summary(fit)$coefficients which carries Wald-t Estimate / Std.
 # Error / t value / Pr(>|t|) / CI Lower / CI Upper / DF.
 .estimatr_coefs <- function(fit, ci_level) {
+  # A model without a predictor (`y ~ 1`) has no coefficient row: the
+  # empty frame of the schema, read by the empty-table guard of
+  # table_regression() through `extras$no_coefficients`.
+  if (length(stats::coef(fit)) == 0L) {
+    return(.empty_coefs_frame())
+  }
   cf <- stats::coef(fit)
   est <- unname(cf)
   nm <- names(cf)
@@ -322,6 +328,9 @@ as_regression_frame.iv_robust <- function(
       is_iv,
       has_fe = length(fixef_sizes) > 0L
     ),
+    # A model without a predictor (`y ~ 1` with absorbed fixed effects):
+    # read by the empty-table guard of table_regression().
+    no_coefficients = length(stats::coef(fit)) == 0L,
     exp_applied = FALSE,
     exp_header = NA_character_,
     se_type = se_type,
