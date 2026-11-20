@@ -2518,9 +2518,15 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
                 f$p_style,
                 signed = isTRUE(f$fit_stat %in% .NESTED_SIGNED_TOKENS),
                 suffix = f$suffix,
+                # A fit-statistic row is a count by its own token, as in
+                # the column path below: an AIC in the Events/N column
+                # is no count.
                 group = .excel_count_group(
-                  isTRUE(f$fit_stat %in% .COUNT_FIT_TOKENS) ||
-                    isTRUE(meta$token %in% c("n", "n_events"))
+                  if (is.null(f$fit_stat)) {
+                    meta$token %in% c("n", "n_events")
+                  } else {
+                    f$fit_stat %in% .COUNT_FIT_TOKENS
+                  }
                 )
               )
             }

@@ -272,6 +272,44 @@ test_that("the rich engines carry the grouped, aligned counts", {
   expect_match(typ, "4,100", fixed = TRUE)
 })
 
+test_that("a fit statistic in the Events/N column is no count", {
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("openxlsx2")
+  d <- bm_data()
+  fit <- glm(bin ~ z, data = d, family = binomial)
+  aic <- sprintf("%.1f", stats::AIC(fit))
+  expect_gt(stats::AIC(fit), 1000)
+  sc <- c("n_events", "b", "p")
+  expect_match(
+    bm_print(table_regression(fit, style = comma, show_columns = sc)),
+    aic,
+    fixed = TRUE
+  )
+  tt <- table_regression(
+    fit,
+    style = comma,
+    show_columns = sc,
+    output = "tinytable"
+  )
+  html <- paste(tinytable::save_tt(tt, "html"), collapse = "\n")
+  expect_match(html, aic, fixed = TRUE)
+  expect_match(html, "4,100", fixed = TRUE)
+  # Excel, side by side and stacked: the AIC takes no grouped format.
+  for (layout in c("columns", "stacked")) {
+    path <- withr::local_tempfile(fileext = ".xlsx")
+    table_regression(
+      list(fit, fit),
+      layout = layout,
+      style = comma,
+      show_columns = sc,
+      output = "excel",
+      excel_path = path
+    )
+    fmts <- openxlsx2::wb_load(path)$styles_mgr$styles$numFmts
+    expect_false(any(grepl("#,##0.0", fmts, fixed = TRUE)))
+  }
+})
+
 test_that("Excel keeps a count a number, grouped by its number format", {
   skip_if_not_installed("openxlsx2")
   d <- bm_data()
