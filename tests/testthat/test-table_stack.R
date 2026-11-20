@@ -2803,6 +2803,20 @@ test_that("a panel's removed or typed note is what it brings to the stack", {
   )
   expect_match(note2, "A: Typed A.", fixed = TRUE)
   expect_false(grepl("Linear regression.", note2, fixed = TRUE))
+  # Two panels of one estimator beside it: one item, after both labels.
+  note3 <- attr(
+    table_stack(
+      A = table_regression(.st_lm(), note = "Typed A."),
+      B = t_glm,
+      C = t_glm
+    ),
+    "note"
+  )
+  expect_match(
+    note3,
+    "Std. errors: B, C: classical (Fisher information).",
+    fixed = TRUE
+  )
 })
 
 test_that("a table's note is the composition of its stored parts", {

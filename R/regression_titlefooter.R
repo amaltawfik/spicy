@@ -995,9 +995,11 @@ build_vcov_footer_block_from_frames <- function(frames) {
 
 # The standard errors sentence from the label of the estimator of each
 # model and the reference that names the model: of the side-by-side
-# table, and of the panels of a stacked table (`table_stack()`).
-.note_std_errors <- function(labels, refs) {
-  if (all(labels == labels[1])) {
+# table, and of the panels of a stacked table (`table_stack()`). `bare =
+# FALSE` names the models even when they share one estimator: a panel
+# that brings its own note is not among them.
+.note_std_errors <- function(labels, refs, bare = TRUE) {
+  if (bare && all(labels == labels[1])) {
     return(spicy_fmt("note_std_errors_single", labels[1]))
   }
   # Models with different estimators: one sentence still, each estimator
