@@ -2417,8 +2417,9 @@ build_nested_gam_footer_block_from_frames <- function(
 }
 
 
-# Pick the right one-line annotation for a single frame. NULL when
-# the frame is not a mixed-effects fit.
+# Pick the right one-line annotation for a single frame. NULL when the
+# frame is neither a mixed-effects fit, nor a selection model, nor a fit
+# tested on cluster-robust Satterthwaite df.
 #
 # Dispatch on (class, ci_method) instead of just class: lmer fits
 # are normalized to class == "lmerMod" regardless of whether
@@ -2434,11 +2435,15 @@ build_nested_gam_footer_block_from_frames <- function(
   # Satterthwaite df. (glmmTMB under CR0 / CR1 keeps its Wald z line: its
   # sandwich SEs are tested against the normal, and the Std. errors line
   # names the estimator.)
-  # An ivreg under CR1S tests on t(G - 1), which its Std. errors line names.
+  # An lm, a glm (glm.nb included) and an ivreg under CR0 to CR3 are
+  # tested the same way: clubSandwich's t with Satterthwaite df, measured
+  # fractional on every family (38.29 for an lm under CR2 where the
+  # residual df are 238; 42.62 for a logit). Under CR1S they test on
+  # t(G - 1), which their Std. errors line names.
   if (
     startsWith(vk, "CR") &&
       !identical(vk, "CR1S") &&
-      cls %in% c("lmerMod", "lme", "ivreg")
+      cls %in% c("lmerMod", "lme", "ivreg", "lm", "glm", "negbin")
   ) {
     return(spicy_str("note_pvalues_satterthwaite_cr"))
   }
