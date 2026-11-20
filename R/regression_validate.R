@@ -1390,9 +1390,9 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
             ),
             "i" = paste0(
               "Choose it through fixest: at estimation with ",
-              "fixest::feols(..., vcov = ~cluster_var) or ",
-              "vcov = \"hetero\", or afterwards with ",
-              "summary(fit, vcov = ~cluster_var)."
+              "`fixest::feols(..., vcov = ~cluster_var)` or ",
+              "`vcov = \"hetero\"`, or afterwards with ",
+              "`summary(fit, vcov = ~cluster_var)`."
             )
           ),
           class = "spicy_unsupported_vcov",
@@ -1631,8 +1631,8 @@ validate_cluster_lists <- function(
       } else if (inherits(models[[i]], "fixest")) {
         paste0(
           "fixest clusters through its own `vcov` interface: ",
-          "fixest::feols(..., vcov = ~cluster_var), or ",
-          "summary(fit, vcov = ~cluster_var)."
+          "`fixest::feols(..., vcov = ~cluster_var)`, or ",
+          "`summary(fit, vcov = ~cluster_var)`."
         )
       } else if (inherits(models[[i]], "glmmTMB")) {
         paste0(

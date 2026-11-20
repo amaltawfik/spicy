@@ -86,7 +86,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "CR0": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -295,7 +295,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "CR1": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -491,7 +491,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "CR1S": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -746,7 +746,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "CR2": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -997,7 +997,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "CR3": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -1242,7 +1242,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "HC0": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -1491,7 +1491,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "HC1": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -1740,7 +1740,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "HC2": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -1996,7 +1996,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "HC3": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -2252,7 +2252,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "HC4": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -2508,7 +2508,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "HC5": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -2764,7 +2764,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "bootstrap": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -3008,7 +3008,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "iid": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -3270,7 +3270,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "jackknife": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -3521,7 +3521,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "ker": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -3783,7 +3783,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "nid": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
@@ -4045,7 +4045,7 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `fixest` models.
         i fixest computes its own standard errors, which spicy reports unchanged; the footer names the estimator the fit carries.
-        i Choose it through fixest: at estimation with fixest::feols(..., vcov = ~cluster_var) or vcov = "hetero", or afterwards with summary(fit, vcov = ~cluster_var).
+        i Choose it through fixest: at estimation with `fixest::feols(..., vcov = ~cluster_var)` or `vcov = "hetero"`, or afterwards with `summary(fit, vcov = ~cluster_var)`.
       Received by 5:
         vcov = "rank": feols, feols_iv, feols_nofe, fepois, fepois_nofe
       ----
