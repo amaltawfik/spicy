@@ -218,3 +218,32 @@ test_that("an lm under a CR vcov names its Satterthwaite df", {
   expect_no_match(nl_note(fit, "lm", "HC3", "en"), sat, fixed = TRUE)
   expect_no_match(nl_note(fit, "lm", "CR1S", "en"), sat, fixed = TRUE)
 })
+
+test_that("model names that hold a comma are joined by a semicolon", {
+  skip_on_cran()
+  fit <- .class_fixture("lm")
+  clu <- .CLASS_FIXTURES$lm$cluster
+  clu <- if (is.function(clu)) clu(fit) else clu
+  out <- function(lang) {
+    withr::local_options(spicy.language = lang)
+    attr(
+      suppressWarnings(table_regression(
+        list("A, CR1" = fit, "A, CR1S" = fit, "A, CR2" = fit),
+        vcov = list("CR1", "CR1S", "CR2"),
+        cluster = list(clu, clu, clu),
+        output = "data.frame"
+      )),
+      "note"
+    )
+  }
+  expect_match(
+    out("en"),
+    "A, CR1; A, CR2: P-values: Satterthwaite t-test, cluster-robust df.",
+    fixed = TRUE
+  )
+  expect_match(
+    out("fr"),
+    "A, CR1 ; A, CR2 : Valeurs p :",
+    fixed = TRUE
+  )
+})

@@ -686,11 +686,9 @@ capitalize_first <- function(s) {
         function(i) .model_ref(frames, i),
         character(1)
       )
-      spicy_fmt(
-        "note_model_line",
-        paste(refs, collapse = spicy_str("note_list_sep_comma")),
-        t
-      )
+      # Names that hold a comma ("LSDV, CR1") are joined by a semicolon,
+      # as the items of the standard-errors sentence are.
+      spicy_fmt("note_model_line", .join_note_vars(refs), t)
     },
     character(1),
     USE.NAMES = FALSE
