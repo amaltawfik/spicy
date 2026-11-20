@@ -23,6 +23,7 @@ rm_tokens <- c(
   "ame_se",
   "ame_ci",
   "ame_p",
+  "ame_df",
   "rmst",
   "rmst_se",
   "rmst_ci",
@@ -78,7 +79,7 @@ rm_variant_dependent <- c(
   fixest = "^exponentiate|^show_columns = \"(ame|df\")",
   # The messages name the class, "gam" or "bam".
   gam = ".",
-  glm = "^exponentiate|^show_columns = \"(n_events|partial_|df\")|^standardized = \"pseudo",
+  glm = "^exponentiate|^show_columns = \"(n_events|partial_|df\"|ame_df)|^standardized = \"pseudo",
   glmmTMB = "^exponentiate|^show_columns = \"ame|^standardized = \"(refit|posthoc|basic|smart|pseudo)",
   survreg = "^show_columns = \"(rmst|risk_diff)",
   svyglm = "^exponentiate"

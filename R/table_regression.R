@@ -5008,11 +5008,21 @@ table_regression <- function(
       } else {
         paste0(head, "its tests are z tests, which have no degrees of freedom.")
       },
-      "i" = paste0(
-        "The column gives the degrees of freedom of t tests (`lm`, a ",
-        "`glm` whose dispersion is estimated, `nlme::lme`, a survey ",
-        "design, a cluster-robust `vcov = \"CR2\"`, ...)."
-      )
+      # The AME of an `lme()` is tested on z: the list of `ame_df` leaves
+      # it out.
+      "i" = if (identical(tk, "ame_df")) {
+        paste0(
+          "The column gives the degrees of freedom of the t tests of the ",
+          "AME (`lm`, a `glm` whose dispersion is estimated, a survey ",
+          "design, a cluster-robust `vcov = \"CR2\"`, ...)."
+        )
+      } else {
+        paste0(
+          "The column gives the degrees of freedom of t tests (`lm`, a ",
+          "`glm` whose dispersion is estimated, `nlme::lme`, a survey ",
+          "design, a cluster-robust `vcov = \"CR2\"`, ...)."
+        )
+      }
     ),
     class = "spicy_invalid_input",
     call = call

@@ -15,9 +15,10 @@
         AME columns are not available for `clmm`.
         i No average-marginal-effects backend exists for this class (see ?table_regression_models, column AME).
         i Drop the AME token(s) from `show_columns`.
-      Received by 4:
+      Received by 5:
         show_columns = "ame": clmm
         show_columns = "ame_ci": clmm
+        show_columns = "ame_df": clmm
         show_columns = "ame_p": clmm
         show_columns = "ame_se": clmm
       ----
@@ -25,9 +26,10 @@
         AME columns are not available for `fixest`.
         i Model 1: marginaleffects, which computes the AME, refuses a fixest GLM with fixed effects (`feglm()`, `fepois()`, `femlm()`, `fenegbin()`, whatever the family): it cannot take into account the uncertainty of the fixed effects, which fixest does not estimate. The AME is available for `feols()` and for a GLM without fixed effects.
         i Drop the AME token(s) from `show_columns`.
-      Received by 4:
+      Received by 5:
         show_columns = "ame": fepois
         show_columns = "ame_ci": fepois
+        show_columns = "ame_df": fepois
         show_columns = "ame_p": fepois
         show_columns = "ame_se": fepois
       ----
@@ -35,9 +37,10 @@
         AME columns are not available for `flexsurvreg`.
         i No average-marginal-effects backend exists for this class (see ?table_regression_models, column AME).
         i Drop the AME token(s) from `show_columns`.
-      Received by 4:
+      Received by 5:
         show_columns = "ame": flexsurvreg
         show_columns = "ame_ci": flexsurvreg
+        show_columns = "ame_df": flexsurvreg
         show_columns = "ame_p": flexsurvreg
         show_columns = "ame_se": flexsurvreg
       ----
@@ -45,9 +48,10 @@
         AME columns are not available for `glmmTMB`.
         i No average-marginal-effects backend exists for this class (see ?table_regression_models, column AME).
         i Drop the AME token(s) from `show_columns`.
-      Received by 4:
+      Received by 5:
         show_columns = "ame": glmmTMB_ordinal
         show_columns = "ame_ci": glmmTMB_ordinal
+        show_columns = "ame_df": glmmTMB_ordinal
         show_columns = "ame_p": glmmTMB_ordinal
         show_columns = "ame_se": glmmTMB_ordinal
       ----
@@ -55,9 +59,10 @@
         AME columns are not available for `nls`.
         i No average-marginal-effects backend exists for this class (see ?table_regression_models, column AME).
         i Drop the AME token(s) from `show_columns`.
-      Received by 4:
+      Received by 5:
         show_columns = "ame": nls
         show_columns = "ame_ci": nls
+        show_columns = "ame_df": nls
         show_columns = "ame_p": nls
         show_columns = "ame_se": nls
       ----
@@ -65,9 +70,10 @@
         AME columns are not available for `selection`.
         i No average-marginal-effects backend exists for this class (see ?table_regression_models, column AME).
         i Drop the AME token(s) from `show_columns`.
-      Received by 4:
+      Received by 5:
         show_columns = "ame": selection
         show_columns = "ame_ci": selection
+        show_columns = "ame_df": selection
         show_columns = "ame_p": selection
         show_columns = "ame_se": selection
       ----
@@ -1229,6 +1235,41 @@
         i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
       Received by 1:
         show_columns = "ame_ci": coxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_df"` in `show_columns` has no value for any model in the table: its tests are z tests, which have no degrees of freedom.
+        i The column gives the degrees of freedom of the t tests of the AME (`lm`, a `glm` whose dispersion is estimated, a survey design, a cluster-robust `vcov = "CR2"`, ...).
+      Received by 31:
+        show_columns = "ame_df": bam, betareg, clm, gam, gam_betar, gam_logit,
+            gam_nb, geeglm, glm.nb, glm_logit, glm_poisson, glm_probit, glmer,
+            glmmTMB, gls, hurdle, iv_robust, ivreg, lm_robust, lme, lmer, lrm,
+            multinom, ols, polr, rlm, rms_Glm, rq, survreg, tobit, zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_df"` in `show_columns` is not available for `mlogit` models.
+        i marginaleffects computes predictions but not slopes (average marginal effects) for mlogit's one-row-per-choice data structure.
+      Received by 1:
+        show_columns = "ame_df": mlogit
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_df"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+      Received by 1:
+        show_columns = "ame_df": cph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_df"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For a design-based Cox model, test a term with `survey::regTermTest(fit, ~term)` and read a marginal survival curve with `survey::svykm()`.
+      Received by 1:
+        show_columns = "ame_df": svycoxph
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_df"` in `show_columns` is not defined for Cox models.
+        i Average marginal effects on a Cox proportional-hazards fit are on an ambiguous survival / hazard scale with unreliable standard errors. Report hazard ratios instead with `exponentiate = TRUE`.
+        i For absolute effects, use the survival estimand columns: `show_columns = c("b", "rmst")` with `tau = `, or `"risk_diff"` with `at_time = ` (coxph).
+      Received by 1:
+        show_columns = "ame_df": coxph
       ----
       error: spicy_invalid_input, spicy_error
         Token `"ame_p"` in `show_columns` is not available for `mlogit` models.
@@ -4265,6 +4306,12 @@
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
       Received by 1:
         show_columns = "adj_r2": stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"ame_df"` in `show_columns` has no value for any model in the table: a posterior has no test.
+        i The column gives the degrees of freedom of the t tests of the AME (`lm`, a `glm` whose dispersion is estimated, a survey design, a cluster-robust `vcov = "CR2"`, ...).
+      Received by 2:
+        show_columns = "ame_df": brmsfit, stanreg
       ----
       error: spicy_invalid_input, spicy_error
         Token `"ame_p"` in `show_columns` is not defined for Bayesian fits.
