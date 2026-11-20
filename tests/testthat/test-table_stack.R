@@ -1536,7 +1536,7 @@ test_that("a stacked table names each model as the side-by-side table does", {
     standardized = "refit",
     info = "standardized error"
   )
-  expect_match(got, "model 2 (class coxph)", fixed = TRUE)
+  expect_match(got, "model 2 (class `coxph`)", fixed = TRUE)
 })
 
 test_that("singular fits and empty models are named together, once", {

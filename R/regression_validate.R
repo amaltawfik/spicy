@@ -1718,7 +1718,7 @@ validate_cluster_lists <- function(
         "x" = if (length(others)) {
           sprintf(
             "Also requested: %s.",
-            paste(.quote_val(others), collapse = ", ")
+            .fmt_tokens(others)
           )
         },
         "i" = "Use `\"none\"` alone for the fit statistics without coefficients."
@@ -1854,9 +1854,9 @@ validate_show_columns <- function(
   if (any(modeled)) {
     spicy_abort(
       c(
-        sprintf(
-          "Token(s) %s in `show_fit_stats` need a constant dispersion, but a model has covariates in its `dispformula`.",
-          paste(.quote_val(tokens), collapse = ", ")
+        .token_msg(
+          "{Tokens} in `show_fit_stats` {need} a constant dispersion, but a model has covariates in its `dispformula`.",
+          tokens
         ),
         "i" = paste0(
           "With dispersion covariates, ",
@@ -1977,7 +1977,7 @@ absorbs_fixed_effects <- function(model) {
       what <- if (all(facts$lm)) {
         "`lm` models"
       } else {
-        paste(unique(facts$label), collapse = ", ")
+        .fmt_and(unique(facts$label))
       }
       spicy_abort(
         c(
@@ -2014,7 +2014,7 @@ absorbs_fixed_effects <- function(model) {
         c(
           sprintf(
             "%s %s no %s: %s term-level test is %s.",
-            cap(paste(lost, collapse = ", ")),
+            cap(.fmt_and(lost)),
             if (length(lost) > 1L) "have" else "has",
             q(tok),
             if (length(lost) > 1L) "their" else "its",
@@ -2069,7 +2069,7 @@ absorbs_fixed_effects <- function(model) {
       c(
         sprintf(
           "`partial_type = \"III\"` needs every coefficient to be estimable, but %s %s an aliased coefficient.",
-          paste(lost, collapse = ", "),
+          .fmt_and(lost),
           if (length(lost) > 1L) "have" else "has"
         ),
         "i" = paste0(
@@ -2106,7 +2106,7 @@ absorbs_fixed_effects <- function(model) {
           "`partial_type = \"III\"` tests the equality of every level of a ",
           "factor, but ",
           if (length(reduced) > 1L) "the contrasts of " else "the contrast of ",
-          paste(reduced, collapse = ", "),
+          .fmt_and(reduced),
           if (length(reduced) > 1L) " have" else " has",
           " fewer columns than levels minus one."
         ),
@@ -2133,7 +2133,7 @@ absorbs_fixed_effects <- function(model) {
         paste0(
           "Under `partial_type = \"III\"`, a factor that interacts with a ",
           "numeric covariate is tested where the covariate is 0: ",
-          paste(pairs, collapse = ", "),
+          .fmt_and(pairs),
           "."
         ),
         "i" = paste0(
@@ -2356,9 +2356,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad) > 0L && all_gam) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are not defined for `mgcv` GAMs.",
-            paste(.quote_val(bad), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} not defined for `mgcv` GAMs.",
+            bad
           ),
           "i" = paste0(
             "spicy computes no term-level effect size or test for a GAM: ",
@@ -2421,9 +2421,9 @@ validate_class_appropriate_tokens <- function(
       }
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are not defined for `glm` models.",
-            paste(.quote_val(bad), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} not defined for `glm` models.",
+            bad
           ),
           analog
         ),
@@ -2449,9 +2449,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L && all_gam) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for `mgcv` GAMs.",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} not defined for `mgcv` GAMs.",
+            bad_fit
           ),
           .gam_r2_hint(eff_models)
         ),
@@ -2462,9 +2462,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for `glm` models.",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} not defined for `glm` models.",
+            bad_fit
           ),
           "i" = paste0(
             "Use the pseudo-R\u00B2 family instead: `\"pseudo_r2_mcfadden\"` ",
@@ -2532,11 +2532,12 @@ validate_class_appropriate_tokens <- function(
         sprintf(
           paste0(
             "spicy compares hierarchies of `%s` fits through the ",
-            "likelihood-ratio chi-square, so token(s) %s in ",
-            "`show_fit_stats` are not computed on this route."
+            "likelihood-ratio chi-square, so %s in ",
+            "`show_fit_stats` %s not computed on this route."
           ),
           class(eff_models[[1L]])[1L],
-          paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg("{tokens}", bad_fit),
+          .token_msg("{are}", bad_fit)
         ),
         "i" = paste0(
           "The nested comparison for these fits is a ",
@@ -2580,9 +2581,9 @@ validate_class_appropriate_tokens <- function(
   ) {
     spicy_abort(
       c(
-        sprintf(
-          "Token(s) %s in `show_fit_stats` are not defined for `rq` models.",
-          paste(.quote_val(bad_rq), collapse = ", ")
+        .token_msg(
+          "{Tokens} in `show_fit_stats` {are} not defined for `rq` models.",
+          bad_rq
         ),
         "i" = paste0(
           "Quantile regression partitions no sums of squares, and ",
@@ -2622,9 +2623,9 @@ validate_class_appropriate_tokens <- function(
   ) {
     spicy_abort(
       c(
-        sprintf(
-          "Token(s) %s in `show_fit_stats` are not defined for `rlm` models.",
-          paste(.quote_val(bad_rlm), collapse = ", ")
+        .token_msg(
+          "{Tokens} in `show_fit_stats` {are} not defined for `rlm` models.",
+          bad_rlm
         ),
         "i" = paste0(
           "M-estimation minimizes a bounded loss rather than a ",
@@ -2662,9 +2663,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are for `glm` models only.",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} for `glm` models only.",
+            bad_fit
           ),
           "i" = "For `lm`, use `\"r2\"`, `\"adj_r2\"`, `\"omega2\"`, or `\"f2\"`."
         ),
@@ -2697,9 +2698,9 @@ validate_class_appropriate_tokens <- function(
     if (!any_ols && all_gam) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are not defined for `mgcv` GAMs.",
-            paste(.quote_val(r2_cols), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} not defined for `mgcv` GAMs.",
+            r2_cols
           ),
           "i" = paste0(
             "The column reports the R\u00B2 of each fit of a univariable ",
@@ -2718,9 +2719,11 @@ validate_class_appropriate_tokens <- function(
       spicy_abort(
         c(
           sprintf(
-            "Token(s) %s in `show_columns` are not defined for %s models.",
-            paste(.quote_val(r2_cols), collapse = ", "),
-            paste(sprintf("`%s`", eff_classes), collapse = " / ")
+            .token_msg(
+              "{Tokens} in `show_columns` {are} not defined for %s models.",
+              r2_cols
+            ),
+            .fmt_and(sprintf("`%s`", eff_classes))
           ),
           "i" = paste0(
             "The column reports the classical R\u00B2 of the ",
@@ -2763,9 +2766,9 @@ validate_class_appropriate_tokens <- function(
     if (none_bayes) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are defined only for Bayesian fits.",
-            paste(.quote_val(bayes_fit_req), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} defined only for Bayesian fits.",
+            bayes_fit_req
           ),
           "i" = paste0(
             "They are computed from the posterior draws ",
@@ -2783,9 +2786,9 @@ validate_class_appropriate_tokens <- function(
     if (length(loo_req) > 0L && !spicy_pkg_available("loo")) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` need the loo package.",
-            paste(.quote_val(loo_req), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {need} the loo package.",
+            loo_req
           ),
           "i" = "Install loo: `install.packages(\"loo\")`."
         ),
@@ -2804,13 +2807,9 @@ validate_class_appropriate_tokens <- function(
   if (all_bayes_cols && any(c("p", "t", "ame_p") %in% show_columns)) {
     spicy_abort(
       c(
-        paste0(
-          "Token(s) ",
-          paste(
-            .quote_val(intersect(c("p", "t", "ame_p"), show_columns)),
-            collapse = ", "
-          ),
-          " in `show_columns` are not defined for Bayesian fits."
+        .token_msg(
+          "{Tokens} in `show_columns` {are} not defined for Bayesian fits.",
+          intersect(c("p", "t", "ame_p"), show_columns)
         ),
         "i" = paste0(
           "A posterior has no p-value or t-statistic (for ",
@@ -2833,7 +2832,7 @@ validate_class_appropriate_tokens <- function(
     if (!any_bayes_pd) {
       spicy_abort(
         c(
-          'Token "pd" in `show_columns` is defined only for Bayesian fits.',
+          'Token `"pd"` in `show_columns` is defined only for Bayesian fits.',
           "i" = paste0(
             "The probability of direction is a posterior-draw ",
             "summary (share of draws on the dominant side of ",
@@ -2860,9 +2859,9 @@ validate_class_appropriate_tokens <- function(
     if (!all_bayes_diag) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are shown only when every model is Bayesian.",
-            paste(.quote_val(diag_cols), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} shown only when every model is Bayesian.",
+            diag_cols
           ),
           "i" = paste0(
             "R-hat, ESS and MCSE are sampler diagnostics of ",
@@ -2909,9 +2908,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for Bayesian fits.",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} not defined for Bayesian fits.",
+            bad_fit
           ),
           "i" = paste0(
             "Posterior fits have no likelihood-based information ",
@@ -2942,14 +2941,14 @@ validate_class_appropriate_tokens <- function(
     if (!any(is_nb2)) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are defined only for NB2 negative-binomial fits (`MASS::glm.nb()`, `lme4::glmer.nb()`, `fixest::fenegbin()`, mgcv `nb()`, pscl `zeroinfl()` or `hurdle()` with `dist = \"negbin\"`, glmmTMB `nbinom2`), and no model in the table is one.",
-            paste(.quote_val(nb2_tokens), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} defined only for NB2 negative-binomial fits (`MASS::glm.nb()`, `lme4::glmer.nb()`, `fixest::fenegbin()`, mgcv `nb()`, pscl `zeroinfl()` or `hurdle()` with `dist = \"negbin\"`, glmmTMB `nbinom2`), and no model in the table is one.",
+            nb2_tokens
           ),
           "i" = paste0(
             "theta is the NB2 dispersion (V = mu + mu\u00B2/theta) and ",
             "alpha its reciprocal. An NB1 fit (glmmTMB `nbinom1`) ",
-            "reports 'delta' instead; other families have no such ",
+            "reports `\"delta\"` instead; other families have no such ",
             "parameter."
           ),
           "i" = paste0(
@@ -2971,14 +2970,14 @@ validate_class_appropriate_tokens <- function(
       spicy_abort(
         c(
           paste0(
-            "Token 'delta' in `show_fit_stats` is defined only for NB1 ",
+            "Token `\"delta\"` in `show_fit_stats` is defined only for NB1 ",
             "negative-binomial fits (glmmTMB `nbinom1`, ",
             "`truncated_nbinom1`), and no model in the table is one."
           ),
           "i" = paste0(
             "delta is the NB1 dispersion (V = mu(1 + delta), Stata's ",
-            "`nbreg, dispersion(constant)`). An NB2 fit reports 'theta' ",
-            "and 'alpha' instead; other families have no such parameter."
+            "`nbreg, dispersion(constant)`). An NB2 fit reports `\"theta\"` ",
+            "and `\"alpha\"` instead; other families have no such parameter."
           )
         ),
         class = "spicy_invalid_input",
@@ -2994,7 +2993,7 @@ validate_class_appropriate_tokens <- function(
       spicy_abort(
         c(
           paste0(
-            "Token 'phi' in `show_fit_stats` is defined only ",
+            "Token `\"phi\"` in `show_fit_stats` is defined only ",
             "for fits with a beta precision (`betareg::betareg()`, ",
             "mgcv `betar()`, glmmTMB `beta_family()`, `betabinomial()`, ",
             "`ordbeta()`), and no model in the table is one."
@@ -3036,7 +3035,7 @@ validate_class_appropriate_tokens <- function(
       spicy_abort(
         c(
           paste0(
-            "Token 'phi' needs a constant precision, but a ",
+            "Token `\"phi\"` needs a constant precision, but a ",
             "model has covariates on the precision ",
             "(`y ~ x | z`, or a glmmTMB `dispformula`)."
           ),
@@ -3064,17 +3063,17 @@ validate_class_appropriate_tokens <- function(
     if (!any_fe) {
       spicy_abort(
         c(
-          sprintf(
+          .token_msg(
             paste0(
-              "Token(s) %s in `show_fit_stats` are defined only for fits ",
+              "{Tokens} in `show_fit_stats` {are} defined only for fits ",
               "that absorb fixed effects (fixest, or estimatr with ",
               "`fixed_effects =`)."
             ),
-            paste(.quote_val(fixest_tokens), collapse = ", ")
+            fixest_tokens
           ),
           "i" = paste0(
-            "'fixed_effects' discloses the absorbed fixed effects ",
-            "(one Yes/No row per factor) and 'within_r2' is the ",
+            "`\"fixed_effects\"` discloses the absorbed fixed effects ",
+            "(one Yes/No row per factor) and `\"within_r2\"` is the ",
             "FE-partialed R-squared; other classes have neither."
           )
         ),
@@ -3096,14 +3095,14 @@ validate_class_appropriate_tokens <- function(
     if (!any_gee) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are defined only for GEE fits (`geepack::geeglm`).",
-            paste(.quote_val(gee_tokens), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} defined only for GEE fits (`geepack::geeglm`).",
+            gee_tokens
           ),
           "i" = paste0(
-            "'qic' / 'qicu' are the quasi-likelihood information ",
-            "criteria (Pan 2001), 'scale' the estimated scale ",
-            "(dispersion) parameter, and 'max_cluster_size' the ",
+            "`\"qic\"` / `\"qicu\"` are the quasi-likelihood information ",
+            "criteria (Pan 2001), `\"scale\"` the estimated scale ",
+            "(dispersion) parameter, and `\"max_cluster_size\"` the ",
             "largest cluster in the estimation sample."
           )
         ),
@@ -3140,9 +3139,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for GEE fits (`geeglm`).",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} not defined for GEE fits (`geeglm`).",
+            bad_fit
           ),
           "i" = paste0(
             "GEE is estimated by quasi-likelihood: no likelihood, so ",
@@ -3159,9 +3158,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_cols) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are not defined for GEE fits (`geeglm`).",
-            paste(.quote_val(bad_cols), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} not defined for GEE fits (`geeglm`).",
+            bad_cols
           ),
           "i" = paste0(
             "The partial likelihood-ratio chi-square, the partial F and ",
@@ -3204,9 +3203,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for mixed-effects models.",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} not defined for mixed-effects models.",
+            bad_fit
           ),
           "i" = paste0(
             "Classical / pseudo R^2 do not apply to mixed-effects models. ",
@@ -3225,9 +3224,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_cols) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are not defined for mixed-effects models.",
-            paste(.quote_val(bad_cols), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} not defined for mixed-effects models.",
+            bad_cols
           ),
           "i" = paste0(
             "Variance-explained partials do not apply to mixed models. For a ",
@@ -3253,9 +3252,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are not defined for Cox models.",
-            paste(.quote_val(bad), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} not defined for Cox models.",
+            bad
           ),
           "i" = paste0(
             "Average marginal effects on a Cox proportional-hazards fit are ",
@@ -3307,9 +3306,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for the families of these `mgcv` GAMs.",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} not defined for the families of these `mgcv` GAMs.",
+            bad_fit
           ),
           "i" = paste0(
             "A GAM has the R\u00B2 of the glm of its family. Tjur's needs ",
@@ -3354,9 +3353,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_fit_stats` are not defined for survey-design fits.",
-            paste(.quote_val(bad_fit), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_fit_stats` {are} not defined for survey-design fits.",
+            bad_fit
           ),
           "i" = paste0(
             "A design-based fit is estimated without a likelihood.",
@@ -3386,7 +3385,7 @@ validate_class_appropriate_tokens <- function(
     spicy_abort(
       c(
         paste0(
-          "Token 'concordance' in `show_fit_stats` is defined only for ",
+          "Token `\"concordance\"` in `show_fit_stats` is defined only for ",
           "`survival::coxph()` and `survey::svycoxph()` fits, and no ",
           "model in the table is one."
         ),
@@ -3439,9 +3438,9 @@ validate_class_appropriate_tokens <- function(
       spicy_abort(
         c(
           paste0(
-            "Token 'pseudo_r2_tjur' in `show_fit_stats` is defined only ",
+            "Token `\"pseudo_r2_tjur\"` in `show_fit_stats` is defined only ",
             "for binomial models (binary outcomes), and no model in the ",
-            "set is a binomial-family `glm` or a binary `rms::lrm()`."
+            "table is a binomial-family `glm` or a binary `rms::lrm()`."
           ),
           "i" = paste0(
             "Tjur's R\u00B2 (2009) is mean(fitted | y = 1) - ",
@@ -3498,13 +3497,13 @@ validate_class_appropriate_tokens <- function(
   ) {
     spicy_abort(
       c(
-        sprintf(
+        .token_msg(
           paste0(
-            "Token(s) %s in `show_fit_stats` are not defined for a `glm` ",
+            "{Tokens} in `show_fit_stats` {are} not defined for a `glm` ",
             "or GAM of a continuous family (gaussian, Gamma, inverse ",
             "Gaussian, Tweedie)."
           ),
-          paste(.quote_val(lr_req), collapse = ", ")
+          lr_req
         ),
         "i" = paste0(
           "They are built on the log-likelihood of a density, which ",
@@ -3545,7 +3544,7 @@ validate_class_appropriate_tokens <- function(
     spicy_abort(
       c(
         paste0(
-          "Token 'r2_deviance' in `show_fit_stats` is defined only for ",
+          "Token `\"r2_deviance\"` in `show_fit_stats` is defined only for ",
           "`glm` and `mgcv` GAM families other than the binomial, and no ",
           "model in the table is one."
         ),
@@ -3578,9 +3577,9 @@ validate_class_appropriate_tokens <- function(
     if (length(bad) > 0L) {
       spicy_abort(
         c(
-          sprintf(
-            "Token(s) %s in `show_columns` are not available for mlogit models.",
-            paste(.quote_val(bad), collapse = ", ")
+          .token_msg(
+            "{Tokens} in `show_columns` {are} not available for `mlogit` models.",
+            bad
           ),
           "i" = paste0(
             "marginaleffects computes predictions but not slopes (average ",
@@ -3674,7 +3673,7 @@ expand_show_columns <- function(
         sprintf(
           "  `\"%s\"` -> %s",
           old,
-          paste(.quote_val(new_tok), collapse = " + ")
+          paste0("`", .quote_val(new_tok), "`", collapse = " + ")
         )
       },
       character(1)
@@ -3688,9 +3687,9 @@ expand_show_columns <- function(
         "i" = "Replacement(s):",
         msgs,
         "i" = paste0(
-          "Or use a group token: \"all_b\" / ",
-          "\"all_b_compact\" / \"all_ame\" / ",
-          "\"all_f2\" / \"all_eta2\" / \"all_omega2\"."
+          "Or use a group token: `\"all_b\"` / ",
+          "`\"all_b_compact\"` / `\"all_ame\"` / ",
+          "`\"all_f2\"` / `\"all_eta2\"` / `\"all_omega2\"`."
         )
       ),
       class = "spicy_invalid_input",
@@ -3746,9 +3745,9 @@ validate_token_vector <- function(x, valid, arg, call = rlang::caller_env()) {
     dups <- unique(x[duplicated(x)])
     spicy_abort(
       sprintf(
-        "`%s` contains duplicate token(s): %s.",
+        "`%s` contains the duplicate %s.",
         arg,
-        paste(.quote_val(dups), collapse = ", ")
+        .token_msg("{tokens}", dups)
       ),
       class = "spicy_invalid_input",
       call = call
@@ -3759,14 +3758,11 @@ validate_token_vector <- function(x, valid, arg, call = rlang::caller_env()) {
     spicy_abort(
       c(
         sprintf(
-          "Unknown token(s) in `%s`: %s.",
-          arg,
-          paste(.quote_val(bad), collapse = ", ")
+          "%s in `%s`.",
+          .token_msg("Unknown {tokens}", bad),
+          arg
         ),
-        "i" = sprintf(
-          "Valid tokens: %s.",
-          paste(.quote_val(valid), collapse = ", ")
-        )
+        "i" = sprintf("Valid tokens: %s.", .fmt_tokens(valid))
       ),
       class = "spicy_invalid_input",
       call = call

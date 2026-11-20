@@ -338,7 +338,7 @@ test_that("a multi-model estimand request names the offending model and class", 
   m2 <- stats::lm(time ~ sexf, data = d)
   expect_error(
     table_regression(list(m1, m2), show_columns = c("b", "rmst"), tau = 365),
-    "RMST / risk-difference columns are not available for model 1 (class lm).",
+    "RMST / risk-difference columns are not available for model 1 (class `lm`).",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )
@@ -354,7 +354,7 @@ test_that("the same refusal on a single model names the class only", {
       show_columns = c("b", "rmst"),
       tau = 365
     ),
-    "RMST / risk-difference columns are not available for this model class (lm).",
+    "RMST / risk-difference columns are not available for this model class (`lm`).",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )
@@ -371,7 +371,7 @@ test_that("a Cox model later in a mixed list is still named by position", {
       tau = 365,
       boot_n = 4
     ),
-    "not available for model 2 (class lm)",
+    "not available for model 2 (class `lm`)",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )
@@ -403,7 +403,7 @@ test_that("AME refusal on a coxph + nls table points at the RMST columns", {
   msg <- conditionMessage(err)
   expect_match(
     msg,
-    "AME columns are not available for `coxph` / `nls`.",
+    "AME columns are not available for `coxph` and `nls`.",
     fixed = TRUE
   )
   expect_match(

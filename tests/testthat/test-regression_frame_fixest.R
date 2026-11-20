@@ -1579,7 +1579,7 @@ test_that("an IV feols shows the structural R-squared of ivreg when asked", {
   # The within R-squared has no structural version: the token is refused.
   expect_error(
     table_regression(ivfe, show_fit_stats = c("nobs", "within_r2")),
-    "Token \"within_r2\"",
+    "Token `\"within_r2\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

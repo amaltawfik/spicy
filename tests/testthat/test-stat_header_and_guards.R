@@ -135,7 +135,7 @@ test_that("AME request on an incapable class is refused, not an empty column", {
   # wildcard per quote.
   expect_match(
     conditionMessage(err_cox),
-    "Token\\(s\\) .ame. in `show_columns` are not defined for Cox models\\."
+    "Token .{2}ame.{2} in `show_columns` is not defined for Cox models\\."
   )
 
   # Classes without a specific refusal hit the universal supports$ame

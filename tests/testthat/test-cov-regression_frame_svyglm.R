@@ -189,7 +189,7 @@ test_that("a no-intercept quasibinomial svyglm has no AIC, and says nothing", {
       show_columns = c("b"),
       show_fit_stats = c("nobs", "aic", "eff_p")
     ),
-    "Tokens \"aic\" and \"eff_p\"",
+    "Tokens `\"aic\"` and `\"eff_p\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

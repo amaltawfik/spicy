@@ -91,7 +91,7 @@ test_that("Bayesian-only fit statistics need a Bayesian model", {
   )
   expect_match(
     conditionMessage(err),
-    "Token(s) \"r2_bayes\" in `show_fit_stats` are defined only for Bayesian fits.",
+    "Token `\"r2_bayes\"` in `show_fit_stats` is defined only for Bayesian fits.",
     fixed = TRUE
   )
 
@@ -105,7 +105,11 @@ test_that("Bayesian-only fit statistics need a Bayesian model", {
     ),
     class = "spicy_invalid_input"
   )
-  expect_match(conditionMessage(err2), "\"looic\", \"waic\"", fixed = TRUE)
+  expect_match(
+    conditionMessage(err2),
+    "`\"looic\"` and `\"waic\"`",
+    fixed = TRUE
+  )
 
   # An EMPTY model set takes the same arm (`length(models) == 0L`).
   expect_error(
@@ -143,7 +147,7 @@ test_that("p, t and ame_p are refused when every model is Bayesian", {
   msg <- conditionMessage(err)
   expect_match(
     msg,
-    "Token(s) \"p\" in `show_columns` are not defined for Bayesian fits.",
+    "Token `\"p\"` in `show_columns` is not defined for Bayesian fits.",
     fixed = TRUE
   )
   # The hint names the posterior substitute rather than leaving the
@@ -161,7 +165,7 @@ test_that("p, t and ame_p are refused when every model is Bayesian", {
     ),
     class = "spicy_invalid_input"
   )
-  expect_match(conditionMessage(err2), "\"t\", \"ame_p\"", fixed = TRUE)
+  expect_match(conditionMessage(err2), "`\"t\"` and `\"ame_p\"`", fixed = TRUE)
 })
 
 
@@ -188,7 +192,7 @@ test_that("the pd column is refused when no model is Bayesian", {
   msg <- conditionMessage(err)
   expect_match(
     msg,
-    "Token \"pd\" in `show_columns` is defined only for Bayesian fits.",
+    "Token `\"pd\"` in `show_columns` is defined only for Bayesian fits.",
     fixed = TRUE
   )
   expect_match(msg, "share of draws on the dominant side of zero", fixed = TRUE)
@@ -231,7 +235,7 @@ test_that("sampler-diagnostic columns need every model to be Bayesian", {
   msg <- conditionMessage(err)
   expect_match(
     msg,
-    "Token(s) \"rhat\" in `show_columns` are shown only when every model is Bayesian.",
+    "Token `\"rhat\"` in `show_columns` is shown only when every model is Bayesian.",
     fixed = TRUE
   )
   expect_match(msg, "sampler diagnostics", fixed = TRUE)
@@ -249,7 +253,11 @@ test_that("sampler-diagnostic columns need every model to be Bayesian", {
     ),
     class = "spicy_invalid_input"
   )
-  expect_match(conditionMessage(err2), "\"ess_bulk\", \"mcse\"", fixed = TRUE)
+  expect_match(
+    conditionMessage(err2),
+    "`\"ess_bulk\"` and `\"mcse\"`",
+    fixed = TRUE
+  )
 
   # All Bayesian: the same tokens pass.
   expect_no_error(
@@ -272,7 +280,7 @@ test_that("likelihood-based fit statistics are refused for Bayesian fits", {
   msg <- conditionMessage(err)
   expect_match(
     msg,
-    "Token(s) \"aic\" in `show_fit_stats` are not defined for Bayesian fits.",
+    "Token `\"aic\"` in `show_fit_stats` is not defined for Bayesian fits.",
     fixed = TRUE
   )
   # The hint routes to loo rather than to a table column.
@@ -289,7 +297,7 @@ test_that("likelihood-based fit statistics are refused for Bayesian fits", {
   )
   expect_match(
     conditionMessage(err2),
-    "\"bic\", \"sigma\", \"rmse\"",
+    "`\"bic\"`, `\"sigma\"` and `\"rmse\"`",
     fixed = TRUE
   )
 

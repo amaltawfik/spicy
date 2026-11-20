@@ -103,7 +103,7 @@ test_that("expand_show_columns – legacy uppercase token errors with replacemen
   # are the same on every platform and CAN be pinned. (Under `shQuote()`
   # this assertion was green on Windows and red on Unix, which is why the
   # quotes used to be left out of the pin.)
-  expect_match(msg, "-> \"ame\"", fixed = TRUE)
+  expect_match(msg, "-> `\"ame\"`", fixed = TRUE)
 })
 
 

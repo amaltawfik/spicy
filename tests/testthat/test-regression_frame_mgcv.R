@@ -736,7 +736,7 @@ test_that("a betar() GAM has the phi of betareg and glmmTMB, and no sigma", {
       list(betareg = br, GAM = fit),
       show_fit_stats = c("phi", "sigma")
     ),
-    "Token \"sigma\"",
+    "Token `\"sigma\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )
@@ -796,7 +796,7 @@ test_that("an extended family shows sigma only when the GAM estimates a scale", 
   # Alone in the table, the sigma row has no value: the token is refused.
   expect_error(
     table_regression(fixed$scat, show_fit_stats = c("nobs", "sigma")),
-    "Token \"sigma\"",
+    "Token `\"sigma\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

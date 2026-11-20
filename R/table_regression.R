@@ -3417,7 +3417,7 @@ table_regression <- function(
       } else {
         sprintf(
           "AME columns are not available for %s.",
-          paste0("`", classes, "`", collapse = " / ")
+          .fmt_and(paste0("`", classes, "`"))
         )
       }
       hint_reml <- if (any(reml)) {
@@ -3523,7 +3523,7 @@ table_regression <- function(
         c(
           sprintf(
             "Partial effect-size columns are not available for %s.",
-            paste0("`", classes, "`", collapse = " / ")
+            .fmt_and(paste0("`", classes, "`"))
           ),
           "i" = paste0(
             "The term-level partial effect size is defined here for the ",
@@ -3573,7 +3573,7 @@ table_regression <- function(
         c(
           sprintf(
             "`nested = TRUE` is not available for %s.",
-            paste0("`", classes, "`", collapse = " / ")
+            .fmt_and(paste0("`", classes, "`"))
           ),
           "i" = paste0(
             "The change statistics of a hierarchy (\u0394R\u00B2, partial ",
@@ -4282,13 +4282,13 @@ table_regression <- function(
 }
 
 # How a message about one model names it: "model 2 (class glm)" among
-# several, "this model class (glm)" in a table of one.
+# several, "this model class (`glm`)" in a table of one.
 .reg_model_tag <- function(models, i, panel = NULL) {
   cls <- class(models[[i]])[1L]
   if (.reg_model_count(length(models), panel) > 1L) {
-    sprintf("model %d (class %s)", .reg_model_index(i, panel), cls)
+    sprintf("model %d (class `%s`)", .reg_model_index(i, panel), cls)
   } else {
-    sprintf("this model class (%s)", cls)
+    sprintf("this model class (`%s`)", cls)
   }
 }
 
@@ -4696,25 +4696,25 @@ table_regression <- function(
       )
       if (!any(weighted)) {
         paste0(
-          "`weighted_nobs` is the weighted count of a model fitted with ",
+          "`\"weighted_nobs\"` is the weighted count of a model fitted with ",
           "weights or on a survey design."
         )
       }
     },
     n_events = if (!any_of(c("coxph", "cph"))) {
-      "`n_events` counts the events of a Cox model."
+      "`\"n_events\"` counts the events of a Cox model."
     },
     icc = ,
     r2_marginal = ,
     r2_conditional = if (!any_of(mixed)) {
       sprintf(
-        "`%s` is computed for the mixed models of lme4, glmmTMB and nlme.",
+        "`\"%s\"` is computed for the mixed models of lme4, glmmTMB and nlme.",
         tk
       )
     },
     n_groups = if (!any_of(c(mixed, "clmm", "geeglm", "fixest"))) {
       paste0(
-        "`n_groups` counts the groups of a mixed model or a GEE, or the ",
+        "`\"n_groups\"` counts the groups of a mixed model or a GEE, or the ",
         "fixed effects a fixest model absorbs."
       )
     },
@@ -4723,11 +4723,11 @@ table_regression <- function(
     # frames were built. The token is without a row here only when such a
     # model was fitted without fixed effects.
     fixed_effects = paste0(
-      "`fixed_effects` lists the fixed effects a model absorbs, and no ",
+      "`\"fixed_effects\"` lists the fixed effects a model absorbs, and no ",
       "model in the table absorbs any."
     ),
     eff_p = if (!any_of("svyglm")) {
-      "`eff_p` is the effective number of parameters of a `svyglm()` design."
+      "`\"eff_p\"` is the effective number of parameters of a `svyglm()` design."
     },
     NULL
   )
@@ -4752,23 +4752,16 @@ table_regression <- function(
   if (length(absent) == 0L) {
     return(invisible(NULL))
   }
-  quote_tokens <- function(x) {
-    q <- paste0("\"", x, "\"")
-    if (length(q) == 1L) {
-      return(q)
-    }
-    paste(paste(q[-length(q)], collapse = ", "), "and", q[length(q)])
-  }
   change <- intersect(absent, .NESTED_CHANGE_TOKENS)
   if (!nested && length(change) > 0L) {
     spicy_abort(
       c(
         sprintf(
-          "%s %s in `show_fit_stats` %s adjacent models: %s `nested = TRUE` and at least two models.",
-          if (length(change) == 1L) "Token" else "Tokens",
-          quote_tokens(change),
-          if (length(change) == 1L) "compares" else "compare",
-          if (length(change) == 1L) "it needs" else "they need"
+          .token_msg(
+            "{Tokens} in `show_fit_stats` %s adjacent models: {they} {need} `nested = TRUE` and at least two models.",
+            change
+          ),
+          if (length(change) == 1L) "compares" else "compare"
         ),
         "i" = "Pass the models from the smallest to the largest, with `nested = TRUE`."
       ),
@@ -4781,7 +4774,7 @@ table_regression <- function(
     spicy_abort(
       c(
         paste0(
-          "Token 'log_lik' in `show_fit_stats` needs a likelihood, and no ",
+          "Token `\"log_lik\"` in `show_fit_stats` needs a likelihood, and no ",
           "model in the table has one."
         ),
         "i" = .reg_token_domain_reason("log_lik", models)
@@ -4799,11 +4792,9 @@ table_regression <- function(
   ))
   spicy_abort(
     c(
-      sprintf(
-        "%s %s in `show_fit_stats` %s no value for any model in the table.",
-        if (length(absent) == 1L) "Token" else "Tokens",
-        quote_tokens(absent),
-        if (length(absent) == 1L) "has" else "have"
+      .token_msg(
+        "{Tokens} in `show_fit_stats` {have} no value for any model in the table.",
+        absent
       ),
       if (any(given)) {
         stats::setNames(unlist(reasons[given]), rep("i", sum(given)))

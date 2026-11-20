@@ -143,6 +143,43 @@ spicy_abort <- function(
 # that quotes a value goes through here.
 .quote_val <- function(x) encodeString(as.character(x), quote = "\"")
 
+# An enumeration as the messages write it: "a", "a and b", "a, b and c"
+# (a list of alternatives: `conj = "or"`).
+.fmt_and <- function(x, conj = "and") {
+  n <- length(x)
+  if (n <= 1L) {
+    return(paste(x, collapse = ""))
+  }
+  paste(paste(x[-n], collapse = ", "), conj, x[n])
+}
+
+# A token of `show_columns` or `show_fit_stats` as the code writes it,
+# `"aic"`, and a list of them as an enumeration.
+.fmt_tokens <- function(x, conj = "and") {
+  .fmt_and(paste0("`", .quote_val(x), "`"), conj)
+}
+
+# A message about tokens, in one form for one token or several: in
+# `template`, "{Tokens}" (or "{tokens}") becomes `Token `"x"`` or
+# `Tokens `"x"` and `"y"``, and "{are}", "{have}", "{need}", "{they}"
+# agree with the number. Any other "%s" of the template is left to the
+# caller's sprintf().
+.token_msg <- function(template, tokens) {
+  one <- length(tokens) == 1L
+  subs <- c(
+    "{Tokens}" = paste(if (one) "Token" else "Tokens", .fmt_tokens(tokens)),
+    "{tokens}" = paste(if (one) "token" else "tokens", .fmt_tokens(tokens)),
+    "{are}" = if (one) "is" else "are",
+    "{have}" = if (one) "has" else "have",
+    "{need}" = if (one) "needs" else "need",
+    "{they}" = if (one) "it" else "they"
+  )
+  for (k in names(subs)) {
+    template <- gsub(k, subs[[k]], template, fixed = TRUE)
+  }
+  template
+}
+
 
 # Symmetric helper for non-fatal conditions. Wraps `rlang::warn()`
 # to attach the package-wide `spicy_warning` parent class. Callers

@@ -430,7 +430,7 @@ test_that("an unweighted fit has no weighted count, and does not invent one", {
       show_columns = c("b"),
       show_fit_stats = c("nobs", "weighted_nobs")
     ),
-    "Token \"weighted_nobs\"",
+    "Token `\"weighted_nobs\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

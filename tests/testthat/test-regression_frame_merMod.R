@@ -794,7 +794,7 @@ test_that("every negative-binomial glmer shows its theta, as lme4 counts it", {
       list(NB = nb, Fixed = fixed),
       show_fit_stats = c("theta", "sigma")
     ),
-    "Token \"sigma\"",
+    "Token `\"sigma\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )
@@ -835,7 +835,7 @@ test_that("nested glmer.nb() built with update(): theta in every column", {
   }
   expect_error(
     table_regression(fits, nested = TRUE, show_fit_stats = c("nobs", "sigma")),
-    "Token \"sigma\"",
+    "Token `\"sigma\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

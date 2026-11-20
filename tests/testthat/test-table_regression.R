@@ -3995,7 +3995,7 @@ test_that("show_columns = \"none\" refuses what it cannot show", {
   )
   expect_error(
     table_regression(fit, show_columns = "none", show_fit_stats = "n_events"),
-    "Token \"n_events\"",
+    "Token `\"n_events\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

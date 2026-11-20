@@ -339,7 +339,7 @@ test_that("survreg: sigma is the AFT scale, blank with one scale per stratum", {
   expect_true(is.na(fr_s$info$extras$scale_parameter))
   expect_error(
     table_regression(fit_s, show_fit_stats = c("nobs", "sigma")),
-    "Token \"sigma\"",
+    "Token `\"sigma\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

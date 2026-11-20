@@ -428,7 +428,7 @@ test_that("a term-level token no model of the table carries is refused", {
     expect_s3_class(err, "spicy_invalid_input")
     expect_match(
       conditionMessage(err),
-      "Token `\"partial_f\"` in `show_columns` is not defined for model 1 (`coxph`), model 2 (`glm`, poisson).",
+      "Token `\"partial_f\"` in `show_columns` is not defined for model 1 (`coxph`) and model 2 (`glm`, poisson).",
       fixed = TRUE
     )
   }

@@ -107,7 +107,7 @@ test_that("glm.nb: the sigma cell is blank", {
   # Alone in the table, the sigma row has no value: the token is refused.
   expect_error(
     table_regression(fit, show_fit_stats = c("nobs", "sigma")),
-    "Token \"sigma\"",
+    "Token `\"sigma\"`",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )

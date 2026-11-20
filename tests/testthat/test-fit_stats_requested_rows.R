@@ -274,7 +274,7 @@ test_that("a token named in the call without a value is refused, naming it", {
   msg <- conditionMessage(err)
   expect_match(
     msg,
-    "Token \"icc\" in `show_fit_stats` has no value",
+    "Token `\"icc\"` in `show_fit_stats` has no value",
     fixed = TRUE
   )
   expect_match(msg, "mixed models of lme4, glmmTMB and nlme", fixed = TRUE)
@@ -293,7 +293,7 @@ test_that("several tokens are named in one message, with their reasons", {
   msg <- conditionMessage(err)
   expect_match(
     msg,
-    "Tokens \"n_events\", \"eff_p\" and \"weighted_nobs\" in `show_fit_stats` have no value",
+    "Tokens `\"n_events\"`, `\"eff_p\"` and `\"weighted_nobs\"` in `show_fit_stats` have no value",
     fixed = TRUE
   )
   expect_match(msg, "events of a Cox model", fixed = TRUE)
@@ -369,7 +369,7 @@ test_that("a change token needs nested = TRUE and two models", {
   )
   expect_match(
     conditionMessage(err),
-    "Token \"r2_change\" in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.",
+    "Token `\"r2_change\"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.",
     fixed = TRUE
   )
   expect_identical(deparse(conditionCall(err)[[1L]]), "table_regression")
@@ -379,7 +379,7 @@ test_that("a change token needs nested = TRUE and two models", {
   )
   expect_match(
     conditionMessage(err),
-    "Tokens \"r2_change\" and \"f_change\"",
+    "Tokens `\"r2_change\"` and `\"f_change\"`",
     fixed = TRUE
   )
   expect_no_error(table_regression(
@@ -437,7 +437,7 @@ test_that("table_regression_uv() refuses a token, naming the screen", {
     ),
     class = "spicy_invalid_input"
   )
-  expect_match(conditionMessage(err), "Token \"icc\"", fixed = TRUE)
+  expect_match(conditionMessage(err), "Token `\"icc\"`", fixed = TRUE)
   expect_identical(deparse(conditionCall(err)[[1L]]), "table_regression_uv")
   err <- expect_error(
     table_regression_uv(
