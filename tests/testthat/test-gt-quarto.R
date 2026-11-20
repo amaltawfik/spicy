@@ -160,6 +160,65 @@ test_that("the Typst header edit gives back a table of another shape", {
   expect_identical(out, g)
 })
 
+test_that("a knit to Typst rules each model spanner, and only there", {
+  skip_if_not_installed("gt")
+  # With a CI, the labels lifted into one-column spanners stay spanners.
+  g <- table_regression(
+    list(
+      A = stats::lm(bmi ~ age + sex, data = sochealth),
+      B = stats::lm(wellbeing_score ~ age + sex, data = sochealth)
+    ),
+    output = "gt",
+    show_columns = c("b", "ci", "p")
+  )
+  spanner_cells <- function(html) {
+    regmatches(
+      html,
+      gregexpr("<th [^>]*id=\"[a-z]+_span_[^\"]*\">", html)
+    )[[1L]]
+  }
+  rule <- paste(
+    "border-bottom-width: 1px; border-bottom-style: solid;",
+    "border-bottom-color: #333333;"
+  )
+  typst <- .gtq_knit(g, "typst")
+  model <- grep("id=\"model_span_", spanner_cells(typst), value = TRUE)
+  expect_length(model, 2L)
+  expect_true(all(grepl(rule, model, fixed = TRUE)))
+  # The labels lifted into one-column spanners take no rule.
+  lifted <- grep("id=\"col_span_", spanner_cells(typst), value = TRUE)
+  expect_gt(length(lifted), 0L)
+  expect_false(any(grepl(rule, lifted, fixed = TRUE)))
+  # HTML and LaTeX keep their own rules: the edit is not made there.
+  html_model <- grep(
+    "id=\"model_span_",
+    spanner_cells(.gtq_knit(g, "html")),
+    value = TRUE
+  )
+  expect_length(html_model, 2L)
+  expect_false(any(grepl(rule, html_model, fixed = TRUE)))
+  local({
+    local_mocked_bindings(
+      .spicy_gt_typst_spanner_rules = function(x) stop("Typst only")
+    )
+    expect_no_error(.gtq_knit(g, "html"))
+    expect_no_error(.gtq_knit(g, "latex"))
+  })
+  # A table without model spanners, or a call of gt that fails or warns:
+  # the table as it came, silently.
+  one <- table_regression(stats::lm(bmi ~ age, data = sochealth), output = "gt")
+  expect_identical(.spicy_gt_typst_spanner_rules(one), one)
+  local_mocked_bindings(tab_style = function(...) stop("gt"), .package = "gt")
+  expect_no_condition(out <- .spicy_gt_typst_spanner_rules(g))
+  expect_identical(out, g)
+  local_mocked_bindings(
+    tab_style = function(...) warning("gt"),
+    .package = "gt"
+  )
+  expect_no_condition(out <- .spicy_gt_typst_spanner_rules(g))
+  expect_identical(out, g)
+})
+
 test_that("a knit to Typst leaves the table to Quarto's processing", {
   skip_if_not_installed("gt")
   for (g in .gtq_tables()) {

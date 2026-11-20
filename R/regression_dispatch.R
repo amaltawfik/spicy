@@ -1427,6 +1427,36 @@ output_gt <- function(rendered) {
   if (inherits(out, "gt_tbl")) out else x
 }
 
+# The rule under each model spanner of a gt table knitted to Typst. gt
+# draws it on a `<span class="gt_column_spanner">` inside the cell, and
+# spicy insets it in HTML (`.spicy_gt_header_css()`); Quarto writes the
+# Typst table from the inline styles of the cells, not from that class,
+# and the rule was lost. An inline bottom border of the model spanners,
+# the 1px #333333 of the other rules, becomes a stroke of the cell. It
+# runs the width of the group: the rules of adjacent models meet, as in
+# the flextable output. A call of gt that fails or warns gives the table
+# back as it came.
+.spicy_gt_typst_spanner_rules <- function(x) {
+  ids <- grep("^model_span_", x[["_spanners"]]$spanner_id, value = TRUE)
+  if (length(ids) == 0L) {
+    return(x)
+  }
+  out <- tryCatch(
+    gt::tab_style(
+      x,
+      style = gt::cell_borders(
+        sides = "bottom",
+        color = "#333333",
+        weight = gt::px(1)
+      ),
+      locations = gt::cells_column_spanners(spanners = ids)
+    ),
+    error = function(e) NULL,
+    warning = function(w) NULL
+  )
+  if (inherits(out, "gt_tbl")) out else x
+}
+
 .spicy_gt_typst_relabel <- function(x) {
   bh <- x[["_boxhead"]]
   sp <- x[["_spanners"]]
@@ -1550,7 +1580,7 @@ knit_print.spicy_gt <- function(x, ...) {
     # out of its processing (`.spicy_gt()`).
     x <- gt::tab_options(x, quarto.disable_processing = FALSE)
     if (identical(pandoc_to, "typst")) {
-      x <- .spicy_gt_typst_labels(x)
+      x <- .spicy_gt_typst_spanner_rules(.spicy_gt_typst_labels(x))
     }
     latex <- isTRUE(knitr::is_latex_output())
     if (latex) {
