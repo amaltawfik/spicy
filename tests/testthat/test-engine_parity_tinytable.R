@@ -2226,7 +2226,17 @@ test_that("save_tt() writes the PNG, and a long note does not widen it", {
   }
   save_png <- function(tt, name) {
     path <- file.path(dir, name)
-    suppressMessages(tinytable::save_tt(tt, path, overwrite = TRUE))
+    # The test is about the width of the PNG, not about the browser: on a
+    # loaded machine headless Chrome may not open its port in time.
+    tryCatch(
+      suppressMessages(tinytable::save_tt(tt, path, overwrite = TRUE)),
+      error = function(e) {
+        if (grepl("Chrome debugging port", conditionMessage(e), fixed = TRUE)) {
+          testthat::skip("headless Chrome did not start in time")
+        }
+        stop(e)
+      }
+    )
     path
   }
   reg <- save_png(
