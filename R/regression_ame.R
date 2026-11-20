@@ -131,11 +131,13 @@ extract_ame_rows <- function(
   # Both paths read the data again from the environment of the fit
   # (marginaleffects, or expand.model.frame() for a transformed
   # predictor of Path A): they must still be those of the fit.
-  why <- .ame_data_check(fit, .ame_model_data(fit))
+  md <- .ame_model_data(fit)
+  why <- .ame_data_check(fit, md)
   if (!is.null(why)) {
     .warn_ame_data_check(fit, why)
     return(empty_coefs_long())
   }
+  newdata <- .ame_drop_empty_levels(fit, md)
   if (inherits(fit, "glm")) {
     return(extract_ame_glm(
       fit,
@@ -145,7 +147,8 @@ extract_ame_rows <- function(
       ci_level,
       model_id,
       outcome,
-      ame_type = ame_type
+      ame_type = ame_type,
+      newdata = newdata
     ))
   }
 
@@ -206,7 +209,8 @@ extract_ame_rows <- function(
     ci_level,
     model_id,
     outcome,
-    ame_type = ame_type
+    ame_type = ame_type,
+    newdata = newdata
   )
 }
 
@@ -694,7 +698,8 @@ extract_ame_marginaleffects <- function(
   ci_level,
   model_id,
   outcome,
-  ame_type = "slope"
+  ame_type = "slope",
+  newdata = NULL
 ) {
   if (!spicy_pkg_available("marginaleffects")) {
     # nocov start
@@ -724,13 +729,15 @@ extract_ame_marginaleffects <- function(
       df = df_arg,
       # Weighted fit: the AME is the weighted average of the unit-level
       # slopes (Rd Weights section); equal weights otherwise.
-      wts = .spicy_ame_fit_wts(fit) %||% FALSE
+      wts = .spicy_ame_fit_wts(fit) %||% FALSE,
+      newdata = newdata
     ),
     error = function(e) {
       spicy_warn(
         c(
           sprintf("AME computation via %s failed.", .ame_me_fun(ame_type)),
           "x" = paste0("Reason: ", conditionMessage(e)),
+          .ame_empty_level_hint(newdata),
           "i" = "AME column will be en-dashed in the displayed table."
         ),
         class = "spicy_fallback"
@@ -901,7 +908,8 @@ extract_ame_glm <- function(
   ci_level,
   model_id,
   outcome,
-  ame_type = "slope"
+  ame_type = "slope",
+  newdata = NULL
 ) {
   if (!spicy_pkg_available("marginaleffects")) {
     # nocov start
@@ -929,13 +937,15 @@ extract_ame_glm <- function(
       df = ame_df,
       # Weighted fit: the AME is the weighted average of the unit-level
       # slopes (Rd Weights section); equal weights otherwise.
-      wts = .spicy_ame_fit_wts(fit) %||% FALSE
+      wts = .spicy_ame_fit_wts(fit) %||% FALSE,
+      newdata = newdata
     ),
     error = function(e) {
       spicy_warn(
         c(
           sprintf("AME computation via %s failed.", .ame_me_fun(ame_type)),
           "x" = paste0("Reason: ", conditionMessage(e)),
+          .ame_empty_level_hint(newdata),
           "i" = "AME column will be en-dashed in the displayed table."
         ),
         class = "spicy_fallback"
@@ -1640,6 +1650,57 @@ extract_ame_glm <- function(
   "the predictions on the data of the fit no longer match its fitted values."
 }
 
+# A factor predictor with a level no row holds (an empty level kept
+# from the data, `factor(x, levels = c(..., "z"))`) gives the fit an
+# aliased coefficient, and marginaleffects, which contrasts every level
+# of the factor, failed to predict at that level ("Unable to compute
+# predicted values"). The AME is taken on the data with those levels
+# dropped, the same rows and values. The data carry the levels dropped
+# in the attribute "spicy_empty_levels", for the warning of a fit that
+# still fails (a polr, which leaves the aliased column out of its
+# design). NULL when no factor predictor has an empty level.
+.ame_drop_empty_levels <- function(model, data) {
+  if (!is.data.frame(data)) {
+    return(NULL)
+  }
+  rhs <- tryCatch(
+    all.vars(stats::delete.response(stats::terms(model))),
+    error = function(e) character() # nocov: the AME classes have terms
+  )
+  vars <- intersect(rhs, names(data))
+  empty <- lapply(data[vars], function(x) {
+    if (is.factor(x)) setdiff(levels(x), unique(as.character(x)))
+  })
+  empty <- empty[lengths(empty) > 0L]
+  if (length(empty) == 0L) {
+    return(NULL)
+  }
+  data[names(empty)] <- lapply(data[names(empty)], droplevels)
+  attr(data, "spicy_empty_levels") <- empty
+  data
+}
+
+# The bullet of an AME failure on data whose factors had empty levels
+# (.ame_drop_empty_levels()); NULL otherwise.
+.ame_empty_level_hint <- function(newdata) {
+  empty <- attr(newdata, "spicy_empty_levels")
+  if (is.null(empty)) {
+    return(NULL)
+  }
+  lv <- vapply(
+    empty,
+    function(l) paste0("\"", l, "\"", collapse = ", "),
+    character(1)
+  )
+  c(
+    "i" = paste0(
+      "A factor has levels without observations (",
+      paste0("`", names(empty), "`: ", lv, collapse = "; "),
+      "). Drop them with `droplevels()` before fitting the model."
+    )
+  )
+}
+
 # TRUE for a polr or rms fit (an rms::Glm reaches the AME as its glm
 # twin, which keeps its `Design`) with an offset.
 .ame_offset_left_out <- function(model) {
@@ -1851,11 +1912,13 @@ extract_ame_glm <- function(
     # The data the AME is averaged over must be those of the fit
     # (.ame_data_check()); a design fit carries its own.
     if (is.null(design_in)) {
-      why <- .ame_data_check(fit_ame, newdata %||% .ame_model_data(fit_ame))
+      md <- newdata %||% .ame_model_data(fit_ame)
+      why <- .ame_data_check(fit_ame, md)
       if (!is.null(why)) {
         .warn_ame_data_check(fit, why)
         return(NULL)
       }
+      newdata <- .ame_drop_empty_levels(fit_ame, md) %||% newdata
     }
     # The predictions the AME rests on must reproduce the fit
     # (.ame_prediction_check()).
@@ -1895,6 +1958,7 @@ extract_ame_glm <- function(
         c(
           sprintf("AME computation via %s failed.", .ame_me_fun(ame_type)),
           "x" = paste0("Reason: ", conditionMessage(e)),
+          .ame_empty_level_hint(newdata),
           "i" = "AME column will be en-dashed in the displayed table."
         ),
         class = "spicy_fallback"

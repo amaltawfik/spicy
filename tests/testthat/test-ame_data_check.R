@@ -334,3 +334,55 @@ test_that("a transformed predictor whose data frame is gone refuses the AME", {
   expect_match(m, "the data of the fit are no longer found", fixed = TRUE)
   expect_match(m, "probably removed or renamed", fixed = TRUE)
 })
+
+
+# ---- A factor with a level no row holds -----------------------------------
+
+test_that("a factor with an empty level gets the AME of its observed levels", {
+  skip_if_no_adc()
+  skip_if_not_installed("numDeriv")
+  d <- adc_data()
+  d$g <- factor(d$g, levels = c("a", "b", "c", "zz"))
+  dd <- droplevels(d)
+  oracle <- function(f, linkinv) {
+    b <- stats::coef(f)
+    b <- b[!is.na(b)]
+    ame_oracle(
+      ame_prep_rhs(~ x + g, dd),
+      ame_pf_link(linkinv),
+      b,
+      stats::vcov(f)[names(b), names(b)],
+      dd,
+      c("x", "g")
+    )
+  }
+  f <- lm(y ~ x + g, data = d)
+  expect_ame_matches(ame_spicy(f), oracle(f, identity))
+  f <- glm(yb ~ x + g, family = binomial, data = d)
+  expect_ame_matches(ame_spicy(f), oracle(f, stats::plogis))
+  skip_if_not_installed("lme4")
+  f <- suppressMessages(lme4::lmer(y ~ x + g + (1 | id), data = d))
+  b <- lme4::fixef(f)
+  expect_ame_matches(
+    ame_spicy(f),
+    ame_oracle(
+      ame_prep_rhs(~ x + g, dd),
+      ame_pf_link(identity),
+      b,
+      as.matrix(stats::vcov(f))[names(b), names(b)],
+      dd,
+      c("x", "g")
+    )
+  )
+})
+
+test_that("a polr with an empty factor level says which level to drop", {
+  skip_if_no_adc()
+  skip_if_not_installed("MASS")
+  d <- adc_data()
+  d$g <- factor(d$g, levels = c("a", "b", "c", "zz"))
+  f <- suppressWarnings(MASS::polr(ord ~ x + g, data = d, Hess = TRUE))
+  m <- adc_message(f)
+  expect_match(m, "levels without observations (`g`: \"zz\")", fixed = TRUE)
+  expect_match(m, "`droplevels()` before fitting", fixed = TRUE)
+})
