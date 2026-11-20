@@ -195,7 +195,7 @@ what <code><a href="../reference/table_regression.html">table_regression()</a></
 <span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                        </span></span>
 <span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>   24.74  5.84  [ 15.58,  39.28]   –    </span></span>
 <span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>    5.92  1.25  [  3.92,   8.95]   –    </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>    0.07  0.33  [ -0.57,   0.70]   –    </span></span>
+<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>    0.07  0.33  [ -0.52,   0.61]   –    </span></span>
 <span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>   25.59  1.51  [ 22.80,  28.72]   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>  180                                   </span></span>
@@ -205,7 +205,7 @@ what <code><a href="../reference/table_regression.html">table_regression()</a></
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1755.6                                 </span></span>
 <span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1774.8                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Reading the table, top to bottom:</p>
 <ul>
 <li>
@@ -331,8 +331,7 @@ part of the model.</p>
 predictors at all</em>, only a school random intercept. Its job is a
 single number:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># (the accompanying console warning is suppressed in this rendering)</span></span>
-<span><span class="va">m_empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">m_empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lmerTest/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">MathAch</span> <span class="op">~</span> <span class="fl">1</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">School</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">hsb</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">m_empty</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: MathAch</span></span></span>
 <span><span class="co">#&gt; </span></span>
@@ -341,8 +340,8 @@ single number:</p>
 <span><span class="co">#&gt;  (Intercept)            <span style="color: #9E9E9E;">│</span>    12.64  0.24  [12.15, 13.12]  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:        <span style="color: #9E9E9E;">│</span>                                       </span></span>
-<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>     2.93   –          –          –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>     6.26   –          –          –    </span></span>
+<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>     2.93  0.18  [ 2.60,  3.32]   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>     6.26  0.05  [ 6.15,  6.36]   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span>  7185                                 </span></span>
 <span><span class="co">#&gt;  N (School)             <span style="color: #9E9E9E;">│</span>   160                                 </span></span>
@@ -352,7 +351,7 @@ single number:</p>
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 47122.8                               </span></span>
 <span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 47143.4                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p &lt; .001. SE and CI of the random-effect variance components not computed for n above 1000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p &lt; .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>The <strong>ICC of 0.18</strong> is nothing but the two σ rows
 combined: 2.93² / (2.93² + 6.26²) ≈ 0.18. Eighteen percent of the
 achievement variance lies <em>between</em> schools — the variance
@@ -362,17 +361,6 @@ design sits comfortably above the roughly 50 groups Maas &amp; Hox
 (2005) find necessary for reliable standard errors and interval coverage
 of the variance components — the point estimates themselves hold up with
 fewer.</p>
-<p>One display note, visible here for the first time: at this sample
-size <code><a href="../reference/table_regression.html">table_regression()</a></code> skips the Wald SE and CI of the
-variance components because their computation grows superlinearly with
-n. The table note states the omission, and the build-time warning names
-the override (<code>options(spicy.re_se_max_n = )</code>). Estimates,
-ICC, R², and the LR test are unaffected; the random-part inference below
-runs through <code>re_test</code>, and <code>re_ci = "profile"</code>
-restores boundary-respecting profile-likelihood CIs at any sample size
-(a couple of seconds per variance parameter — the route
-<code>lme4</code> itself recommends over SEs). The same note (and
-suppressed warning) accompanies every HSB table in this sequence.</p>
 </div>
 <div class="section level3">
 <h3 id="step-2-a-random-intercept-next-to-the-ols">Step 2: a random intercept, next to the OLS<a class="anchor" aria-label="anchor" href="#step-2-a-random-intercept-next-to-the-ols"></a>
@@ -391,8 +379,8 @@ suppressed warning) accompanies every HSB table in this sequence.</p>
 <span><span class="co">#&gt;  SES                    <span style="color: #9E9E9E;">│</span>     3.18  0.10  &lt;.001      2.39  0.11  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:        <span style="color: #9E9E9E;">│</span>                                              </span></span>
-<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>                            2.18   –     –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>                            6.09   –     –    </span></span>
+<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>                            2.18  0.15   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>                            6.09  0.05   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span>  7185                   7185                 </span></span>
 <span><span class="co">#&gt;  R²                     <span style="color: #9E9E9E;">│</span>     0.13                    –                </span></span>
@@ -404,7 +392,7 @@ suppressed warning) accompanies every HSB table in this sequence.</p>
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 47103.9                46653.2               </span></span>
 <span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 47124.6                46680.7               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. OLS: linear regression; Multilevel: linear mixed-effects regression. Std. errors: OLS: classical (OLS), Multilevel: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p &lt; .001. Multilevel: SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. OLS: linear regression; Multilevel: linear mixed-effects regression. Std. errors: OLS: classical (OLS), Multilevel: classical (model-based). Multilevel: P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p &lt; .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Reading the two columns against each other, five things change:</p>
 <ul>
 <li>The <strong>intercept SE more than doubles</strong> (0.08 → 0.19).
@@ -454,8 +442,8 @@ within-school part and the school mean separately (Enders &amp; Tofighi
 <span><span class="co">#&gt;  meanses                <span style="color: #9E9E9E;">│</span>     5.87  0.36  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:        <span style="color: #9E9E9E;">│</span>                       </span></span>
-<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>     1.64   –     –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>     6.08   –     –    </span></span>
+<span><span class="co">#&gt;    σ School (Intercept) <span style="color: #9E9E9E;">│</span>     1.64  0.12   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>     6.08  0.05   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span>  7185                 </span></span>
 <span><span class="co">#&gt;  N (School)             <span style="color: #9E9E9E;">│</span>   160                 </span></span>
@@ -465,7 +453,7 @@ within-school part and the school mean separately (Enders &amp; Tofighi
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 46578.6               </span></span>
 <span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 46613.0               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p &lt; .001. SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p &lt; .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Within a school, a one-point difference in SES is associated with
 2.19 more points of achievement (<code>cses</code>); <em>between</em>
 schools, a one-point difference in composition is associated with 5.87
@@ -515,7 +503,7 @@ individual components</em> below):</p>
 <span><span class="co">#&gt;  AIC                            <span style="color: #9E9E9E;">│</span> 46571.7         </span></span>
 <span><span class="co">#&gt;  BIC                            <span style="color: #9E9E9E;">│</span> 46619.8         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p &lt; .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p &lt; .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>The slope SD is 0.83 achievement points around the average slope of
 2.19, and its test reads p = .003 — solid evidence that the slope
 genuinely varies across schools — so the random slope stays. Taking the
@@ -553,10 +541,10 @@ school sector:</p>
 <span><span class="co">#&gt;  cses:SectorCatholic            <span style="color: #9E9E9E;">│</span>    -1.35  0.23  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:                <span style="color: #9E9E9E;">│</span>                       </span></span>
-<span><span class="co">#&gt;    σ School (Intercept)         <span style="color: #9E9E9E;">│</span>     1.54   –     –    </span></span>
-<span><span class="co">#&gt;    σ School cses                <span style="color: #9E9E9E;">│</span>     0.52   –     –    </span></span>
-<span><span class="co">#&gt;    ρ School ((Intercept), cses) <span style="color: #9E9E9E;">│</span>     0.24   –     –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)                 <span style="color: #9E9E9E;">│</span>     6.06   –     –    </span></span>
+<span><span class="co">#&gt;    σ School (Intercept)         <span style="color: #9E9E9E;">│</span>     1.54  0.12   –    </span></span>
+<span><span class="co">#&gt;    σ School cses                <span style="color: #9E9E9E;">│</span>     0.52  0.22   –    </span></span>
+<span><span class="co">#&gt;    ρ School ((Intercept), cses) <span style="color: #9E9E9E;">│</span>     0.24  0.28   –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)                 <span style="color: #9E9E9E;">│</span>     6.06  0.05   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                              <span style="color: #9E9E9E;">│</span>  7185                 </span></span>
 <span><span class="co">#&gt;  N (School)                     <span style="color: #9E9E9E;">│</span>   160                 </span></span>
@@ -565,7 +553,7 @@ school sector:</p>
 <span><span class="co">#&gt;  AIC                            <span style="color: #9E9E9E;">│</span> 46532.5               </span></span>
 <span><span class="co">#&gt;  BIC                            <span style="color: #9E9E9E;">│</span> 46594.5               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p &lt; .001. SE and CI of the random-effect variance components not computed for n above 1000. AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p &lt; .001. AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>In public schools the within-school SES slope is 2.79; in Catholic
 schools it is 2.79 − 1.35 = 1.44 — half as steep, while their intercept
 sits 1.25 points higher (both conditional on school composition, since
@@ -632,7 +620,7 @@ per level:</p>
 <span><span class="co">#&gt;  AIC                        <span style="color: #9E9E9E;">│</span> 255.0        </span></span>
 <span><span class="co">#&gt;  BIC                        <span style="color: #9E9E9E;">│</span> 263.4        </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. ICC is not reported: several grouping factors define several ICCs. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p &lt; .001. AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. ICC is not reported: several grouping factors define several ICCs. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p &lt; .001. AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Both levels of nesting get their σ row, one
 <code>N (cask:batch)</code> / <code>N (batch)</code> row counts each
 level, and the footer’s chi-bar-squared test covers the random part
@@ -681,7 +669,7 @@ fits, whose optimizers work on a log scale and therefore land
 <span><span class="co">#&gt;  AIC               <span style="color: #9E9E9E;">│</span> 342.0                             </span></span>
 <span><span class="co">#&gt;  BIC               <span style="color: #9E9E9E;">│</span> 353.1                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>The chi-bar-squared test reads p = 1.000 — the boundary case. The
 likelihood-ratio statistic is exactly zero, and half of the
 chi-bar-squared null distribution is a point mass <em>at</em> zero, so
@@ -717,7 +705,7 @@ the boundary, so spicy applies the chi-bar-squared mixture instead:</p>
 <span><span class="co">#&gt;  Random effects:                 <span style="color: #9E9E9E;">│</span>                                        </span></span>
 <span><span class="co">#&gt;    σ Subject (Intercept)         <span style="color: #9E9E9E;">│</span>   24.74  5.84  [ 15.58,  39.28]   –    </span></span>
 <span><span class="co">#&gt;    σ Subject Days                <span style="color: #9E9E9E;">│</span>    5.92  1.25  [  3.92,   8.95]  &lt;.001 </span></span>
-<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>    0.07  0.33  [ -0.57,   0.70]   –    </span></span>
+<span><span class="co">#&gt;    ρ Subject ((Intercept), Days) <span style="color: #9E9E9E;">│</span>    0.07  0.33  [ -0.52,   0.61]   –    </span></span>
 <span><span class="co">#&gt;    σ (Residual)                  <span style="color: #9E9E9E;">│</span>   25.59  1.51  [ 22.80,  28.72]   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                               <span style="color: #9E9E9E;">│</span>  180                                   </span></span>
@@ -727,7 +715,7 @@ the boundary, so spicy applies the chi-bar-squared mixture instead:</p>
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1755.6                                 </span></span>
 <span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1774.8                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Only the <code>Days</code> slope row gains a p-value: following the
 marginality rule of <code><a href="https://rdrr.io/pkg/lmerTest/man/ranova.html" class="external-link">lmerTest::ranova()</a></code>, an intercept is
 tested only when it stands alone on the left of the <code>|</code> — as
@@ -763,7 +751,7 @@ approximation is at its weakest:</p>
 <span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 1794.5                                 </span></span>
 <span><span class="co">#&gt;  BIC                     <span style="color: #9E9E9E;">│</span> 1807.2                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001. Random-effect p-value: exact restricted LRT (simulated null distribution). CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001. Random-effect p-value: exact restricted LRT (simulated null distribution). CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="the-random-effects-block-on-your-terms">The random-effects block on your terms<a class="anchor" aria-label="anchor" href="#the-random-effects-block-on-your-terms"></a>
@@ -772,12 +760,11 @@ approximation is at its weakest:</p>
 <code>re_scale = "variance"</code> switches the rows from SD
 (<code>σ</code>) to variance (<code>σ²</code>); <code>re_columns</code>
 restricts which quantities the variance-component rows display (the SE
-and CI on a variance component come from <code>merDeriv</code> and are
-themselves boundary-fragile — dropping them is a defensible editorial
-choice); <code>show_re = FALSE</code> removes the block and all
-random-effects footer lines, leaving a fixed-effects-only table (the
-per-factor <code>N (&lt;factor&gt;)</code> and R² fit-stat rows
-remain):</p>
+and CI on a variance component are Wald quantities and are themselves
+boundary-fragile — dropping them is a defensible editorial choice);
+<code>show_re = FALSE</code> removes the block and all random-effects
+footer lines, leaving a fixed-effects-only table (the per-factor
+<code>N (&lt;factor&gt;)</code> and R² fit-stat rows remain):</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, re_scale <span class="op">=</span> <span class="st">"variance"</span>, re_columns <span class="op">=</span> <span class="st">"est"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">Linear mixed-effects regression: Reaction</span></span></span>
@@ -800,18 +787,19 @@ remain):</p>
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1755.6                                 </span></span>
 <span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1774.8                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Where those SEs come from depends on the engine: <code>lmer</code> /
-<code>glmer</code> rows use the <code>merDeriv</code> Hessian (Wang
-&amp; Merkle 2018; the cells fall back to NA when the package is absent
-or the fit is singular), <code>glmmTMB</code> its native Wald
+<code>glmer</code> rows use the numerical Hessian of the deviance in the
+standard deviations and correlations (the cells fall back to NA when the
+fit is singular), <code>glmmTMB</code> its native Wald
 <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code>, and <code><a href="https://rdrr.io/pkg/nlme/man/lme.html" class="external-link">nlme::lme</a></code> its
-<code>intervals()</code>. Correlation (<code>ρ</code>) rows carry a
-multivariate delta-method SE for <code>lmer</code>, native intervals
-elsewhere. Switching <code>re_scale</code> transports SE and CI between
-the SD and variance scales by the delta method
-(<code>SE(σ) = SE(σ²) / 2σ</code>), so the displayed values agree with
-<code><a href="https://rdrr.io/pkg/nlme/man/VarCorr.html" class="external-link">VarCorr()</a></code> on either scale up to rounding.</p>
+<code>intervals()</code>. The Wald interval of an <code>lmer</code> or
+<code>glmer</code> correlation (<code>ρ</code>) is built on atanh ρ and
+stays inside (−1, 1), as in <code>nlme</code>. Switching
+<code>re_scale</code> transports SE and CI between the SD and variance
+scales by the delta method (<code>SE(σ) = SE(σ²) / 2σ</code>), so the
+displayed values agree with <code><a href="https://rdrr.io/pkg/nlme/man/VarCorr.html" class="external-link">VarCorr()</a></code> on either scale up to
+rounding.</p>
 <p>Whatever the display, <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> always carries the
 full set (estimate, SE, CI) for the variance-component rows — display
 and data are decoupled.</p>
@@ -853,7 +841,7 @@ each model gets its own footer line.</p>
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1794.5                1755.6               </span></span>
 <span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1807.2                1774.8               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001. + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001. + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p><strong>What is — and is not — being tested here.</strong> Each
 footer’s chi-bar-squared line answers one question only: <em>does this
 model need its random part at all?</em> — the fit against a plain linear
@@ -988,8 +976,8 @@ variable is centered on it:</p>
 <span><span class="co">#&gt;  bmi_region             <span style="color: #9E9E9E;">│</span>                          5.08   2.76   .066 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:        <span style="color: #9E9E9E;">│</span>                                             </span></span>
-<span><span class="co">#&gt;    σ region (Intercept) <span style="color: #9E9E9E;">│</span>    0.37   –     –        0.00    –     –    </span></span>
-<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>   15.45   –     –       15.43    –     –    </span></span>
+<span><span class="co">#&gt;    σ region (Intercept) <span style="color: #9E9E9E;">│</span>    0.37  1.15   –        0.00    –     –    </span></span>
+<span><span class="co">#&gt;    σ (Residual)         <span style="color: #9E9E9E;">│</span>   15.45  0.32   –       15.43    –     –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                      <span style="color: #9E9E9E;">│</span> 1188                  1188                  </span></span>
 <span><span class="co">#&gt;  N (region)             <span style="color: #9E9E9E;">│</span>    6                     6                  </span></span>
@@ -999,7 +987,7 @@ variable is centered on it:</p>
 <span><span class="co">#&gt;  AIC                    <span style="color: #9E9E9E;">│</span> 9890.8                9884.6                </span></span>
 <span><span class="co">#&gt;  BIC                    <span style="color: #9E9E9E;">│</span> 9916.2                9915.1                </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. Naive: SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Reading the table:</p>
 <ul>
 <li>The naive coefficient (−0.63) is the blend. It is numerically close
@@ -1094,7 +1082,7 @@ disease across four periods:</p>
 <span><span class="co">#&gt;    4                  <span style="color: #9E9E9E;">│</span>   0.21  0.09  [0.09, 0.48]  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:      <span style="color: #9E9E9E;">│</span>                                   </span></span>
-<span><span class="co">#&gt;    σ herd (Intercept) <span style="color: #9E9E9E;">│</span>   0.64  0.22  [0.33, 1.27]   –    </span></span>
+<span><span class="co">#&gt;    σ herd (Intercept) <span style="color: #9E9E9E;">│</span>   0.64  0.18  [0.37, 1.11]   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                    <span style="color: #9E9E9E;">│</span>  56                               </span></span>
 <span><span class="co">#&gt;  N (herd)             <span style="color: #9E9E9E;">│</span>  15                               </span></span>
@@ -1103,7 +1091,7 @@ disease across four periods:</p>
 <span><span class="co">#&gt;  AIC                  <span style="color: #9E9E9E;">│</span> 194.1                             </span></span>
 <span><span class="co">#&gt;  BIC                  <span style="color: #9E9E9E;">│</span> 204.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic mixed-effects regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic mixed-effects regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: classical (Fisher information). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p &lt; .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>The random-effect row is now on the <strong>log-odds scale</strong>
 (the linear predictor’s scale), not the outcome scale: σ = 0.64 means a
 herd one SD above the average carries about e^0.64 ≈ 1.9 times the
@@ -1175,7 +1163,7 @@ derivative and the two differ.</li>
 <span><span class="co">#&gt;    C               <span style="color: #9E9E9E;">│</span>  -0.30  0.27   .267  -0.05   .266 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:   <span style="color: #9E9E9E;">│</span>                                   </span></span>
-<span><span class="co">#&gt;    σ g (Intercept) <span style="color: #9E9E9E;">│</span>   1.40  0.23   –                  </span></span>
+<span><span class="co">#&gt;    σ g (Intercept) <span style="color: #9E9E9E;">│</span>   1.40  0.27   –                  </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                 <span style="color: #9E9E9E;">│</span> 500                               </span></span>
 <span><span class="co">#&gt;  N (g)             <span style="color: #9E9E9E;">│</span>  25                               </span></span>
@@ -1185,7 +1173,7 @@ derivative and the two differ.</li>
 <span><span class="co">#&gt;  AIC               <span style="color: #9E9E9E;">│</span> 562.4                             </span></span>
 <span><span class="co">#&gt;  BIC               <span style="color: #9E9E9E;">│</span> 583.5                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic mixed-effects regression. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p &lt; .001. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Logistic mixed-effects regression. Std. errors: classical (Fisher information). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p &lt; .001. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>For a mixed model with a non-identity link, the AME averages the
 slopes of the conditional predictions: each observation is predicted
 with the estimated random effects of its groups. It is neither the
@@ -1258,7 +1246,7 @@ abundance where salamanders can occur:</p>
 <span><span class="co">#&gt;  AIC                  <span style="color: #9E9E9E;">│</span> 1908.5                             </span></span>
 <span><span class="co">#&gt;  BIC                  <span style="color: #9E9E9E;">│</span> 1930.8                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p &lt; .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: classical (Fisher information). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p &lt; .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>Note the per-block exponentiation: the count coefficients become
 <strong>IRR</strong>, while the logit zero-inflation coefficients become
 <strong>odds ratios of a structural zero</strong>. Read one number from
@@ -1304,7 +1292,7 @@ t-test</strong> native to <code>nlme</code>, and the footer says so:</p>
 <span><span class="co">#&gt;  AIC                     <span style="color: #9E9E9E;">│</span> 1794.5                                 </span></span>
 <span><span class="co">#&gt;  BIC                     <span style="color: #9E9E9E;">│</span> 1807.2                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: t-test with containment df. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: t-test with containment df. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p &lt; .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="population-averaged-alternatives-gee">Population-averaged alternatives: GEE<a class="anchor" aria-label="anchor" href="#population-averaged-alternatives-gee"></a>
@@ -1357,7 +1345,7 @@ article; here is the contrast itself, in one table:</p>
 <span><span class="co">#&gt;  baseline                <span style="color: #9E9E9E;">│</span>   7.31  [3.89, 13.75]  &lt;.001   26.61  [8.38, 84.51]  &lt;.001 </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  Random effects:         <span style="color: #9E9E9E;">│</span>                                                            </span></span>
-<span><span class="co">#&gt;    σ subject (Intercept) <span style="color: #9E9E9E;">│</span>                                 1.98  [1.57,  2.49]   –    </span></span>
+<span><span class="co">#&gt;    σ subject (Intercept) <span style="color: #9E9E9E;">│</span>                                 1.98  [1.43,  2.74]   –    </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
 <span><span class="co">#&gt;  n                       <span style="color: #9E9E9E;">│</span> 444                           444                          </span></span>
 <span><span class="co">#&gt;  N (subject)             <span style="color: #9E9E9E;">│</span> 111                           111                          </span></span>
@@ -1368,7 +1356,7 @@ article; here is the contrast itself, in one table:</p>
 <span><span class="co">#&gt;  BIC                     <span style="color: #9E9E9E;">│</span>    –                          464.1                        </span></span>
 <span><span class="co">#&gt;  Max cluster size        <span style="color: #9E9E9E;">│</span>   4                              –                         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: Population-averaged: robust sandwich (GEE), clusters by subject; Subject-specific: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p &lt; .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: Population-averaged: robust sandwich (GEE), clusters by subject; Subject-specific: classical (Fisher information). Subject-specific: P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p &lt; .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>The active-treatment odds ratio is the same effect asked two ways:
 the marginal column compares treated and untreated <em>populations</em>;
 the conditional column compares each subject with themselves, and is
@@ -1452,7 +1440,7 @@ carry one consistent p per term:</p>
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 1755.6               </span></span>
 <span><span class="co">#&gt;  BIC                             <span style="color: #9E9E9E;">│</span> 1774.8               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></span></span></code></pre></div>
 <p>The algebraic shortcuts (<code>"posthoc"</code>,
 <code>"basic"</code>, <code>"smart"</code>) are therefore not defined
 for mixed models and fall back to <code>"refit"</code> with a warning.
@@ -1475,39 +1463,39 @@ the random-effects block carries through to every format.</p>
 <span><span class="co">#&gt; 1    (Intercept)    (Intercept)                          &lt;NA&gt;          coef 251.40510485 6.8245967</span></span>
 <span><span class="co">#&gt; 2           Days           Days                          &lt;NA&gt;          coef  10.46728596 1.5457896</span></span>
 <span><span class="co">#&gt; 3 Random effects Random effects                          &lt;NA&gt; factor_header           NA        NA</span></span>
-<span><span class="co">#&gt; 4 Random effects Random effects         σ Subject (Intercept)            vc  24.74065799 5.8362639</span></span>
-<span><span class="co">#&gt; 5 Random effects Random effects                σ Subject Days            vc   5.92213766 1.2480355</span></span>
-<span><span class="co">#&gt; 6 Random effects Random effects ρ Subject ((Intercept), Days)            vc   0.06555124 0.3250232</span></span>
-<span><span class="co">#&gt; 7 Random effects Random effects                  σ (Residual)            vc  25.59179572 1.5080110</span></span>
+<span><span class="co">#&gt; 4 Random effects Random effects         σ Subject (Intercept)            vc  24.74065799 5.8363107</span></span>
+<span><span class="co">#&gt; 5 Random effects Random effects                σ Subject Days            vc   5.92213766 1.2480368</span></span>
+<span><span class="co">#&gt; 6 Random effects Random effects ρ Subject ((Intercept), Days)            vc   0.06555124 0.3250254</span></span>
+<span><span class="co">#&gt; 7 Random effects Random effects                  σ (Residual)            vc  25.59179572 1.5080091</span></span>
 <span><span class="co">#&gt; 8           nobs              n                          &lt;NA&gt;      fit_stat 180.00000000        NA</span></span>
 <span><span class="co">#&gt;     95% CI LL   95% CI UL            p</span></span>
 <span><span class="co">#&gt; 1 237.0064468 265.8037629 1.171558e-17</span></span>
 <span><span class="co">#&gt; 2   7.2059547  13.7286173 3.263824e-06</span></span>
 <span><span class="co">#&gt; 3          NA          NA           NA</span></span>
-<span><span class="co">#&gt; 4  15.5816976  39.2832779           NA</span></span>
-<span><span class="co">#&gt; 5   3.9182819   8.9507889           NA</span></span>
-<span><span class="co">#&gt; 6  -0.5714826   0.7025851           NA</span></span>
-<span><span class="co">#&gt; 7  22.8004400  28.7248846           NA</span></span>
+<span><span class="co">#&gt; 4  15.5816399  39.2834233           NA</span></span>
+<span><span class="co">#&gt; 5   3.9182802   8.9507929           NA</span></span>
+<span><span class="co">#&gt; 6  -0.5183946   0.6078048           NA</span></span>
+<span><span class="co">#&gt; 7  22.8004433  28.7248804           NA</span></span>
 <span><span class="co">#&gt; 8          NA          NA           NA</span></span></code></pre></div>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmpKqivwl-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmpKqivwl-1 table {
+<div id="spicy-gt-RtmpuE2btG-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-RtmpuE2btG-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmpKqivwl-1 thead, #spicy-gt-RtmpKqivwl-1 tbody, #spicy-gt-RtmpKqivwl-1 tfoot, #spicy-gt-RtmpKqivwl-1 tr, #spicy-gt-RtmpKqivwl-1 td, #spicy-gt-RtmpKqivwl-1 th {
+#spicy-gt-RtmpuE2btG-1 thead, #spicy-gt-RtmpuE2btG-1 tbody, #spicy-gt-RtmpuE2btG-1 tfoot, #spicy-gt-RtmpuE2btG-1 tr, #spicy-gt-RtmpuE2btG-1 td, #spicy-gt-RtmpuE2btG-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmpKqivwl-1 p {
+#spicy-gt-RtmpuE2btG-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_table {
+#spicy-gt-RtmpuE2btG-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1533,12 +1521,12 @@ the random-effects block carries through to every format.</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_caption {
+#spicy-gt-RtmpuE2btG-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_title {
+#spicy-gt-RtmpuE2btG-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -1550,7 +1538,7 @@ the random-effects block carries through to every format.</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_subtitle {
+#spicy-gt-RtmpuE2btG-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1562,7 +1550,7 @@ the random-effects block carries through to every format.</p>
   border-top-width: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_heading {
+#spicy-gt-RtmpuE2btG-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1574,13 +1562,13 @@ the random-effects block carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_bottom_border {
+#spicy-gt-RtmpuE2btG-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_col_headings {
+#spicy-gt-RtmpuE2btG-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1595,7 +1583,7 @@ the random-effects block carries through to every format.</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_col_heading {
+#spicy-gt-RtmpuE2btG-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1615,7 +1603,7 @@ the random-effects block carries through to every format.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_column_spanner_outer {
+#spicy-gt-RtmpuE2btG-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1627,15 +1615,15 @@ the random-effects block carries through to every format.</p>
   padding-right: 4px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpuE2btG-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-RtmpuE2btG-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_column_spanner {
+#spicy-gt-RtmpuE2btG-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -1647,11 +1635,11 @@ the random-effects block carries through to every format.</p>
   width: 100%;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_spanner_row {
+#spicy-gt-RtmpuE2btG-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_group_heading {
+#spicy-gt-RtmpuE2btG-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1677,7 +1665,7 @@ the random-effects block carries through to every format.</p>
   text-align: left;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_empty_group_heading {
+#spicy-gt-RtmpuE2btG-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1692,15 +1680,15 @@ the random-effects block carries through to every format.</p>
   vertical-align: middle;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_from_md > :first-child {
+#spicy-gt-RtmpuE2btG-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_from_md > :last-child {
+#spicy-gt-RtmpuE2btG-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_row {
+#spicy-gt-RtmpuE2btG-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1719,7 +1707,7 @@ the random-effects block carries through to every format.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_stub {
+#spicy-gt-RtmpuE2btG-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1732,7 +1720,7 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_stub_row_group {
+#spicy-gt-RtmpuE2btG-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1746,15 +1734,15 @@ the random-effects block carries through to every format.</p>
   vertical-align: top;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_row_group_first td {
+#spicy-gt-RtmpuE2btG-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_row_group_first th {
+#spicy-gt-RtmpuE2btG-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_summary_row {
+#spicy-gt-RtmpuE2btG-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1764,16 +1752,16 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_first_summary_row {
+#spicy-gt-RtmpuE2btG-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_first_summary_row.thick {
+#spicy-gt-RtmpuE2btG-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_last_summary_row {
+#spicy-gt-RtmpuE2btG-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1783,7 +1771,7 @@ the random-effects block carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_grand_summary_row {
+#spicy-gt-RtmpuE2btG-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1793,7 +1781,7 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_first_grand_summary_row {
+#spicy-gt-RtmpuE2btG-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1803,7 +1791,7 @@ the random-effects block carries through to every format.</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_last_grand_summary_row_top {
+#spicy-gt-RtmpuE2btG-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1813,11 +1801,11 @@ the random-effects block carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_striped {
+#spicy-gt-RtmpuE2btG-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_table_body {
+#spicy-gt-RtmpuE2btG-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1826,7 +1814,7 @@ the random-effects block carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_footnotes {
+#spicy-gt-RtmpuE2btG-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1840,7 +1828,7 @@ the random-effects block carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_footnote {
+#spicy-gt-RtmpuE2btG-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1849,7 +1837,7 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_sourcenotes {
+#spicy-gt-RtmpuE2btG-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1863,7 +1851,7 @@ the random-effects block carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_sourcenote {
+#spicy-gt-RtmpuE2btG-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1871,108 +1859,112 @@ the random-effects block carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_left {
+#spicy-gt-RtmpuE2btG-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_center {
+#spicy-gt-RtmpuE2btG-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_right {
+#spicy-gt-RtmpuE2btG-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_font_normal {
+#spicy-gt-RtmpuE2btG-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_font_bold {
+#spicy-gt-RtmpuE2btG-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_font_italic {
+#spicy-gt-RtmpuE2btG-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_super {
+#spicy-gt-RtmpuE2btG-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_footnote_marks {
+#spicy-gt-RtmpuE2btG-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_asterisk {
+#spicy-gt-RtmpuE2btG-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_indent_1 {
+#spicy-gt-RtmpuE2btG-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_indent_2 {
+#spicy-gt-RtmpuE2btG-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_indent_3 {
+#spicy-gt-RtmpuE2btG-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_indent_4 {
+#spicy-gt-RtmpuE2btG-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_indent_5 {
+#spicy-gt-RtmpuE2btG-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .katex-display {
+#spicy-gt-RtmpuE2btG-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmpKqivwl-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-RtmpuE2btG-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_sourcenote {
+#spicy-gt-RtmpuE2btG-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
-  padding: 0 5px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-RtmpuE2btG-1 .gt_sourcenote {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#spicy-gt-RtmpuE2btG-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-RtmpuE2btG-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpKqivwl-1 .gt_spanner_row {
+#spicy-gt-RtmpuE2btG-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpuE2btG-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_col_heading {
+#spicy-gt-RtmpuE2btG-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_table tbody .gt_row {
+#spicy-gt-RtmpuE2btG-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_column_spanner {
+#spicy-gt-RtmpuE2btG-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmpKqivwl-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-RtmpuE2btG-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1981,12 +1973,12 @@ the random-effects block carries through to every format.</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpKqivwl-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-RtmpuE2btG-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-RtmpKqivwl-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpuE2btG-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 
@@ -2073,8 +2065,8 @@ the random-effects block carries through to every format.</p>
 <td headers="Variable" class="gt_row gt_left" style="text-indent: 20px;">  ρ Subject ((Intercept), Days)</td>
 <td headers="B" class="gt_row gt_center">   0.07</td>
 <td headers="SE" class="gt_row gt_center">0.33</td>
-<td headers="a95%-CI:-LL" class="gt_row gt_center"> −0.57</td>
-<td headers="a95%-CI:-UL" class="gt_row gt_center">  0.70</td>
+<td headers="a95%-CI:-LL" class="gt_row gt_center"> −0.52</td>
+<td headers="a95%-CI:-UL" class="gt_row gt_center">  0.61</td>
 <td headers="p" class="gt_row gt_center">–    </td>
 </tr>
 <tr>
@@ -2135,7 +2127,7 @@ the random-effects block carries through to every format.</p>
 </tr>
 </tbody>
 <tfoot><tr class="gt_sourcenotes">
-<td class="gt_sourcenote" colspan="6"><span class="gt_from_md"><em>Note.</em> Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; LL = lower limit; UL = upper limit; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></td>
+<td class="gt_sourcenote" colspan="6"><span class="gt_from_md"><em>Note.</em> Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p &lt; .001. CI = confidence interval; LL = lower limit; UL = upper limit; AIC = Akaike information criterion; BIC = Bayesian information criterion.</span></td>
     </tr></tfoot>
 </table>
 </div>
@@ -2151,7 +2143,7 @@ their terms are prefixed <code>re::</code> (correlations carry a
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> re::Subject::(Intercept)             24.7        5.84    15.6      39.3  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> re::Subject::Days                     5.92       1.25     3.92      8.95 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> re::Subject::(Intercept), Days::cor   0.065<span style="text-decoration: underline;">6</span>     0.325   -<span style="color: #BB0000;">0.571</span>     0.703</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> re::Subject::(Intercept), Days::cor   0.065<span style="text-decoration: underline;">6</span>     0.325   -<span style="color: #BB0000;">0.518</span>     0.608</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> re::Residual::                       25.6        1.51    22.8      28.7</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -2245,10 +2237,6 @@ Analysis: An Introduction to Basic and Advanced Multilevel Modeling</em>
 <li>Stram, D. O., &amp; Lee, J. W. (1994). Variance components testing
 in the longitudinal mixed effects model. <em>Biometrics</em>, 50(4),
 1171–1177.</li>
-<li>Wang, T., &amp; Merkle, E. C. (2018). merDeriv: Derivative
-computations for linear mixed effects models with application to robust
-standard errors. <em>Journal of Statistical Software</em>, 87(Code
-Snippet 1), 1-16.</li>
 </ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

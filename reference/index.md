@@ -101,6 +101,8 @@ returns the supported model classes.
   : Stack tables one under the other
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
   : Supported models of table_regression()
+- [`table_regression_tokens`](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md)
+  : Column and fit-statistic tokens in table_regression()
 
 ### Model families
 

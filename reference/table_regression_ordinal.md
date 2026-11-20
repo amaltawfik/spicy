@@ -39,7 +39,7 @@ the values they take for ordinal models are listed below.
 |----|----|----|----|----|----|
 | Class | Engine | AME | Exponentiate | Blocks | vcov |
 | `polr` | [`MASS::polr()`](https://rdrr.io/pkg/MASS/man/polr.html) | per category | OR (logit) | Thresholds | classical, CR1 |
-| `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects | classical, CR1 (classical only with scale or nominal terms) |
+| `clm` | [`ordinal::clm()`](https://rdrr.io/pkg/ordinal/man/clm.html) | per category | OR (logit) | Thresholds; Non-proportional effects (nominal =); Scale effects (scale =) | classical, CR1 (classical only with scale or nominal terms) |
 | `clmm` | [`ordinal::clmm()`](https://rdrr.io/pkg/ordinal/man/clmm.html) | no | OR (logit) | Thresholds; Random effects | classical |
 
 AME: whether the average-marginal-effects columns are available;
@@ -250,7 +250,7 @@ if (requireNamespace("MASS", quietly = TRUE)) {
 #>  R² (McFadden)   │    0.04                              
 #>  AIC             │ 3507.5                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.
 #> Cumulative logit regression (proportional odds): Sat
 #> 
 #>  Variable       │    B      SE       95% CI        p   
@@ -269,5 +269,5 @@ if (requireNamespace("MASS", quietly = TRUE)) {
 #>  R² (McFadden)  │    0.04                              
 #>  AIC            │ 3507.5                               
 #> 
-#> Note. Cumulative logit regression (proportional odds). Thresholds: Low|Medium = -0.67, Medium|High = 0.51. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Cumulative logit regression (proportional odds). Thresholds: Low|Medium = -0.67, Medium|High = 0.51. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```

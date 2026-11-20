@@ -143,8 +143,8 @@ row: `"theta"` and `"alpha"` (= 1/theta, the Stata `nbreg` convention)
 for NB2 fits, among them `zeroinfl` and `hurdle` with `dist = "negbin"`,
 whose theta is that of the count part; `"delta"` for NB1 fits (glmmTMB
 `nbinom1`). A Poisson column in the same table is blank on these rows.
-See *Vocabulary tokens* in
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+See
+[table_regression_tokens](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md)
 for the classes each token covers.
 
 ## What is refused, and why
@@ -199,7 +199,7 @@ if (requireNamespace("pscl", quietly = TRUE)) {
 #>  n               │  915                               
 #>  AIC             │ 3341.9                             
 #> 
-#> Note. Zero-inflated Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: Wald asymptotic (z). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Zero-inflated Poisson regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: classical (Fisher information). Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion.
 #> Zero-inflated Poisson regression: art
 #> 
 #>  Variable     │    B      SE       95% CI        p   
@@ -213,5 +213,5 @@ if (requireNamespace("pscl", quietly = TRUE)) {
 #>  n            │  915                                 
 #>  AIC          │ 3341.9                               
 #> 
-#> Note. Zero-inflated Poisson regression. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Zero-inflated Poisson regression. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.
 ```

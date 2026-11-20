@@ -706,7 +706,7 @@ table_continuous_svy(dclus1, select = c(api00, api99))
 #>  api00      │  644.17    105.75    411.00    905.00    593.68    694.66    183  
 #>  api99      │  606.98    112.85    365.00    890.00    555.02    658.94    183  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.
 table_continuous_svy(dclus1, select = api00, by = stype)
 #> Descriptive statistics by stype
 #> 
@@ -718,7 +718,7 @@ table_continuous_svy(dclus1, select = api00, by = stype)
 #>           │ H      618.57   96.74  443.00  724.00  528.67  708.48   14       
 #>           │ M      631.44  109.06  411.00  847.00  561.87  701.01   25       
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.
 table_continuous_svy(
   dclus1,
   select = api00,
@@ -733,5 +733,5 @@ table_continuous_svy(
 #> ────────────┼──────────────────────────────────────────────────────
 #>  api00      │  644.17    23.54    593.68    694.66    9.35    183  
 #> 
-#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
+#> Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.
 ```

@@ -123,7 +123,7 @@ models are listed below.</p>
     <div class="section level2">
     <h2 id="engines">Engines<a class="anchor" aria-label="anchor" href="#engines"></a></h2>
 
-<table class="table table"><tr><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td><td>vcov</td></tr><tr><td><code>lm_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical (the fit's own)</td></tr><tr><td><code>iv_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical (the fit's own)</td></tr><tr><td><code>ivreg</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical</td></tr><tr><td><code>tobit</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td><td>yes (latent outcome)</td><td>-</td><td>-</td><td>classical, CR1</td></tr><tr><td><code>rq</code></td><td><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical (= nid), nid, iid, ker, rank, bootstrap</td></tr><tr><td><code>fixest</code></td><td><code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::femlm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code></td><td>yes (no for a GLM with fixed effects)</td><td>OR / IRR (link)</td><td>-</td><td>classical (the fit's own)</td></tr></table><p>AME: whether the average-marginal-effects columns are available.
+<table class="table table"><tr><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td><td>vcov</td></tr><tr><td><code>lm_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/lm_robust.html" class="external-link">estimatr::lm_robust()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical (the fit's own)</td></tr><tr><td><code>iv_robust</code></td><td><code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical (the fit's own)</td></tr><tr><td><code>ivreg</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical, HC0, HC1, CR0-CR3, CR1S</td></tr><tr><td><code>tobit</code></td><td><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit()</a></code></td><td>yes (latent outcome)</td><td>-</td><td>-</td><td>classical, CR1</td></tr><tr><td><code>rq</code></td><td><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq()</a></code></td><td>yes</td><td>-</td><td>-</td><td>classical (= nid), nid, iid, ker, rank, bootstrap</td></tr><tr><td><code>fixest</code></td><td><code><a href="https://lrberge.github.io/fixest/reference/feols.html" class="external-link">fixest::feols()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::femlm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code></td><td>yes (no for a GLM with fixed effects or an IV fit without exogenous regressor)</td><td>OR / IRR (link)</td><td>-</td><td>classical (the fit's own)</td></tr></table><p>AME: whether the average-marginal-effects columns are available.
 Exponentiate: what <code>exponentiate = TRUE</code> gives. Blocks: the labeled
 blocks of rows the class adds below its coefficients. vcov: the values
 of <code>vcov</code> the class accepts. The same rows are
@@ -134,8 +134,11 @@ returned by
 marginaleffects, which computes it, cannot take into account the
 uncertainty of the fixed effects. It is refused too for a <code>feols()</code>
 with fixed effects fitted with <code>lean = TRUE</code>, which marginaleffects
-cannot predict from (re-estimate it with <code>lean = FALSE</code>). Other
-<code>feols()</code> fits and a GLM without fixed effects have it. The AME of a
+cannot predict from (re-estimate it with <code>lean = FALSE</code>), and for an
+instrumental-variables <code>feols()</code> without exogenous regressor
+(<code>y ~ 1 | x ~ z</code>), whose endogenous regressors fixest's <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>
+leaves out of a prediction on new data. Other <code>feols()</code> fits and a GLM
+without fixed effects have it. The AME of a
 factor in <code>i()</code> sits on the rows of its coefficients, against the
 reference <code>i()</code> gives them (<code>ref =</code>). A level of a factor in <code>i()</code>, or
 a numeric variable that <code>i()</code> enters as categories, with no coefficient
@@ -162,9 +165,9 @@ block is on by default (<code>"fixed_effects"</code> in <code>show_fit_stats</co
 
 
 <dl><dt><code>vcov</code>, <code>cluster</code></dt>
-<dd><p><code>estimatr</code>, <code>fixest</code> and <code>ivreg</code>:
-<code>"classical"</code> only, which for <code>estimatr</code> and <code>fixest</code> is the variance
-the fit carries. <code>tobit</code>: <code>"classical"</code> and <code>"CR1"</code>, as for
+<dd><p><code>estimatr</code> and <code>fixest</code>: <code>"classical"</code>
+only, the variance the fit carries. <code>ivreg</code>: <code>"classical"</code>,
+<code>"HC0"</code>, <code>"HC1"</code>, <code>"CR0"</code>-<code>"CR3"</code> and <code>"CR1S"</code>. <code>tobit</code>: <code>"classical"</code> and <code>"CR1"</code>, as for
 <code>survreg</code>. <code>rq</code>: its own estimator family. See <em>Standard errors,
 degrees of freedom and intervals</em>.</p></dd>
 
@@ -192,15 +195,21 @@ computed with, estimatr's <code>se_type =</code> and whatever fixest's own <code
 interface produced, and spicy never overwrites it. A <code>vcov</code> request
 other than <code>"classical"</code> is refused; set the estimator through the
 fitting package instead: <code>se_type =</code> (with <code>clusters =</code>) for estimatr,
-<code>vcov =</code> at estimation or in <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for fixest. The note carries
-fixest's own label of the estimator (clustered, Newey-West, Conley,
-...), fixest's "IID" written as "Classical". With IID errors, fixest's
-default small-sample correction (<code><a href="https://lrberge.github.io/fixest/reference/ssc.html" class="external-link">fixest::ssc()</a></code>) multiplies the
-standard errors of a <code>feglm()</code> fit by sqrt((n - 1) / (n - K)) over
+<code>vcov =</code> at estimation or in <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> for fixest. The note names
+their estimators as it names those of <code>lm</code>: fixest's "IID" and
+estimatr's classical <code>se_type</code> are "classical (OLS)" ("(2SLS)" for an
+instrumented fit, "(Fisher information)" for <code>fepois</code> and <code>feglm</code>), a
+cluster variance is "cluster-robust" with its clusters, and
+Newey-West, Driscoll-Kraay and Conley keep their names. With IID
+errors, fixest's default small-sample correction (<code><a href="https://lrberge.github.io/fixest/reference/ssc.html" class="external-link">fixest::ssc()</a></code>)
+multiplies the standard errors of a <code>feglm()</code> fit by
+sqrt((n - 1) / (n - K)) over
 those of its <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> twin with the fixed effects as dummies (a <code>feols()</code>
 fit already matches <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>), and
 <code>summary(fit, ssc = fixest::ssc(K.adj = FALSE))</code> gives the <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code>
-values.</p>
+values. Their t tests use the degrees of freedom the fit carries
+(<code>fit$df</code> for estimatr, <code>fixest::degrees_freedom(fit, "t")</code> for
+fixest), which <code>show_columns = "df"</code> prints in a column.</p>
 <p><strong><code><a href="https://rdrr.io/pkg/quantreg/man/rq.html" class="external-link">quantreg::rq</a></code>.</strong> Its own estimator family, not the sandwich
 vocabulary:</p><ul><li><p><code>"classical"</code> resolves to the heteroskedasticity-robust <code>"nid"</code>
 sandwich (Hendricks-Koenker, Hall-Sheather bandwidth), quantreg's
@@ -218,6 +227,16 @@ few clusters, its standard errors read against normal critical
 values reject too often (Hagemann 2017). A weighted <code>rq</code> fit
 refuses it: the resamplers do not carry the weights.</p></li>
 </ul><p><code>cluster</code> with any other <code>rq</code> estimator is refused.</p>
+<p><strong><code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg</a></code>.</strong> The sandwiches of an <code>lm</code>, where two engines agree
+on them: <code>"HC0"</code> and <code>"HC1"</code> from <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovHC.html" class="external-link">sandwich::vcovHC()</a></code>, and with
+<code>cluster</code>, <code>"CR0"</code>-<code>"CR3"</code> from <code><a href="http://jepusto.github.io/clubSandwich/reference/vcovCR.html" class="external-link">clubSandwich::vcovCR()</a></code> with
+Satterthwaite degrees of freedom, and <code>"CR1S"</code> with <code>t(G - 1)</code>. All
+match <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code> on the same model (<code>"CR1S"</code> its
+<code>se_type = "stata"</code>). <code>"HC2"</code>-<code>"HC5"</code> are refused: they weight each
+residual by a leverage, which two-stage least squares does not define
+uniquely, and <code><a href="https://rdrr.io/pkg/AER/man/ivreg.html" class="external-link">AER::ivreg()</a></code> and <code><a href="https://declaredesign.org/r/estimatr/reference/iv_robust.html" class="external-link">estimatr::iv_robust()</a></code> use different
+hat values (standard errors about 0.1 to 0.3 percent apart).
+<code>"bootstrap"</code> and <code>"jackknife"</code> are refused: they refit an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>.</p>
 <p><strong><code><a href="https://rdrr.io/pkg/AER/man/tobit.html" class="external-link">AER::tobit</a></code>.</strong> A <code>tobit</code> fit is a <code>survreg</code> model, and takes the
 same estimator: <code>"CR1"</code> from <code><a href="https://zeileis.codeberg.page/sandwich/reference/vcovCL.html" class="external-link">sandwich::vcovCL()</a></code>, the CR0 sandwich
 scaled by \(G/(G-1)\), <code>G</code> the number of clusters. The other
@@ -249,8 +268,8 @@ family). See <em>Hierarchical (nested) model comparison</em> in
 AIC: the 2SLS R-squared is not the classical one. Asked for, it is the
 R-squared of <code>ivreg()</code>, on the structural residuals. The AIC and BIC of
 a <code>fixest</code> model are those of its <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code>, <code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm()</a></code> or <code><a href="https://rdrr.io/pkg/MASS/man/glm.nb.html" class="external-link">MASS::glm.nb()</a></code>
-twin with the fixed effects as dummies; see <em>Vocabulary tokens</em> in
-<code><a href="table_regression.html">table_regression()</a></code>.</p><ul><li><p><code>"fixed_effects"</code>: the <code>Fixed effects:</code> block, on by default.</p></li>
+twin with the fixed effects as dummies; see
+<a href="table_regression_tokens.html">table_regression_tokens</a>.</p><ul><li><p><code>"fixed_effects"</code>: the <code>Fixed effects:</code> block, on by default.</p></li>
 <li><p><code>"within_r2"</code>: the R-squared of the model with the fixed effects
 partialed out, a default for <code>feols</code> except an IV one, on request
 for <code>estimatr</code>. GLM-family <code>fixest</code> fits report fixest's McFadden
@@ -283,8 +302,10 @@ estimated parameter, so a test across two <code>| fe</code> structures
 measures the change in the absorbed effects together with the
 change in the coefficients, and the two cannot be separated. Hold
 the <code>| fe</code> part fixed across the hierarchy.</p></li>
-<li><p>The AME of a <code>fixest</code> GLM with fixed effects, and of a <code>feols()</code>
-with fixed effects fitted with <code>lean = TRUE</code> (see <em>Engines</em>).</p></li>
+<li><p>The AME of a <code>fixest</code> GLM with fixed effects, of a <code>feols()</code>
+with fixed effects fitted with <code>lean = TRUE</code>, and of an
+instrumental-variables <code>feols()</code> without exogenous regressor (see
+<em>Engines</em>).</p></li>
 <li><p>A <code>fixest</code> fit with fixed effects only: it has no coefficient
 row to show.</p></li>
 </ul></div>
@@ -327,7 +348,7 @@ article.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>  1200                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC             <span style="color: #9E9E9E;">│</span> 10082.1                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Quantile regression (τ = 0.50). Std. errors: Quantile sandwich (nid, Hall-Sheather). CI = confidence interval; AIC = Akaike information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Quantile regression (τ = 0.50). Std. errors: quantile sandwich (nid, Hall-Sheather). CI = confidence interval; AIC = Akaike information criterion.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Quantile regression (τ = 0.50): wellbeing_score</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable        <span style="color: #9E9E9E;">│</span>    B       SE       95% CI        p   </span>
@@ -341,7 +362,7 @@ article.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  n               <span style="color: #9E9E9E;">│</span>  1200                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC             <span style="color: #9E9E9E;">│</span> 10082.1                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Quantile regression (τ = 0.50). Std. errors: Quantile (iid). CI = confidence interval; AIC = Akaike information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Quantile regression (τ = 0.50). Std. errors: quantile (iid). CI = confidence interval; AIC = Akaike information criterion.</span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

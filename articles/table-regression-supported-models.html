@@ -361,15 +361,15 @@ not understand.</p>
 <p>The table is generated from the same internal registry that the
 package itself uses, so it cannot drift from the code. Call
 <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> to get it as a data frame.</p>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="6%">
+<col width="5%">
 <col width="2%">
-<col width="18%">
-<col width="8%">
-<col width="11%">
-<col width="37%">
-<col width="14%">
+<col width="16%">
+<col width="13%">
+<col width="10%">
+<col width="38%">
+<col width="12%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Family</th>
@@ -452,7 +452,7 @@ jackknife</td>
 <td align="left">yes</td>
 <td align="left">-</td>
 <td align="left">-</td>
-<td align="left">classical</td>
+<td align="left">classical, HC0, HC1, CR0-CR3, CR1S</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>
@@ -480,7 +480,8 @@ jackknife</td>
 <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::feglm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/feglm.html" class="external-link">fixest::fepois()</a></code>,
 <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::femlm()</a></code>, <code><a href="https://lrberge.github.io/fixest/reference/femlm.html" class="external-link">fixest::fenegbin()</a></code>
 </td>
-<td align="left">yes (no for a GLM with fixed effects)</td>
+<td align="left">yes (no for a GLM with fixed effects or an IV fit
+without exogenous regressor)</td>
 <td align="left">OR / IRR (link)</td>
 <td align="left">-</td>
 <td align="left">classical (the fit’s own)</td>
@@ -507,13 +508,13 @@ jackknife</td>
 <td align="left"></td>
 <td align="left"><code>glmmTMB</code></td>
 <td align="left"><code><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html" class="external-link">glmmTMB::glmmTMB()</a></code></td>
-<td align="left">yes (no for the ordinal family)</td>
+<td align="left">yes (no for the ordinal family or a REML fit)</td>
 <td align="left">link-dependent (IRR for count families, OR for ordinal
 logit)</td>
-<td align="left">Random effects; Zero-inflation; Zero hurdle, Pr(y = 0)
-for a zero-truncated family, ziGamma, lognormal or beta_family;
-Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal
-family)</td>
+<td align="left">Random effects; Zero-inflation (ziformula); Zero
+hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or
+beta_family; Dispersion (dispformula); Precision (dispformula of
+beta_family); Thresholds (ordinal family)</td>
 <td align="left">classical, CR0, CR1 (classical only for REML or the
 ordinal family)</td>
 </tr>
@@ -551,7 +552,8 @@ than the session’s)</td>
 <td align="left"><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td>
 <td align="left">per category</td>
 <td align="left">OR (logit)</td>
-<td align="left">Thresholds; Non-proportional effects</td>
+<td align="left">Thresholds; Non-proportional effects (nominal =); Scale
+effects (scale =)</td>
 <td align="left">classical, CR1 (classical only with scale or nominal
 terms)</td>
 </tr>
@@ -855,7 +857,7 @@ jackknife</td>
 <tr class="even">
 <td align="left"></td>
 <td align="left"><code>ivreg</code></td>
-<td align="left">classical</td>
+<td align="left">classical, HC0, HC1, CR0-CR3, CR1S</td>
 </tr>
 <tr class="odd">
 <td align="left"></td>

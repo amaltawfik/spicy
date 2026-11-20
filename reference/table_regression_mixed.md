@@ -41,7 +41,7 @@ the values they take for mixed models are listed below.
 | Class | Engine | AME | Exponentiate | Blocks | vcov |
 | `lmerMod` | [`lme4::lmer()`](https://rdrr.io/pkg/lme4/man/lmer.html) | yes | \- | Random effects | classical, CR0-CR3 |
 | `glmerMod` | [`lme4::glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html) | yes | OR / IRR (link) | Random effects | classical |
-| `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation; Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion; Precision (dispformula of beta_family); Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
+| `glmmTMB` | [`glmmTMB::glmmTMB()`](https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html) | yes (no for the ordinal family or a REML fit) | link-dependent (IRR for count families, OR for ordinal logit) | Random effects; Zero-inflation (ziformula); Zero hurdle, Pr(y = 0) for a zero-truncated family, ziGamma, lognormal or beta_family; Dispersion (dispformula); Precision (dispformula of beta_family); Thresholds (ordinal family) | classical, CR0, CR1 (classical only for REML or the ordinal family) |
 | `lme` | [`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html) | yes | \- | Random effects | classical, CR0-CR3 (classical only with contrasts other than the session's) |
 | `gls` | [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html) | yes | \- | \- | classical |
 
@@ -105,29 +105,38 @@ on fits without random effects.
   the outcome for a Gaussian model). `"variance"` reports \\\sigma^2\\,
   in squared units. The standard error is a delta-method one on the
   scale the engine estimates on, and \\SE(\sigma) = SE(\sigma^2) /
-  (2\sigma)\\. For `lmer` and `glmer` it comes from the covariance
-  matrix of the variances (merDeriv). For `lme`, `glmmTMB` and `clmm`
-  the engine estimates \\\log\sigma\\ and the SE is \\\sigma \\
-  SE(\log\sigma)\\. The Wald CI of every engine is built on
+  (2\sigma)\\. For `lmer` and `glmer` it comes from the numerical
+  Hessian of the deviance (the REML criterion for a REML fit) in the
+  standard deviations and correlations, i.e. the observed information;
+  for a `glmer` fit spicy uses the Hessian lme4 stores at the optimum
+  when there is one. The prior weights of an `lmer` fit are taken into
+  account. A negative-binomial `glmer`, a `glmer` family with a scale
+  parameter and an lme4 covariance structure other than the unstructured
+  one keep their rows without SE or CI, and a note under the table says
+  why. So does a Hessian that is not positive definite. For `lme`,
+  `glmmTMB` and `clmm` the engine estimates \\\log\sigma\\ and the SE is
+  \\\sigma \\ SE(\log\sigma)\\. The Wald CI of every engine is built on
   \\\log\sigma\\, \\\sigma \exp(\pm z \\ SE(\log\sigma))\\, and squared
   for \\\sigma^2\\: by spicy for `lmer` and `glmer`, by the engine
   otherwise
   ([`nlme::intervals()`](https://rdrr.io/pkg/nlme/man/intervals.html),
   `glmmTMB::confint()`). The residual row of a Gaussian `glmmTMB` fit
   has its SE and CI too. Correlation rows (\\\rho\\) have no unit and
-  are unchanged. Their SE is a delta-method one too: from the variances
-  for `lmer` (CI \\\rho \pm z \\ SE\\, clamped to \\\[-1, 1\]\\), from
-  \\\mathrm{atanh}(\rho)\\ for `lme`, and from glmmTMB's \\\rho /
-  \sqrt{1 - \rho^2}\\ in a two-term block, with the engine's CI. In a
-  `glmmTMB` block of three terms or more it is the width of glmmTMB's
-  interval divided by \\2z\\. nlme computes the covariance matrix behind
-  the SE of an `lme` fit by finite differences. With nlme's default step
-  and a random-effect correlation close to zero, the SE can be off by
-  several percent and differ from one platform to another, or the matrix
-  is not positive definite and the rows have no SE and no CI, which a
-  note under the table says. A larger step,
-  `control = nlme::lmeControl(.relStep = 1e-4)`, gives a stable matrix.
-  spicy displays what nlme estimates.
+  are unchanged. For `lmer` and `glmer` their SE comes from the same
+  Hessian, and the CI is the Wald interval on \\\mathrm{atanh}(\rho)\\,
+  \\\tanh(\mathrm{atanh}(\rho) \pm z \\ SE / (1 - \rho^2))\\, which
+  stays inside \\(-1, 1)\\. For the other engines the SE is a
+  delta-method one: from \\\mathrm{atanh}(\rho)\\ for `lme`, and from
+  glmmTMB's \\\rho / \sqrt{1 - \rho^2}\\ in a two-term block, with the
+  engine's CI. In a `glmmTMB` block of three terms or more it is the
+  width of glmmTMB's interval divided by \\2z\\. nlme computes the
+  covariance matrix behind the SE of an `lme` fit by finite differences.
+  With nlme's default step and a random-effect correlation close to
+  zero, the SE can be off by several percent and differ from one
+  platform to another, or the matrix is not positive definite and the
+  rows have no SE and no CI, which a note under the table says. A larger
+  step, `control = nlme::lmeControl(.relStep = 1e-4)`, gives a stable
+  matrix. spicy displays what nlme estimates.
 
 - `re_columns`:
 
@@ -181,26 +190,29 @@ on fits without random effects.
   `"wald"` (default) or `"profile"`: the uncertainty of the
   random-effects rows of `lmer` and `glmer` fits.
 
-  - `"wald"`: SE from the information matrix (merDeriv, expected
-    information by default) and a Wald CI symmetric on the log of the
-    standard deviation, which stays above 0 (see `re_scale`). Wald can
-    be optimistic near the boundary of a variance; `"profile"` respects
-    it. Its cost grows faster than the number of observations (about a
-    minute at n of roughly 2,700). Above `options("spicy.re_se_max_n")`
-    (default `1000`) the SE and CI are skipped: the rows keep their
-    estimates, the cells show an en dash, a note states the omission and
-    a `spicy_caveat` warning is raised. Raise the cap
-    (`options(spicy.re_se_max_n = Inf)`) to force the computation, or
-    use `re_ci = "profile"`.
+  - `"wald"`: SE from the observed information (the Hessian of the
+    deviance, see `re_scale`) and a Wald CI symmetric on the log of the
+    standard deviation, which stays above 0, and on
+    \\\mathrm{atanh}(\rho)\\ for a correlation. Wald can be optimistic
+    near the boundary of a variance; `"profile"` respects it. The
+    Hessian takes a few dozen evaluations of the deviance: under a
+    second for an `lmer` fit of 20,000 observations. A `glmer` fit above
+    10,000 observations has no Hessian stored by lme4, and its
+    computation then takes about a quarter of the time of the fit.
 
   - `"profile"`: profile-likelihood intervals from
     `confint(fit, method = "profile")`, the route lme4 documents. They
     are asymmetric and respect the boundary at 0. No SE is shown, since
     a symmetric SE misdescribes the skewed sampling distribution of a
-    variance. There is no size cap (about two seconds per variance
-    parameter at n of 7,000; more for `glmer`). The note names the
+    variance. It takes longer than `"wald"` (about two seconds per
+    variance parameter at n of 7,000; more for `glmer`). lme4 profiles
+    the ML deviance, also for a REML fit: the interval of a REML fit is
+    that of its ML refit, and the note says so. The note names the
     method, and `re_scale = "variance"` shows the profile interval of
-    the variance itself.
+    the variance itself. A negative-binomial `glmer`, which has no Wald
+    SE, gets its profile interval this way. lme4 does not profile a
+    `glmer` whose scale is estimated (Gamma, inverse Gaussian): its rows
+    keep no interval and a warning says so.
 
   `glmmTMB`, `lme` and `clmm` fits keep the intervals of their own
   engine under `"wald"` (see `re_scale`) and refuse `"profile"`.
@@ -245,7 +257,8 @@ models:
   `"partial_f"` and the variance-explained partials (`"partial_f2"`,
   `"partial_eta2"`, `"partial_omega2"`) are not defined. The AME tokens
   are available for every engine of the table above except `glmmTMB`
-  with the ordinal family; no column token is reserved to mixed models.
+  with the ordinal family or fitted by REML, whose fixed effects the AME
+  cannot perturb; no column token is reserved to mixed models.
 
 - `show_fit_stats`:
 
@@ -271,12 +284,13 @@ The fixed effects are tested as each engine tests them:
 - `lme`: t with the containment degrees of freedom of `nlme`, named in
   the note. `gls`: t on n minus the number of coefficients.
 
-The confidence interval uses the same reference distribution as the
-test. The AME rows take the variance matrix of the coefficient rows,
-model-based or robust, and are tested by Wald z. Beside the t rows of an
-`lmerTest` or `lme` fit, or of a `CR*` variance, an identity-link AME
-can therefore carry another p-value than the B of the same row; read it
-as a large-sample approximation.
+`show_columns = "df"` prints the degrees of freedom of each t test in a
+column, blank for a z test. The confidence interval uses the same
+reference distribution as the test. The AME rows take the variance
+matrix of the coefficient rows, model-based or robust, and are tested by
+Wald z. Beside the t rows of an `lmerTest` or `lme` fit, or of a `CR*`
+variance, an identity-link AME can therefore carry another p-value than
+the B of the same row; read it as a large-sample approximation.
 
 For a mixed model with a non-identity link, the AME averages the slopes
 of the conditional predictions: each observation is predicted with the
@@ -357,8 +371,8 @@ the call that no model fills is refused. A `gls` fit gets `n` and `AIC`.
   Empty for `gls`.
 
 - On request: `"deviance"`, `"log_lik"` (the restricted log-likelihood
-  of a REML fit), `"sigma"` (see *Vocabulary tokens* in
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  of a REML fit), `"sigma"` (see
+  [table_regression_tokens](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md)
   for its `glmmTMB` families), and the dispersion rows of a
   negative-binomial or beta family (`"theta"`, `"alpha"`, `"delta"`,
   `"phi"`).
@@ -482,9 +496,6 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #> P-values of the `lme4::lmer()` model are Wald z-tests, a large-sample approximation.
 #> ℹ For Satterthwaite t-tests, which suit models with few groups, refit with `lmerTest::lmer()` (install lmerTest if needed).
 #> This message is displayed once per session.
-#> Registered S3 method overwritten by 'merDeriv':
-#>   method        from        
-#>   bread.lmerMod clubSandwich
 #> Linear mixed-effects regression: Reaction
 #> 
 #>  Variable                        │    B      SE        95% CI         p   
@@ -495,7 +506,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  Random effects:                 │                                        
 #>    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    
 #>    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –    
-#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
+#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.52,   0.61]   –    
 #>    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                                   
@@ -505,7 +516,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 #> Linear mixed-effects regression: Reaction
 #> 
 #>  Variable                        │    B      SE        95% CI         p   
@@ -526,7 +537,7 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 #> Hierarchical linear mixed-effects regression: Reaction
 #> 
 #>                                  Model 1                 Model 2          
@@ -552,6 +563,6 @@ if (requireNamespace("lme4", quietly = TRUE)) {
 #>  Δχ²                     │     –                  116.46 (1)              
 #>  p (change)              │     –                    <.001                 
 #> 
-#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression models. Std. errors: classical (model-based). P-values: Wald z-test, large-sample approximation. Model 1: Random effects (ML): LR test vs linear regression, χ̄²(1) = 50.51, p < .001. Model 2: Random effects (ML): LR test vs linear regression, χ̄²(1) = 106.21, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 # }
 ```

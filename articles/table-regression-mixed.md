@@ -90,7 +90,7 @@ table_regression(fit)
 #>  Random effects:                 │                                        
 #>    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    
 #>    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –    
-#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
+#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.52,   0.61]   –    
 #>    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                                   
@@ -100,7 +100,7 @@ table_regression(fit)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Reading the table, top to bottom:
@@ -225,7 +225,6 @@ all*, only a school random intercept. Its job is a single number:
 
 ``` r
 
-# (the accompanying console warning is suppressed in this rendering)
 m_empty <- lmer(MathAch ~ 1 + (1 | School), data = hsb)
 table_regression(m_empty)
 #> Linear mixed-effects regression: MathAch
@@ -235,8 +234,8 @@ table_regression(m_empty)
 #>  (Intercept)            │    12.64  0.24  [12.15, 13.12]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:        │                                       
-#>    σ School (Intercept) │     2.93   –          –          –    
-#>    σ (Residual)         │     6.26   –          –          –    
+#>    σ School (Intercept) │     2.93  0.18  [ 2.60,  3.32]   –    
+#>    σ (Residual)         │     6.26  0.05  [ 6.15,  6.36]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                      │  7185                                 
 #>  N (School)             │   160                                 
@@ -246,7 +245,7 @@ table_regression(m_empty)
 #>  AIC                    │ 47122.8                               
 #>  BIC                    │ 47143.4                               
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p < .001. SE and CI of the random-effect variance components not computed for n above 1000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 986.12, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The **ICC of 0.18** is nothing but the two σ rows combined: 2.93² /
@@ -257,18 +256,6 @@ for these data). With 160 schools, the design sits comfortably above the
 roughly 50 groups Maas & Hox (2005) find necessary for reliable standard
 errors and interval coverage of the variance components — the point
 estimates themselves hold up with fewer.
-
-One display note, visible here for the first time: at this sample size
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
-skips the Wald SE and CI of the variance components because their
-computation grows superlinearly with n. The table note states the
-omission, and the build-time warning names the override
-(`options(spicy.re_se_max_n = )`). Estimates, ICC, R², and the LR test
-are unaffected; the random-part inference below runs through `re_test`,
-and `re_ci = "profile"` restores boundary-respecting profile-likelihood
-CIs at any sample size (a couple of seconds per variance parameter — the
-route `lme4` itself recommends over SEs). The same note (and suppressed
-warning) accompanies every HSB table in this sequence.
 
 ### Step 2: a random intercept, next to the OLS
 
@@ -287,8 +274,8 @@ table_regression(list(OLS = ols, Multilevel = m_ri),
 #>  SES                    │     3.18  0.10  <.001      2.39  0.11  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:        │                                              
-#>    σ School (Intercept) │                            2.18   –     –    
-#>    σ (Residual)         │                            6.09   –     –    
+#>    σ School (Intercept) │                            2.18  0.15   –    
+#>    σ (Residual)         │                            6.09  0.05   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                      │  7185                   7185                 
 #>  R²                     │     0.13                    –                
@@ -300,7 +287,7 @@ table_regression(list(OLS = ols, Multilevel = m_ri),
 #>  AIC                    │ 47103.9                46653.2               
 #>  BIC                    │ 47124.6                46680.7               
 #> 
-#> Note. OLS: linear regression; Multilevel: linear mixed-effects regression. Std. errors: OLS: classical (OLS), Multilevel: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001. Multilevel: SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. OLS: linear regression; Multilevel: linear mixed-effects regression. Std. errors: OLS: classical (OLS), Multilevel: classical (model-based). Multilevel: P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 458.92, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Reading the two columns against each other, five things change:
@@ -351,8 +338,8 @@ table_regression(m_wb, show_columns = c("b", "se", "p"))
 #>  meanses                │     5.87  0.36  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:        │                       
-#>    σ School (Intercept) │     1.64   –     –    
-#>    σ (Residual)         │     6.08   –     –    
+#>    σ School (Intercept) │     1.64  0.12   –    
+#>    σ (Residual)         │     6.08  0.05   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                      │  7185                 
 #>  N (School)             │   160                 
@@ -362,7 +349,7 @@ table_regression(m_wb, show_columns = c("b", "se", "p"))
 #>  AIC                    │ 46578.6               
 #>  BIC                    │ 46613.0               
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p < .001. SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 265.12, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Within a school, a one-point difference in SES is associated with 2.19
@@ -413,7 +400,7 @@ table_regression(m_rs, re_test = "lrt", show_columns = c("b", "p"))
 #>  AIC                            │ 46571.7         
 #>  BIC                            │ 46619.8         
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 276.05, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The slope SD is 0.83 achievement points around the average slope of
@@ -453,10 +440,10 @@ table_regression(m_cl, show_columns = c("b", "se", "p"))
 #>  cses:SectorCatholic            │    -1.35  0.23  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:                │                       
-#>    σ School (Intercept)         │     1.54   –     –    
-#>    σ School cses                │     0.52   –     –    
-#>    ρ School ((Intercept), cses) │     0.24   –     –    
-#>    σ (Residual)                 │     6.06   –     –    
+#>    σ School (Intercept)         │     1.54  0.12   –    
+#>    σ School cses                │     0.52  0.22   –    
+#>    ρ School ((Intercept), cses) │     0.24  0.28   –    
+#>    σ (Residual)                 │     6.06  0.05   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                              │  7185                 
 #>  N (School)                     │   160                 
@@ -465,7 +452,7 @@ table_regression(m_cl, show_columns = c("b", "se", "p"))
 #>  AIC                            │ 46532.5               
 #>  BIC                            │ 46594.5               
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p < .001. SE and CI of the random-effect variance components not computed for n above 1000. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 221.24, p < .001. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 In public schools the within-school SES slope is 2.79; in Catholic
@@ -535,7 +522,7 @@ table_regression(p3, show_columns = c("b", "se"))
 #>  AIC                        │ 255.0        
 #>  BIC                        │ 263.4        
 #> 
-#> Note. Linear mixed-effects regression. ICC is not reported: several grouping factors define several ICCs. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p < .001. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. ICC is not reported: several grouping factors define several ICCs. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(2) = 63.19, p < .001. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Both levels of nesting get their σ row, one `N (cask:batch)` /
@@ -587,7 +574,7 @@ table_regression(sfit)
 #>  AIC               │ 342.0                             
 #>  BIC               │ 353.1                             
 #> 
-#> Note. Linear mixed-effects regression. Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The chi-bar-squared test reads p = 1.000 — the boundary case. The
@@ -625,7 +612,7 @@ table_regression(fit, re_test = "lrt")
 #>  Random effects:                 │                                        
 #>    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    
 #>    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]  <.001 
-#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
+#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.52,   0.61]   –    
 #>    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                                   
@@ -635,7 +622,7 @@ table_regression(fit, re_test = "lrt")
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. Random-effect p-values: LR test vs the reduced random structure, chi-bar-squared reference. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Only the `Days` slope row gains a p-value: following the marginality
@@ -681,7 +668,7 @@ table_regression(fit_ri, re_test = "rlrt")
 #>  AIC                     │ 1794.5                                 
 #>  BIC                     │ 1807.2                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. Random-effect p-value: exact restricted LRT (simulated null distribution). CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. Random-effect p-value: exact restricted LRT (simulated null distribution). CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 ## The random-effects block on your terms
@@ -689,7 +676,7 @@ table_regression(fit_ri, re_test = "rlrt")
 Three arguments control the block without touching the estimates.
 `re_scale = "variance"` switches the rows from SD (`σ`) to variance
 (`σ²`); `re_columns` restricts which quantities the variance-component
-rows display (the SE and CI on a variance component come from `merDeriv`
+rows display (the SE and CI on a variance component are Wald quantities
 and are themselves boundary-fragile — dropping them is a defensible
 editorial choice); `show_re = FALSE` removes the block and all
 random-effects footer lines, leaving a fixed-effects-only table (the
@@ -718,18 +705,19 @@ table_regression(fit, re_scale = "variance", re_columns = "est")
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Where those SEs come from depends on the engine: `lmer` / `glmer` rows
-use the `merDeriv` Hessian (Wang & Merkle 2018; the cells fall back to
-NA when the package is absent or the fit is singular), `glmmTMB` its
-native Wald [`confint()`](https://rdrr.io/r/stats/confint.html), and
+use the numerical Hessian of the deviance in the standard deviations and
+correlations (the cells fall back to NA when the fit is singular),
+`glmmTMB` its native Wald
+[`confint()`](https://rdrr.io/r/stats/confint.html), and
 [`nlme::lme`](https://rdrr.io/pkg/nlme/man/lme.html) its `intervals()`.
-Correlation (`ρ`) rows carry a multivariate delta-method SE for `lmer`,
-native intervals elsewhere. Switching `re_scale` transports SE and CI
-between the SD and variance scales by the delta method
-(`SE(σ) = SE(σ²) / 2σ`), so the displayed values agree with
+The Wald interval of an `lmer` or `glmer` correlation (`ρ`) is built on
+atanh ρ and stays inside (−1, 1), as in `nlme`. Switching `re_scale`
+transports SE and CI between the SD and variance scales by the delta
+method (`SE(σ) = SE(σ²) / 2σ`), so the displayed values agree with
 [`VarCorr()`](https://rdrr.io/pkg/nlme/man/VarCorr.html) on either scale
 up to rounding.
 
@@ -776,7 +764,7 @@ table_regression(
 #>  AIC                             │ 1794.5                1755.6               
 #>  BIC                             │ 1807.2                1774.8               
 #> 
-#> Note. Linear mixed-effects regression models. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression models. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Intercept only: Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. + random slope: Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 **What is — and is not — being tested here.** Each footer’s
@@ -919,8 +907,8 @@ table_regression(
 #>  bmi_region             │                          5.08   2.76   .066 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:        │                                             
-#>    σ region (Intercept) │    0.37   –     –        0.00    –     –    
-#>    σ (Residual)         │   15.45   –     –       15.43    –     –    
+#>    σ region (Intercept) │    0.37  1.15   –        0.00    –     –    
+#>    σ (Residual)         │   15.45  0.32   –       15.43    –     –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                      │ 1188                  1188                  
 #>  N (region)             │    6                     6                  
@@ -930,7 +918,7 @@ table_regression(
 #>  AIC                    │ 9890.8                9884.6                
 #>  BIC                    │ 9916.2                9915.1                
 #> 
-#> Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. Naive: SE and CI of the random-effect variance components not computed for n above 1000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression models. Within-between: Singular fit: the random-effect structure is at or near the boundary of the parameter space (a variance of 0, or a correlation of ±1); the Wald SE and CI of the variance components are omitted. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Naive: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.03, p = .431. Within-between: Random effects (REML): LR test vs linear regression, χ̄²(1) = 0.00, p = 1.000. ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Reading the table:
@@ -1026,7 +1014,7 @@ table_regression(gfit, exponentiate = TRUE)
 #>    4                  │   0.21  0.09  [0.09, 0.48]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:      │                                   
-#>    σ herd (Intercept) │   0.64  0.22  [0.33, 1.27]   –    
+#>    σ herd (Intercept) │   0.64  0.18  [0.37, 1.11]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                    │  56                               
 #>  N (herd)             │  15                               
@@ -1035,7 +1023,7 @@ table_regression(gfit, exponentiate = TRUE)
 #>  AIC                  │ 194.1                             
 #>  BIC                  │ 204.2                             
 #> 
-#> Note. Logistic mixed-effects regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Logistic mixed-effects regression. Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline odds. Std. errors: classical (Fisher information). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 14.01, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The random-effect row is now on the **log-odds scale** (the linear
@@ -1108,7 +1096,7 @@ table_regression(afit, show_columns = c("b", "se", "p", "ame", "ame_p"))
 #>    C               │  -0.30  0.27   .267  -0.05   .266 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:   │                                   
-#>    σ g (Intercept) │   1.40  0.23   –                  
+#>    σ g (Intercept) │   1.40  0.27   –                  
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                 │ 500                               
 #>  N (g)             │  25                               
@@ -1118,7 +1106,7 @@ table_regression(afit, show_columns = c("b", "se", "p", "ame", "ame_p"))
 #>  AIC               │ 562.4                             
 #>  BIC               │ 583.5                             
 #> 
-#> Note. Logistic mixed-effects regression. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Logistic mixed-effects regression. Std. errors: classical (Fisher information). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 84.11, p < .001. AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 For a mixed model with a non-identity link, the AME averages the slopes
@@ -1190,7 +1178,7 @@ table_regression(zfit, exponentiate = TRUE)
 #>  AIC                  │ 1908.5                             
 #>  BIC                  │ 1930.8                             
 #> 
-#> Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p < .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Zero-inflated Poisson mixed-effects regression. Coefficients exponentiated and displayed as IRR; SE on the IRR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline rate. Std. errors: classical (Fisher information). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs zero-inflated Poisson regression, χ̄²(1) = 19.46, p < .001. Zero-inflation component: log-odds of a structural (excess) zero. Coefficients exponentiated and displayed as odds ratios. The (Intercept) row estimates the baseline odds. IRR = incidence rate ratio; CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 Note the per-block exponentiation: the count coefficients become
@@ -1237,7 +1225,7 @@ table_regression(lfit)
 #>  AIC                     │ 1794.5                                 
 #>  BIC                     │ 1807.2                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: t-test with containment df. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: t-test with containment df. Random effects (REML): LR test vs linear regression, χ̄²(1) = 107.20, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 ## Population-averaged alternatives: GEE
@@ -1293,7 +1281,7 @@ table_regression(
 #>  baseline                │   7.31  [3.89, 13.75]  <.001   26.61  [8.38, 84.51]  <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  Random effects:         │                                                            
-#>    σ subject (Intercept) │                                 1.98  [1.57,  2.49]   –    
+#>    σ subject (Intercept) │                                 1.98  [1.43,  2.74]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                       │ 444                           444                          
 #>  N (subject)             │ 111                           111                          
@@ -1304,7 +1292,7 @@ table_regression(
 #>  BIC                     │    –                          464.1                        
 #>  Max cluster size        │   4                              –                         
 #> 
-#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: Population-averaged: robust sandwich (GEE), clusters by subject; Subject-specific: Wald asymptotic (z). P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Population-averaged: population-averaged logistic regression (GEE); Subject-specific: logistic mixed-effects regression. GEE working correlation: exchangeable (alpha = 0.36). Coefficients exponentiated and displayed as OR; CI bounds exponentiated. The (Intercept) row estimates the baseline odds. Std. errors: Population-averaged: robust sandwich (GEE), clusters by subject; Subject-specific: classical (Fisher information). Subject-specific: P-values: Wald z-test, large-sample approximation. Random effects (ML): LR test vs logistic regression, χ̄²(1) = 58.15, p < .001. CI = confidence interval; ICC = intraclass correlation coefficient; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The active-treatment odds ratio is the same effect asked two ways: the
@@ -1392,7 +1380,7 @@ table_regression(fit, standardized = "refit", show_columns = c("b", "beta", "p")
 #>  AIC                             │ 1755.6               
 #>  BIC                             │ 1774.8               
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Satterthwaite t-test. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. β = standardized coefficient ("refit": outcome and numeric predictors z-scored, factor dummies on 0/1); AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The algebraic shortcuts (`"posthoc"`, `"basic"`, `"smart"`) are
@@ -1417,19 +1405,19 @@ head(table_regression(fit, output = "data.frame"), 8)
 #> 1    (Intercept)    (Intercept)                          <NA>          coef 251.40510485 6.8245967
 #> 2           Days           Days                          <NA>          coef  10.46728596 1.5457896
 #> 3 Random effects Random effects                          <NA> factor_header           NA        NA
-#> 4 Random effects Random effects         σ Subject (Intercept)            vc  24.74065799 5.8362639
-#> 5 Random effects Random effects                σ Subject Days            vc   5.92213766 1.2480355
-#> 6 Random effects Random effects ρ Subject ((Intercept), Days)            vc   0.06555124 0.3250232
-#> 7 Random effects Random effects                  σ (Residual)            vc  25.59179572 1.5080110
+#> 4 Random effects Random effects         σ Subject (Intercept)            vc  24.74065799 5.8363107
+#> 5 Random effects Random effects                σ Subject Days            vc   5.92213766 1.2480368
+#> 6 Random effects Random effects ρ Subject ((Intercept), Days)            vc   0.06555124 0.3250254
+#> 7 Random effects Random effects                  σ (Residual)            vc  25.59179572 1.5080091
 #> 8           nobs              n                          <NA>      fit_stat 180.00000000        NA
 #>     95% CI LL   95% CI UL            p
 #> 1 237.0064468 265.8037629 1.171558e-17
 #> 2   7.2059547  13.7286173 3.263824e-06
 #> 3          NA          NA           NA
-#> 4  15.5816976  39.2832779           NA
-#> 5   3.9182819   8.9507889           NA
-#> 6  -0.5714826   0.7025851           NA
-#> 7  22.8004400  28.7248846           NA
+#> 4  15.5816399  39.2834233           NA
+#> 5   3.9182802   8.9507929           NA
+#> 6  -0.5183946   0.6078048           NA
+#> 7  22.8004433  28.7248804           NA
 #> 8          NA          NA           NA
 ```
 
@@ -1454,7 +1442,7 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
 #>   <chr>                                  <dbl>     <dbl>    <dbl>     <dbl>
 #> 1 re::Subject::(Intercept)             24.7        5.84    15.6      39.3  
 #> 2 re::Subject::Days                     5.92       1.25     3.92      8.95 
-#> 3 re::Subject::(Intercept), Days::cor   0.0656     0.325   -0.571     0.703
+#> 3 re::Subject::(Intercept), Days::cor   0.0656     0.325   -0.518     0.608
 #> 4 re::Residual::                       25.6        1.51    22.8      28.7
 ```
 
@@ -1536,6 +1524,3 @@ td[td$estimate_type == "vc", c("term", "estimate", "std.error", "conf.low", "con
   Sage.
 - Stram, D. O., & Lee, J. W. (1994). Variance components testing in the
   longitudinal mixed effects model. *Biometrics*, 50(4), 1171–1177.
-- Wang, T., & Merkle, E. C. (2018). merDeriv: Derivative computations
-  for linear mixed effects models with application to robust standard
-  errors. *Journal of Statistical Software*, 87(Code Snippet 1), 1-16.

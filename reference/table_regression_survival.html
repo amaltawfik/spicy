@@ -253,7 +253,7 @@ fits have no concordance row or note.</p></li>
 <li><p><code>"sigma"</code>: for <code>survreg</code>, the scale \(\sigma\) of the
 model, blank when strata give one scale per stratum. Asked for in a
 table where every <code>survreg</code> fit is stratified, it is refused. See
-<em>Vocabulary tokens</em> in <code><a href="table_regression.html">table_regression()</a></code>.</p></li>
+<a href="table_regression_tokens.html">table_regression_tokens</a>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="tied-event-times-and-the-survival-estimands">Tied event times and the survival estimands<a class="anchor" aria-label="anchor" href="#tied-event-times-and-the-survival-estimands"></a></h2>
@@ -349,7 +349,7 @@ article.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  N events      <span style="color: #9E9E9E;">│</span>  165                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC           <span style="color: #9E9E9E;">│</span> 1489.7                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cox proportional hazards regression: Surv(time, status)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable      <span style="color: #9E9E9E;">│</span>    B     dRMST (365)      95% CI     </span>
@@ -363,7 +363,7 @@ article.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  N events      <span style="color: #9E9E9E;">│</span>  165                                 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC           <span style="color: #9E9E9E;">│</span> 1489.7                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Std. errors: Wald asymptotic (z). dRMST = difference in restricted mean survival time over [0, 365]; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). CI = confidence interval; AIC = Akaike information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Std. errors: classical (Fisher information). dRMST = difference in restricted mean survival time over [0, 365]; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). CI = confidence interval; AIC = Akaike information criterion.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

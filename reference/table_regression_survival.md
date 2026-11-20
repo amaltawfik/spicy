@@ -191,9 +191,8 @@ is reported beside `n`. `survreg` and `flexsurvreg` fits default to
 
 - `"sigma"`: for `survreg`, the scale \\\sigma\\ of the model, blank
   when strata give one scale per stratum. Asked for in a table where
-  every `survreg` fit is stratified, it is refused. See *Vocabulary
-  tokens* in
-  [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+  every `survreg` fit is stratified, it is refused. See
+  [table_regression_tokens](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md).
 
 ## Tied event times and the survival estimands
 
@@ -309,7 +308,7 @@ if (requireNamespace("survival", quietly = TRUE)) {
 #>  N events      │  165                               
 #>  AIC           │ 1489.7                             
 #> 
-#> Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.
 #> Cox proportional hazards regression: Surv(time, status)
 #> 
 #>  Variable      │    B     dRMST (365)      95% CI     
@@ -323,6 +322,6 @@ if (requireNamespace("survival", quietly = TRUE)) {
 #>  N events      │  165                                 
 #>  AIC           │ 1489.7                               
 #> 
-#> Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Std. errors: Wald asymptotic (z). dRMST = difference in restricted mean survival time over [0, 365]; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Cox proportional hazards regression. Concordance C = 0.60 (SE = 0.03). Std. errors: classical (Fisher information). dRMST = difference in restricted mean survival time over [0, 365]; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). CI = confidence interval; AIC = Akaike information criterion.
 # }
 ```

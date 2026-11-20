@@ -126,6 +126,7 @@ institution.</p>
 <span>  abbreviations <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sample_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  minus_sign <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  big_mark <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">v_digits</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -296,6 +297,28 @@ sets it. <code>tinytable::save_tt(x, "table.docx")</code> writes the table
 through markdown and keeps the hyphen-minus: for a Word file, use
 <code>output = "word"</code> (or <code>"flextable"</code>), or knit the table in a Word
 document.</p></dd>
+
+
+<dt id="arg-big-mark">big_mark<a class="anchor" aria-label="anchor" href="#arg-big-mark"></a></dt>
+<dd><p>The thousands separator of the counts. <code>NULL</code> (the
+default) writes none: "7846". A single character groups the digits
+of the integer part by three: <code>","</code> for APA ("7,846"), <code>"\u202f"</code> for
+the narrow no-break space of French typography and of the SI ("7 846"),
+<code>"'"</code> for Swiss usage ("7'846"). It applies to the counts of every
+table that takes a style: n, N, weighted counts, the cells of a
+cross-tabulation, numbers of events and of groups, and the counts of
+the notes and headers ("N = 7,846"). Never to degrees of freedom,
+years, estimates, percentages or fit statistics that are not counts
+(AIC, deviance). A column that aligns its numbers on the decimal mark
+stays aligned. It cannot be a digit, the decimal mark or a minus
+sign. <code><a href="freq.html">freq()</a></code> and <code><a href="cross_tab.html">cross_tab()</a></code>, which take no <code>style</code>, read it from
+<code>options(spicy.style)</code>. No language sets it: under
+<code>options(spicy.language = "fr")</code>, ask for <code>big_mark = "\u202f"</code>. The
+data frames, <code>tidy()</code> and <code>glance()</code> keep their numbers; only cells
+already written as text take the separator. <code>output = "excel"</code> keeps a
+count as a number and groups it through the cell's number format
+(<code>#,##0</code>): Excel then shows the separator of its own locale, not the
+character given here.</p></dd>
 
 
 <dt id="arg-v-digits">v_digits<a class="anchor" aria-label="anchor" href="#arg-v-digits"></a></dt>
@@ -602,7 +625,8 @@ Cohen's <em>d</em>). This is also spicy's default rule, the one <code>"nejm"</co
 <code>"annals"</code> and <code>"aer"</code> apply.</p></li>
 </ul><p>Not encoded: the one-decimal rule for means of integer scales
 (depends on what the variable measures, which spicy cannot know),
-and the thousands separator (see <em>Known gaps</em> below). Nor the star
+and the thousands separator, which no theme sets: add
+<code>big_mark = ","</code> (<code>spicy_style("apa", big_mark = ",")</code>). Nor the star
 thresholds. The official correlation and ANOVA sample tables mark
 <code>.05</code> / <code>.01</code> / <code>.001</code>, which is what <code>stars = TRUE</code> gives you –
 but as spicy's own default, not as anything this theme pins: one
@@ -639,13 +663,7 @@ them as spicy's default does.</p>
     </div>
     <div class="section level2">
     <h2 id="known-gaps">Known gaps<a class="anchor" aria-label="anchor" href="#known-gaps"></a></h2>
-    <p>Two rules the sources state but this release does not encode:</p><ul><li><p><strong>thousands separator</strong> (APA's comma, the EU code's thin
-no-break space). spicy formats numbers through more than one
-path, and a separator applied to some of them only would print
-<code>1,234</code> in one column and <code>1234</code> in the next – the exact
-inconsistency the SI brochure forbids ("the format used should
-not vary within one column").</p></li>
-<li><p><strong>significant-figure rounding of estimates</strong> (Epidemiology's
+    <p>A rule the sources state but this release does not encode:</p><ul><li><p><strong>significant-figure rounding of estimates</strong> (Epidemiology's
 <code>nn</code> / <code>n.n</code> / <code>0.nn</code>, Science's "report only significant
 digits"). spicy's <code>digits</code> is a decimals contract applied per
 column family; a blanket significant-figure mode would also
@@ -753,6 +771,20 @@ American Psychological Association</em> (7th ed.).
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 32. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="va">old</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A thousands separator for the counts: "," in English,</span></span></span>
+<span class="r-in"><span><span class="co"># the narrow no-break space (U+202F) in French.</span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>g <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1500</span>, <span class="fl">2600</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="table_categorical.html">table_categorical</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">g</span>, style <span class="op">=</span> <span class="fu">spicy_style</span><span class="op">(</span>big_mark <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Categorical table</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Variable   <span style="color: #9E9E9E;">│</span>    n       %    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">────────────┼─────────────────</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  g          <span style="color: #9E9E9E;">│</span>                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    a        <span style="color: #9E9E9E;">│</span>  1,500    36.6  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    b        <span style="color: #9E9E9E;">│</span>  2,600    63.4  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. N = 4,100.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Every abbreviation defined, for readers outside the field.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="table_continuous.html">table_continuous</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">mpg</span>, <span class="va">wt</span><span class="op">)</span>,</span></span>

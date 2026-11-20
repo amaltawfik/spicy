@@ -40,10 +40,10 @@ the values they take for these models are listed below.
 | Class | Engine | AME | Exponentiate | Blocks | vcov |
 | `lm_robust` | [`estimatr::lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html) | yes | \- | \- | classical (the fit's own) |
 | `iv_robust` | [`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html) | yes | \- | \- | classical (the fit's own) |
-| `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- | classical |
+| `ivreg` | [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) | yes | \- | \- | classical, HC0, HC1, CR0-CR3, CR1S |
 | `tobit` | [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) | yes (latent outcome) | \- | \- | classical, CR1 |
 | `rq` | [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) | yes | \- | \- | classical (= nid), nid, iid, ker, rank, bootstrap |
-| `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects) | OR / IRR (link) | \- | classical (the fit's own) |
+| `fixest` | [`fixest::feols()`](https://lrberge.github.io/fixest/reference/feols.html), [`fixest::feglm()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::fepois()`](https://lrberge.github.io/fixest/reference/feglm.html), [`fixest::femlm()`](https://lrberge.github.io/fixest/reference/femlm.html), [`fixest::fenegbin()`](https://lrberge.github.io/fixest/reference/femlm.html) | yes (no for a GLM with fixed effects or an IV fit without exogenous regressor) | OR / IRR (link) | \- | classical (the fit's own) |
 
 AME: whether the average-marginal-effects columns are available.
 Exponentiate: what `exponentiate = TRUE` gives. Blocks: the labeled
@@ -56,12 +56,16 @@ The AME is refused for a `fixest` GLM with fixed effects (`feglm()`,
 marginaleffects, which computes it, cannot take into account the
 uncertainty of the fixed effects. It is refused too for a `feols()` with
 fixed effects fitted with `lean = TRUE`, which marginaleffects cannot
-predict from (re-estimate it with `lean = FALSE`). Other `feols()` fits
-and a GLM without fixed effects have it. The AME of a factor in `i()`
-sits on the rows of its coefficients, against the reference `i()` gives
-them (`ref =`). A level of a factor in `i()`, or a numeric variable that
-`i()` enters as categories, with no coefficient row gets no AME, nor
-does a factor that `i()` enters only in an interaction.
+predict from (re-estimate it with `lean = FALSE`), and for an
+instrumental-variables `feols()` without exogenous regressor
+(`y ~ 1 | x ~ z`), whose endogenous regressors fixest's
+[`predict()`](https://rdrr.io/r/stats/predict.html) leaves out of a
+prediction on new data. Other `feols()` fits and a GLM without fixed
+effects have it. The AME of a factor in `i()` sits on the rows of its
+coefficients, against the reference `i()` gives them (`ref =`). A level
+of a factor in `i()`, or a numeric variable that `i()` enters as
+categories, with no coefficient row gets no AME, nor does a factor that
+`i()` enters only in an interaction.
 
 ## What the table shows
 
@@ -84,10 +88,11 @@ otherwise. The block is on by default (`"fixed_effects"` in
 
 - `vcov`, `cluster`:
 
-  `estimatr`, `fixest` and `ivreg`: `"classical"` only, which for
-  `estimatr` and `fixest` is the variance the fit carries. `tobit`:
-  `"classical"` and `"CR1"`, as for `survreg`. `rq`: its own estimator
-  family. See *Standard errors, degrees of freedom and intervals*.
+  `estimatr` and `fixest`: `"classical"` only, the variance the fit
+  carries. `ivreg`: `"classical"`, `"HC0"`, `"HC1"`, `"CR0"`-`"CR3"` and
+  `"CR1S"`. `tobit`: `"classical"` and `"CR1"`, as for `survreg`. `rq`:
+  its own estimator family. See *Standard errors, degrees of freedom and
+  intervals*.
 
 - `show_fit_stats`:
 
@@ -112,16 +117,22 @@ other than `"classical"` is refused; set the estimator through the
 fitting package instead: `se_type =` (with `clusters =`) for estimatr,
 `vcov =` at estimation or in
 [`summary()`](https://rdrr.io/r/base/summary.html) for fixest. The note
-carries fixest's own label of the estimator (clustered, Newey-West,
-Conley, ...), fixest's "IID" written as "Classical". With IID errors,
-fixest's default small-sample correction
+names their estimators as it names those of `lm`: fixest's "IID" and
+estimatr's classical `se_type` are "classical (OLS)" ("(2SLS)" for an
+instrumented fit, "(Fisher information)" for `fepois` and `feglm`), a
+cluster variance is "cluster-robust" with its clusters, and Newey-West,
+Driscoll-Kraay and Conley keep their names. With IID errors, fixest's
+default small-sample correction
 ([`fixest::ssc()`](https://lrberge.github.io/fixest/reference/ssc.html))
 multiplies the standard errors of a `feglm()` fit by sqrt((n - 1) / (n -
 K)) over those of its [`glm()`](https://rdrr.io/r/stats/glm.html) twin
 with the fixed effects as dummies (a `feols()` fit already matches
 [`lm()`](https://rdrr.io/r/stats/lm.html)), and
 `summary(fit, ssc = fixest::ssc(K.adj = FALSE))` gives the
-[`glm()`](https://rdrr.io/r/stats/glm.html) values.
+[`glm()`](https://rdrr.io/r/stats/glm.html) values. Their t tests use
+the degrees of freedom the fit carries (`fit$df` for estimatr,
+`fixest::degrees_freedom(fit, "t")` for fixest), which
+`show_columns = "df"` prints in a column.
 
 **[`quantreg::rq`](https://rdrr.io/pkg/quantreg/man/rq.html).** Its own
 estimator family, not the sandwich vocabulary:
@@ -147,6 +158,24 @@ estimator family, not the sandwich vocabulary:
   resamplers do not carry the weights.
 
 `cluster` with any other `rq` estimator is refused.
+
+**[`AER::ivreg`](https://rdrr.io/pkg/AER/man/ivreg.html).** The
+sandwiches of an `lm`, where two engines agree on them: `"HC0"` and
+`"HC1"` from
+[`sandwich::vcovHC()`](https://zeileis.codeberg.page/sandwich/reference/vcovHC.html),
+and with `cluster`, `"CR0"`-`"CR3"` from
+[`clubSandwich::vcovCR()`](http://jepusto.github.io/clubSandwich/reference/vcovCR.md)
+with Satterthwaite degrees of freedom, and `"CR1S"` with `t(G - 1)`. All
+match
+[`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
+on the same model (`"CR1S"` its `se_type = "stata"`). `"HC2"`-`"HC5"`
+are refused: they weight each residual by a leverage, which two-stage
+least squares does not define uniquely, and
+[`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html) and
+[`estimatr::iv_robust()`](https://declaredesign.org/r/estimatr/reference/iv_robust.html)
+use different hat values (standard errors about 0.1 to 0.3 percent
+apart). `"bootstrap"` and `"jackknife"` are refused: they refit an
+[`lm()`](https://rdrr.io/r/stats/lm.html).
 
 **[`AER::tobit`](https://rdrr.io/pkg/AER/man/tobit.html).** A `tobit`
 fit is a `survreg` model, and takes the same estimator: `"CR1"` from
@@ -183,8 +212,8 @@ residuals. The AIC and BIC of a `fixest` model are those of its
 [`lm()`](https://rdrr.io/r/stats/lm.html),
 [`glm()`](https://rdrr.io/r/stats/glm.html) or
 [`MASS::glm.nb()`](https://rdrr.io/pkg/MASS/man/glm.nb.html) twin with
-the fixed effects as dummies; see *Vocabulary tokens* in
-[`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md).
+the fixed effects as dummies; see
+[table_regression_tokens](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md).
 
 - `"fixed_effects"`: the `Fixed effects:` block, on by default.
 
@@ -222,8 +251,10 @@ fit).
   two cannot be separated. Hold the `| fe` part fixed across the
   hierarchy.
 
-- The AME of a `fixest` GLM with fixed effects, and of a `feols()` with
-  fixed effects fitted with `lean = TRUE` (see *Engines*).
+- The AME of a `fixest` GLM with fixed effects, of a `feols()` with
+  fixed effects fitted with `lean = TRUE`, and of an
+  instrumental-variables `feols()` without exogenous regressor (see
+  *Engines*).
 
 - A `fixest` fit with fixed effects only: it has no coefficient row to
   show.
@@ -270,7 +301,7 @@ if (requireNamespace("quantreg", quietly = TRUE)) {
 #>  n               │  1200                                 
 #>  AIC             │ 10082.1                               
 #> 
-#> Note. Quantile regression (τ = 0.50). Std. errors: Quantile sandwich (nid, Hall-Sheather). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Quantile regression (τ = 0.50). Std. errors: quantile sandwich (nid, Hall-Sheather). CI = confidence interval; AIC = Akaike information criterion.
 #> Quantile regression (τ = 0.50): wellbeing_score
 #> 
 #>  Variable        │    B       SE       95% CI        p   
@@ -284,5 +315,5 @@ if (requireNamespace("quantreg", quietly = TRUE)) {
 #>  n               │  1200                                 
 #>  AIC             │ 10082.1                               
 #> 
-#> Note. Quantile regression (τ = 0.50). Std. errors: Quantile (iid). CI = confidence interval; AIC = Akaike information criterion.
+#> Note. Quantile regression (τ = 0.50). Std. errors: quantile (iid). CI = confidence interval; AIC = Akaike information criterion.
 ```

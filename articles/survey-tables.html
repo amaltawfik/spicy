@@ -150,7 +150,7 @@ throughout:</p>
 <span><span class="co">#&gt;  api00      <span style="color: #9E9E9E;">│</span>  644.17    105.75    411.00    905.00    593.68    694.66    183  </span></span>
 <span><span class="co">#&gt;  api99      <span style="color: #9E9E9E;">│</span>  606.98    112.85    365.00    890.00    555.02    658.94    183  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>After the sample size, three sentences of the note describe the
 design, and each is there because the number above it cannot be read
 without them. The design is a one-stage cluster sample of 15 school
@@ -202,7 +202,7 @@ the order the tokens are written in:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">──────────┼──────────────────</span></span></span>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span>  6194.00    9.35 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; Q1 = first quartile; Q3 = third quartile; DEff = design effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Quantiles: Hyndman-Fan type 1. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. SE = design-based standard error of the mean; CI = confidence interval; LL = lower limit; UL = upper limit; Q1 = first quartile; Q3 = third quartile; DEff = design effect.</span></span></span></code></pre></div>
 <p>The design effect of 9.35 is the point of the whole exercise: the
 variance of this cluster sample is nine times what a simple random
 sample of 183 schools would have given. A table that ignored the design
@@ -241,7 +241,7 @@ footer gives the span:</p>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> H                            </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> M                            </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; degrees of freedom vary by group (7–14). Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Wald test. The group comparison uses 12 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The comparison is one design-based test on the whole design, not a
 set of pairwise ones: <code><a href="https://rdrr.io/pkg/survey/man/svyttest.html" class="external-link">svyttest()</a></code> with two observed groups,
 the Wald <em>F</em> of <code><a href="https://rdrr.io/pkg/survey/man/regTermTest.html" class="external-link">regTermTest()</a></code> with three or more,
@@ -279,7 +279,7 @@ design’s.</p>
 <span><span class="co">#&gt;    No       <span style="color: #9E9E9E;">│</span>   53    29.0  </span></span>
 <span><span class="co">#&gt;    Yes      <span style="color: #9E9E9E;">│</span>  130    71.0  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p><code>n</code> is the <em>observed</em> count: 144 schools of type E
 were sampled. The <code>78.7%</code> beside it is an <em>estimate</em>
 of the population share, and the two answer different questions – which
@@ -303,7 +303,7 @@ population (6194) beside the sample size (183).</p>
 <span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   14     7.7     3.5    15.8    1.91  </span></span>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   25    13.7     8.4    21.3    1.40  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: Wald on the logit scale (logistic regression). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. Percentage CIs: Wald on the logit scale (logistic regression). % = estimated percentage. n = observed (unweighted) count. CI = confidence interval; LL = lower limit; UL = upper limit; DEff = design effect.</span></span></span></code></pre></div>
 <p>The percentage always comes from <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> and the
 interval from <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code>. That is deliberate:
 <code><a href="https://rdrr.io/pkg/survey/man/svyciprop.html" class="external-link">svyciprop()</a></code> estimates on the transformed scale its method
@@ -323,7 +323,7 @@ interval and not of the proportion.</p>
 <span><span class="co">#&gt;    H        <span style="color: #9E9E9E;">│</span>   3    13.0     11     6.9     14     7.7          </span></span>
 <span><span class="co">#&gt;    M        <span style="color: #9E9E9E;">│</span>   8    34.8     17    10.6     25    13.7          </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSU, with finite population correction; degrees of freedom vary by group (9–14). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Percentages are column percentages. Design: cluster (dnum), 15 PSUs, with finite population correction; degrees of freedom vary by group (9–14). Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-value: design-based Pearson chi-squared (Rao-Scott second-order correction). % = estimated percentage. n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p>The <code>p</code> is <code><a href="https://rdrr.io/pkg/survey/man/svychisq.html" class="external-link">svychisq()</a></code>: Pearson’s chi-square
 with the Rao-Scott second-order correction, referred to <em>F</em>(ndf,
 <code>degf(design)</code>). <code>chisq_statistic</code> offers
@@ -364,7 +364,7 @@ row per item and one column per level.</p>
 <span><span class="co">#&gt;  comp.imp <span style="color: #9E9E9E;">│</span> 22.2  77.8  144  50.0  50.0  14  44.0  56.0  25  .123 </span></span>
 <span><span class="co">#&gt;  both     <span style="color: #9E9E9E;">│</span> 22.2  77.8  144  50.0  50.0  14  44.0  56.0  25  .123 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Design: cluster (dnum), 15 PSU, with finite population correction; 14 degrees of freedom. Percentages are row percentages estimated under the design. Base: respondents who answered the item. Item p-values, each item by group: design-based Pearson chi-squared (Rao-Scott second-order correction). Adjusted for 4 tests (Holm method). n = observed (unweighted) count.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Design: cluster (dnum), 15 PSUs, with finite population correction; 14 degrees of freedom. Percentages are row percentages estimated under the design. Base: respondents who answered the item. Item p-values, each item by group: design-based Pearson chi-squared (Rao-Scott second-order correction). Adjusted for 4 tests (Holm method). n = observed (unweighted) count.</span></span></span></code></pre></div>
 <p>The base of a row is the schools that answered the item,
 <code>n</code> their observed count, and each percentage is
 <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">svymean()</a></code> on that domain. Each item is tested against
@@ -402,7 +402,7 @@ estimated as usual:</p>
 <span><span class="co">#&gt;  api00    <span style="color: #9E9E9E;">│</span> No        –       –    398.00  778.00     –       –     25  – </span></span>
 <span><span class="co">#&gt;           <span style="color: #9E9E9E;">│</span> Yes    678.42  121.28  421.00  893.00  655.85  700.99  126    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22–124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 151 (weighted 5454). Design: stratified (stype); degrees of freedom vary by group (22–124). A dash marks an estimate the design could not provide: a stratum has a single primary sampling unit. Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 <p>The values <code>"adjust"</code>, <code>"average"</code>,
 <code>"remove"</code> and <code>"certainty"</code> of that option let
 survey estimate these cells, each by its own convention
@@ -428,7 +428,7 @@ standard errors are not, and should not be:</p>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼───────────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  api00      <span style="color: #9E9E9E;">│</span>  644.17    105.75    411.00    905.00    587.70    700.64    183  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: Design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. N = 183 (weighted 6194). Design: replicate weights (JK1), 15 replicates; 14 degrees of freedom. Std. errors: design-based (replicate weights, JK1). Confidence intervals and tests use the design degrees of freedom. CI = confidence interval; LL = lower limit; UL = upper limit.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="weights-or-a-design">Weights, or a design?<a class="anchor" aria-label="anchor" href="#weights-or-a-design"></a>
@@ -519,7 +519,7 @@ replicate-weights design alike: <code><a href="https://rdrr.io/pkg/survey/man/sv
 <span><span class="co">#&gt;  Weighted n  <span style="color: #9E9E9E;">│</span> 6194                                      </span></span>
 <span><span class="co">#&gt;  AIC         <span style="color: #9E9E9E;">│</span> 2197.8                                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: Design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: stratified (stype), with finite population correction; 193 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: design-based (Taylor linearization). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Three things in that footer are worth naming.</p>
 <p>The design line says what the design is and how many degrees of
 freedom the table’s own tests use. That number is the <em>model’s</em>
@@ -552,7 +552,7 @@ so:</p>
 <span><span class="co">#&gt;  Weighted n  <span style="color: #9E9E9E;">│</span> 6194                             </span></span>
 <span><span class="co">#&gt;  AIC         <span style="color: #9E9E9E;">│</span> 2150.5                           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: Design-based (replicate weights, JK1). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted linear regression. Design: replicate weights (JK1), 15 replicates; 13 residual degrees of freedom. AIC of a design-based fit: design-based AIC (dAIC). Std. errors: design-based (replicate weights, JK1). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>And the counts are both there: the observed <code>n</code> and the
 <code>Weighted n</code> the estimates describe, the same pair the
 descriptive tables print in their note.</p>
@@ -585,7 +585,7 @@ block, and its average marginal effects one column per response category
 <span><span class="co">#&gt;  n                         <span style="color: #9E9E9E;">│</span>  200                                 </span></span>
 <span><span class="co">#&gt;  Weighted n                <span style="color: #9E9E9E;">│</span> 6194                                 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: Design-based (Taylor linearization). Thresholds: latent-scale category cut-points. CI = confidence interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted cumulative logit regression (proportional odds). Design: stratified (stype), with finite population correction; 194 residual degrees of freedom. Std. errors: design-based (Taylor linearization). Thresholds: latent-scale category cut-points. CI = confidence interval.</span></span></span></code></pre></div>
 <p>A <code><a href="https://rdrr.io/pkg/survey/man/svycoxph.html" class="external-link">svycoxph()</a></code> fit reports hazard ratios, the events, and
 the concordance:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
@@ -601,7 +601,7 @@ the concordance:</p>
 <span>  design <span class="op">=</span> <span class="va">dpbc</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ci"</span>, <span class="st">"p"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Survey-weighted Cox proportional hazards regression: survival::Surv(time, status &gt; 0)</span></span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Survey-weighted Cox proportional hazards regression: Surv(time, status &gt; 0)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Variable   <span style="color: #9E9E9E;">│</span>   HR       95% CI       p   </span></span>
 <span><span class="co">#&gt; <span style="color: #9E9E9E;">────────────┼─────────────────────────────</span></span></span>
@@ -613,7 +613,7 @@ the concordance:</p>
 <span><span class="co">#&gt;  Weighted n <span style="color: #9E9E9E;">│</span> 418                         </span></span>
 <span><span class="co">#&gt;  N events   <span style="color: #9E9E9E;">│</span> 144                         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Design-based (Taylor linearization). HR = hazard ratio; CI = confidence interval.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Survey-weighted Cox proportional hazards regression. Design: stratified (edema); 307 residual degrees of freedom. Concordance C = 0.81 (SE = 0.02). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: design-based (Taylor linearization). HR = hazard ratio; CI = confidence interval.</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="what-a-design-fit-refuses">What a design fit refuses<a class="anchor" aria-label="anchor" href="#what-a-design-fit-refuses"></a>
@@ -721,23 +721,23 @@ elsewhere:</p>
 <span>  by <span class="op">=</span> <span class="va">stype</span>,</span>
 <span>  output <span class="op">=</span> <span class="st">"gt"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-Rtmp8cHjo5-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-Rtmp8cHjo5-1 table {
+<div id="spicy-gt-RtmprJqv8B-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-RtmprJqv8B-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 thead, #spicy-gt-Rtmp8cHjo5-1 tbody, #spicy-gt-Rtmp8cHjo5-1 tfoot, #spicy-gt-Rtmp8cHjo5-1 tr, #spicy-gt-Rtmp8cHjo5-1 td, #spicy-gt-Rtmp8cHjo5-1 th {
+#spicy-gt-RtmprJqv8B-1 thead, #spicy-gt-RtmprJqv8B-1 tbody, #spicy-gt-RtmprJqv8B-1 tfoot, #spicy-gt-RtmprJqv8B-1 tr, #spicy-gt-RtmprJqv8B-1 td, #spicy-gt-RtmprJqv8B-1 th {
   border-style: none;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 p {
+#spicy-gt-RtmprJqv8B-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_table {
+#spicy-gt-RtmprJqv8B-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -763,12 +763,12 @@ elsewhere:</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_caption {
+#spicy-gt-RtmprJqv8B-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_title {
+#spicy-gt-RtmprJqv8B-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: initial;
@@ -780,7 +780,7 @@ elsewhere:</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_subtitle {
+#spicy-gt-RtmprJqv8B-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -792,7 +792,7 @@ elsewhere:</p>
   border-top-width: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_heading {
+#spicy-gt-RtmprJqv8B-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -804,13 +804,13 @@ elsewhere:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_bottom_border {
+#spicy-gt-RtmprJqv8B-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_col_headings {
+#spicy-gt-RtmprJqv8B-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -825,7 +825,7 @@ elsewhere:</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_col_heading {
+#spicy-gt-RtmprJqv8B-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -845,7 +845,7 @@ elsewhere:</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_column_spanner_outer {
+#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -857,15 +857,15 @@ elsewhere:</p>
   padding-right: 4px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_column_spanner {
+#spicy-gt-RtmprJqv8B-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 0px;
   border-bottom-color: #D3D3D3;
@@ -877,11 +877,11 @@ elsewhere:</p>
   width: 100%;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_spanner_row {
+#spicy-gt-RtmprJqv8B-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_group_heading {
+#spicy-gt-RtmprJqv8B-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -907,7 +907,7 @@ elsewhere:</p>
   text-align: left;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_empty_group_heading {
+#spicy-gt-RtmprJqv8B-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -922,15 +922,15 @@ elsewhere:</p>
   vertical-align: middle;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_from_md > :first-child {
+#spicy-gt-RtmprJqv8B-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_from_md > :last-child {
+#spicy-gt-RtmprJqv8B-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_row {
+#spicy-gt-RtmprJqv8B-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -949,7 +949,7 @@ elsewhere:</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_stub {
+#spicy-gt-RtmprJqv8B-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -962,7 +962,7 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_stub_row_group {
+#spicy-gt-RtmprJqv8B-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -976,15 +976,15 @@ elsewhere:</p>
   vertical-align: top;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_row_group_first td {
+#spicy-gt-RtmprJqv8B-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_row_group_first th {
+#spicy-gt-RtmprJqv8B-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_summary_row {
+#spicy-gt-RtmprJqv8B-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -994,16 +994,16 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_first_summary_row {
+#spicy-gt-RtmprJqv8B-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_first_summary_row.thick {
+#spicy-gt-RtmprJqv8B-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_last_summary_row {
+#spicy-gt-RtmprJqv8B-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1013,7 +1013,7 @@ elsewhere:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_grand_summary_row {
+#spicy-gt-RtmprJqv8B-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1023,7 +1023,7 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_first_grand_summary_row {
+#spicy-gt-RtmprJqv8B-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1033,7 +1033,7 @@ elsewhere:</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_last_grand_summary_row_top {
+#spicy-gt-RtmprJqv8B-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1043,11 +1043,11 @@ elsewhere:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_striped {
+#spicy-gt-RtmprJqv8B-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_table_body {
+#spicy-gt-RtmprJqv8B-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1056,7 +1056,7 @@ elsewhere:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_footnotes {
+#spicy-gt-RtmprJqv8B-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1070,7 +1070,7 @@ elsewhere:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_footnote {
+#spicy-gt-RtmprJqv8B-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1079,7 +1079,7 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_sourcenotes {
+#spicy-gt-RtmprJqv8B-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1093,7 +1093,7 @@ elsewhere:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_sourcenote {
+#spicy-gt-RtmprJqv8B-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1101,108 +1101,112 @@ elsewhere:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_left {
+#spicy-gt-RtmprJqv8B-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_center {
+#spicy-gt-RtmprJqv8B-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_right {
+#spicy-gt-RtmprJqv8B-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_font_normal {
+#spicy-gt-RtmprJqv8B-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_font_bold {
+#spicy-gt-RtmprJqv8B-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_font_italic {
+#spicy-gt-RtmprJqv8B-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_super {
+#spicy-gt-RtmprJqv8B-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_footnote_marks {
+#spicy-gt-RtmprJqv8B-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_asterisk {
+#spicy-gt-RtmprJqv8B-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_indent_1 {
+#spicy-gt-RtmprJqv8B-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_indent_2 {
+#spicy-gt-RtmprJqv8B-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_indent_3 {
+#spicy-gt-RtmprJqv8B-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_indent_4 {
+#spicy-gt-RtmprJqv8B-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_indent_5 {
+#spicy-gt-RtmprJqv8B-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .katex-display {
+#spicy-gt-RtmprJqv8B-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-RtmprJqv8B-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_sourcenote {
+#spicy-gt-RtmprJqv8B-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
-  padding: 0 5px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-RtmprJqv8B-1 .gt_sourcenote {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#spicy-gt-RtmprJqv8B-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-RtmprJqv8B-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_col_headings.gt_spanner_row, #spicy-gt-Rtmp8cHjo5-1 .gt_spanner_row {
+#spicy-gt-RtmprJqv8B-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmprJqv8B-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_col_heading {
+#spicy-gt-RtmprJqv8B-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_table tbody .gt_row {
+#spicy-gt-RtmprJqv8B-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_column_spanner {
+#spicy-gt-RtmprJqv8B-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-RtmprJqv8B-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1211,12 +1215,12 @@ elsewhere:</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-RtmprJqv8B-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-Rtmp8cHjo5-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmprJqv8B-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 
@@ -1372,7 +1376,7 @@ elsewhere:</p>
 </tr>
 </tbody>
 <tfoot><tr class="gt_sourcenotes">
-<td class="gt_sourcenote" colspan="10"><span class="gt_from_md"><em>Note.</em> N = 200 (weighted 6194). Design: stratified (stype), with finite population correction; degrees of freedom vary by group (49–99). Std. errors: Design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-values: design-based Wald test. The group comparison uses 195 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></td>
+<td class="gt_sourcenote" colspan="10"><span class="gt_from_md"><em>Note.</em> N = 200 (weighted 6194). Design: stratified (stype), with finite population correction; degrees of freedom vary by group (49–99). Std. errors: design-based (Taylor linearization). Confidence intervals and tests use the design degrees of freedom. P-values: design-based Wald test. The group comparison uses 195 degrees of freedom (observed groups only). CI = confidence interval; LL = lower limit; UL = upper limit.</span></td>
     </tr></tfoot>
 </table>
 </div>

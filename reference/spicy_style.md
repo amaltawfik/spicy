@@ -34,6 +34,7 @@ spicy_style(
   abbreviations = NULL,
   sample_size = NULL,
   minus_sign = NULL,
+  big_mark = NULL,
   v_digits
 )
 
@@ -209,6 +210,29 @@ spicy_style_names()
   through markdown and keeps the hyphen-minus: for a Word file, use
   `output = "word"` (or `"flextable"`), or knit the table in a Word
   document.
+
+- big_mark:
+
+  The thousands separator of the counts. `NULL` (the default) writes
+  none: "7846". A single character groups the digits of the integer part
+  by three: `","` for APA ("7,846"), `"\u202f"` for the narrow no-break
+  space of French typography and of the SI ("7 846"), `"'"` for Swiss
+  usage ("7'846"). It applies to the counts of every table that takes a
+  style: n, N, weighted counts, the cells of a cross-tabulation, numbers
+  of events and of groups, and the counts of the notes and headers ("N =
+  7,846"). Never to degrees of freedom, years, estimates, percentages or
+  fit statistics that are not counts (AIC, deviance). A column that
+  aligns its numbers on the decimal mark stays aligned. It cannot be a
+  digit, the decimal mark or a minus sign.
+  [`freq()`](https://amaltawfik.github.io/spicy/reference/freq.md) and
+  [`cross_tab()`](https://amaltawfik.github.io/spicy/reference/cross_tab.md),
+  which take no `style`, read it from `options(spicy.style)`. No
+  language sets it: under `options(spicy.language = "fr")`, ask for
+  `big_mark = "\u202f"`. The data frames, `tidy()` and `glance()` keep
+  their numbers; only cells already written as text take the separator.
+  `output = "excel"` keeps a count as a number and groups it through the
+  cell's number format (`#,##0`): Excel then shows the separator of its
+  own locale, not the character given here.
 
 - v_digits:
 
@@ -529,8 +553,9 @@ change of those defaults will not move an APA-formatted table.
 
 Not encoded: the one-decimal rule for means of integer scales (depends
 on what the variable measures, which spicy cannot know), and the
-thousands separator (see *Known gaps* below). Nor the star thresholds.
-The official correlation and ANOVA sample tables mark `.05` / `.01` /
+thousands separator, which no theme sets: add `big_mark = ","`
+(`spicy_style("apa", big_mark = ",")`). Nor the star thresholds. The
+official correlation and ANOVA sample tables mark `.05` / `.01` /
 `.001`, which is what `stars = TRUE` gives you – but as spicy's own
 default, not as anything this theme pins: one `stars` lever carries both
 the thresholds and the decision to show them, and the APA regression
@@ -566,14 +591,7 @@ spicy's default does.
 
 ## Known gaps
 
-Two rules the sources state but this release does not encode:
-
-- **thousands separator** (APA's comma, the EU code's thin no-break
-  space). spicy formats numbers through more than one path, and a
-  separator applied to some of them only would print `1,234` in one
-  column and `1234` in the next – the exact inconsistency the SI
-  brochure forbids ("the format used should not vary within one
-  column").
+A rule the sources state but this release does not encode:
 
 - **significant-figure rounding of estimates** (Epidemiology's `nn` /
   `n.n` / `0.nn`, Science's "report only significant digits"). spicy's
@@ -685,6 +703,20 @@ table_continuous(mtcars, c(mpg, wt))
 #> 
 #> Note. N = 32. CI = confidence interval; LL = lower limit; UL = upper limit.
 options(old)
+
+# A thousands separator for the counts: "," in English,
+# the narrow no-break space (U+202F) in French.
+df <- data.frame(g = rep(c("a", "b"), c(1500, 2600)))
+table_categorical(df, g, style = spicy_style(big_mark = ","))
+#> Categorical table
+#> 
+#>  Variable   │    n       %    
+#> ────────────┼─────────────────
+#>  g          │                 
+#>    a        │  1,500    36.6  
+#>    b        │  2,600    63.4  
+#> 
+#> Note. N = 4,100.
 
 # Every abbreviation defined, for readers outside the field.
 table_continuous(mtcars, c(mpg, wt),

@@ -199,7 +199,7 @@ the model-fit block reports what a survival reader expects instead: the
 <span><span class="co">#&gt;  N events      <span style="color: #9E9E9E;">│</span>  163                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 1454.2                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Reading the table:</p>
 <ul>
 <li>
@@ -336,7 +336,7 @@ table.</p>
 <span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span>       [-0.30, -0.08] </span></span>
 <span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span>       [ 0.08,  0.22] </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: Wald asymptotic (z). dRMST = difference in restricted mean survival time over [0, 365]; dRisk = difference in cumulative incidence at 365; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: classical (Fisher information). dRMST = difference in restricted mean survival time over [0, 365]; dRisk = difference in cumulative incidence at 365; adjusted by g-computation from the fitted model, SEs by nonparametric bootstrap (200 replicates). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>One display note before reading: five columns are one more than the
 default console width holds, so the last interval folds into a
 continuation panel printed below the fit block, its header naming its
@@ -478,7 +478,7 @@ decides between them.</p>
 <span><span class="co">#&gt;  Δχ²           <span style="color: #9E9E9E;">│</span>     –             16.78 (1)        </span></span>
 <span><span class="co">#&gt;  p (change)    <span style="color: #9E9E9E;">│</span>     –              &lt;.001           </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Model 1: Concordance C = 0.60 (SE = 0.03). Model 2: Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: Wald asymptotic (z). HR = hazard ratio; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Model 1: Concordance C = 0.60 (SE = 0.03). Model 2: Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR. Std. errors: classical (Fisher information). HR = hazard ratio; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Adding <code>ph.ecog</code> buys a chi-squared change of 16.78 on one
 degree of freedom (p &lt; .001), an AIC drop of 14.8, and a rise in
 concordance from 0.60 to 0.64 — three readings of the same improvement,
@@ -526,7 +526,7 @@ estimation sample:</p>
 <span><span class="co">#&gt;    Female      <span style="color: #9E9E9E;">│</span> [0.41, 0.80]   &lt;.001 </span></span>
 <span><span class="co">#&gt;  ph.ecog       <span style="color: #9E9E9E;">│</span> [1.28, 2.00]   &lt;.001 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cox proportional hazards regression models. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; CI bounds exponentiated. Std. errors: classical (Fisher information). HR = hazard ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The <code>Events/N</code> column carries the information a survival
 reader checks first — 53 of the 90 women died against 110 of the 136 men
 — and the paired columns support the screen’s real question:
@@ -583,7 +583,7 @@ ratios</strong> (TR):</p>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                                      </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 2261.7                                    </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline 63.2nd percentile of survival time. Std. errors: Wald asymptotic (z). TR = time ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull AFT regression. Distribution: Weibull; scale = 0.73. Coefficients exponentiated and displayed as TR; SE on the TR scale (delta method); CI bounds exponentiated (asymmetric). The (Intercept) row estimates the baseline 63.2nd percentile of survival time. Std. errors: classical (Fisher information). TR = time ratio; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The intercept is back — a parametric model must anchor the time
 scale, and exp(intercept) ≈ 801 days is that anchor (the extrapolated
 characteristic time at the reference levels and age 0, by which 63.2% of
@@ -670,7 +670,7 @@ parameters:</p>
 <span><span class="co">#&gt;  n             <span style="color: #9E9E9E;">│</span>  226                               </span></span>
 <span><span class="co">#&gt;  AIC           <span style="color: #9E9E9E;">│</span> 2276.5                             </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull parametric survival regression. Distribution: Weibull; shape = 1.33, scale = 792.70. Coefficients exponentiated and displayed as exp(B); SE on the exp(B) scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). exp(B) = exponentiated coefficient; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Weibull parametric survival regression. Distribution: Weibull; shape = 1.33, scale = 792.70. Coefficients exponentiated and displayed as exp(B); SE on the exp(B) scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). exp(B) = exponentiated coefficient; CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Two guardrails apply. A spline model on the <code>"normal"</code>
 scale places its coefficients on a probit-like scale whose exponential
 has no meaning, so <code>exponentiate = TRUE</code> is refused there;
@@ -708,23 +708,23 @@ table:</p>
 <span><span class="co">#&gt; 8        NA           NA</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">cx</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmpwaM02x-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmpwaM02x-1 table {
+<div id="spicy-gt-RtmpVKv79B-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-RtmpVKv79B-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmpwaM02x-1 thead, #spicy-gt-RtmpwaM02x-1 tbody, #spicy-gt-RtmpwaM02x-1 tfoot, #spicy-gt-RtmpwaM02x-1 tr, #spicy-gt-RtmpwaM02x-1 td, #spicy-gt-RtmpwaM02x-1 th {
+#spicy-gt-RtmpVKv79B-1 thead, #spicy-gt-RtmpVKv79B-1 tbody, #spicy-gt-RtmpVKv79B-1 tfoot, #spicy-gt-RtmpVKv79B-1 tr, #spicy-gt-RtmpVKv79B-1 td, #spicy-gt-RtmpVKv79B-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmpwaM02x-1 p {
+#spicy-gt-RtmpVKv79B-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_table {
+#spicy-gt-RtmpVKv79B-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -750,12 +750,12 @@ table:</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_caption {
+#spicy-gt-RtmpVKv79B-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_title {
+#spicy-gt-RtmpVKv79B-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -767,7 +767,7 @@ table:</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_subtitle {
+#spicy-gt-RtmpVKv79B-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -779,7 +779,7 @@ table:</p>
   border-top-width: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_heading {
+#spicy-gt-RtmpVKv79B-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -791,13 +791,13 @@ table:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_bottom_border {
+#spicy-gt-RtmpVKv79B-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_col_headings {
+#spicy-gt-RtmpVKv79B-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -812,7 +812,7 @@ table:</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_col_heading {
+#spicy-gt-RtmpVKv79B-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -832,7 +832,7 @@ table:</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_column_spanner_outer {
+#spicy-gt-RtmpVKv79B-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -844,15 +844,15 @@ table:</p>
   padding-right: 4px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpVKv79B-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-RtmpVKv79B-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_column_spanner {
+#spicy-gt-RtmpVKv79B-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -864,11 +864,11 @@ table:</p>
   width: 100%;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_spanner_row {
+#spicy-gt-RtmpVKv79B-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_group_heading {
+#spicy-gt-RtmpVKv79B-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -894,7 +894,7 @@ table:</p>
   text-align: left;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_empty_group_heading {
+#spicy-gt-RtmpVKv79B-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -909,15 +909,15 @@ table:</p>
   vertical-align: middle;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_from_md > :first-child {
+#spicy-gt-RtmpVKv79B-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_from_md > :last-child {
+#spicy-gt-RtmpVKv79B-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_row {
+#spicy-gt-RtmpVKv79B-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -936,7 +936,7 @@ table:</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_stub {
+#spicy-gt-RtmpVKv79B-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -949,7 +949,7 @@ table:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_stub_row_group {
+#spicy-gt-RtmpVKv79B-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -963,15 +963,15 @@ table:</p>
   vertical-align: top;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_row_group_first td {
+#spicy-gt-RtmpVKv79B-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_row_group_first th {
+#spicy-gt-RtmpVKv79B-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_summary_row {
+#spicy-gt-RtmpVKv79B-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -981,16 +981,16 @@ table:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_first_summary_row {
+#spicy-gt-RtmpVKv79B-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_first_summary_row.thick {
+#spicy-gt-RtmpVKv79B-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_last_summary_row {
+#spicy-gt-RtmpVKv79B-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1000,7 +1000,7 @@ table:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_grand_summary_row {
+#spicy-gt-RtmpVKv79B-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1010,7 +1010,7 @@ table:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_first_grand_summary_row {
+#spicy-gt-RtmpVKv79B-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1020,7 +1020,7 @@ table:</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_last_grand_summary_row_top {
+#spicy-gt-RtmpVKv79B-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1030,11 +1030,11 @@ table:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_striped {
+#spicy-gt-RtmpVKv79B-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_table_body {
+#spicy-gt-RtmpVKv79B-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1043,7 +1043,7 @@ table:</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_footnotes {
+#spicy-gt-RtmpVKv79B-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1057,7 +1057,7 @@ table:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_footnote {
+#spicy-gt-RtmpVKv79B-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1066,7 +1066,7 @@ table:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_sourcenotes {
+#spicy-gt-RtmpVKv79B-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1080,7 +1080,7 @@ table:</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_sourcenote {
+#spicy-gt-RtmpVKv79B-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1088,108 +1088,112 @@ table:</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_left {
+#spicy-gt-RtmpVKv79B-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_center {
+#spicy-gt-RtmpVKv79B-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_right {
+#spicy-gt-RtmpVKv79B-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_font_normal {
+#spicy-gt-RtmpVKv79B-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_font_bold {
+#spicy-gt-RtmpVKv79B-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_font_italic {
+#spicy-gt-RtmpVKv79B-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_super {
+#spicy-gt-RtmpVKv79B-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_footnote_marks {
+#spicy-gt-RtmpVKv79B-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_asterisk {
+#spicy-gt-RtmpVKv79B-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_indent_1 {
+#spicy-gt-RtmpVKv79B-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_indent_2 {
+#spicy-gt-RtmpVKv79B-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_indent_3 {
+#spicy-gt-RtmpVKv79B-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_indent_4 {
+#spicy-gt-RtmpVKv79B-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_indent_5 {
+#spicy-gt-RtmpVKv79B-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .katex-display {
+#spicy-gt-RtmpVKv79B-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmpwaM02x-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-RtmpVKv79B-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_sourcenote {
+#spicy-gt-RtmpVKv79B-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
-  padding: 0 5px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-RtmpVKv79B-1 .gt_sourcenote {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#spicy-gt-RtmpVKv79B-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-RtmpVKv79B-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpwaM02x-1 .gt_spanner_row {
+#spicy-gt-RtmpVKv79B-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpVKv79B-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_col_heading {
+#spicy-gt-RtmpVKv79B-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_table tbody .gt_row {
+#spicy-gt-RtmpVKv79B-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_column_spanner {
+#spicy-gt-RtmpVKv79B-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmpwaM02x-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-RtmpVKv79B-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1198,12 +1202,12 @@ table:</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpwaM02x-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-RtmpVKv79B-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-RtmpwaM02x-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpVKv79B-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 
@@ -1312,7 +1316,7 @@ table:</p>
 </tr>
 </tbody>
 <tfoot><tr class="gt_sourcenotes">
-<td class="gt_sourcenote" colspan="6"><span class="gt_from_md"><em>Note.</em> Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). HR = hazard ratio; CI = confidence interval; LL = lower limit; UL = upper limit; AIC = Akaike information criterion.</span></td>
+<td class="gt_sourcenote" colspan="6"><span class="gt_from_md"><em>Note.</em> Cox proportional hazards regression. Concordance C = 0.64 (SE = 0.03). Coefficients exponentiated and displayed as HR; SE on the HR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). HR = hazard ratio; CI = confidence interval; LL = lower limit; UL = upper limit; AIC = Akaike information criterion.</span></td>
     </tr></tfoot>
 </table>
 </div>

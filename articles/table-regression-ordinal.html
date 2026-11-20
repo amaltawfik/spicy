@@ -225,7 +225,7 @@ them in their worked example:</p>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Reading the table:</p>
 <ul>
 <li>Each predictor has <strong>one</strong> coefficient row
@@ -306,7 +306,7 @@ clear error.</p>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The OR here is a <em>cumulative</em> odds ratio: it multiplies the
 odds of scoring <strong>above</strong> any given cut-point rather than
 at or below it, and — because the model is proportional-odds — the same
@@ -366,7 +366,7 @@ categories in columns (Long &amp; Freese 2014; Williams 2012).</p>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>How to read it, with the <code>smoking = Yes</code> row:</p>
 <ul>
 <li>The four <code>AME ...</code> columns are the average change in the
@@ -439,7 +439,7 @@ quantities.</p>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>     0.00                                    </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span>  2761.2                                     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Thresholds: Poor|Fair = -2.98, Fair|Good = -1.02, Good|Very good = 1.04. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Marginal effects are the response-scale (probability) output of <a href="https://marginaleffects.com" class="external-link"><code>marginaleffects::avg_slopes()</code></a>.
 For a single-outcome model (binary <code>glm</code>, <code>lm</code>,
 mixed) the AME stays a single column — the per-category matrix appears
@@ -563,7 +563,7 @@ following APA 7 / SAMPL / STROBE and matching
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                        </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                         </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). 95% CIs: profile likelihood. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: classical (Fisher information). 95% CIs: profile likelihood. Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="the-ordinalclm-engine">The <code>ordinal::clm()</code> engine<a class="anchor" aria-label="anchor" href="#the-ordinalclm-engine"></a>
@@ -602,7 +602,7 @@ proportional odds.</p>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2761.2                                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <div class="section level3">
 <h3 id="testing-proportional-odds">Testing proportional odds<a class="anchor" aria-label="anchor" href="#testing-proportional-odds"></a>
 </h3>
@@ -701,7 +701,7 @@ thresholds:</p>
 <span><span class="co">#&gt;  R² (McFadden)                   <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
 <span><span class="co">#&gt;  AIC                             <span style="color: #9E9E9E;">│</span> 2756.1                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (partial proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (partial proportional odds). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>The freed structure is read <em>within</em> the block: the smoking
 effect is concentrated at the lowest split (<code>Poor | Fair</code>: B
 = 0.82, p = .003) and near-null at the two higher splits (B = 0.22 and
@@ -790,7 +790,7 @@ is a ratio of latent standard deviations, not an odds ratio:</p>
 <span><span class="co">#&gt;  R² (McFadden)      <span style="color: #9E9E9E;">│</span>    0.00                              </span></span>
 <span><span class="co">#&gt;  AIC                <span style="color: #9E9E9E;">│</span> 2757.8                               </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points. Scale effects: covariate effects on the log standard deviation of the latent response. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points. Scale effects: covariate effects on the log standard deviation of the latent response. CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
 <p>Cluster-robust SEs are not available for scale fits:
 <code>sandwich</code>’s <code>estfun()</code> method for
 <code>clm</code> does not (yet) implement the scale and nominal parts
@@ -889,7 +889,7 @@ supplied as a list:</p>
 <span><span class="co">#&gt;    Fair | Good      <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt;    Good | Very good <span style="color: #9E9E9E;">│</span>                                     </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds) models. Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds) models. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="output-formats">Output formats<a class="anchor" aria-label="anchor" href="#output-formats"></a>
@@ -918,23 +918,23 @@ carries through to every format.</p>
 <span><span class="co">#&gt; 6            NA            NA            NA</span></span></code></pre></div>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown_dark_gt</span><span class="op">(</span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit</span>, show_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"b"</span>, <span class="st">"ame"</span><span class="op">)</span>, output <span class="op">=</span> <span class="st">"gt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div id="spicy-gt-RtmpqgQ8uI-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-  <style>#spicy-gt-RtmpqgQ8uI-1 table {
+<div id="spicy-gt-RtmpCyx64F-1" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  <style>#spicy-gt-RtmpCyx64F-1 table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 thead, #spicy-gt-RtmpqgQ8uI-1 tbody, #spicy-gt-RtmpqgQ8uI-1 tfoot, #spicy-gt-RtmpqgQ8uI-1 tr, #spicy-gt-RtmpqgQ8uI-1 td, #spicy-gt-RtmpqgQ8uI-1 th {
+#spicy-gt-RtmpCyx64F-1 thead, #spicy-gt-RtmpCyx64F-1 tbody, #spicy-gt-RtmpCyx64F-1 tfoot, #spicy-gt-RtmpCyx64F-1 tr, #spicy-gt-RtmpCyx64F-1 td, #spicy-gt-RtmpCyx64F-1 th {
   border-style: none;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 p {
+#spicy-gt-RtmpCyx64F-1 p {
   margin: 0;
   padding: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_table {
+#spicy-gt-RtmpCyx64F-1 .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -960,12 +960,12 @@ carries through to every format.</p>
   border-left-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_caption {
+#spicy-gt-RtmpCyx64F-1 .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_title {
+#spicy-gt-RtmpCyx64F-1 .gt_title {
   color: #333333;
   font-size: 100%;
   font-weight: normal;
@@ -977,7 +977,7 @@ carries through to every format.</p>
   border-bottom-width: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_subtitle {
+#spicy-gt-RtmpCyx64F-1 .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -989,7 +989,7 @@ carries through to every format.</p>
   border-top-width: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_heading {
+#spicy-gt-RtmpCyx64F-1 .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1001,13 +1001,13 @@ carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_bottom_border {
+#spicy-gt-RtmpCyx64F-1 .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_col_headings {
+#spicy-gt-RtmpCyx64F-1 .gt_col_headings {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1022,7 +1022,7 @@ carries through to every format.</p>
   border-right-color: rgba(255, 255, 255, 0);
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_col_heading {
+#spicy-gt-RtmpCyx64F-1 .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1042,7 +1042,7 @@ carries through to every format.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_column_spanner_outer {
+#spicy-gt-RtmpCyx64F-1 .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1054,15 +1054,15 @@ carries through to every format.</p>
   padding-right: 4px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpCyx64F-1 .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_column_spanner_outer:last-child {
+#spicy-gt-RtmpCyx64F-1 .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_column_spanner {
+#spicy-gt-RtmpCyx64F-1 .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #333333;
@@ -1074,11 +1074,11 @@ carries through to every format.</p>
   width: 100%;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_spanner_row {
+#spicy-gt-RtmpCyx64F-1 .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_group_heading {
+#spicy-gt-RtmpCyx64F-1 .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1104,7 +1104,7 @@ carries through to every format.</p>
   text-align: left;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_empty_group_heading {
+#spicy-gt-RtmpCyx64F-1 .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1119,15 +1119,15 @@ carries through to every format.</p>
   vertical-align: middle;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_from_md > :first-child {
+#spicy-gt-RtmpCyx64F-1 .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_from_md > :last-child {
+#spicy-gt-RtmpCyx64F-1 .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_row {
+#spicy-gt-RtmpCyx64F-1 .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1146,7 +1146,7 @@ carries through to every format.</p>
   overflow-x: hidden;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_stub {
+#spicy-gt-RtmpCyx64F-1 .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1159,7 +1159,7 @@ carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_stub_row_group {
+#spicy-gt-RtmpCyx64F-1 .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1173,15 +1173,15 @@ carries through to every format.</p>
   vertical-align: top;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_row_group_first td {
+#spicy-gt-RtmpCyx64F-1 .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_row_group_first th {
+#spicy-gt-RtmpCyx64F-1 .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_summary_row {
+#spicy-gt-RtmpCyx64F-1 .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1191,16 +1191,16 @@ carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_first_summary_row {
+#spicy-gt-RtmpCyx64F-1 .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_first_summary_row.thick {
+#spicy-gt-RtmpCyx64F-1 .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_last_summary_row {
+#spicy-gt-RtmpCyx64F-1 .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1210,7 +1210,7 @@ carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_grand_summary_row {
+#spicy-gt-RtmpCyx64F-1 .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1220,7 +1220,7 @@ carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_first_grand_summary_row {
+#spicy-gt-RtmpCyx64F-1 .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1230,7 +1230,7 @@ carries through to every format.</p>
   border-top-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_last_grand_summary_row_top {
+#spicy-gt-RtmpCyx64F-1 .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1240,11 +1240,11 @@ carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_striped {
+#spicy-gt-RtmpCyx64F-1 .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_table_body {
+#spicy-gt-RtmpCyx64F-1 .gt_table_body {
   border-top-style: solid;
   border-top-width: 0px;
   border-top-color: #D3D3D3;
@@ -1253,7 +1253,7 @@ carries through to every format.</p>
   border-bottom-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_footnotes {
+#spicy-gt-RtmpCyx64F-1 .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1267,7 +1267,7 @@ carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_footnote {
+#spicy-gt-RtmpCyx64F-1 .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1276,7 +1276,7 @@ carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_sourcenotes {
+#spicy-gt-RtmpCyx64F-1 .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1290,7 +1290,7 @@ carries through to every format.</p>
   border-right-color: #D3D3D3;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_sourcenote {
+#spicy-gt-RtmpCyx64F-1 .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1298,108 +1298,112 @@ carries through to every format.</p>
   padding-right: 5px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_left {
+#spicy-gt-RtmpCyx64F-1 .gt_left {
   text-align: left;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_center {
+#spicy-gt-RtmpCyx64F-1 .gt_center {
   text-align: center;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_right {
+#spicy-gt-RtmpCyx64F-1 .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_font_normal {
+#spicy-gt-RtmpCyx64F-1 .gt_font_normal {
   font-weight: normal;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_font_bold {
+#spicy-gt-RtmpCyx64F-1 .gt_font_bold {
   font-weight: bold;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_font_italic {
+#spicy-gt-RtmpCyx64F-1 .gt_font_italic {
   font-style: italic;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_super {
+#spicy-gt-RtmpCyx64F-1 .gt_super {
   font-size: 65%;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_footnote_marks {
+#spicy-gt-RtmpCyx64F-1 .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_asterisk {
+#spicy-gt-RtmpCyx64F-1 .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_indent_1 {
+#spicy-gt-RtmpCyx64F-1 .gt_indent_1 {
   text-indent: 5px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_indent_2 {
+#spicy-gt-RtmpCyx64F-1 .gt_indent_2 {
   text-indent: 10px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_indent_3 {
+#spicy-gt-RtmpCyx64F-1 .gt_indent_3 {
   text-indent: 15px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_indent_4 {
+#spicy-gt-RtmpCyx64F-1 .gt_indent_4 {
   text-indent: 20px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_indent_5 {
+#spicy-gt-RtmpCyx64F-1 .gt_indent_5 {
   text-indent: 25px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .katex-display {
+#spicy-gt-RtmpCyx64F-1 .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#spicy-gt-RtmpCyx64F-1 div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_sourcenote {
+#spicy-gt-RtmpCyx64F-1 .gt_sourcenote {
   width: 1px;
   line-height: 1.25;
-  padding: 0 5px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_sourcenotes:first-child .gt_sourcenote {
+#spicy-gt-RtmpCyx64F-1 .gt_sourcenote {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+#spicy-gt-RtmpCyx64F-1 .gt_sourcenotes:first-child .gt_sourcenote {
   padding-top: 0.5rem;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_sourcenotes:last-child .gt_sourcenote {
+#spicy-gt-RtmpCyx64F-1 .gt_sourcenotes:last-child .gt_sourcenote {
   padding-bottom: 0.2rem;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpqgQ8uI-1 .gt_spanner_row {
+#spicy-gt-RtmpCyx64F-1 .gt_col_headings.gt_spanner_row, #spicy-gt-RtmpCyx64F-1 .gt_spanner_row {
   border-bottom-style: none !important;
   border-bottom-width: 0px !important;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_col_heading {
+#spicy-gt-RtmpCyx64F-1 .gt_col_heading {
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_table tbody .gt_row {
+#spicy-gt-RtmpCyx64F-1 .gt_table tbody .gt_row {
   border-top-width: 0px !important;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_column_spanner {
+#spicy-gt-RtmpCyx64F-1 .gt_column_spanner {
   border-bottom-width: 0px !important;
   border-bottom-color: transparent !important;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 th[id^="model_span_"] > .gt_column_spanner {
+#spicy-gt-RtmpCyx64F-1 th[id^="model_span_"] > .gt_column_spanner {
   display: block !important;
   width: auto !important;
   margin-left: calc(0.5em - 4px);
@@ -1408,12 +1412,12 @@ carries through to every format.</p>
   border-bottom: 1px solid #333333 !important;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
+#spicy-gt-RtmpCyx64F-1 th[id^="model_span_"]:last-child > .gt_column_spanner {
   margin-right: 0.5em;
   padding-left: 4px;
 }
 
-#spicy-gt-RtmpqgQ8uI-1 .gt_column_spanner_outer:first-child {
+#spicy-gt-RtmpCyx64F-1 .gt_column_spanner_outer:first-child {
   padding-left: 5px !important;
 }
 
@@ -1597,7 +1601,7 @@ carries through to every format.</p>
 </tr>
 </tbody>
 <tfoot><tr class="gt_sourcenotes">
-<td class="gt_sourcenote" colspan="6"><span class="gt_from_md"><em>Note.</em> Cumulative logit regression (proportional odds). Std. errors: Wald asymptotic (z). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></td>
+<td class="gt_sourcenote" colspan="6"><span class="gt_from_md"><em>Note.</em> Cumulative logit regression (proportional odds). Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.</span></td>
     </tr></tfoot>
 </table>
 </div>

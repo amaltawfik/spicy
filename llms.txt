@@ -583,7 +583,7 @@ table_regression(fit_mixed)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 See [Categorical summary
@@ -925,6 +925,8 @@ returns the supported model classes.
   : Stack tables one under the other
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
   : Supported models of table_regression()
+- [`table_regression_tokens`](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md)
+  : Column and fit-statistic tokens in table_regression()
 
 ### Model families
 

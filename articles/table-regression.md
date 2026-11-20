@@ -961,7 +961,7 @@ table_regression(
 #>  R²              │    0.02                                            
 #>  Adj. R²         │    0.02                                            
 #> 
-#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. AME inference: t-test with Satterthwaite df. AME of a continuous predictor: average slope (dY/dX). CI = confidence interval; AME = average marginal effect.
+#> Note. Linear regression. Std. errors: cluster-robust (CR2), clusters by region. P-values: Satterthwaite t-test, cluster-robust df. AME inference: t-test with Satterthwaite df. AME of a continuous predictor: average slope (dY/dX). CI = confidence interval; AME = average marginal effect.
 ```
 
 `CR2` (the Bell-McCaffrey adjustment) is the recommended default under
@@ -1796,7 +1796,7 @@ table_regression(fit)
 #>  Random effects:                 │                                        
 #>    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    
 #>    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –    
-#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
+#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.52,   0.61]   –    
 #>    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                                   
@@ -1806,7 +1806,7 @@ table_regression(fit)
 #>  AIC                             │ 1755.6                                 
 #>  BIC                             │ 1774.8                                 
 #> 
-#> Note. Linear mixed-effects regression. Std. errors: Wald (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear mixed-effects regression. Std. errors: classical (model-based). P-values: Wald z-test, large-sample approximation. Random effects (REML): LR test vs linear regression, χ̄²(3) = 150.04, p < .001. CI = confidence interval; AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 No `ICC` row appears here: a random-slope fit has no single intra-class

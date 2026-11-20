@@ -124,7 +124,7 @@ they take for ordinal models are listed below.</p>
     <div class="section level2">
     <h2 id="engines">Engines<a class="anchor" aria-label="anchor" href="#engines"></a></h2>
 
-<table class="table table"><tr><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td><td>vcov</td></tr><tr><td><code>polr</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds</td><td>classical, CR1</td></tr><tr><td><code>clm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds; Non-proportional effects</td><td>classical, CR1 (classical only with scale or nominal terms)</td></tr><tr><td><code>clmm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm()</a></code></td><td>no</td><td>OR (logit)</td><td>Thresholds; Random effects</td><td>classical</td></tr></table><p>AME: whether the average-marginal-effects columns are available;
+<table class="table table"><tr><td>Class</td><td>Engine</td><td>AME</td><td>Exponentiate</td><td>Blocks</td><td>vcov</td></tr><tr><td><code>polr</code></td><td><code><a href="https://rdrr.io/pkg/MASS/man/polr.html" class="external-link">MASS::polr()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds</td><td>classical, CR1</td></tr><tr><td><code>clm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clm.html" class="external-link">ordinal::clm()</a></code></td><td>per category</td><td>OR (logit)</td><td>Thresholds; Non-proportional effects (nominal =); Scale effects (scale =)</td><td>classical, CR1 (classical only with scale or nominal terms)</td></tr><tr><td><code>clmm</code></td><td><code><a href="https://rdrr.io/pkg/ordinal/man/clmm.html" class="external-link">ordinal::clmm()</a></code></td><td>no</td><td>OR (logit)</td><td>Thresholds; Random effects</td><td>classical</td></tr></table><p>AME: whether the average-marginal-effects columns are available;
 <code>per category</code> is the marginal effect on each probability
 \(P(Y = k)\). Exponentiate: what <code>exponentiate = TRUE</code>
 gives. Blocks: the labeled blocks of rows the class adds below its
@@ -321,7 +321,7 @@ article.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R² (McFadden)   <span style="color: #9E9E9E;">│</span>    0.04                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC             <span style="color: #9E9E9E;">│</span> 3507.5                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: Wald asymptotic (z). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Coefficients exponentiated and displayed as OR; SE on the OR scale (delta method); CI bounds exponentiated (asymmetric). Std. errors: classical (Fisher information). Thresholds: latent-scale category cut-points (log-odds scale, not exponentiated). CI = confidence interval; AIC = Akaike information criterion.</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Cumulative logit regression (proportional odds): Sat</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Variable       <span style="color: #9E9E9E;">│</span>    B      SE       95% CI        p   </span>
@@ -340,7 +340,7 @@ article.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  R² (McFadden)  <span style="color: #9E9E9E;">│</span>    0.04                              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  AIC            <span style="color: #9E9E9E;">│</span> 3507.5                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Thresholds: Low|Medium = -0.67, Medium|High = 0.51. Std. errors: Wald asymptotic (z). CI = confidence interval; AIC = Akaike information criterion.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Cumulative logit regression (proportional odds). Thresholds: Low|Medium = -0.67, Medium|High = 0.51. Std. errors: classical (Fisher information). CI = confidence interval; AIC = Akaike information criterion.</span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
