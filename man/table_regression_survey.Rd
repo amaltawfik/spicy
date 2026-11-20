@@ -160,6 +160,8 @@ survey data. \emph{Journal of Survey Statistics and Methodology}, 3(1),
 \code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported classes and
 the other families; \code{\link[=table_categorical_svy]{table_categorical_svy()}} and
 \code{\link[=table_continuous_svy]{table_continuous_svy()}} for descriptive tables of a design; the
+\href{https://amaltawfik.github.io/spicy/articles/table-regression-survey.html}{Regression tables for survey designs}
+and
 \href{https://amaltawfik.github.io/spicy/articles/survey-tables.html}{Summary tables from a survey design}
-article.
+articles.
 }

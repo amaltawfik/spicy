@@ -254,6 +254,6 @@ regression models. \emph{Journal of the American Statistical Association},
 \code{\link[=table_regression]{table_regression()}} for the arguments shared by all classes;
 \code{\link[=table_regression_models]{table_regression_models()}} for the registry of supported classes and
 the other families; the
-\href{https://amaltawfik.github.io/spicy/articles/table-regression.html}{Publication-ready regression tables}
+\href{https://amaltawfik.github.io/spicy/articles/table-regression-robust.html}{Robust, IV, quantile and panel regression tables}
 article.
 }

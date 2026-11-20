@@ -261,7 +261,8 @@ CIs and a native clustered bootstrap as `vcov` options), and the
 `Fixed effects:` block -- one Yes / No row per factor, blank for
 models without the concept in a mixed table -- with per-factor
 `N (<factor>)` counts through the opt-in `"n_groups"` token and the
-within R-squared through `"within_r2"` (a `fixest` default).
+within R-squared through `"within_r2"` (a `fixest` default). See
+[*Robust, IV, quantile and panel regression tables*](table-regression-robust.html).
 
 **Mixed effects.** `lmer` (Satterthwaite t via `lmerTest`), `glmer`,
 `glmmTMB` (with zero-inflation and dispersion blocks, and a
@@ -311,21 +312,27 @@ Breslow baseline, the default Efron fit an Efron one -- so the
 hazard-ratio column and the dRMST column always come from the same
 likelihood. See [*Survival regression tables*](table-regression-survival.html).
 
-**Survey-weighted.** `survey::svyglm()`: design-based inference;
-the unweighted n and the sum of the design weights (`Weighted n`) are
-default fit statistics.
+**Survey-weighted.** `survey::svyglm()`, `svyolr()` and `svycoxph()`:
+design-based inference, with the unweighted n and the sum of the
+design weights (`Weighted n`) as default fit statistics. See
+[*Regression tables for survey designs*](table-regression-survey.html).
 
 **Additive, proportions, selection.** `mgcv::gam()` / `bam()`
 (a GAM shows the R² rows of the `glm()` of its family and link, and its
 smooth terms as a block: the effective degrees of freedom and the
 p-value of the approximate test of each term),
 `betareg::betareg()` (odds ratios on the logit mean link under
-`exponentiate`; the precision is the opt-in `phi` fit statistic),
-and `sampleSelection::selection()` with its selection component as
-a block.
+`exponentiate`; a precision submodel as a `Precision` block, a
+constant precision as the opt-in `phi` fit statistic), and
+`sampleSelection::selection()`, `heckit()` and `treatReg()` (a row per
+equation under each variable, and σ, ρ and the inverse Mills ratio in
+an `Error terms` block). See
+[*Additive, beta and selection regression tables*](table-regression-additive.html).
 
-**rms.** `ols`, `lrm`, `Glm` and `cph` are first-class citizens, so
-Harrell-style workflows drop in directly.
+**rms.** `ols`, `lrm`, `Glm` and `cph` fits, with their restricted
+cubic splines, the variance of `robcov()` and `bootcov()`, and
+penalized estimation. See
+[*Regression tables for rms fits*](table-regression-rms.html).
 
 **Bayesian.** `rstanarm` and `brms` fits are summarized from their
 posterior draws: posterior median, MAD SD, credible intervals,

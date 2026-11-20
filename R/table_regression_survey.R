@@ -114,8 +114,10 @@
 #'   [table_regression_models()] for the registry of supported classes and
 #'   the other families; [table_categorical_svy()] and
 #'   [table_continuous_svy()] for descriptive tables of a design; the
+#'   [Regression tables for survey designs](https://amaltawfik.github.io/spicy/articles/table-regression-survey.html)
+#'   and
 #'   [Summary tables from a survey design](https://amaltawfik.github.io/spicy/articles/survey-tables.html)
-#'   article.
+#'   articles.
 #'
 #' @references
 #' Lumley, T. & Scott, A. (2015). AIC and BIC for modeling with complex

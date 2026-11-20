@@ -520,7 +520,7 @@ table_regression(fit_mixed)
 #>  Random effects:                 │                                        
 #>    σ Subject (Intercept)         │   24.74  5.84  [ 15.58,  39.28]   –    
 #>    σ Subject Days                │    5.92  1.25  [  3.92,   8.95]   –    
-#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.57,   0.70]   –    
+#>    ρ Subject ((Intercept), Days) │    0.07  0.33  [ -0.52,   0.61]   –    
 #>    σ (Residual)                  │   25.59  1.51  [ 22.80,  28.72]   –    
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                               │  180                                   
@@ -683,6 +683,8 @@ Each workflow has a dedicated article on the package site:
   models](https://amaltawfik.github.io/spicy/articles/table-regression-supported-models.html)
 - [The structured view: programmatic access to spicy
   tables](https://amaltawfik.github.io/spicy/articles/as-structured.html)
+- [Robust, IV, quantile and panel regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-robust.html)
 - [Mixed-effects regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-mixed.html)
 - [GEE regression tables (population-averaged
@@ -695,6 +697,12 @@ Each workflow has a dedicated article on the package site:
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-ordinal.html)
 - [Multinomial regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-multinomial.html)
+- [Additive, beta and selection regression
+  tables](https://amaltawfik.github.io/spicy/articles/table-regression-additive.html)
+- [Regression tables for rms
+  fits](https://amaltawfik.github.io/spicy/articles/table-regression-rms.html)
+- [Regression tables for survey
+  designs](https://amaltawfik.github.io/spicy/articles/table-regression-survey.html)
 - [Bayesian regression
   tables](https://amaltawfik.github.io/spicy/articles/table-regression-bayesian.html)
 - [Categorical

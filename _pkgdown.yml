@@ -79,6 +79,8 @@ navbar:
           href: articles/table-regression-supported-models.html
         - text: "The structured view (programmatic access)"
           href: articles/as-structured.html
+        - text: Robust, IV, quantile and panel regression tables
+          href: articles/table-regression-robust.html
         - text: Mixed-effects regression tables
           href: articles/table-regression-mixed.html
         - text: GEE regression tables (population-averaged)
@@ -91,6 +93,12 @@ navbar:
           href: articles/table-regression-ordinal.html
         - text: Multinomial regression tables
           href: articles/table-regression-multinomial.html
+        - text: Additive, beta and selection regression tables
+          href: articles/table-regression-additive.html
+        - text: Regression tables for rms fits
+          href: articles/table-regression-rms.html
+        - text: Regression tables for survey designs
+          href: articles/table-regression-survey.html
         - text: Bayesian regression tables
           href: articles/table-regression-bayesian.html
         - text: Categorical predictors
@@ -120,12 +128,16 @@ articles:
       - articles/table-regression
       - articles/table-regression-supported-models
       - articles/as-structured
+      - articles/table-regression-robust
       - articles/table-regression-mixed
       - articles/table-regression-gee
       - articles/table-regression-counts
       - articles/table-regression-survival
       - articles/table-regression-ordinal
       - articles/table-regression-multinomial
+      - articles/table-regression-additive
+      - articles/table-regression-rms
+      - articles/table-regression-survey
       - articles/table-regression-bayesian
       - articles/categorical-predictors
       - articles/summary-tables-reporting

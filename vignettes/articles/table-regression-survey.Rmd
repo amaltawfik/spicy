@@ -1,0 +1,613 @@
+---
+title: "Regression tables for survey designs"
+description: >
+  Publication-ready tables for design-based regression in R with
+  `table_regression()`: `survey::svyglm()`, `svyolr()` and
+  `svycoxph()` fits with the variance and the degrees of freedom of
+  the design, weights compared with a declared design, odds ratios and
+  average marginal effects under the design, tests of a term,
+  the design-based AIC, subpopulations and replicate weights.
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r, include = FALSE}
+have_survey <- requireNamespace("survey", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = have_survey
+)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+have_me <- have_survey && requireNamespace("marginaleffects", quietly = TRUE)
+have_gt <- have_survey && requireNamespace("gt", quietly = TRUE)
+source("_pkgdown-helpers.R")
+```
+
+```{r setup, message = FALSE}
+library(spicy)
+library(survey) # svydesign(), svyglm(), svyolr(), svycoxph()
+```
+
+This article covers regression on data from a complex survey: models
+fitted with the survey package (Lumley, 2004) on a declared design,
+`svyglm()`, `svyolr()` and `svycoxph()`. The descriptive side of the
+same designs is in [*Summary tables from a survey
+design*](survey-tables.html). The companion article
+[*Publication-ready regression tables*](table-regression.html) covers
+the shared mechanics (output engines, labels, `tidy()`), and the
+class-by-class map is [*Supported
+models*](table-regression-supported-models.html).
+
+## Why a design, and what it changes
+
+A survey sample is rarely a simple random sample. Units are drawn with
+unequal probabilities, within strata, and often in clusters: schools
+within districts, households within census tracts. Design-based
+inference takes that selection mechanism as the source of randomness.
+In Binder's words, "the probabilities used to select the sample are
+then used as the basis for statistical inference, and such inference
+refers back to the finite population from which the random sample was
+selected" (Binder, 2008, p. 191).
+
+For a regression table, this has consequences in three places.
+
+The coefficients solve weighted estimating equations. The estimator is
+a pseudo-maximum likelihood estimator (Binder, 1992, p. 141): it has
+the form of a likelihood equation, but the sample has no likelihood
+under the design. Everything that needs one is therefore missing, the
+likelihood-ratio test and the usual AIC first.
+
+The variance comes from the design. Strata, clusters and a finite
+population correction all enter it, by linearization or by replicate
+weights. The weights alone do not determine it.
+
+The reference distribution of the tests comes from the design too. Its
+degrees of freedom are counted on the primary sampling units, not on
+the rows.
+
+Whether a regression should be weighted at all is a modelling question
+that no table settles. When the sampling is informative, model-based
+estimates "can be severely biased" (Binder, 2008, p. 193), and "the
+appropriateness of the weighted regression estimate depends on which
+model is chosen" (DuMouchel & Duncan, 1983, p. 535). This article starts
+after that decision: the analysis is design-based, and the question is
+how to report it.
+
+## The designs used here
+
+The examples use the data that ship with survey. The `api` data hold
+the Academic Performance Index of Californian schools, with several
+samples of the same population: `apiclus1` is a cluster sample of 15
+school districts, `apistrat` a sample stratified by school type. The
+`nhanes` data are an extract of NHANES 2009-2010 on high cholesterol,
+with the strata, the primary sampling units and the examination
+weights of the survey.
+
+```{r designs}
+data(api)
+data(nhanes)
+
+dclus1 <- svydesign(id = ~dnum, weights = ~pw, data = apiclus1, fpc = ~fpc)
+
+nhanes$race <- factor(
+  nhanes$race,
+  levels = 1:4,
+  labels = c("Hispanic", "White", "Black", "Other")
+)
+nhanes$sex <- factor(
+  nhanes$RIAGENDR,
+  levels = 1:2,
+  labels = c("Male", "Female")
+)
+dnh <- svydesign(
+  id = ~SDMVPSU, strata = ~SDMVSTRA, weights = ~WTMEC2YR,
+  nest = TRUE, data = nhanes
+)
+dnh
+```
+
+## A first table
+
+A linear model of the school's score in 2000 on three characteristics
+of its pupils: the percentage of English language learners (`ell`), the
+percentage eligible for subsidized meals (`meals`), and the percentage
+in their first year at the school (`mobility`).
+
+```{r first-table}
+gl <- svyglm(api00 ~ ell + meals + mobility, design = dclus1)
+table_regression(gl)
+```
+
+The coefficients, the standard errors and the p-values are those of
+`summary(gl)`: `table_regression()` reads a design-based fit and
+computes none of its inference. What it adds is in the fit statistics
+and the note.
+
+* `n` is the number of schools in the sample. `Weighted n` is the sum
+  of their design weights, the 6,194 schools of the population the
+  estimates describe.
+* The design line of the note states what was declared, here a cluster
+  sample of 15 PSUs with a finite population correction, and the
+  degrees of freedom the tests of the table use.
+* `Std. errors: design-based (Taylor linearization)` names the
+  variance estimator. Linearization "uses the linear terms of a Taylor
+  series expansion to approximate the estimator by a linear function of
+  the observed data" (Williams, 2008, p. 876).
+
+On the substance, a school loses 3.1 points of API for each additional
+percentage point of pupils eligible for subsidized meals, with a 95%
+interval from 2.5 to 3.7 points. The two other coefficients are not
+distinguishable from zero in this sample.
+
+## Degrees of freedom come from the PSUs
+
+The table above rests on 183 schools and tests with 11 degrees of
+freedom.
+
+```{r df}
+c(rows = nrow(apiclus1), design = degf(dclus1), model = df.residual(gl))
+```
+
+The sample is a sample of 15 districts, and the schools of a district
+were taken together. Clustering "results in fewer degrees of freedom in
+the sense that the sample now focuses on a smaller number of sampling
+units, that is, the first-stage clusters" (Lavrakas, 2008, p. 787). The
+design has 15 PSUs in one stratum, hence 14 degrees of freedom, and
+survey takes the residual degrees of freedom of the model by
+subtraction: its help page says the rule "is correct for PSU-level
+covariates but is potentially very conservative for individual-level
+covariates" (`?svyglm`, survey 4.5). Three predictors leave 11.
+
+`table_regression()` reads that number on the fit and never derives it:
+the engines of survey do not share one rule, and a Cox fit ends one
+degree of freedom above what the same arithmetic gives for a
+`svyglm()`. `survey::regTermTest()` takes the same number as the
+denominator of its F test.
+
+The consequence is visible in every interval of the table. With 11
+degrees of freedom the t quantile is 12% larger than the normal one:
+
+```{r df-ratio}
+qt(0.975, df.residual(gl)) / qnorm(0.975)
+```
+
+A large file does not protect against this. The NHANES extract has
+7,846 respondents with a cholesterol measure, drawn from 31 PSUs in 15
+strata: 16 degrees of freedom for the design, and each coefficient of a
+model takes one of them.
+
+## Weights are not a design
+
+`lm()` and `glm()` accept a `weights` argument, and passing the
+sampling weights there gives the right coefficients. It does not give
+the right inference. The same model, both ways:
+
+```{r weights-linear}
+lw <- lm(api00 ~ ell + meals + mobility, data = apiclus1, weights = pw)
+table_regression(
+  list("lm(weights = pw)" = lw, "svyglm(design)" = gl),
+  show_columns = c("b", "se", "p")
+)
+```
+
+The two columns of coefficients are identical. The standard error of
+the intercept doubles under the design, from 10.45 to 21.39, and that of
+`meals` goes from 0.21 to 0.28. `lm()` treats the 183 schools as
+independent draws, and reads each weight as a precision. The `R²` row
+is filled for the `lm()` only: spicy reports no R² for a design-based
+fit.
+
+The error does not always run in the same direction. A logistic model
+of high cholesterol on NHANES, with the weights rescaled to average 1
+for `glm()`:
+
+```{r weights-logit}
+fit <- svyglm(
+  HI_CHOL ~ agecat + race + sex,
+  design = dnh,
+  family = quasibinomial
+)
+
+nh <- subset(nhanes, !is.na(HI_CHOL))
+nh$w <- nh$WTMEC2YR / mean(nh$WTMEC2YR)
+naive <- glm(
+  HI_CHOL ~ agecat + race + sex,
+  data = nh,
+  family = quasibinomial,
+  weights = w
+)
+
+table_regression(
+  list("glm(weights = )" = naive, "svyglm(design)" = fit),
+  show_columns = c("b", "se", "p")
+)
+```
+
+```{r se-ratio}
+round(SE(fit) / sqrt(diag(vcov(naive))), 2)
+```
+
+The design-based standard errors range from 0.73 to 1.92 times those
+of the weighted `glm()`, and the p-values move with them: `Female` from
+.004 to .033, `Black` from .007 to .019, `White` from .437 to .316. The
+weighted `glm()` is neither conservative nor liberal, so it cannot
+serve as a bound. Its tests also refer to 7,838 residual degrees of
+freedom, where the design has 9.
+
+Both fits use `family = quasibinomial`. For `svyglm()` this is the
+convention of survey: the quasi families "give the same point estimates
+and standard errors" as `binomial` and avoid a warning about
+non-integer numbers of successes (`?svyglm`).
+
+## A logistic model on NHANES
+
+```{r logit}
+table_regression(fit, exponentiate = TRUE)
+```
+
+With `exponentiate = TRUE` the coefficients are odds ratios, the
+standard errors are on the odds-ratio scale by the delta method, and
+the intervals are the exponentiated bounds of the intervals on the
+log-odds scale, which is why they are not symmetric. The note says all
+three.
+
+Age dominates. Compared with respondents of 19 or younger, the odds of
+high cholesterol are about 10 times higher between 20 and 39, and 20 to
+25 times higher after 40. The intervals are wide, from 4.7 to 20.5 for
+the first of these odds ratios: they carry the 9 degrees of freedom of
+the design. Women have higher odds than men, 1.24 times, with an
+interval that starts at 1.02.
+
+## Average marginal effects under the design
+
+An odds ratio of 1.24 says nothing about how many more women than men
+have high cholesterol. The average marginal effect answers on the
+probability scale.
+
+```{r ame, eval = have_me}
+table_regression(fit, show_columns = c("b", "ame", "ame_ci", "ame_p"))
+```
+
+At the same age group and race, the probability of high cholesterol is
+on average 2 percentage points higher for women than for men, with an
+interval from 0 to 4 points. Between 40 and 59 it is 17 points above
+that of the youngest group.
+
+Two things make these effects design-based. The average is taken with
+the design weights, so it describes the population and not the sample.
+The interval uses the variance of the design and the same t reference
+with 9 degrees of freedom. The p-values of the two columns are close
+without being equal (.019 and .011 for `Black`): a coefficient and its
+average marginal effect are two different statistics.
+
+## Testing a term: Wald and Rao-Scott
+
+`race` enters the model with three coefficients, and one of them,
+`Black`, has p = .019. That is not a test of race. With four groups,
+one comparison in three below .05 is a weak basis, and the comparison
+depends on the reference category. The question "does race belong in
+this model" is a test of the three coefficients together.
+
+`table_regression()` has no term-level test column for a design-based
+fit. survey provides the tests:
+
+```{r term-test}
+regTermTest(fit, ~race)
+regTermTest(fit, ~race, method = "LRT")
+```
+
+The first is a Wald test, F = 3.11 on 3 and 9 degrees of freedom,
+p = .082. The second is the Rao-Scott test: the likelihood-ratio
+statistic of the working model "where the observations are independent
+and the weights are frequency weights", referred to a distribution that
+accounts for the design (`?regTermTest`). It gives p = .274. The two
+differ in size and agree on the reading: the data do not establish a
+difference between the groups, whatever the single row says.
+
+The result of such a test can be reported under the table with
+`note_add`:
+
+```{r term-test-note}
+table_regression(
+  fit,
+  exponentiate = TRUE,
+  show_columns = c("b", "ci", "p"),
+  note_add = "Race: Wald F(3, 9) = 3.11, p = .082."
+)
+```
+
+## Comparing models without a likelihood
+
+Two models side by side, with and without race:
+
+```{r compare}
+fit0 <- svyglm(HI_CHOL ~ agecat + sex, design = dnh, family = quasibinomial)
+
+table_regression(
+  list("Age, sex" = fit0, "+ race" = fit),
+  exponentiate = TRUE,
+  show_columns = c("b", "ci", "p"),
+  show_fit_stats = c("nobs", "aic", "eff_p")
+)
+```
+
+The `AIC` row of a `svyglm()` fit is not the AIC of a `glm()`. survey
+defines it "using the Rao-Scott approximation to the weighted
+loglikelihood (Lumley and Scott, 2015). It replaces the usual penalty
+term p [...] by the trace of the generalised design effect matrix"
+(`?anova.svyglm`). `show_fit_stats = "eff_p"` displays that penalty as
+`Effective parameters`. Here the model with race has seven coefficients
+beyond the intercept and 12.9 effective parameters: under this design,
+a coefficient costs more than one unit.
+
+The criterion is lower without race, 5162.1 against 5166.0, which is
+the reading of the two tests of the previous section. The design-based
+AIC compares design-based fits of the same data. It should not be set
+against the AIC of a `glm()` shown in another column.
+
+survey also compares the two fits directly, with the same Rao-Scott
+test as above:
+
+```{r compare-anova}
+anova(fit0, fit)
+```
+
+`nested = TRUE`, which adds the change statistics of a hierarchy to the
+table, is refused for a design-based fit:
+
+```{r nested-refused, error = TRUE}
+table_regression(list(fit0, fit), nested = TRUE)
+```
+
+## Subpopulations
+
+An analysis of a subgroup is a domain analysis, and the subgroup is
+taken on the design, not on the data. "Estimates for subpopulations or
+domains are handled by setting to zero the observed values for all
+units that fall outside of the domain" (Binder, 2008, p. 192):
+`subset()` on a design does this, "keeping the original design
+information about number of clusters, strata" (`?subset.survey.design`).
+
+```{r domain}
+older <- subset(dnh, agecat == "(59,Inf]")
+fit_old <- svyglm(HI_CHOL ~ race + sex, design = older, family = quasibinomial)
+table_regression(fit_old, exponentiate = TRUE)
+```
+
+Among respondents of 60 and over, the odds ratio of women is 2.31, with
+an interval from 1.56 to 3.42, against 1.24 in the whole sample. The
+`n` row counts the 1,880 respondents of the domain, and the note counts
+the PSUs that hold one of them, here all 31.
+
+Subsetting the data first and declaring the design afterwards breaks
+the design. For the smallest group, the design is declared without
+complaint and the model stops:
+
+```{r domain-wrong, error = TRUE}
+other_data <- subset(nhanes, race == "Other")
+d_other <- svydesign(
+  id = ~SDMVPSU, strata = ~SDMVSTRA, weights = ~WTMEC2YR,
+  nest = TRUE, data = other_data
+)
+svyglm(HI_CHOL ~ sex, design = d_other, family = quasibinomial)
+```
+
+One stratum has respondents of this group in a single PSU, and a
+variance cannot be computed from one unit. That stratum has two PSUs in
+the survey. Taken on the design, the same subgroup gives a model:
+
+```{r domain-right}
+fit_other <- svyglm(
+  HI_CHOL ~ sex,
+  design = subset(dnh, race == "Other"),
+  family = quasibinomial
+)
+table_regression(fit_other, exponentiate = TRUE, show_columns = c("b", "ci", "p"))
+```
+
+The note counts 29 PSUs, those that hold a respondent of this group
+with a cholesterol measure. In 15 strata they leave 14 degrees of
+freedom for the design, and 13 for the tests of a model with one
+predictor.
+
+The error is not always that visible. For the high schools of the
+cluster sample, present in 8 of the 15 districts, both routes give a
+model, and their standard errors differ by 4%:
+
+```{r domain-small}
+high_design <- svyglm(api00 ~ ell + meals, design = subset(dclus1, stype == "H"))
+high_data <- svyglm(
+  api00 ~ ell + meals,
+  design = svydesign(
+    id = ~dnum, weights = ~pw, fpc = ~fpc,
+    data = subset(apiclus1, stype == "H")
+  )
+)
+table_regression(
+  list("subset(design)" = high_design, "subset(data)" = high_data),
+  show_columns = c("b", "se", "p")
+)
+```
+
+The size of the error depends on the design, and nothing in the output
+of the wrong route warns of it. Subsetting the design costs nothing and
+is right in every case.
+
+## Replicate weights
+
+A design can be declared by replicate weights in place of strata and
+clusters. "Some recent large-scale surveys specify replication weights
+rather than the sampling design (partly for privacy reasons)"
+(`?svrepdesign`). The functions are the same, and so are the
+coefficients, which depend on the weights alone. The variance is
+computed from the estimates obtained with each set of replicate
+weights.
+
+```{r replicate}
+rclus1 <- as.svrepdesign(dclus1)
+gl_rep <- svyglm(api00 ~ ell + meals + mobility, design = rclus1)
+
+table_regression(
+  list("Linearization" = gl, "Jackknife (JK1)" = gl_rep),
+  show_columns = c("b", "se", "ci")
+)
+```
+
+The note names the design of each model: the PSUs of the linearization,
+the scheme and the number of replicates of the jackknife.
+The jackknife and the linearization estimators "are approximately the
+same for point estimates for which they are valid on large samples"
+(Lee, 2008, p. 404). With 15 PSUs the sample of PSUs is not large, and
+the two differ by 7% for the intercept and by 21% for `mobility`.
+
+## Ordinal outcomes: `svyolr()`
+
+`svyolr()` fits a cumulative logit model under the design. The API
+score cut into three bands, on the stratified sample:
+
+```{r ordinal}
+apistrat$grade <- cut(
+  apistrat$api00,
+  c(0, 600, 700, 1000),
+  labels = c("low", "mid", "high"),
+  ordered_result = TRUE
+)
+dgrade <- svydesign(
+  id = ~1, strata = ~stype, weights = ~pw, data = apistrat, fpc = ~fpc
+)
+ol <- svyolr(grade ~ ell + meals + stype, design = dgrade)
+table_regression(ol, exponentiate = TRUE)
+```
+
+Under proportional odds one ratio applies to every cut of the scale:
+each additional percentage point of pupils eligible for subsidized
+meals multiplies the odds of a higher band by 0.90. The cut-points are
+in a `Thresholds` block, on the log-odds scale and never exponentiated,
+which the note states. There is no `AIC` row: survey has no such
+criterion for a `svyolr()` fit.
+
+The average marginal effects of an ordinal model come one column per
+category of the outcome, and those of a predictor sum to zero across
+the categories:
+
+```{r ordinal-ame, eval = have_me}
+table_regression(ol, show_columns = c("b", "ame"))
+```
+
+## Cox models: `svycoxph()`
+
+The example of `?svycoxph`, which the help page itself introduces as a
+"somewhat unrealistic example of nonresponse bias": the patients of the
+Mayo Clinic data on primary biliary cholangitis who were randomized,
+weighted by the inverse of an estimated probability of being
+randomized.
+
+```{r cox}
+data(pbc, package = "survival")
+pbc$randomized <- with(pbc, !is.na(trt) & trt > 0)
+bias <- glm(randomized ~ age * edema, data = pbc, family = binomial)
+pbc$randprob <- fitted(bias)
+
+dpbc <- svydesign(
+  id = ~1, prob = ~randprob, strata = ~edema,
+  data = subset(pbc, randomized)
+)
+cx <- svycoxph(
+  survival::Surv(time, status > 0) ~ log(bili) + protime + albumin,
+  design = dpbc
+)
+table_regression(
+  cx,
+  exponentiate = TRUE,
+  show_fit_stats = c("nobs", "weighted_nobs", "n_events", "concordance")
+)
+```
+
+`prob` takes the probability, and survey inverts it: the weighted n is
+the 418 patients of the cohort, for 312 in the analysis. The standard
+errors are the design-based ones of survey, and the tests refer to a t
+distribution with the residual degrees of freedom of the note. A list
+of tokens in `show_fit_stats` replaces the default rows, so
+`"weighted_nobs"` has to be named to stay in the table.
+
+## What spicy refuses for survey fits, and why
+
+A request that the design cannot honor gets an error that says why.
+
+* `vcov =`. The variance of the design is the robust variance for the
+  declared design. To change the estimator, change the design and
+  refit. A `cluster =` is ignored with a warning that says the same.
+* Statistics of a likelihood: `"bic"`, `"aicc"`, `"deviance"`,
+  `"log_lik"` and the pseudo-R² tokens. The exception is `"aic"` for
+  `svyglm()`, the design-based criterion of the previous sections.
+* The AME columns of a `svycoxph()` model, as for any Cox model.
+* `nested = TRUE` and the term-level test columns. The tests exist in
+  survey, `regTermTest()` and `anova()`, and their result can be
+  reported with `note_add`.
+* `standardized`. Average marginal effects are the way to compare
+  predictors on a common scale here.
+* `ci_method = "profile"`, which needs a likelihood to profile.
+* The RMST and risk-difference columns of a Cox model. Their
+  uncertainty comes from resampling subjects, which ignores the strata
+  and the clusters of the design. `survey::svykm()` gives a marginal
+  survival curve under the design.
+* `table_regression_uv()` on a design object. Fit each model with
+  `svyglm()` and pass the fits to `table_regression()`.
+
+```{r refusal, error = TRUE}
+table_regression(fit, vcov = "HC3")
+```
+
+The refusal of the RMST and risk-difference columns rests on a
+measurement. On simulated data, over five designs and three seeds, a
+bootstrap of the rows gave a contrast between clusters a standard error
+too small by a factor of 1.5 to 6, depending on the number and the size
+of the clusters (about 3 for 30 clusters of 25 units with a moderate
+intra-cluster correlation). A contrast within clusters came out about
+right, and so did a design without intra-cluster correlation. The
+ratios are the same for the Cox coefficients themselves: this is the
+ordinary design effect, carried onto the RMST and the risk difference.
+
+## Presentation-ready output
+
+Everything above renders through the rich output engines. The
+comparison of the two NHANES models as a `gt` table:
+
+```{r rich, eval = build_rich_tables && have_gt}
+pkgdown_dark_gt(
+  table_regression(
+    list("Age, sex" = fit0, "+ race" = fit),
+    exponentiate = TRUE,
+    show_columns = c("b", "ci", "p"),
+    output = "gt"
+  )
+)
+```
+
+## References
+
+* Binder, D. A. (1992). Fitting Cox's proportional hazards models from
+  survey data. *Biometrika*, 79(1), 139--147.
+* Binder, D. A. (2008). Design-based estimation. In P. J. Lavrakas
+  (Ed.), *Encyclopedia of survey research methods* (pp. 191--193). SAGE
+  Publications.
+* DuMouchel, W. H., & Duncan, G. J. (1983). Using sample survey weights
+  in multiple regression analyses of stratified samples. *Journal of
+  the American Statistical Association*, 78(383), 535--543.
+* Lavrakas, P. J. (Ed.). (2008). *Encyclopedia of survey research
+  methods*. SAGE Publications. (Entry "Sampling error", p. 787.)
+* Lee, H. (2008). Jackknife variance estimation. In P. J. Lavrakas
+  (Ed.), *Encyclopedia of survey research methods* (p. 404). SAGE
+  Publications.
+* Lumley, T. (2004). Analysis of complex survey samples. *Journal of
+  Statistical Software*, 9(8), 1--19.
+* Lumley, T., & Scott, A. (2015). AIC and BIC for modeling with complex
+  survey data. *Journal of Survey Statistics and Methodology*, 3(1),
+  1--18.
+* Williams, R. L. (2008). Taylor series linearization (TSL). In P. J.
+  Lavrakas (Ed.), *Encyclopedia of survey research methods*
+  (pp. 876--877). SAGE Publications.

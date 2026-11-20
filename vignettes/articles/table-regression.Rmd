@@ -68,15 +68,24 @@ negative-binomial, and two-part models,
 (`polr`, `clm`, and the mixed `clmm`), [*Multinomial regression tables*](table-regression-multinomial.html) for
 multinomial models (`multinom`, `mlogit`),
 [*Survival regression tables*](table-regression-survival.html) for survival models
-(`coxph`, `survreg`), and [*Bayesian regression tables*](table-regression-bayesian.html)
+(`coxph`, `survreg`),
+[*Robust, IV, quantile and panel regression tables*](table-regression-robust.html)
+for robust standard errors, `estimatr`, `fixest`, instrumental variables,
+tobit and quantile regression,
+[*Additive, beta and selection regression tables*](table-regression-additive.html)
+for `mgcv`, `betareg` and `sampleSelection` fits,
+[*Regression tables for rms fits*](table-regression-rms.html) for `lrm`,
+`ols`, `Glm` and `cph`,
+[*Regression tables for survey designs*](table-regression-survey.html) for
+`svyglm`, `svyolr` and `svycoxph`,
+and [*Bayesian regression tables*](table-regression-bayesian.html)
 for Bayesian fits (`rstanarm`, `brms`). The mechanics covered here — confidence
 levels, multi-model and nested layouts, p-value adjustment,
 coefficient filtering, output formats, and the broom methods —
 apply across every supported class; variance-estimator
 availability varies by family, and the complete map — every
 supported class with its estimands, variance estimators and fit
-statistics, including the families without a dedicated article
-(quantile regression, `fixest`, `betareg`, ...) — is
+statistics — is
 [*Supported models*](table-regression-supported-models.html). One decision cuts
 across all of them — how to code,
 test, and present categorical *predictors* — and has its own
@@ -1279,6 +1288,21 @@ Model-family articles build on the mechanics shown here:
 - [*Survival regression tables*](table-regression-survival.html) for
   survival models: Cox hazard ratios with events and concordance,
   accelerated failure time models, and survival estimands.
+- [*Robust, IV, quantile and panel regression tables*](table-regression-robust.html)
+  for robust and clustered standard errors, `lm_robust()`, fixed
+  effects with fixest, instrumental variables, tobit and quantile
+  regression.
+- [*Additive, beta and selection regression tables*](table-regression-additive.html)
+  for generalized additive models, beta regression and
+  sample-selection models: smooth terms, the precision submodel and
+  the error terms as blocks of rows.
+- [*Regression tables for rms fits*](table-regression-rms.html) for
+  `lrm()`, `ols()`, `Glm()` and `cph()` fits: restricted cubic
+  splines, robust and bootstrap variance, penalized estimation.
+- [*Regression tables for survey designs*](table-regression-survey.html)
+  for design-based fits: degrees of freedom, weights compared with a
+  declared design, tests of a term, subpopulations and replicate
+  weights.
 - [*Bayesian regression tables*](table-regression-bayesian.html) for
   Bayesian fits: posterior medians and credible intervals, the
   probability of direction, and random effects from the draws.

@@ -1,0 +1,672 @@
+---
+title: "Robust, IV, quantile and panel regression tables"
+description: >
+  Publication-ready tables in R with `table_regression()` for
+  heteroskedasticity- and cluster-robust standard errors,
+  `estimatr::lm_robust()`, fixed-effects models with fixest,
+  instrumental variables, tobit and quantile regression.
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r, include = FALSE}
+have_pkgs <- all(vapply(
+  c("AER", "fixest", "quantreg", "estimatr", "sandwich", "clubSandwich"),
+  requireNamespace,
+  logical(1),
+  quietly = TRUE
+))
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = have_pkgs
+)
+options(width = 110)
+
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+have_gt <- have_pkgs && requireNamespace("gt", quietly = TRUE)
+source("_pkgdown-helpers.R")
+```
+
+```{r setup, message = FALSE}
+library(spicy)
+library(AER) # ivreg(), tobit(), bptest() and the three data sets
+library(fixest) # feols(), fepois(), fenegbin()
+library(quantreg) # rq()
+library(estimatr) # lm_robust(), iv_robust()
+```
+
+This article covers robust and clustered standard errors on an `lm()`,
+their counterparts in `estimatr::lm_robust()`, fixed-effects models
+with fixest, instrumental variables, the tobit model and quantile
+regression. The companion article [*Publication-ready
+regression tables*](table-regression.html) covers the shared mechanics
+(output engines, labels, `tidy()`), and the class-by-class map is
+[*Supported models*](table-regression-supported-models.html).
+
+## Two kinds of trouble
+
+The estimators of this article answer two different problems.
+
+In the first, the coefficients of least squares are fine and their
+standard errors are not. The errors have unequal variances, or the
+observations come in groups whose members resemble each other. A
+robust variance repairs the standard errors, the intervals and the
+tests, and leaves the coefficients as they are.
+
+In the second, the coefficient itself is in question. A predictor is
+correlated with what the model leaves out, the outcome is censored, or
+the effect differs between the bottom and the top of the distribution.
+The answer is another estimator: fixed effects, instrumental
+variables, tobit, quantile regression.
+
+A table has to say which estimator and which variance it reports.
+`table_regression()` writes both under the table, in every case below.
+
+## The data
+
+Three data sets of the AER package carry the examples. `CPS1988` is a
+cross-section of 28,155 employed American men, with wage, education,
+experience and ethnicity. `Fatalities` is a panel of the 48 contiguous
+states from 1982 to 1988, with traffic deaths and the tax on beer.
+`PSID1976` holds 753 married women, their hours of paid work, and for
+the 428 who work, their wage.
+
+```{r data}
+data("CPS1988", package = "AER")
+data("Fatalities", package = "AER")
+data("PSID1976", package = "AER")
+
+Fatalities$frate <- with(Fatalities, fatal / pop * 10000) # deaths per 10,000
+PSID1976$nwincome <- with(PSID1976, (fincome - hours * wage) / 1000)
+working <- subset(PSID1976, participation == "yes")
+```
+
+## Heteroskedasticity-robust standard errors
+
+A wage equation on the CPS: the log wage on experience, its square,
+education and ethnicity.
+
+```{r hc-classical}
+fit_wage <- lm(
+  log(wage) ~ experience + I(experience^2) + education + ethnicity,
+  data = CPS1988
+)
+bptest(fit_wage)
+```
+
+The Breusch-Pagan test leaves no doubt about the unequal variances.
+`vcov =` asks for a robust estimator, and a list of fits with a list
+of estimators puts the two sets of standard errors side by side.
+
+```{r hc-side-by-side}
+table_regression(
+  list(Classical = fit_wage, HC3 = fit_wage),
+  vcov = list("classical", "HC3"),
+  show_columns = c("b", "se", "ci"),
+  digits = 3
+)
+```
+
+The coefficients are the same in both columns. The robust standard
+errors are larger, by 24% for the square of experience and by 8% for
+education.
+
+`"HC0"` to `"HC3"` differ by how they weight the squared residuals
+when the sample is small. Zeileis (2004, p. 4) reports the conclusion
+of the simulations of Long and Ervin: HC3 "provides the best
+performance in small samples as it gives less weight to influential
+observations". With 28,155 rows the four estimators agree to three
+digits, and the choice no longer matters. `table_regression()` keeps
+the classical variance as its default and computes a robust one only
+on request.
+
+## `vcov =` or `lm_robust()`
+
+`estimatr::lm_robust()` chooses the variance at fit time. The table
+reports the standard errors of the fit, and they are those that
+`vcov =` gives on an `lm()`.
+
+```{r hc-lm-robust}
+fit_wage_rob <- lm_robust(
+  log(wage) ~ experience + I(experience^2) + education + ethnicity,
+  data = CPS1988, se_type = "HC3"
+)
+
+table_regression(
+  list("lm(), HC3" = fit_wage, "lm_robust(), HC3" = fit_wage_rob),
+  vcov = list("HC3", "classical"),
+  show_columns = c("b", "se", "p"),
+  digits = 4
+)
+```
+
+For a fit that carries its own variance, `"classical"` means the
+variance of the fit. One difference deserves attention: without
+`se_type`, estimatr computes HC2, where an `lm()` table is classical.
+The note says which one is in the table.
+
+```{r hc-lm-robust-default}
+table_regression(lm_robust(frate ~ beertax, data = Fatalities))
+```
+
+## Clustered standard errors
+
+The 336 rows of `Fatalities` are 48 states observed seven times. Two
+years of the same state resemble each other more than two states do,
+and a variance that treats the rows as independent is too small. A
+cluster-robust variance takes the state as the unit.
+
+```{r cluster-pooled}
+pooled <- lm(frate ~ beertax, data = Fatalities)
+
+table_regression(
+  list(Classical = pooled, HC3 = pooled, CR1 = pooled, CR2 = pooled),
+  vcov = list("classical", "HC3", "CR1", "CR2"),
+  cluster = list(NULL, NULL, ~state, ~state),
+  show_columns = c("b", "se", "ci", "p")
+)
+```
+
+The coefficient of the beer tax keeps its value, and its p-value moves
+from below .001 to .019 under CR1 and .036 under CR2. Correcting for
+heteroskedasticity alone (HC3) changes little: the trouble here is the
+dependence within states.
+
+`"CR1"` is the sandwich with the correction G / (G − 1) for G
+clusters, `"CR1S"` the variant of Stata, and `"CR2"` the adjustment of
+Bell and McCaffrey (2002). Under `"CR1"` and `"CR2"` the tests are t
+tests with Satterthwaite degrees of freedom, computed for each
+coefficient. `lm_robust()` with `clusters =` gives the same numbers:
+
+```{r cluster-estimatr-same}
+table_regression(
+  list(
+    "lm(), CR2" = pooled,
+    "lm_robust(), CR2" = lm_robust(
+      frate ~ beertax,
+      data = Fatalities, clusters = state, se_type = "CR2"
+    )
+  ),
+  vcov = list("CR2", "classical"),
+  cluster = list(~state, NULL),
+  show_columns = c("b", "se", "df", "p"),
+  digits = 3
+)
+```
+
+The `df` column prints the degrees of freedom of each test.
+
+## Few clusters
+
+A cluster-robust variance is justified when the clusters are many.
+Cameron, Gelbach and Miller (2008) show that the usual tests reject
+too often with few clusters, five to thirty in their study. The
+number of clusters is not the whole story either. Bell and McCaffrey
+(2002, p. 169) note that the bias is large "when the number of PSUs
+is small or a coefficient depends primarily on data from a small
+number of PSUs". In the previous table, the beer tax has 5.2 degrees
+of freedom under CR2, with 48 states. Imbens and Kolesár (2016) trace
+such losses to a regressor whose distribution is skewed across
+clusters.
+
+The CPS has four regions. Clustering a wage equation on them shows
+what four clusters can and cannot support. The example draws 2,000
+men, since CR2 forms one matrix per cluster and four clusters of
+7,000 rows take minutes.
+
+```{r few-clusters}
+set.seed(1988)
+cps <- CPS1988[sample(nrow(CPS1988), 2000), ]
+fit_cps <- lm(
+  log(wage) ~ experience + I(experience^2) + education + ethnicity,
+  data = cps
+)
+
+table_regression(
+  list(Classical = fit_cps, CR1 = fit_cps, CR1S = fit_cps, CR2 = fit_cps),
+  vcov = list("classical", "CR1", "CR1S", "CR2"),
+  cluster = list(NULL, ~region, ~region, ~region),
+  keep = c("education", "ethnicity"),
+  show_columns = c("b", "se", "ci", "p"),
+  digits = 3
+)
+```
+
+For the wage gap of African-American men, the three clustered
+columns give p = .044, .029 and .099. They differ by their standard
+error and by their reference distribution: 2.4 Satterthwaite degrees
+of freedom under CR1, G − 1 = 3 under CR1S, 1.9 under CR2. Imbens and
+Kolesár (2016) and Pustejovsky and Tipton (2018) recommend CR2 with
+its degrees of freedom as the routine choice. With four clusters,
+that choice rests on fewer than two degrees of freedom: these data
+cannot settle the question at the level of the region.
+
+## Panel data: the within estimator
+
+In the pooled regression above, states with a higher beer tax have
+more traffic deaths. States differ in many ways that the model
+ignores, and a panel allows a comparison of each state with itself.
+Fixed effects for state and year do that, either as dummy variables
+in an `lm()` or absorbed by `fixest::feols()`.
+
+```{r panel-pooled-lsdv-within}
+lsdv <- lm(frate ~ beertax + state + year, data = Fatalities)
+within <- feols(frate ~ beertax | state + year, data = Fatalities)
+
+table_regression(
+  list(Pooled = pooled, "Dummies (LSDV)" = lsdv, "Within (feols)" = within),
+  keep = "beertax",
+  show_intercept = FALSE
+)
+```
+
+The sign reverses: 0.36 in the pooled model, −0.64 within states. The
+dummy-variable model and `feols()` are one estimator computed two
+ways, and they agree on the coefficient and on its classical standard
+error. The fixest column carries a block that says which effects were
+absorbed. `keep` selects the rows of the predictors, and
+`show_intercept` governs the intercept apart.
+
+The price of the within estimator is known. Because the state effects
+"account for all the higher-level variance, no other variables
+measured at the higher level can be identified" (Bell, Fairbrother &
+Jones, 2019, p. 1060): a characteristic of a state that does not
+change over the seven years has no coefficient.
+
+`show_fit_stats` adds the statistics specific to these models, the
+number of groups and the within R².
+
+```{r panel-fe-stats}
+table_regression(
+  within,
+  show_fit_stats = c("fixed_effects", "nobs", "n_groups", "r2", "within_r2")
+)
+```
+
+The model explains 91% of the variance of the death rate, almost all
+of it through the fixed effects: the beer tax accounts for 4% of the
+variation left within states and years.
+
+## The variance of a fixest fit
+
+Like estimatr, fixest sets the variance in the fit, with `vcov =` or
+`cluster =` in `feols()`. The table reports it and names it.
+
+```{r panel-vcov-at-fit}
+within_cl <- feols(
+  frate ~ beertax | state + year,
+  data = Fatalities, cluster = ~state
+)
+within_tw <- feols(
+  frate ~ beertax | state + year,
+  data = Fatalities, vcov = "twoway"
+)
+within_dk <- feols(
+  frate ~ beertax | state + year,
+  data = Fatalities, panel.id = ~ state + year, vcov = "DK"
+)
+
+table_regression(
+  list(
+    IID = within, "Cluster state" = within_cl,
+    "Two-way" = within_tw, "Driscoll-Kraay" = within_dk
+  ),
+  show_columns = c("b", "se", "p")
+)
+```
+
+The coefficient is the same in the four columns, and its p-value is
+.001, .080, .092 and .012. The estimators of `table_regression()` are
+refused for a fixest fit, with the way to obtain them in fixest:
+
+```{r panel-refusal, error = TRUE}
+table_regression(within, vcov = "HC3")
+```
+
+Clustered standard errors of the same model do not agree to the last
+digit across software, because the small-sample corrections differ.
+The dummy-variable `lm()` under three estimators, next to fixest:
+
+```{r panel-cluster}
+table_regression(
+  list(
+    "LSDV, CR1" = lsdv, "LSDV, CR1S" = lsdv, "LSDV, CR2" = lsdv,
+    "feols, cluster" = within_cl
+  ),
+  vcov = list("CR1", "CR1S", "CR2", "classical"),
+  cluster = list(~state, ~state, ~state, NULL),
+  keep = "beertax",
+  show_columns = c("b", "se", "ci", "p"),
+  digits = 3
+)
+```
+
+fixest counts fewer parameters than Stata's formula applied to the
+dummy-variable model, since it leaves out the fixed effects nested in
+the clusters (`?fixest::ssc`). With `ssc(K.fixef = "full")` it
+returns the CR1S column. The four p-values lie between .08 and .13.
+The classical one was .001.
+
+## Fixed-effects count models
+
+Deaths are counts, and the population at risk differs widely between
+states. A Poisson model with the population as exposure
+and the same two fixed effects is `fepois()`, and `fenegbin()` relaxes
+the equality of mean and variance.
+
+```{r fepois}
+fp <- fepois(
+  fatal ~ beertax | state + year,
+  offset = ~ log(pop), data = Fatalities, cluster = ~state
+)
+fnb <- fenegbin(
+  fatal ~ beertax | state + year,
+  offset = ~ log(pop), data = Fatalities, cluster = ~state
+)
+
+table_regression(
+  list(Poisson = fp, "Negative binomial" = fnb),
+  exponentiate = TRUE,
+  show_fit_stats = c("fixed_effects", "nobs", "theta", "pseudo_r2_mcfadden", "aic")
+)
+```
+
+`exponentiate = TRUE` gives incidence rate ratios: one more unit of the
+tax on a case of beer goes with a death rate multiplied by 0.71 in the
+Poisson model, 95% CI [0.52, 0.96].
+
+Average marginal effects are available for `feols()` and for a GLM
+without fixed effects. For a GLM with fixed effects they are refused,
+and the message gives the reason.
+
+```{r fepois-ame-refused, error = TRUE}
+table_regression(fp, show_columns = c("b", "ame"))
+```
+
+## Instrumental variables
+
+The return to a year of education is the textbook case of a
+coefficient in doubt: ability raises both schooling and wages, and
+least squares credits schooling with both. An instrument is a
+variable that moves education and has no other path to the wage. The
+example takes the education of the father and of the mother, for the
+428 working women of the PSID.
+
+Of the assumptions behind an instrument, one can be checked. For
+Gelman, Hill and Vehtari (2020, p. 431), the correlation of the
+instrument with the treatment "is the only assumption that can be
+directly tested", and the first-stage model "should be examined
+closely to assess the strength of the instrument". The first stage is
+an ordinary `lm()`, and its table comes first.
+
+```{r iv-first-stage}
+first <- lm(
+  education ~ feducation + meducation + experience + I(experience^2),
+  data = working
+)
+table_regression(
+  first,
+  vcov = "HC1",
+  keep = c("feducation", "meducation"),
+  digits = 3
+)
+```
+
+Both parents' education predict the daughter's. The tests of weak
+instruments, of endogeneity and of overidentification have no place
+in the table. They come from `summary()` of the fit, and `note_add`
+can carry them.
+
+```{r iv-diagnostics}
+iv <- ivreg(
+  log(wage) ~ education + experience + I(experience^2) |
+    feducation + meducation + experience + I(experience^2),
+  data = working
+)
+summary(iv, diagnostics = TRUE)$diagnostics
+```
+
+The second stage is not an `lm()` on the fitted values of the first:
+"the standard-error calculation is complicated because we cannot
+simply look at the second regression in isolation" (Gelman et al.,
+2020, p. 429). `AER::ivreg()`, `estimatr::iv_robust()` and
+`fixest::feols()` do the calculation, and their fits go in one table
+with the least-squares model.
+
+```{r iv-table}
+ols_w <- lm(
+  log(wage) ~ education + experience + I(experience^2),
+  data = working
+)
+iv_rob <- iv_robust(
+  log(wage) ~ education + experience + I(experience^2) |
+    feducation + meducation + experience + I(experience^2),
+  data = working, se_type = "HC1"
+)
+iv_fe <- feols(
+  log(wage) ~ experience + I(experience^2) |
+    education ~ feducation + meducation,
+  data = working, vcov = "hetero"
+)
+
+table_regression(
+  list(OLS = ols_w, "ivreg()" = iv, "iv_robust()" = iv_rob, "feols()" = iv_fe),
+  vcov = list("HC1", "classical", "classical", "classical"),
+  show_columns = c("b", "se", "p"),
+  show_fit_stats = "nobs",
+  digits = 3
+)
+```
+
+The return to a year of education falls from 0.107 to 0.061, and its
+standard error more than doubles: an instrument uses only a part of
+the variation of education. The three implementations give the same
+coefficient.
+
+An `ivreg()` fit takes `vcov = "HC0"` and `"HC1"`, and the
+cluster-robust estimators `"CR0"` to `"CR3"` and `"CR1S"` with a
+`cluster`. The values are those of `iv_robust()`.
+
+```{r iv-robust}
+table_regression(
+  list("ivreg(), HC1" = iv, "iv_robust(), HC1" = iv_rob),
+  vcov = list("HC1", "classical"),
+  show_columns = c("b", "se", "p"),
+  show_fit_stats = "nobs",
+  digits = 3
+)
+```
+
+`"HC2"` to `"HC5"` are refused. They weight each residual by its
+leverage, which AER and estimatr do not define the same way for
+two-stage least squares, and the error says so.
+
+```{r iv-refusal, error = TRUE}
+table_regression(iv, vcov = "HC3")
+```
+
+## Censored outcomes: tobit
+
+Of the 753 women, 325 did not work for pay in 1975: their hours are
+zero. Least squares on all the rows treats these zeros as ordinary
+values. The tobit model posits a latent variable, here the desired
+hours, that is observed only when it is positive (Gelman et al.,
+2020, p. 284).
+
+```{r tobit}
+tob <- tobit(
+  hours ~ nwincome + education + experience + I(experience^2) + age +
+    youngkids + oldkids,
+  data = PSID1976
+)
+ols_h <- lm(
+  hours ~ nwincome + education + experience + I(experience^2) + age +
+    youngkids + oldkids,
+  data = PSID1976
+)
+
+table_regression(
+  list("OLS (zeros included)" = ols_h, Tobit = tob),
+  show_columns = c("b", "se", "p"),
+  show_fit_stats = c("nobs", "sigma", "aic")
+)
+```
+
+The tobit coefficient of education is 80.65 hours per year of
+schooling, against 28.76 by least squares. The two do not measure the
+same thing. A tobit coefficient is a slope of the latent variable. The
+slope of the observed hours is smaller, since part of the women stay
+at zero whatever the change.
+
+The same holds for the average marginal effects of a tobit fit: they
+are average slopes of the latent variable, and the note under the
+table says so.
+
+```{r tobit-ame}
+table_regression(
+  tob,
+  show_columns = c("b", "ame", "ame_ci"),
+  keep = c("education", "experience", "youngkids")
+)
+```
+
+For education the AME repeats the coefficient, and for experience it
+takes the squared term into account. `vcov = "CR1"` with a `cluster`
+is the one robust estimator of a tobit fit.
+
+## Quantile regression
+
+Least squares models the mean of the outcome. Quantile regression
+models a quantile, and several quantiles show whether a predictor
+acts in the same way at the bottom and at the top of the
+distribution. `quantreg::rq()` fits one quantile at a time. A table
+of several quantiles takes a list of fits, one per `tau`.
+
+```{r rq-mean-quantiles}
+q10 <- rq(
+  log(wage) ~ experience + I(experience^2) + education + ethnicity,
+  tau = 0.10, data = CPS1988
+)
+q50 <- update(q10, tau = 0.50)
+q90 <- update(q10, tau = 0.90)
+
+table_regression(
+  list(Mean = fit_wage, Q10 = q10, Median = q50, Q90 = q90),
+  vcov = list("HC3", "classical", "classical", "classical"),
+  show_columns = c("b", "se"),
+  digits = 3
+)
+```
+
+The wage gap of African-American men is −0.283 at the first
+decile and −0.207 at the ninth: it narrows toward the top. The return
+to experience falls from 0.102 to 0.056. The return to education
+changes little, from 0.082 to 0.093. The standard error of the gap is
+nearly twice as large at the first decile as at the median: outer
+quantiles are harder to estimate (Harrell, 2015, p. 360).
+
+The variance of a quantile regression has its own estimators, since
+it depends on the density of the outcome around the quantile. The
+tokens are those of quantreg. For an `rq` fit, `"classical"` is
+`"nid"`, the sandwich that allows unequal densities.
+
+```{r rq-vcov, warning = FALSE}
+q50_cps <- rq(
+  log(wage) ~ experience + I(experience^2) + education + ethnicity,
+  tau = 0.5, data = cps
+)
+
+set.seed(2)
+table_regression(
+  list(nid = q50_cps, iid = q50_cps, ker = q50_cps, bootstrap = q50_cps),
+  vcov = list("nid", "iid", "ker", "bootstrap"),
+  boot_n = 500,
+  keep = c("education", "ethnicity"),
+  show_columns = c("b", "se", "ci"),
+  digits = 3
+)
+```
+
+`summary()` of quantreg does not default to `"nid"` on a small sample:
+below 1,001 rows it inverts a rank test (`?summary.rq`). That method
+gives confidence intervals without standard errors, and
+`vcov = "rank"` reproduces it: the standard errors and the p-values of
+the table stay empty.
+
+For clustered data, `vcov = "bootstrap"` with a `cluster` runs the
+wild gradient bootstrap of Hagemann (2017). The median death rate of
+the panel, clustered by state:
+
+```{r rq-cluster-bootstrap, warning = FALSE}
+q_frate <- rq(frate ~ beertax + year, tau = 0.5, data = Fatalities)
+
+set.seed(3)
+table_regression(
+  list(nid = q_frate, "Cluster bootstrap" = q_frate),
+  vcov = list("nid", "bootstrap"),
+  cluster = list(NULL, ~state),
+  boot_n = 500,
+  keep = "beertax",
+  show_columns = c("b", "se", "ci", "p"),
+  digits = 3
+)
+```
+
+The standard error of the beer tax is more than three times larger
+once the states are taken as clusters. The method assumes many clusters.
+Hagemann (2017) reports that with very few of them, inference from
+bootstrap standard errors rejects too often.
+
+One argument can mislead a user of quantreg. In `table_regression()`,
+`tau` is the time horizon of the survival columns. The quantile of a
+fit is set in `rq(tau = )`.
+
+## Presentation-ready output
+
+Everything above renders through the rich output engines. The three
+models of the beer tax, with standard errors clustered by state, as a
+`gt` table:
+
+```{r rich, eval = build_rich_tables && have_gt}
+pkgdown_dark_gt(
+  table_regression(
+    list(Pooled = pooled, "Dummies (LSDV)" = lsdv, "Within" = within_cl),
+    vcov = list("CR2", "CR2", "classical"),
+    cluster = list(~state, ~state, NULL),
+    keep = "beertax",
+    output = "gt"
+  )
+)
+```
+
+## References
+
+* Bell, A., Fairbrother, M., & Jones, K. (2019). Fixed and random
+  effects models: Making an informed choice. *Quality & Quantity*,
+  53(2), 1051--1074.
+* Bell, R. M., & McCaffrey, D. F. (2002). Bias reduction in standard
+  errors for linear regression with multi-stage samples. *Survey
+  Methodology*, 28(2), 169--181.
+* Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2008).
+  Bootstrap-based improvements for inference with clustered errors.
+  *Review of Economics and Statistics*, 90(3), 414--427.
+* Gelman, A., Hill, J., & Vehtari, A. (2020). *Regression and other
+  stories*. Cambridge University Press.
+* Hagemann, A. (2017). Cluster-robust bootstrap inference in quantile
+  regression models. *Journal of the American Statistical
+  Association*, 112(517), 446--456.
+* Harrell, F. E. (2015). *Regression modeling strategies: With
+  applications to linear models, logistic and ordinal regression, and
+  survival analysis* (2nd ed.). Springer.
+* Imbens, G. W., & Kolesár, M. (2016). Robust standard errors in small
+  samples: Some practical advice. *Review of Economics and
+  Statistics*, 98(4), 701--712.
+* Pustejovsky, J. E., & Tipton, E. (2018). Small-sample methods for
+  cluster-robust variance estimation and hypothesis testing in fixed
+  effects models. *Journal of Business & Economic Statistics*, 36(4),
+  672--683.
+* Zeileis, A. (2004). Econometric computing with HC and HAC covariance
+  matrix estimators. *Journal of Statistical Software*, 11(10), 1--17.

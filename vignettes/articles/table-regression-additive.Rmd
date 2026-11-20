@@ -1,0 +1,485 @@
+---
+title: "Additive, beta and selection regression tables"
+description: >
+  Publication-ready tables in R with `table_regression()` for
+  generalized additive models (`mgcv::gam()`, `bam()`), beta regression
+  (`betareg::betareg()`) and sample-selection models
+  (`sampleSelection::selection()`, `heckit()`, `treatReg()`): smooth
+  terms with their effective degrees of freedom, the precision
+  submodel, the error terms of a selection model, and what each note
+  says.
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r, include = FALSE}
+have_mgcv    <- requireNamespace("mgcv", quietly = TRUE) &&
+  requireNamespace("MASS", quietly = TRUE)
+have_bam     <- have_mgcv && requireNamespace("AER", quietly = TRUE)
+have_betareg <- requireNamespace("betareg", quietly = TRUE)
+have_sel     <- requireNamespace("sampleSelection", quietly = TRUE)
+have_me      <- requireNamespace("marginaleffects", quietly = TRUE)
+have_lmtest  <- requireNamespace("lmtest", quietly = TRUE)
+have_broom   <- requireNamespace("broom", quietly = TRUE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = have_mgcv
+)
+options(width = 80)
+suppressPackageStartupMessages({
+  library(spicy)
+  if (have_mgcv) library(mgcv)
+  if (have_betareg) library(betareg)
+  if (have_sel) library(sampleSelection)
+  # Loaded here so that their load-time messages stay out of the chunks.
+  for (pkg in c("sandwich", "clubSandwich", "marginaleffects")) {
+    if (requireNamespace(pkg, quietly = TRUE)) loadNamespace(pkg)
+  }
+})
+build_rich_tables <- identical(Sys.getenv("IN_PKGDOWN"), "true")
+source("_pkgdown-helpers.R")
+```
+
+```{r setup, eval = TRUE, message = FALSE}
+library(spicy)
+library(mgcv)            # gam(), bam()
+library(betareg)         # betareg()
+library(sampleSelection) # selection(), heckit(), treatReg()
+```
+
+This article covers three kinds of models that estimate something
+beside their regression coefficients: the smooth terms of a generalized
+additive model, the precision submodel of a beta regression, and the
+error terms of a sample-selection model. `table_regression()` shows
+each of them in a labeled block of rows under the coefficients. The
+companion article [*Publication-ready regression
+tables*](table-regression.html) covers the shared mechanics (output
+engines, labels, `tidy()`), and the class-by-class map is [*Supported
+models*](table-regression-supported-models.html).
+
+## Generalized additive models
+
+A generalized additive model replaces the straight line of a predictor
+by a curve estimated from the data. The example is the one of
+[*Regression tables for rms fits*](table-regression-rms.html): diabetes
+among 532 women of Pima heritage aged 21 or more (`MASS::Pima.tr` and
+`Pima.te`), and the shape of its relation with age. The first model is
+linear in age. The second gives age a smooth term.
+
+```{r gam-fit}
+pima <- rbind(MASS::Pima.tr, MASS::Pima.te)
+fit_glm <- glm(type ~ age + bmi + glu + npreg, family = binomial,
+               data = pima)
+fit_gam <- gam(type ~ s(age) + bmi + glu + npreg, family = binomial,
+               data = pima, method = "REML")
+table_regression(list(Linear = fit_glm, GAM = fit_gam))
+summary(fit_gam)$s.table
+```
+
+A curve has no single coefficient, so `s(age)` has no row among the
+coefficients. It has a row in the `Smooth terms (edf)` block, and what
+stands in the `B` column there is the number of effective degrees of
+freedom of the term. One degree of freedom is a straight line. The
+curve of age takes 3.63, the value of `summary()`.
+
+The p-value of that row belongs to the test that the term is zero.
+mgcv computes it, and its help says what it is worth: "Be warned, these
+are only approximate" (`?summary.gam`). The standard error and the
+interval have no meaning for a number of degrees of freedom and stay
+empty.
+
+The standard errors of the two columns do not come from the same
+place, and the note says so. Those of the GAM are taken from the
+Bayesian posterior covariance matrix of mgcv, as in its `summary()`.
+
+### Is the effect of age linear?
+
+The linear model is the additive model whose curve is a line. The two
+can be compared, and `nested = TRUE` adds the test to the table.
+
+```{r gam-nested}
+table_regression(list(Linear = fit_glm, GAM = fit_gam), nested = TRUE)
+anova(fit_glm, fit_gam, test = "Chisq")
+```
+
+The deviance falls by 19.01 for 2.6 more effective degrees of freedom,
+p < .001: the relation with age is not a line. The numbers are those of
+`anova()`. The degrees of freedom are not whole, since the test takes
+the difference in effective degrees of freedom of the two models, and
+the note recalls that the test is approximate. The help of mgcv says
+that these p-values "must be used with care" (`?anova.gam`).
+
+### Several smooth terms
+
+A model can be made of smooth terms only. Each has its row.
+
+```{r gam-several}
+fit_gam3 <- gam(type ~ s(age) + s(glu) + te(bmi, ped), family = binomial,
+                data = pima, method = "REML")
+table_regression(fit_gam3)
+summary(fit_gam3)$s.table
+```
+
+The smooth of glucose has 1.00 effective degree of freedom: the
+penalty has brought it back to a straight line. `te(bmi, ped)` is a
+surface in two predictors, with 8.21.
+
+### Selecting and labeling rows
+
+The smooth terms are predictors, and `keep`, `drop` and `labels` treat
+them as such, under the name mgcv gives them.
+
+```{r gam-select}
+table_regression(fit_gam, drop = "^s\\(")
+table_regression(fit_gam, keep = "s(age)")
+table_regression(fit_gam, labels = c("s(age)" = "Age (smooth)"))
+```
+
+`drop` and `keep` take regular expressions, and also the exact name of
+a term, written as it is: `"s(age)"` needs no escaping. When no smooth
+row is left, the block and its sentence in the note are left out.
+
+### Cluster-robust variance
+
+`vcov = "CR1"` with a `cluster` gives the parametric rows a sandwich
+variance. These data have no cluster, and the number of pregnancies
+stands in for one here, only to show what the table does.
+
+```{r gam-robust}
+table_regression(fit_gam, vcov = "CR1", cluster = ~npreg)
+```
+
+The test of a smooth term rests on the covariance matrix of mgcv. It is
+not computed under a robust variance: the row keeps its degrees of
+freedom, and its p-value is empty.
+
+### Average marginal effects
+
+The table has given age a shape and a test, and no direction yet. The
+average marginal effect does: it is the slope of the predicted
+probability with respect to age, averaged over the sample.
+
+```{r gam-ame, eval = have_mgcv && have_me}
+table_regression(fit_gam, show_columns = c("b", "p", "ame", "ame_p"))
+```
+
+One more year of age goes with a probability of diabetes higher by
+about one percentage point on average. The row of age comes after the
+parametric terms, with an empty `B`, since the curve has no
+coefficient. The p-value that follows the `AME` column is that of the
+AME.
+
+### The long format
+
+`tidy()` returns the smooth rows with `estimate_type = "edf"`. The
+reference degrees of freedom are in `df`, the test in `statistic` and
+`p.value`.
+
+```{r gam-tidy, eval = have_mgcv && have_broom}
+td <- broom::tidy(table_regression(fit_gam))
+td[, c("term", "estimate_type", "estimate", "df", "statistic", "p.value")]
+```
+
+### Large data: `bam()`
+
+`bam()` fits the same models on large data. The example takes the
+28,155 men of `AER::CPS1988` and the logarithm of their wage, with a
+smooth of experience.
+
+```{r bam, eval = have_bam}
+data("CPS1988", package = "AER")
+fit_bam <- bam(log(wage) ~ s(experience) + education + ethnicity + smsa +
+                 region + parttime, data = CPS1988)
+table_regression(fit_bam)
+summary(fit_bam)$s.table
+```
+
+The table reads like that of `gam()`. The title keeps the outcome as
+the formula writes it, `log(wage)`. For a Gaussian model the test of a
+smooth term is an F test, and the fit statistic is the R² of the
+deviance.
+
+### What is refused
+
+`gamm()` estimates an additive model as a mixed model and returns two
+parts, `lme` and `gam`. Neither is read, and the error says why.
+
+```{r gamm-refused, error = TRUE}
+fit_gamm <- gamm(glu ~ s(age) + bmi, data = pima)
+table_regression(fit_gamm$gam)
+```
+
+## Beta regression
+
+A beta regression is a model for a proportion that stays strictly
+between 0 and 1. The example is the one of Ferrari and Cribari-Neto
+(2004): the share of income that 38 households spend on food
+(`betareg::FoodExpenditure`), by income and by number of persons in the
+household.
+
+The model has two parameters. The mean of the share depends on the
+predictors through a link, the logit by default. The precision φ says
+how tightly the shares gather around that mean: for a given mean, a
+larger φ is a smaller variance. The first model below holds the
+precision constant. The second lets it depend on the size of the
+household, with the formula `y ~ x | z`. The coefficient of income is
+small, and the tables of this section show three decimals.
+
+```{r beta-fit, eval = have_betareg}
+data("FoodExpenditure", package = "betareg")
+FoodExpenditure$share <- FoodExpenditure$food / FoodExpenditure$income
+fit_beta  <- betareg(share ~ income + persons, data = FoodExpenditure)
+fit_beta2 <- betareg(share ~ income + persons | persons,
+                     data = FoodExpenditure)
+table_regression(list("Constant precision" = fit_beta,
+                      "Precision ~ persons" = fit_beta2), digits = 3)
+```
+
+The coefficients of the first column are those of Table 2 of Ferrari
+and Cribari-Neto. In the second, the submodel of the precision has its
+own block, `Precision`, with a coefficient, a standard error and a test
+for each of its terms. They are on the scale of the link of the
+precision, the logarithm. The coefficient of `persons` is negative: the
+shares of the larger households are more dispersed.
+
+`summary()` gives the same numbers.
+
+```{r beta-summary, eval = have_betareg}
+summary(fit_beta)$coefficients
+summary(fit_beta2)$coefficients
+```
+
+A constant precision is one number, and it has no block: it is the
+`"phi"` fit statistic, shown below.
+
+### The mean submodel alone
+
+`show_components = FALSE` leaves the block out.
+
+```{r beta-components, eval = have_betareg}
+table_regression(fit_beta2, show_components = FALSE, digits = 3)
+```
+
+### Odds ratios
+
+With the logit link, a coefficient of the mean submodel is a log odds
+ratio of the expected proportion, and `exponentiate = TRUE` shows the
+odds ratio.
+
+```{r beta-or, eval = have_betareg}
+table_regression(fit_beta2, exponentiate = TRUE, digits = 3)
+```
+
+One more person in the household multiplies the odds of the expected
+food share by 1.10, 95% CI [1.02, 1.17]. The precision block is not
+exponentiated: its coefficients are not log odds, and its rows stay on
+the scale of their link.
+
+### Other links and fit statistics
+
+`betareg()` takes other links for the mean. The note names a link
+other than the logit, and so does the title of a table of one model.
+
+```{r beta-link, eval = have_betareg}
+fit_probit <- update(fit_beta, link = "probit")
+table_regression(list(Logit = fit_beta, Probit = fit_probit), digits = 3,
+                 show_fit_stats = c("nobs", "phi", "pseudo_r2_ferrari", "aic"))
+table_regression(fit_probit, digits = 3)
+c(logit = fit_beta$pseudo.r.squared, probit = fit_probit$pseudo.r.squared)
+```
+
+Two fit statistics are specific to these models. `"phi"` is the
+constant precision. `"pseudo_r2_ferrari"` is the pseudo-R² that
+`summary()` prints, the squared correlation between the linear
+predictor and the outcome on the scale of the link. Neither is in the
+default rows, which are the number of observations and the AIC.
+
+### Does the precision vary?
+
+The two models of the first table are nested, and `nested = TRUE` tests
+the precision submodel by a likelihood-ratio test.
+
+```{r beta-nested, eval = have_betareg && have_lmtest}
+table_regression(list("Constant precision" = fit_beta,
+                      "Precision ~ persons" = fit_beta2),
+                 nested = TRUE, digits = 3)
+lmtest::lrtest(fit_beta, fit_beta2)
+```
+
+The test is that of `lmtest::lrtest()`: 7.70 on 1 degree of freedom,
+p = .006. The precision depends on the size of the household.
+
+### Effects on the proportion
+
+Coefficients on the logit scale do not say by how much the share
+changes. The average marginal effects do, on the scale of the
+proportion.
+
+```{r beta-ame, eval = have_betareg && have_me}
+table_regression(fit_beta2, show_columns = c("b", "p", "ame", "ame_p"),
+                 digits = 4)
+```
+
+One more person goes with an expected food share higher by 1.9
+percentage points on average. The precision block has no AME: the
+effects are those of the mean submodel.
+
+## Sample-selection models
+
+A sample-selection model has two equations. The first, a probit, says
+who is observed. The second is the regression of interest, estimated on
+those who are. The two error terms may be correlated, and the model
+estimates that correlation. The example is the one of the help of
+`selection()`: the wage of 753 married women (`Mroz87`), of whom 428
+were in the labor force and have a wage.
+
+`selection()` estimates the model by maximum likelihood, `heckit()` by
+the two-step method. Family income is counted in thousands of dollars
+here, and the tables show three decimals.
+
+```{r sel-fit, eval = have_sel}
+data("Mroz87", package = "sampleSelection")
+Mroz87$kids <- Mroz87$kids5 + Mroz87$kids618 > 0
+Mroz87$faminc <- Mroz87$faminc / 1000
+fit_ml <- selection(lfp ~ age + I(age^2) + faminc + kids + educ,
+                    wage ~ exper + I(exper^2) + educ + city, data = Mroz87)
+fit_2s <- heckit(lfp ~ age + I(age^2) + faminc + kids + educ,
+                 wage ~ exper + I(exper^2) + educ + city, data = Mroz87)
+table_regression(list(Likelihood = fit_ml, Heckit = fit_2s), digits = 3)
+```
+
+Each variable has a `selection` row, an `outcome` row, or both,
+depending on the equations it enters. Education is in the two: it
+raises the probability of working and, among the women who work, the
+wage.
+
+The `Error terms` block holds what the model estimates beside its
+coefficients, and the note defines each of them. σ is the standard
+deviation of the error of the wage equation. ρ is the correlation
+between the errors of the two equations. If it is zero, the women who
+work are not selected on what the model does not observe, and a
+regression on them alone would do. Here ρ is −0.13, p = .424 by
+maximum likelihood: these data give no sign of such a selection.
+
+The two-step method does not estimate ρ directly. It adds a regressor
+to the wage equation, the inverse Mills ratio, whose coefficient λ
+estimates ρσ, and it is the test of λ that plays this role (p = .386).
+σ and ρ are then derived from the estimates, without a standard error.
+A two-step fit has no likelihood, hence no AIC.
+
+The note also gives the number of observations whose outcome is
+observed, the estimation method of each model, and the reference
+distribution of the tests. `summary()` reports the same values.
+
+```{r sel-summary, eval = have_sel}
+summary(fit_ml)$estimate[c("educ", "sigma", "rho"), ]
+summary(fit_2s)$estimate[c("educ", "invMillsRatio", "sigma", "rho"), ]
+```
+
+The help of `selection()` states what these models assume: "a known
+(multivariate normal) distribution of error terms". It adds that
+"standard errors tend to be large without a strong exclusion
+restriction", that is, without a variable that enters the selection
+equation and not the outcome equation.
+
+### Comparing two selection models
+
+Two models estimated by maximum likelihood are compared by a
+likelihood-ratio test.
+
+```{r sel-nested, eval = have_sel}
+fit_ml0 <- selection(lfp ~ age + I(age^2) + faminc + kids + educ,
+                     wage ~ exper + I(exper^2) + educ, data = Mroz87)
+table_regression(list("Without city" = fit_ml0, "With city" = fit_ml),
+                 nested = TRUE, show_columns = c("b", "se", "p"), digits = 3)
+```
+
+Living in a city does not improve the wage equation: 1.99 on 1 degree
+of freedom, p = .158. The comparison is refused for a two-step fit,
+which has no likelihood.
+
+### A binary outcome
+
+When the outcome is binary, its equation is a probit too, which the
+title and the note state, and the model has no σ.
+
+```{r sel-binary, eval = have_sel}
+fit_bin <- selection(lfp ~ educ + age + kids5 + kids618 + nwifeinc,
+                     wage >= 5 ~ educ, data = Mroz87)
+table_regression(fit_bin)
+```
+
+### Treatment-effects models
+
+`treatReg()` estimates the effect of a binary treatment that the units
+choose. The outcome is observed for everyone, and the first equation,
+labeled `selection` in the table, is that of the treatment. The example
+takes the college attendance of the wife and the logarithm of the
+family income.
+
+```{r sel-treat, eval = have_sel}
+Mroz87$college <- trimws(Mroz87$wifecoll) == "TRUE"
+fit_tr <- treatReg(college ~ motheduc + fatheduc + age,
+                   log(faminc) ~ college + huseduc + age + city,
+                   data = Mroz87)
+table_regression(fit_tr)
+```
+
+### Dropping an error term
+
+The error terms are coefficients of the fit, and `keep` and `drop`
+select them by their name in `coef()`: `"sigma"`, `"rho"`,
+`"invMillsRatio"`.
+
+```{r sel-drop, eval = have_sel}
+table_regression(fit_ml, drop = "sigma", show_columns = c("b", "se", "p"),
+                 digits = 3)
+```
+
+### What is refused
+
+A tobit-5 model has two outcome equations, one for each regime. A
+table of one outcome cannot show it, and it is refused.
+
+```{r sel-tobit5, eval = have_sel, error = TRUE}
+set.seed(1)
+n <- 500
+sim <- data.frame(z = rnorm(n), x1 = rnorm(n), x2 = rnorm(n))
+e <- MASS::mvrnorm(n, c(0, 0, 0),
+                   matrix(c(1, -0.5, 0.5, -0.5, 1, 0, 0.5, 0, 1), 3))
+sim$s  <- sim$z + e[, 1] > 0
+sim$y1 <- sim$x1 + e[, 2]
+sim$y2 <- sim$x2 + e[, 3]
+fit_t5 <- selection(s ~ z, list(y1 ~ x1, y2 ~ x2), data = sim)
+table_regression(fit_t5)
+```
+
+## Tables in another language
+
+The blocks and their notes follow `options(spicy.language = )`.
+
+```{r french}
+options(spicy.language = "fr", width = 92)
+table_regression(list(Linear = fit_glm, GAM = fit_gam), nested = TRUE)
+options(spicy.language = NULL, width = 80)
+```
+
+## Presentation-ready output
+
+The blocks are part of the table in every output engine. Here the first
+table as a gt object, with odds ratios.
+
+```{r outputs-gt, eval = build_rich_tables && have_mgcv}
+pkgdown_dark_gt(table_regression(list(Linear = fit_glm, GAM = fit_gam),
+                                 exponentiate = TRUE,
+                                 show_intercept = FALSE, output = "gt"))
+```
+
+## References
+
+* Ferrari, S., & Cribari-Neto, F. (2004). Beta regression for modelling
+  rates and proportions. *Journal of Applied Statistics*, 31(7),
+  799--815. <https://doi.org/10.1080/0266476042000214501>
