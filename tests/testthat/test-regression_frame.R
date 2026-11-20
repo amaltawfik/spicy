@@ -537,7 +537,7 @@ test_that("supports$partial_effect_size gates the partial columns", {
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "Partial effect-size columns are not available",
+    "Term-level columns (`partial_*`) are not available",
     fixed = TRUE
   )
   expect_match(conditionMessage(err), "`lm`", fixed = TRUE)
@@ -685,7 +685,7 @@ test_that("a screen refusal names the wrapped classes, not `uv_screen`", {
   expect_s3_class(err, "spicy_invalid_input")
   expect_match(
     conditionMessage(err),
-    "Partial effect-size columns are not available",
+    "Term-level columns (`partial_*`) are not available",
     fixed = TRUE
   )
   # The class the user passed, never the composite's internal name.

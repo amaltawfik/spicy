@@ -3508,20 +3508,21 @@ table_regression <- function(
       spicy_abort(
         c(
           sprintf(
-            "Partial effect-size columns are not available for %s.",
+            "Term-level columns (`partial_*`) are not available for %s.",
             .fmt_and(paste0("`", classes, "`"))
           ),
           "i" = paste0(
-            "The term-level partial effect size is defined here for the ",
-            "least-squares families (`partial_f` / `partial_f2` / ",
-            "`partial_eta2` / `partial_omega2`) and, as a partial ",
-            "likelihood-ratio or Wald chi-square, for `glm` and the ",
-            "mixed-effects families (`partial_chi2`), or as a partial F ",
-            "test for a `glm` whose dispersion is estimated ",
-            "(`partial_f`). No such decomposition exists for this class ",
-            "(see ?table_regression_models)."
+            "The partial effect sizes (`partial_f2`, `partial_eta2`, ",
+            "`partial_omega2`) are defined here for the least-squares ",
+            "families. The term-level tests are `partial_f` for `lm` and ",
+            "for a `glm` whose dispersion is estimated, and `partial_chi2` ",
+            "for `glm` and the mixed-effects families. This class has ",
+            "neither (see ?table_regression_models)."
           ),
-          "i" = "Drop the partial effect-size token(s) from `show_columns`."
+          "i" = "Drop the `partial_*` token(s) from `show_columns`.",
+          "i" = if (any(classes %in% c("svyglm", "svyolr", "svycoxph"))) {
+            "For a design-based fit, test a term with `survey::regTermTest(fit, ~term)`."
+          }
         ),
         class = "spicy_invalid_input"
       )
