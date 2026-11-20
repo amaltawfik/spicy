@@ -85,6 +85,18 @@
 
 # ---- Structural gates ------------------------------------------------------
 
+# How an estimand refusal names the model: " (Model 2)" in a table of
+# several, nothing in a table of one, as the other refusals do. The
+# display names are set by table_regression() around its frames, keyed by
+# the internal model id (`.estimand_state$names`).
+.estimand_state <- new.env(parent = emptyenv())
+.estimand_state$names <- NULL
+
+.estimand_model_suffix <- function(model_id) {
+  nm <- .estimand_state$names[model_id]
+  if (length(nm) != 1L || is.na(nm)) "" else sprintf(" (%s)", nm)
+}
+
 .coxph_estimand_gates <- function(fit, model_id) {
   # A frailty is a random effect: the standardized curves are built from
   # the baseline hazard and the fixed coefficients alone, so the estimand
@@ -95,8 +107,8 @@
     spicy_abort(
       c(
         sprintf(
-          "RMST / risk-difference columns are not available for a `coxph` fit with a frailty term (%s).",
-          model_id
+          "RMST / risk-difference columns are not available for a `coxph` fit with a frailty term%s.",
+          .estimand_model_suffix(model_id)
         ),
         "i" = paste0(
           "The g-computation standardizes over the fixed coefficients and ",
@@ -110,8 +122,8 @@
   if (!is.null(specials$tt)) {
     spicy_abort(
       sprintf(
-        "RMST / risk-difference columns are not available with time-transform `tt()` terms (%s).",
-        model_id
+        "RMST / risk-difference columns are not available with time-transform `tt()` terms%s.",
+        .estimand_model_suffix(model_id)
       ),
       class = "spicy_invalid_input"
     )
@@ -121,8 +133,8 @@
     spicy_abort(
       c(
         sprintf(
-          "RMST / risk-difference columns need right-censored single-record data (%s).",
-          model_id
+          "RMST / risk-difference columns need right-censored single-record data%s.",
+          .estimand_model_suffix(model_id)
         ),
         "i" = "Counting-process (start-stop) responses have no per-subject curve."
       ),
@@ -432,8 +444,8 @@
     spicy_abort(
       c(
         sprintf(
-          "RMST / risk-difference columns are not available for a stratified survreg fit (%s).",
-          model_id
+          "RMST / risk-difference columns are not available for a stratified survreg fit%s.",
+          .estimand_model_suffix(model_id)
         ),
         "i" = "Per-stratum scale parameters are not standardized; refit without `strata()`."
       ),
@@ -443,8 +455,8 @@
   if (!is.character(fit$dist)) {
     spicy_abort(
       sprintf(
-        "RMST / risk-difference columns need a named survreg distribution (%s).",
-        model_id
+        "RMST / risk-difference columns need a named survreg distribution%s.",
+        .estimand_model_suffix(model_id)
       ),
       class = "spicy_invalid_input"
     )

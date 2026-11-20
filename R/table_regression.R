@@ -2845,6 +2845,17 @@ table_regression <- function(
     vapply(seq_len(n_models), default_id, character(1))
   }
 
+  # The estimand refusals raised while the frames are built name the
+  # model only in a table of several (.estimand_model_suffix()).
+  names_before <- .estimand_state$names
+  .estimand_state$names <- if (.reg_model_count(n_models, panel_req) > 1L) {
+    stats::setNames(
+      .model_display_names(models, panel_req),
+      panel_req$id %||% model_ids
+    )
+  }
+  on.exit(.estimand_state$names <- names_before, add = TRUE)
+
   # A fixest model with fixed effects only has no row to show: refused
   # before the frames, where the messages know the names of the models.
   .with_public_call(.refuse_fixest_fe_only(models, panel_req), public_call)

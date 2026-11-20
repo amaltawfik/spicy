@@ -84,7 +84,7 @@ test_that(".survreg_estimand_gates refuses a list-valued survreg distribution", 
   expect_false(is.character(fit$dist))
   expect_error(
     spicy:::.survreg_estimand_gates(fit, "M1"),
-    "RMST / risk-difference columns need a named survreg distribution (M1).",
+    "RMST / risk-difference columns need a named survreg distribution.",
     fixed = TRUE,
     class = "spicy_invalid_input"
   )
@@ -524,4 +524,31 @@ test_that("the CI header reads '95% CrI' for equal-tailed posterior frames", {
   )
   expect_match(out, "95% CrI", fixed = TRUE)
   expect_false(grepl("95% HDI", out, fixed = TRUE))
+})
+
+test_that("an estimand refusal of a fit names the model only among several", {
+  skip_if_not_installed("survival")
+  d <- .gap_lung()
+  st <- survival::survreg(
+    survival::Surv(time, status) ~ age + strata(sexf),
+    data = d
+  )
+  err <- expect_error(
+    table_regression(st, show_columns = c("b", "rmst"), tau = 365),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "not available for a stratified survreg fit.",
+    fixed = TRUE
+  )
+  err <- expect_error(
+    table_regression(list(st, st), show_columns = c("b", "rmst"), tau = 365),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "not available for a stratified survreg fit (Model 1).",
+    fixed = TRUE
+  )
 })
