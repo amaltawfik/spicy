@@ -1137,8 +1137,11 @@
 #' class, are on [table_regression_tokens].
 #'
 #' A sample-selection fit (`sampleSelection::selection()`, `heckit()`,
-#' `treatReg()`) shows each variable with its `selection` and `outcome`
-#' sub-rows, then an `Error terms` block: \eqn{\sigma}{sigma} and
+#' `treatReg()`) alone shows its two equations as column groups, `Outcome`
+#' then `Selection`; beside other models, or under `nested = TRUE`, each
+#' variable has its `selection` and `outcome` rows. A factor or a logical
+#' predictor has a header, its levels and a reference row. The
+#' `Error terms` block follows: \eqn{\sigma}{sigma} and
 #' \eqn{\rho}{rho} for a maximum-likelihood fit (\eqn{\rho}{rho} alone for a
 #' binary outcome), the inverse Mills ratio \eqn{\lambda}{lambda} followed by
 #' \eqn{\sigma}{sigma} and \eqn{\rho}{rho} without standard errors for a
