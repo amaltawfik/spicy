@@ -9,7 +9,8 @@
 .dfc_values <- function(tbl) {
   s <- as_structured(tbl)$body
   s[["df"]][
-    s[[".row_role"]] %in% c("coef", "level") &
+    s[[".row_role"]] %in%
+      c("coef", "level") &
       !s[[".variable"]] %in% "fixed_effects"
   ]
 }
@@ -31,7 +32,7 @@ test_that("an lm shows its residual df on every coefficient row", {
   expect_identical(.dfc_console(tb), rep("28", 4L))
   # The reference level is a dash, as in every other column.
   body <- .dfc_char(tb)
-  expect_identical(trimws(body$df[grepl("ref", body$Variable)]),"\u2013")
+  expect_identical(trimws(body$df[grepl("ref", body$Variable)]), "\u2013")
   # The column header, and no change to the default columns.
   expect_true("df" %in% names(body))
   expect_false("df" %in% names(as.data.frame(table_regression(fit))))
@@ -75,7 +76,7 @@ test_that("lme shows its containment df, lmer its Satterthwaite df under CR2", {
   )
   # The rows of the random effects have no test: a dash, as under t.
   body <- .dfc_char(tb)
-  vc <-grepl("\u03C3", body$Variable, fixed = TRUE)
+  vc <- grepl("\u03C3", body$Variable, fixed = TRUE)
   expect_true(any(vc))
   expect_identical(unique(trimws(body$df[vc])), "\u2013")
 
@@ -117,7 +118,9 @@ test_that("a z test leaves its cell blank, beside a model with t tests", {
   expect_identical(unique(trimws(body[["Model 2: df"]][rows])), "")
   # tidy() keeps the Inf of the z test.
   td <- broom::tidy(tb)
-  expect_true(all(is.infinite(td$df[td$model_id == "M2" & td$estimate_type == "B"])))
+  expect_true(all(is.infinite(td$df[
+    td$model_id == "M2" & td$estimate_type == "B"
+  ])))
 })
 
 test_that("a table of z tests refuses the token with a classed error", {
@@ -204,7 +207,9 @@ test_that("every engine prints the console's df cells", {
   }
   console <- norm(.dfc_char(build("default"))$df)
   structured <- norm(
-    spicy:::.format_structured_to_string_body(as_structured(build("default")))$df
+    spicy:::.format_structured_to_string_body(as_structured(build(
+      "default"
+    )))$df
   )
   expect_identical(structured, console)
   expect_true(all(c("1.9", "1.5", "1.8") %in% console))

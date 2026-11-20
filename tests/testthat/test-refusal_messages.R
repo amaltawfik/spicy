@@ -11,6 +11,7 @@
 .refusal_reset("args")
 
 rm_tokens <- c(
+  "df",
   "beta",
   "n_events",
   "pd",
@@ -71,10 +72,10 @@ rm_cases <- function() {
 # `rm_variant_reps` for two classes). `nested = TRUE` and the two Stan
 # fixtures are always swept.
 rm_variant_dependent <- c(
-  fixest = "^exponentiate|^show_columns = \"ame",
+  fixest = "^exponentiate|^show_columns = \"(ame|df\")",
   # The messages name the class, "gam" or "bam".
   gam = ".",
-  glm = "^exponentiate|^show_columns = \"(n_events|partial_)|^standardized = \"pseudo",
+  glm = "^exponentiate|^show_columns = \"(n_events|partial_|df\")|^standardized = \"pseudo",
   glmmTMB = "^exponentiate|^show_columns = \"ame|^standardized = \"(refit|posthoc|basic|smart|pseudo)",
   survreg = "^show_columns = \"(rmst|risk_diff)",
   svyglm = "^exponentiate"

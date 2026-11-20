@@ -911,7 +911,8 @@ build_structured_body <- function(
       next
     }
     v <- body_df[[nm]]
-    frac <- body_df[[".row_role"]] %in% c("coef", "level") &
+    frac <- body_df[[".row_role"]] %in%
+      c("coef", "level") &
       !is.na(v) &
       abs(v - round(v)) >= 1e-8
     if (!any(frac)) {

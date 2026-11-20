@@ -942,6 +942,15 @@
         show_columns = "rmst_se": zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
+        Token "df" in `show_columns` has no value for any model in the table: its tests are z tests, which have no degrees of freedom.
+        i The column gives the degrees of freedom of t tests (`lm`, a `glm` whose dispersion is estimated, `nlme::lme`, a survey design, a cluster-robust `vcov = "CR2"`, ...).
+      Received by 27:
+        show_columns = "df": bam, betareg, clm, clmm, coxph, cph, fepois,
+            flexsurvreg, gam_logit, geeglm, glm.nb, glm_logit, glm_poisson,
+            glm_probit, glmer, glmmTMB, hurdle, lmer, lrm, mlogit, multinom,
+            polr, rlm, rms_Glm, survreg, tobit, zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
         Token "pd" in `show_columns` is defined only for Bayesian fits.
         i The probability of direction is a posterior-draw summary (share of draws on the dominant side of zero); frequentist fits have none.
       Received by 39:
@@ -3511,6 +3520,12 @@
         show_columns = "rmst_ci": stanreg
         show_columns = "rmst_p": stanreg
         show_columns = "rmst_se": stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token "df" in `show_columns` has no value for any model in the table: a posterior has no test.
+        i The column gives the degrees of freedom of t tests (`lm`, a `glm` whose dispersion is estimated, `nlme::lme`, a survey design, a cluster-robust `vcov = "CR2"`, ...).
+      Received by 2:
+        show_columns = "df": brmsfit, stanreg
       ----
       error: spicy_invalid_input, spicy_error
         Token(s) "adj_r2" in `show_columns` are not defined for `brmsfit` models.
