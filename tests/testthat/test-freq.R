@@ -1295,3 +1295,11 @@ test_that("freq() counts an empty-string level as a row", {
   expect_identical(res$value, c("", "a", "b"))
   expect_equal(res$n, c(2, 3, 1))
 })
+
+test_that("a weighted count of 1e7 or more prints whole, not in scientific notation", {
+  d <- data.frame(x = c("a", "b"), w = c(2.5e8, 3))
+  out <- capture.output(print(freq(d, x, weights = w, rescale = FALSE)))
+  expect_true(any(grepl("250000000", out, fixed = TRUE)))
+  expect_true(any(grepl("250000003", out, fixed = TRUE)))
+  expect_false(any(grepl("e+08", out, fixed = TRUE)))
+})

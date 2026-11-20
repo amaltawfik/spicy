@@ -1611,12 +1611,15 @@ print.spicy_cross_table <- function(
       if (is.numeric(col)) {
         formatted <- if (has_n_col && name == n_col_name) {
           # N column: always integers
-          format_number(col, digits = 0L, decimal_mark = decimal_mark)
+          .fmt_count(col, decimal_mark = decimal_mark)
+        } else if (identical(percent_mode, "none")) {
+          # A table of counts: every cell is one.
+          .fmt_count(col, digits = digits, decimal_mark = decimal_mark)
         } else if (any(is_n_row)) {
           # N row: integers for that row, decimals elsewhere
           ifelse(
             is_n_row,
-            format_number(col, digits = 0L, decimal_mark = decimal_mark),
+            .fmt_count(col, decimal_mark = decimal_mark),
             format_number(col, digits = digits, decimal_mark = decimal_mark)
           )
         } else {

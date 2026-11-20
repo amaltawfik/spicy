@@ -390,6 +390,27 @@ resolve_variable_labels <- function(data, cols, labels) {
 # integer with no thousands separator, as the counts of the tables.
 .fmt_sample_size <- function(x) formatC(round(x), format = "f", digits = 0)
 
+# Internal: THE formatter of a count -- a frequency, a cell of a
+# cross-tabulation, an n, a weighted count. Fixed notation at every
+# size: `format_number()` turns to scientific notation from 1e7 on, and
+# a weighted national count of 250000000 printed "2e+08". `digits` is
+# 0 for a count; a weighted count shown with decimals passes its own.
+# NA gives `na`. Degrees of freedom, estimates and fit statistics other
+# than counts never come here.
+.fmt_count <- function(x, digits = 0L, decimal_mark = ".", na = "") {
+  out <- rep(na, length(x))
+  ok <- !is.na(x)
+  if (any(ok)) {
+    out[ok] <- formatC(
+      as.double(x[ok]),
+      format = "f",
+      digits = digits,
+      decimal.mark = decimal_mark
+    )
+  }
+  out
+}
+
 # Internal: where the tables put the sample size, the lever
 # `spicy_style(sample_size = )`: "note" (the default), "header" or "none".
 .sample_size_place <- function() {

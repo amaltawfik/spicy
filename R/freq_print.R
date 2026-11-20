@@ -60,9 +60,7 @@ print.spicy_freq_table <- function(x, ...) {
     )
   }
 
-  fmt_int <- function(v) {
-    format_number(v, digits = 0L, decimal_mark = decimal_mark)
-  }
+  fmt_int <- function(v) .fmt_count(v, decimal_mark = decimal_mark)
 
   build_rows <- function(block, category, show_valid_col_block) {
     if (!nrow(block)) {

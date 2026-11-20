@@ -1502,3 +1502,33 @@ test_that("cross_tab() refuses an empty-string level of `y` or `by`, and counts 
   expect_identical(out$Values, c("", "a", "b"))
   expect_equal(c(out$x, out$y), as.vector(table(d$r, d$k)))
 })
+
+test_that("a weighted count of 1e7 or more prints whole, not in scientific notation", {
+  d <- data.frame(
+    x = c("a", "b", "a"),
+    y = c("u", "v", "v"),
+    w = c(2.5e8, 3, 12)
+  )
+  counts <- capture.output(print(cross_tab(
+    d,
+    x,
+    y,
+    weights = w,
+    rescale = FALSE,
+    percent = "none"
+  )))
+  expect_true(any(grepl("250000000", counts, fixed = TRUE)))
+  expect_true(any(grepl("250000012", counts, fixed = TRUE)))
+  expect_false(any(grepl("e+08", counts, fixed = TRUE)))
+  # The N column of a table of percentages too.
+  pct <- capture.output(print(cross_tab(
+    d,
+    x,
+    y,
+    weights = w,
+    rescale = FALSE,
+    percent = "row"
+  )))
+  expect_true(any(grepl("250000012", pct, fixed = TRUE)))
+  expect_false(any(grepl("e+08", pct, fixed = TRUE)))
+})
