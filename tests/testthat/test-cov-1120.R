@@ -1,6 +1,6 @@
 # Coverage-targeted tests for branches of table_regression() that the CI
 # coverage of 2026-11-20 reported without a test:
-#   * the AME rows of an lm whose data no longer hold the rows of the fit
+#   * the AME rows of an lm whose data rows were renamed after the fit
 #   * the prediction check of a guarded class with no data to compare on
 #   * the dependent variable of a formula with no left-hand side
 #   * a beta regression precision factor coded without a reference level,
@@ -12,11 +12,11 @@
 
 # ---- AME --------------------------------------------------------------------
 
-test_that("an lm whose data lost the rows of the fit falls back from the Satterthwaite AME and says why", {
+test_that("an lm whose data rows were renamed keeps the Satterthwaite AME", {
   # The CR2 Satterthwaite AME of an lm rebuilds its design from the
-  # data of the call. Renaming the rows of those data after the fit
-  # leaves no row of the model frame to recover, which the AME reports
-  # as the reason of its fallback.
+  # data of the call. Rows renamed after the fit hold the same values in
+  # the same order (.ame_data_check()), so the design is rebuilt from
+  # them by position, without a fallback.
   skip_if_not_installed("clubSandwich")
   skip_if_not_installed("marginaleffects")
   set.seed(1120)
@@ -28,19 +28,24 @@ test_that("an lm whose data lost the rows of the fit falls back from the Sattert
     cl = rep(1:16, 5)
   )
   fit <- stats::lm(y ~ I(x^2) + z, data = d_rows)
+  ref <- table_regression(
+    fit,
+    show_columns = c("b", "ame", "ame_p"),
+    vcov = "CR2",
+    cluster = ~cl,
+    output = "data.frame"
+  )
   rownames(d_rows) <- paste0("r", seq_len(n))
-  expect_warning(
+  expect_no_warning(
     tbl <- table_regression(
       fit,
-      show_columns = c("b", "ame"),
+      show_columns = c("b", "ame", "ame_p"),
       vcov = "CR2",
       cluster = ~cl,
       output = "data.frame"
-    ),
-    "The rows of the fit could not be recovered from its data",
-    class = "spicy_fallback"
+    )
   )
-  # The fallback keeps the AME, on the residual degrees of freedom.
+  expect_identical(tbl, ref)
   expect_equal(
     tbl$AME[tbl$variable == "z"],
     unname(stats::coef(fit)["z"]),

@@ -127,6 +127,15 @@ extract_ame_rows <- function(
   # approximation is to use the Satterthwaite df of the **dominant**
   # underlying coefficient (the same coef whose name matches the AME
   # term_id) as the df of the AME t-statistic.
+  #
+  # Both paths read the data again from the environment of the fit
+  # (marginaleffects, or expand.model.frame() for a transformed
+  # predictor of Path A): they must still be those of the fit.
+  why <- .ame_data_check(fit, .ame_model_data(fit))
+  if (!is.null(why)) {
+    .warn_ame_data_check(fit, why)
+    return(empty_coefs_long())
+  }
   if (inherits(fit, "glm")) {
     return(extract_ame_glm(
       fit,
@@ -354,13 +363,27 @@ extract_ame_satterthwaite <- function(
   extra <- setdiff(vars, names(mf))
   raw <- stats::expand.model.frame(fit, extra, na.expand = FALSE)
   rn <- rownames(mf)
-  if (!all(rn %in% rownames(raw))) {
-    spicy_abort(
-      "The rows of the fit could not be recovered from its data.",
-      class = "spicy_internal"
-    )
+  if (all(rn %in% rownames(raw))) {
+    return(raw[rn, , drop = FALSE])
   }
-  raw[rn, , drop = FALSE]
+  # Rows renamed since the fit: extract_ame_rows() has checked that the
+  # data still hold the rows of the fit, in its order
+  # (.ame_data_check()).
+  if (nrow(raw) == nrow(mf)) {
+    return(raw)
+  }
+  spicy_abort(
+    # nocov start: the data check refuses the AME first
+    paste0(
+      "the data of the fit are no longer those it was fitted on ",
+      "(",
+      nrow(raw),
+      " rows now, ",
+      nrow(mf),
+      " when fitted)."
+    ),
+    class = "spicy_ame_data_changed"
+  ) # nocov end
 }
 
 # The model frame of the predictors on `nd`, with the levels and the
@@ -1540,6 +1563,185 @@ extract_ame_glm <- function(
 }
 
 
+# ---- Guard: the AME is taken on the data of the fit ------------------------
+
+# marginaleffects keeps no copy of the data of a fit: it reads them
+# again when the AME is computed, from the environment the fit was made
+# in (insight::get_data()). A data frame changed between the fit and the
+# table (rows dropped, a column recoded) gave an AME taken on other data
+# than the coefficients beside it, without a word. Before the AME, the
+# data it will be averaged over must have as many rows as the fit has
+# fitted values, and the model must predict on them, row by row, what it
+# predicts on its own stored data. The rows are compared by position:
+# marginaleffects renumbers them. Returns NULL when the data agree, or
+# when the comparison cannot be made (nothing is known to be wrong);
+# otherwise the reason of the refusal.
+#
+# Left out, with the behaviour they had before:
+# * the Bayesian fits (stanreg, brmsfit): their AME is averaged over the
+#   posterior draws of predictions (.compute_bayes_ame_table());
+# * the design fits (svyglm, svyolr): their data are the design's own,
+#   stored in the fit (.design_ame_inputs());
+# * mlogit, whose data hold one row per alternative of each choice
+#   situation and its predictions one row per situation;
+# * any fit whose predict() fails on its data or returns no numeric
+#   prediction per row (.ame_data_predict()): iv_robust, clmm,
+#   flexsurvreg and selection among the fits of the registry.
+# Two fits have their rows counted but their predictions left
+# uncompared. The second stage of an IV fixest fit: its fitted values
+# take the fitted endogenous regressors, a prediction on data the
+# observed ones. A polr or rms fit with an offset: predict() leaves the
+# offset out of a prediction on data and not of its fitted values (the
+# offset of their AME is handled by .ordinal_offset_ame()).
+.ame_data_check <- function(model, data) {
+  if (!is.data.frame(data) || inherits(model, "mlogit")) {
+    return(NULL)
+  }
+  p0 <- .ame_data_predict(model)
+  if (is.null(p0)) {
+    return(NULL)
+  }
+  if (nrow(data) != nrow(p0)) {
+    return(sprintf(
+      paste0(
+        "the data of the fit are no longer those it was fitted on ",
+        "(%d rows now, %d when fitted)."
+      ),
+      nrow(data),
+      nrow(p0)
+    ))
+  }
+  if (
+    (inherits(model, "fixest") && .fixest_is_iv_second_stage(model)) ||
+      .ame_offset_left_out(model)
+  ) {
+    return(NULL)
+  }
+  p1 <- .ame_data_predict(model, data)
+  if (is.null(p1) || !identical(dim(p1), dim(p0))) {
+    return(NULL)
+  }
+  if (
+    isTRUE(
+      max(abs(p1 - p0), na.rm = TRUE) <= 1e-7 * (1 + max(abs(p0), na.rm = TRUE))
+    )
+  ) {
+    return(NULL)
+  }
+  if (isTRUE(attr(data, "spicy_from_frame"))) {
+    return(structure(
+      paste0(
+        "the data of the fit are no longer found, and its model frame ",
+        "does not give its fitted values back."
+      ),
+      from_frame = TRUE
+    ))
+  }
+  "the predictions on the data of the fit no longer match its fitted values."
+}
+
+# TRUE for a polr or rms fit (an rms::Glm reaches the AME as its glm
+# twin, which keeps its `Design`) with an offset.
+.ame_offset_left_out <- function(model) {
+  is.list(model) &&
+    (inherits(model, c("polr", "rms")) || !is.null(model[["Design"]])) &&
+    (!is.null(model[["call"]][["offset"]]) ||
+      !is.null(tryCatch(
+        attr(stats::terms(model), "offset"),
+        error = function(e) NULL # nocov: polr and rms fits have terms
+      )))
+}
+
+# The predictions of `model` as a numeric matrix, one row per row it
+# was fitted on: on its stored data without `newdata` (the rows a
+# na.exclude fit pads with NA are dropped), on `newdata` otherwise.
+# NULL when predict() fails or returns no numeric prediction.
+.ame_data_predict <- function(model, newdata = NULL) {
+  type <- if (inherits(model, c("polr", "multinom"))) "probs"
+  p <- tryCatch(
+    suppressWarnings(suppressMessages(
+      if (is.null(newdata)) {
+        if (is.null(type)) {
+          stats::predict(model)
+        } else {
+          stats::predict(model, type = type)
+        }
+      } else if (is.null(type)) {
+        stats::predict(model, newdata = newdata)
+      } else {
+        stats::predict(model, newdata = newdata, type = type)
+      }
+    )),
+    error = function(e) NULL
+  )
+  # ordinal::clm returns its predictions in `$fit`.
+  if (is.list(p) && !is.data.frame(p)) {
+    p <- p$fit
+  }
+  if (is.data.frame(p) || !is.numeric(p) || length(p) == 0L) {
+    return(NULL)
+  }
+  p <- as.matrix(p)
+  p[rowSums(!is.na(p)) > 0L, , drop = FALSE]
+}
+
+# The data marginaleffects will average the AME over: those attached to
+# the model by set_modeldata(), or those insight finds again, as
+# marginaleffects::get_modeldata() reads them. When the data frame is
+# gone, insight falls back on the model frame and warns: the data then
+# carry the attribute "spicy_from_frame". insight is called directly so
+# that its warning is seen every time, where marginaleffects relays it
+# once per session.
+.ame_model_data <- function(model) {
+  if (!is.null(attr(model, "marginaleffects_modeldata"))) {
+    return(as.data.frame(attr(model, "marginaleffects_modeldata")))
+  }
+  warned <- FALSE
+  data <- tryCatch(
+    withCallingHandlers(
+      suppressMessages(insight::get_data(
+        model,
+        verbose = TRUE,
+        additional_variables = TRUE
+      )),
+      warning = function(w) {
+        warned <<- TRUE
+        invokeRestart("muffleWarning")
+      }
+    ),
+    error = function(e) NULL
+  )
+  if (warned && is.data.frame(data)) {
+    attr(data, "spicy_from_frame") <- TRUE
+  }
+  data
+}
+
+.warn_ame_data_check <- function(fit, reason) {
+  hint <- if (isTRUE(attr(reason, "from_frame"))) {
+    paste0(
+      "The data frame was probably removed or renamed after the model ",
+      "was fitted. Refit the model, or build the table before removing ",
+      "the data."
+    )
+  } else {
+    paste0(
+      "The data frame was probably modified after the model was ",
+      "fitted. Refit the model, or build the table before changing ",
+      "the data."
+    )
+  }
+  spicy_warn(
+    c(
+      sprintf("AME of this `%s` fit not computed: %s", class(fit)[1L], reason),
+      "i" = hint,
+      "i" = "AME column will be en-dashed in the displayed table."
+    ),
+    class = "spicy_fallback"
+  )
+}
+
+
 # ---- Phase 7c15: AME rows for mixed-effects fits -------------------------
 #
 # Mixed-effects fits (lmer / glmer / glmmTMB / lme) go through the new
@@ -1645,6 +1847,15 @@ extract_ame_glm <- function(
       fit_ame <- design_in$model
       newdata <- design_in$newdata
       vc_fit <- design_in$vcov
+    }
+    # The data the AME is averaged over must be those of the fit
+    # (.ame_data_check()); a design fit carries its own.
+    if (is.null(design_in)) {
+      why <- .ame_data_check(fit_ame, newdata %||% .ame_model_data(fit_ame))
+      if (!is.null(why)) {
+        .warn_ame_data_check(fit, why)
+        return(NULL)
+      }
     }
     # The predictions the AME rests on must reproduce the fit
     # (.ame_prediction_check()).
