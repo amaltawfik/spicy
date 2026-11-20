@@ -37,7 +37,7 @@ models are listed below.
    Class \tab Engine \tab AME \tab Exponentiate \tab Blocks \tab vcov \cr
    \code{lm_robust} \tab \code{estimatr::lm_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    \code{iv_robust} \tab \code{estimatr::iv_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
-   \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical \cr
+   \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical, HC0, HC1, CR0-CR3, CR1S \cr
    \code{tobit} \tab \code{AER::tobit()} \tab yes (latent outcome) \tab - \tab - \tab classical, CR1 \cr
    \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
    \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects or an IV fit without exogenous regressor) \tab OR / IRR (link) \tab - \tab classical (the fit's own) \cr
@@ -87,9 +87,9 @@ block is on by default (\code{"fixed_effects"} in \code{show_fit_stats}).
 \section{Values of the shared arguments}{
 
 \describe{
-\item{\code{vcov}, \code{cluster}}{\code{estimatr}, \code{fixest} and \code{ivreg}:
-\code{"classical"} only, which for \code{estimatr} and \code{fixest} is the variance
-the fit carries. \code{tobit}: \code{"classical"} and \code{"CR1"}, as for
+\item{\code{vcov}, \code{cluster}}{\code{estimatr} and \code{fixest}: \code{"classical"}
+only, the variance the fit carries. \code{ivreg}: \code{"classical"},
+\code{"HC0"}, \code{"HC1"}, \code{"CR0"}-\code{"CR3"} and \code{"CR1S"}. \code{tobit}: \code{"classical"} and \code{"CR1"}, as for
 \code{survreg}. \code{rq}: its own estimator family. See \emph{Standard errors,
 degrees of freedom and intervals}.}
 \item{\code{show_fit_stats}}{The defaults of each class, and the
@@ -139,6 +139,17 @@ values reject too often (Hagemann 2017). A weighted \code{rq} fit
 refuses it: the resamplers do not carry the weights.
 }
 \code{cluster} with any other \code{rq} estimator is refused.
+
+\strong{\code{AER::ivreg}.} The sandwiches of an \code{lm}, where two engines agree
+on them: \code{"HC0"} and \code{"HC1"} from \code{\link[sandwich:vcovHC]{sandwich::vcovHC()}}, and with
+\code{cluster}, \code{"CR0"}-\code{"CR3"} from \code{\link[clubSandwich:vcovCR]{clubSandwich::vcovCR()}} with
+Satterthwaite degrees of freedom, and \code{"CR1S"} with \code{t(G - 1)}. All
+match \code{estimatr::iv_robust()} on the same model (\code{"CR1S"} its
+\code{se_type = "stata"}). \code{"HC2"}-\code{"HC5"} are refused: they weight each
+residual by a leverage, which two-stage least squares does not define
+uniquely, and \code{AER::ivreg()} and \code{estimatr::iv_robust()} use different
+hat values (standard errors about 0.1 to 0.3 percent apart).
+\code{"bootstrap"} and \code{"jackknife"} are refused: they refit an \code{lm()}.
 
 \strong{\code{AER::tobit}.} A \code{tobit} fit is a \code{survreg} model, and takes the
 same estimator: \code{"CR1"} from \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}}, the CR0 sandwich

@@ -1192,7 +1192,7 @@ values each class accepts, the \code{vcov} column of
    Linear and generalized linear \tab \code{nls} \tab classical \cr
    Robust, IV, quantile, panel \tab \code{lm_robust} \tab classical (the fit's own) \cr
    Robust, IV, quantile, panel \tab \code{iv_robust} \tab classical (the fit's own) \cr
-   Robust, IV, quantile, panel \tab \code{ivreg} \tab classical \cr
+   Robust, IV, quantile, panel \tab \code{ivreg} \tab classical, HC0, HC1, CR0-CR3, CR1S \cr
    Robust, IV, quantile, panel \tab \code{tobit} \tab classical, CR1 \cr
    Robust, IV, quantile, panel \tab \code{rq} \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
    Robust, IV, quantile, panel \tab \code{fixest} \tab classical (the fit's own) \cr
@@ -1239,7 +1239,8 @@ on the page of its family (see \emph{Pages by model family}); for \code{lm},
 \code{\link[sandwich:vcovCL]{sandwich::vcovCL()}} with \code{type = "HC1"}) with \code{t(G - 1)} inference,
 \code{G} the number of clusters. Use it to reproduce Stata tables; \code{"CR2"}
 (Bell-McCaffrey, Satterthwaite df) remains the recommended modern
-choice. \code{"CR1S"} is refused for \code{glm} with an explanation: Stata's ML
+choice. \code{AER::ivreg()} takes it too (see \link{table_regression_robust}).
+\code{"CR1S"} is refused for \code{glm} with an explanation: Stata's ML
 commands use a different convention (\code{G/(G-1)} scaling, z), so the
 label would not match Stata output there. For \code{MASS::glm.nb}, the
 sandwich holds theta at its estimate, so robust standard errors can
@@ -1253,9 +1254,9 @@ inference. \verb{HC*}, \verb{CR*} and \code{cluster} are refused with a pointer 
 those fit options.
 
 Cluster-robust backends differ by class but are each cross-validated
-to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme} use
+to the field-standard oracle: \code{lm}/\code{glm}/\code{lmer}/\code{lme}/\code{ivreg} use
 \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
-\code{lm}/\code{lme}/\code{lmer}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
+\code{lm}/\code{lme}/\code{lmer}/\code{ivreg}); \code{coxph}/\code{cph} use the Lin-Wei grouped-dfbeta
 sandwich (identical to \code{coxph(..., cluster=)});
 \code{survreg}/\code{tobit}/\code{gam}/\code{polr}/\code{clm}/\code{betareg}/\code{mlogit}/\code{multinom} and the
 Poisson and geometric \code{pscl} two-part fits use

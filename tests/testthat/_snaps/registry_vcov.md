@@ -137,13 +137,6 @@
         vcov = "CR0": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
-        `vcov = "CR0"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
-      Received by 1:
-        vcov = "CR0": ivreg
-      ----
-      error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
         i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
@@ -337,13 +330,6 @@
         i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
       Received by 1:
         vcov = "CR1": iv_robust
-      ----
-      error: spicy_unsupported_vcov, spicy_error
-        `vcov = "CR1"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
-      Received by 1:
-        vcov = "CR1": ivreg
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `lm_robust` models.
@@ -554,13 +540,6 @@
         i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
       Received by 1:
         vcov = "CR1S": iv_robust
-      ----
-      error: spicy_unsupported_vcov, spicy_error
-        `vcov = "CR1S"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
-      Received by 1:
-        vcov = "CR1S": ivreg
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `lm_robust` models.
@@ -818,13 +797,6 @@
         vcov = "CR2": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
-        `vcov = "CR2"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
-      Received by 1:
-        vcov = "CR2": ivreg
-      ----
-      error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
         i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
@@ -1076,13 +1048,6 @@
         vcov = "CR3": iv_robust
       ----
       error: spicy_unsupported_vcov, spicy_error
-        `vcov = "CR3"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
-      Received by 1:
-        vcov = "CR3": ivreg
-      ----
-      error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `lm_robust` models.
         i estimatr fixes the variance estimator at fit time and spicy reports the fit's own standard errors unchanged.
         i Refit with the standard errors you want: estimatr::lm_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
@@ -1324,13 +1289,6 @@
         i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
       Received by 1:
         vcov = "HC0": iv_robust
-      ----
-      error: spicy_unsupported_vcov, spicy_error
-        `vcov = "HC0"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
-      Received by 1:
-        vcov = "HC0": ivreg
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `lm_robust` models.
@@ -1580,13 +1538,6 @@
         i Refit with the standard errors you want: estimatr::iv_robust(..., se_type = "HC3"), or se_type = "CR2" with `clusters =`.
       Received by 1:
         vcov = "HC1": iv_robust
-      ----
-      error: spicy_unsupported_vcov, spicy_error
-        `vcov = "HC1"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
-      Received by 1:
-        vcov = "HC1": ivreg
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `lm_robust` models.
@@ -1839,8 +1790,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
+        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
       Received by 1:
         vcov = "HC2": ivreg
       ----
@@ -2095,8 +2046,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
+        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
       Received by 1:
         vcov = "HC3": ivreg
       ----
@@ -2351,8 +2302,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
+        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
       Received by 1:
         vcov = "HC4": ivreg
       ----
@@ -2607,8 +2558,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i HC2-HC5 weight each residual by a leverage, which two-stage least squares does not define uniquely: `AER::ivreg()` and `estimatr::iv_robust()` use different hat values. For the second, refit with `estimatr::iv_robust(..., se_type = "HC2")` or "HC3".
+        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
       Received by 1:
         vcov = "HC5": ivreg
       ----
@@ -2869,8 +2820,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i The resamplers refit an `lm()`, not the two-stage least-squares model.
+        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
       Received by 1:
         vcov = "bootstrap": ivreg
       ----
@@ -3120,8 +3071,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
       Received by 1:
         vcov = "iid": ivreg
       ----
@@ -3376,8 +3326,8 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i The resamplers refit an `lm()`, not the two-stage least-squares model.
+        i This class supports: "classical", "HC0", "HC1", "CR0"-"CR3" and "CR1S" with `cluster`.
       Received by 1:
         vcov = "jackknife": ivreg
       ----
@@ -3634,8 +3584,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
       Received by 1:
         vcov = "ker": ivreg
       ----
@@ -3897,8 +3846,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
       Received by 1:
         vcov = "nid": ivreg
       ----
@@ -4160,8 +4108,7 @@
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `ivreg` models.
-        i This class supports: classical.
-        i For robust or clustered standard errors, refit the same model with `estimatr::iv_robust(..., se_type = "HC1")` (or `clusters =`), or with `fixest::feols(y ~ x | endo ~ inst, vcov = "hetero")` (or `vcov = ~g`).
+        i This class supports: classical, HC0, HC1, CR0, CR1, CR2, CR3, CR1S. See ?table_regression.
       Received by 1:
         vcov = "rank": ivreg
       ----

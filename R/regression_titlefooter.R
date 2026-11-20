@@ -2434,7 +2434,12 @@ build_nested_gam_footer_block_from_frames <- function(
   # Satterthwaite df. (glmmTMB under CR0 / CR1 keeps its Wald z line: its
   # sandwich SEs are tested against the normal, and the Std. errors line
   # names the estimator.)
-  if (startsWith(vk, "CR") && cls %in% c("lmerMod", "lme")) {
+  # An ivreg under CR1S tests on t(G - 1), which its Std. errors line names.
+  if (
+    startsWith(vk, "CR") &&
+      !identical(vk, "CR1S") &&
+      cls %in% c("lmerMod", "lme", "ivreg")
+  ) {
     return(spicy_str("note_pvalues_satterthwaite_cr"))
   }
   if (cls == "lmerMod" && identical(ci, "satterthwaite")) {

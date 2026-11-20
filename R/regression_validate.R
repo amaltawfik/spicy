@@ -1392,22 +1392,36 @@ validate_vcov_arg <- function(vcov, models, call = rlang::caller_env()) {
           call = call
         )
       }
-      # ivreg: classical only, with the two packages that fit the same
-      # 2SLS model with robust or clustered errors.
-      if (inherits(models[[i]], "ivreg")) {
+      # ivreg: HC2-HC5 and the resamplers, each with its reason
+      # (.robust_vcov_support()). The quantreg tokens take the generic
+      # message below.
+      if (
+        inherits(models[[i]], "ivreg") &&
+          (startsWith(vt, "HC") || vt %in% c("bootstrap", "jackknife"))
+      ) {
         spicy_abort(
           c(
             sprintf(
               "`vcov = \"%s\"` is not available for `ivreg` models.",
               vt
             ),
-            "i" = "This class supports: classical.",
+            "i" = if (startsWith(vt, "HC")) {
+              paste0(
+                "HC2-HC5 weight each residual by a leverage, which ",
+                "two-stage least squares does not define uniquely: ",
+                "`AER::ivreg()` and `estimatr::iv_robust()` use ",
+                "different hat values. For the second, refit with ",
+                "`estimatr::iv_robust(..., se_type = \"HC2\")` or \"HC3\"."
+              )
+            } else {
+              paste0(
+                "The resamplers refit an `lm()`, not the two-stage ",
+                "least-squares model."
+              )
+            },
             "i" = paste0(
-              "For robust or clustered standard errors, refit the same ",
-              "model with `estimatr::iv_robust(..., se_type = \"HC1\")` ",
-              "(or `clusters =`), or with ",
-              "`fixest::feols(y ~ x | endo ~ inst, vcov = \"hetero\")` ",
-              "(or `vcov = ~g`)."
+              "This class supports: \"classical\", \"HC0\", \"HC1\", ",
+              "\"CR0\"-\"CR3\" and \"CR1S\" with `cluster`."
             )
           ),
           class = "spicy_unsupported_vcov",

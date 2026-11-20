@@ -51,7 +51,7 @@ response), \code{aov}, \code{nlme}, \code{gnls}, the \code{lme} and \code{gam} p
    Linear and generalized linear \tab \code{nls} \tab \code{stats::nls()} \tab no \tab - \tab - \tab classical \cr
    Robust, IV, quantile, panel \tab \code{lm_robust} \tab \code{estimatr::lm_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
    Robust, IV, quantile, panel \tab \code{iv_robust} \tab \code{estimatr::iv_robust()} \tab yes \tab - \tab - \tab classical (the fit's own) \cr
-   Robust, IV, quantile, panel \tab \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical \cr
+   Robust, IV, quantile, panel \tab \code{ivreg} \tab \code{AER::ivreg()} \tab yes \tab - \tab - \tab classical, HC0, HC1, CR0-CR3, CR1S \cr
    Robust, IV, quantile, panel \tab \code{tobit} \tab \code{AER::tobit()} \tab yes (latent outcome) \tab - \tab - \tab classical, CR1 \cr
    Robust, IV, quantile, panel \tab \code{rq} \tab \code{quantreg::rq()} \tab yes \tab - \tab - \tab classical (= nid), nid, iid, ker, rank, bootstrap \cr
    Robust, IV, quantile, panel \tab \code{fixest} \tab \code{fixest::feols()}, \code{fixest::feglm()}, \code{fixest::fepois()}, \code{fixest::femlm()}, \code{fixest::fenegbin()} \tab yes (no for a GLM with fixed effects or an IV fit without exogenous regressor) \tab OR / IRR (link) \tab - \tab classical (the fit's own) \cr

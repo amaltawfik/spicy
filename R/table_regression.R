@@ -332,7 +332,8 @@
 #' [sandwich::vcovCL()] with `type = "HC1"`) with `t(G - 1)` inference,
 #' `G` the number of clusters. Use it to reproduce Stata tables; `"CR2"`
 #' (Bell-McCaffrey, Satterthwaite df) remains the recommended modern
-#' choice. `"CR1S"` is refused for `glm` with an explanation: Stata's ML
+#' choice. `AER::ivreg()` takes it too (see [table_regression_robust]).
+#' `"CR1S"` is refused for `glm` with an explanation: Stata's ML
 #' commands use a different convention (`G/(G-1)` scaling, z), so the
 #' label would not match Stata output there. For `MASS::glm.nb`, the
 #' sandwich holds theta at its estimate, so robust standard errors can
@@ -346,9 +347,9 @@
 #' those fit options.
 #'
 #' Cluster-robust backends differ by class but are each cross-validated
-#' to the field-standard oracle: `lm`/`glm`/`lmer`/`lme` use
+#' to the field-standard oracle: `lm`/`glm`/`lmer`/`lme`/`ivreg` use
 #' \pkg{clubSandwich} (CR2 = Bell-McCaffrey, with Satterthwaite df for
-#' `lm`/`lme`/`lmer`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
+#' `lm`/`lme`/`lmer`/`ivreg`); `coxph`/`cph` use the Lin-Wei grouped-dfbeta
 #' sandwich (identical to `coxph(..., cluster=)`);
 #' `survreg`/`tobit`/`gam`/`polr`/`clm`/`betareg`/`mlogit`/`multinom` and the
 #' Poisson and geometric `pscl` two-part fits use

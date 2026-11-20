@@ -251,36 +251,24 @@ test_that("tau on an rq fit says where the quantile is set", {
 
 # ---- Robust or clustered SE on an ivreg fit: the route --------------------
 
-test_that("the refusal of HC1 or CR1 on an ivreg fit names the routes", {
+test_that("the refusal of HC3 on an ivreg fit names the route", {
   skip_if_not_installed("AER")
   d <- .rf_wage_data()
   iv <- AER::ivreg(
     log(wage) ~ education + experience | feducation + experience,
     data = d
   )
-  for (args in list(
-    list(vcov = "HC1"),
-    list(vcov = "CR1", cluster = ~region)
-  )) {
-    err <- expect_error(
-      do.call(table_regression, c(list(iv), args)),
-      class = "spicy_unsupported_vcov"
-    )
-    msg <- conditionMessage(err)
-    expect_match(msg, "This class supports: classical.", fixed = TRUE)
-    expect_match(
-      msg,
-      "estimatr::iv_robust(..., se_type = \"HC1\")",
-      fixed = TRUE
-    )
-    expect_match(msg, "`clusters =`", fixed = TRUE)
-    expect_match(
-      msg,
-      "fixest::feols(y ~ x | endo ~ inst, vcov = \"hetero\")",
-      fixed = TRUE
-    )
-    expect_match(msg, "vcov = ~g", fixed = TRUE)
-  }
+  err <- expect_error(
+    table_regression(iv, vcov = "HC3"),
+    class = "spicy_unsupported_vcov"
+  )
+  msg <- conditionMessage(err)
+  expect_match(
+    msg,
+    "estimatr::iv_robust(..., se_type = \"HC2\")",
+    fixed = TRUE
+  )
+  expect_match(msg, "\"CR0\"-\"CR3\" and \"CR1S\"", fixed = TRUE)
 })
 
 test_that("the routes the ivreg refusal names give a table", {

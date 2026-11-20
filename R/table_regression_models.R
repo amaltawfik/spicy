@@ -319,7 +319,7 @@
   nls = "classical",
   lm_robust = "classical (the fit's own)",
   iv_robust = "classical (the fit's own)",
-  ivreg = "classical",
+  ivreg = "classical, HC0, HC1, CR0-CR3, CR1S",
   tobit = "classical, CR1",
   rq = "classical (= nid), nid, iid, ker, rank, bootstrap",
   fixest = "classical (the fit's own)",

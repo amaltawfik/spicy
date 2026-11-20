@@ -400,6 +400,7 @@ as_regression_frame.ivreg <- function(
   vcov = "model",
   vcov_label = NULL,
   cluster = NULL,
+  cluster_name = NULL,
   ci_level = 0.95,
   ci_method = NULL,
   show_columns = character(0),
@@ -409,6 +410,9 @@ as_regression_frame.ivreg <- function(
   .check_AER_available()
 
   coefs <- .ivreg_coefs(fit, ci_level = ci_level)
+  # HC0 / HC1 and CR0-CR3 / CR1S, as for an lm (Satterthwaite df under
+  # CR*); a no-op for the model-based default.
+  coefs <- .apply_robust_vcov_to_coefs(coefs, fit, vcov, cluster, ci_level)
   # AME rows when requested (finding M2): response-scale avg_slopes(); a
   # robust vcov is recomputed inside and honored.
   coefs <- .attach_ame_to_frame_coefs(
@@ -427,6 +431,9 @@ as_regression_frame.ivreg <- function(
     ci_method = ci_method,
     model_id = model_id
   )
+  if (!.is_model_vcov(vcov)) {
+    info$vcov_label <- .robust_vcov_label(vcov, cluster_name %||% NA_character_)
+  }
 
   new_regression_frame(coefs, info, fit)
 }

@@ -1167,6 +1167,12 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
     # NOT granted to glm: Stata's ML commands scale by G/(G-1) and
     # report z, so a glm "CR1S" would carry a false Stata label.
     lm = c(full, "CR1S"),
+    # ivreg (2SLS) takes the sandwiches an lm takes where two engines
+    # agree: HC0 / HC1 (sandwich) and CR0-CR3 / CR1S (clubSandwich) match
+    # estimatr::iv_robust(). HC2-HC5 hang on a leverage 2SLS does not
+    # define uniquely (AER's hatvalues() is not estimatr's), and the
+    # resamplers refit an lm. Refusals in validate_vcov_cluster_lists().
+    ivreg = c("classical", "HC0", "HC1", paste0("CR", 0:3), "CR1S"),
     glm = full,
     negbin = full, # MASS::glm.nb delegates to the glm path
     # Mixed-effects: cluster-robust via clubSandwich (Inc 2). lmer / lme get

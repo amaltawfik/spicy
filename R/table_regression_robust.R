@@ -62,9 +62,9 @@
 #'
 #' @section Values of the shared arguments:
 #' \describe{
-#'   \item{`vcov`, `cluster`}{`estimatr`, `fixest` and `ivreg`:
-#'     `"classical"` only, which for `estimatr` and `fixest` is the variance
-#'     the fit carries. `tobit`: `"classical"` and `"CR1"`, as for
+#'   \item{`vcov`, `cluster`}{`estimatr` and `fixest`: `"classical"`
+#'     only, the variance the fit carries. `ivreg`: `"classical"`,
+#'     `"HC0"`, `"HC1"`, `"CR0"`-`"CR3"` and `"CR1S"`. `tobit`: `"classical"` and `"CR1"`, as for
 #'     `survreg`. `rq`: its own estimator family. See *Standard errors,
 #'     degrees of freedom and intervals*.}
 #'   \item{`show_fit_stats`}{The defaults of each class, and the
@@ -112,6 +112,17 @@
 #'     refuses it: the resamplers do not carry the weights.
 #' }
 #' `cluster` with any other `rq` estimator is refused.
+#'
+#' **`AER::ivreg`.** The sandwiches of an `lm`, where two engines agree
+#' on them: `"HC0"` and `"HC1"` from [sandwich::vcovHC()], and with
+#' `cluster`, `"CR0"`-`"CR3"` from [clubSandwich::vcovCR()] with
+#' Satterthwaite degrees of freedom, and `"CR1S"` with `t(G - 1)`. All
+#' match `estimatr::iv_robust()` on the same model (`"CR1S"` its
+#' `se_type = "stata"`). `"HC2"`-`"HC5"` are refused: they weight each
+#' residual by a leverage, which two-stage least squares does not define
+#' uniquely, and `AER::ivreg()` and `estimatr::iv_robust()` use different
+#' hat values (standard errors about 0.1 to 0.3 percent apart).
+#' `"bootstrap"` and `"jackknife"` are refused: they refit an `lm()`.
 #'
 #' **`AER::tobit`.** A `tobit` fit is a `survreg` model, and takes the
 #' same estimator: `"CR1"` from [sandwich::vcovCL()], the CR0 sandwich
