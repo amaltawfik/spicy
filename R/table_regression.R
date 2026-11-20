@@ -1285,7 +1285,11 @@
 #'   (`"(Intercept)"`, `"sexMale"`; those of an `rms` fit in the spelling
 #'   of `lm()`, `"sexMale"` for rms's `"sex=Male"` and `"age:sexMale"`
 #'   for `"age * sex=Male"`), each naming one
-#'   row. They keep that form whatever the language of the table.
+#'   row. The reference level of a factor takes the name its coefficient
+#'   would have: `c(sexFemale = "Women")` renames the row
+#'   `Female (ref.)` to `Women (ref.)` when `Female` is the reference,
+#'   the mark of `reference_label` kept.
+#'   They keep that form whatever the language of the table.
 #'   Classes with no `terms`
 #'   component (`nls()`, `sampleSelection::selection()`) are keyed on
 #'   their coefficient (or parameter) names alone. With several models,
@@ -4162,7 +4166,7 @@ table_regression <- function(
 # named after its equation or outcome category ("selection: z", "b: x")
 # under its term ("z", "x"), which labels its header.
 .reg_warn_label_names <- function(models, frames, labels, note_labels, terms) {
-  label_keys <- c(.reg_label_keys(models), .reg_block_label_keys(frames))
+  label_keys <- c(.reg_label_keys(models), .reg_frame_label_keys(frames))
   several <- if (is.character(labels)) {
     Filter(
       function(r) length(r) > 1L,

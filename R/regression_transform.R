@@ -63,17 +63,29 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
   terms
 }
 
-# The names of the rows of the subordinate blocks of `frames`, as `keep`
-# and `drop` list them ("s(age)", "rho", "Precision::persons"): `labels`
-# renames a block row under that name (`format_term_label()`).
-.reg_block_label_keys <- function(frames) {
+# The keys of `labels` that the frames name and the fits do not
+# (`.reg_label_keys()`), as `keep` and `drop` list them: the rows of the
+# subordinate blocks ("s(age)", "rho", "Precision::persons") and the
+# reference rows of the factors ("sexMale", the name the level's
+# coefficient would take; a multinomial row drops its category, as its
+# coefficient rows do). `labels` renames each row under that name
+# (`format_term_label()`).
+.reg_frame_label_keys <- function(frames) {
   unique(unlist(lapply(frames, function(f) {
     cf <- f$coefs
     blk <- .reg_is_block(cf$parent_var %||% rep(NA_character_, nrow(cf)))
-    .reg_filter_terms(list(
-      term = cf$term[blk],
-      factor_term = cf$parent_var[blk]
-    ))
+    is_ref <- cf$is_ref %in% TRUE & !blk
+    ref <- cf$term[is_ref]
+    ol <- (cf$outcome_level %||% rep(NA_character_, nrow(cf)))[is_ref]
+    pre <- !is.na(ol) & startsWith(ref, paste0(ol, ": "))
+    ref[pre] <- substring(ref[pre], nchar(ol[pre]) + 3L)
+    c(
+      .reg_filter_terms(list(
+        term = cf$term[blk],
+        factor_term = cf$parent_var[blk]
+      )),
+      ref
+    )
   })))
 }
 

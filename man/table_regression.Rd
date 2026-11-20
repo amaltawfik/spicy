@@ -678,7 +678,11 @@ it has one row), and the coefficient names
 (\code{"(Intercept)"}, \code{"sexMale"}; those of an \code{rms} fit in the spelling
 of \code{lm()}, \code{"sexMale"} for rms's \code{"sex=Male"} and \code{"age:sexMale"}
 for \code{"age * sex=Male"}), each naming one
-row. They keep that form whatever the language of the table.
+row. The reference level of a factor takes the name its coefficient
+would have: \code{c(sexFemale = "Women")} renames the row
+\code{Female (ref.)} to \code{Women (ref.)} when \code{Female} is the reference,
+the mark of \code{reference_label} kept.
+They keep that form whatever the language of the table.
 Classes with no \code{terms}
 component (\code{nls()}, \code{sampleSelection::selection()}) are keyed on
 their coefficient (or parameter) names alone. With several models,

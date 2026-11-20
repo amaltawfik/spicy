@@ -1837,7 +1837,7 @@ resolve_label <- function(term, labels) {
   if (length(terms) > 0L) {
     terms <- terms[
       names(terms) %in%
-        c(.reg_label_keys(models), .reg_block_label_keys(frames))
+        c(.reg_label_keys(models), .reg_frame_label_keys(frames))
     ]
   }
   # An interaction keyed by its term label ("age:wc") labels its row
