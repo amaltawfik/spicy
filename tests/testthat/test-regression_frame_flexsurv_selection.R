@@ -218,8 +218,9 @@ test_that("table_regression() body shows separate selection vs outcome rows", {
     collapse = "\n"
   )
   # `educ` appears in BOTH equations -- the body should show both rows,
-  # under its header, each named by its equation.
-  shown <- trimws(table_regression(fit)$Variable)
+  # under its header, each named by its equation, beside another model
+  # (alone, the equations are column groups).
+  shown <- trimws(table_regression(list(fit, fit))$Variable)
   expect_identical(
     shown[which(shown == "educ:") + 1:2],
     c("selection", "outcome")
@@ -360,7 +361,8 @@ test_that("the intercepts of the two Heckman equations are intercepts", {
   fr <- as_regression_frame(fit, model_id = "M1")
   expect_identical(fr$coefs$term[fr$coefs$is_intercept], ints)
   shown <- function(...) trimws(table_regression(...)$Variable)
-  expect_true("(Intercept):" %in% shown(fit))
+  # Alone, one row across the two equation groups.
+  expect_identical(shown(fit)[[1L]], "(Intercept)")
   # show_intercept = FALSE hides them, alone and beside another model.
   expect_false(any(grepl(
     "(Intercept)",
@@ -377,7 +379,11 @@ test_that("the intercepts of the two Heckman equations are intercepts", {
   # keep / drop leave them to show_intercept, as they do the intercept
   # of lm().
   expect_identical(
-    shown(fit, keep = "educ")[1:3],
+    shown(fit, keep = "educ")[1:2],
+    c("(Intercept)", "educ")
+  )
+  expect_identical(
+    shown(list(fit, fit), keep = "educ")[1:3],
     c("(Intercept):", "selection", "outcome")
   )
   expect_true("(Intercept)" %in% shown(ols, keep = "educ"))
@@ -436,4 +442,201 @@ test_that("p_adjust leaves the intercepts of the two equations out", {
     ),
     fixed = TRUE
   )
+})
+
+
+# ---- A selection model alone: its equations as column groups -------------
+
+# A logical, a two-level and a three-level factor, the fit made inside a
+# function: its data are not in the global environment.
+.fit_selection_factors <- function(two_step = FALSE) {
+  skip_if_not_installed("sampleSelection")
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  Mroz87$kids <- Mroz87$kids5 + Mroz87$kids618 > 0
+  Mroz87$city <- factor(Mroz87$city, labels = c("no", "yes"))
+  Mroz87$region <- factor(
+    rep(c("north", "south", "west"), length.out = nrow(Mroz87))
+  )
+  f <- if (two_step) sampleSelection::heckit else sampleSelection::selection
+  f(
+    lfp ~ age + kids + educ + region,
+    wage ~ exper + educ + city,
+    data = Mroz87
+  )
+}
+
+test_that("a selection model alone sets its equations as column groups", {
+  skip_if_not_installed("broom")
+  for (two_step in c(FALSE, TRUE)) {
+    fit <- .fit_selection_factors(two_step)
+    tb <- table_regression(fit)
+    expect_identical(names(attr(tb, "spanners")), c("Outcome", "Selection"))
+    expect_identical(
+      names(tb),
+      c(
+        "Variable",
+        paste0("Outcome: ", c("B", "SE", "p")),
+        paste0("Selection: ", c("B", "SE", "p"))
+      )
+    )
+    # The predictors of the outcome equation first, then those of the
+    # selection equation alone; the error terms, n and AIC once.
+    rows <- trimws(tb$Variable)
+    expect_identical(
+      rows[1:14],
+      c(
+        "(Intercept)",
+        "exper",
+        "educ",
+        "city:",
+        "no (ref.)",
+        "yes",
+        "age",
+        "kids:",
+        "FALSE (ref.)",
+        "TRUE",
+        "region:",
+        "north (ref.)",
+        "south",
+        "west"
+      )
+    )
+    expect_identical(rows[[15]], "Error terms:")
+    expect_identical(sum(rows == "n"), 1L)
+    # Each cell is the estimate tidy() gives, in its equation's column;
+    # a term out of an equation has an empty cell there.
+    df <- table_regression(fit, output = "data.frame")
+    td <- as.data.frame(broom::tidy(tb))
+    for (eq in c("outcome", "selection")) {
+      col <- paste0(capitalize_first(eq), ": B")
+      sub <- td[td$outcome_level %in% eq, ]
+      key <- sub(paste0("^", eq, ": "), "", sub$term)
+      key_df <- ifelse(
+        df$.row_role == "level",
+        paste0(df$variable, df$level),
+        df$variable
+      )
+      expect_equal(df[[col]][match(key, key_df)], sub$estimate)
+    }
+    expect_true(is.na(df[["Selection: B"]][df$variable == "exper"]))
+    expect_true(is.na(df[["Outcome: B"]][df$variable == "age"]))
+    # The error terms sit under the outcome group only.
+    err <- df$variable == "Error terms" & df$.row_role == "level"
+    expect_true(all(!is.na(df[["Outcome: B"]][err])))
+    expect_true(all(is.na(df[["Selection: B"]][err])))
+  }
+})
+
+test_that("the reference rows of a selection frame follow lm()", {
+  fit <- .fit_selection_factors(two_step = TRUE)
+  cf <- as_regression_frame(fit)$coefs
+  ref <- cf[cf$is_ref, ]
+  expect_setequal(
+    ref$term,
+    c("selection: kidsFALSE", "selection: regionnorth", "outcome: cityno")
+  )
+  expect_true(all(ref$factor_level_pos == 1L))
+  lev <- cf[cf$term == "selection: regionwest", ]
+  expect_identical(lev$parent_var, "region")
+  expect_identical(lev$label, "selection: west")
+  expect_identical(lev$factor_level_pos, 3L)
+  # A design that does not give the coefficient names back keeps them.
+  expect_null(.selection_design(fit, "selection", c("(Intercept)", "x")))
+})
+
+test_that("several selection models keep the equations as rows", {
+  fit <- .fit_selection_factors()
+  two <- .fit_selection_factors(two_step = TRUE)
+  rows <- trimws(table_regression(list(ML = fit, "Two-step" = two))$Variable)
+  expect_identical(
+    rows[which(rows == "region:") + 1:3],
+    c("selection: north (ref.)", "selection: south", "selection: west")
+  )
+  expect_identical(
+    rows[which(rows == "educ:") + 1:2],
+    c("selection", "outcome")
+  )
+  # nested = TRUE keeps the rows too.
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  m0 <- sampleSelection::selection(
+    lfp ~ age + educ,
+    wage ~ exper,
+    data = Mroz87
+  )
+  m1 <- update(m0, outcome = wage ~ exper + educ)
+  rows <- trimws(table_regression(list(m0, m1), nested = TRUE)$Variable)
+  expect_true(all(c("selection", "outcome") %in% rows))
+})
+
+test_that("labels, keep and outcome_labels on a selection model alone", {
+  fit <- .fit_selection_factors()
+  tb <- expect_no_warning(table_regression(
+    fit,
+    labels = c(city = "Lives in a city", cityyes = "Yes", educ = "Education")
+  ))
+  rows <- trimws(tb$Variable)
+  expect_true(all(c("Lives in a city:", "Yes", "Education") %in% rows))
+  # keep matches the terms without their equation prefix.
+  rows <- trimws(table_regression(fit, keep = "^educ$")$Variable)
+  expect_identical(rows[1:2], c("(Intercept)", "educ"))
+  tb <- table_regression(fit, outcome_labels = c("Wage", "Participation"))
+  expect_identical(names(attr(tb, "spanners")), c("Wage", "Participation"))
+  expect_error(
+    table_regression(fit, model_labels = "Heckman"),
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("inline() selects the equation of a selection model alone by model", {
+  fit <- .fit_selection_factors()
+  tb <- table_regression(fit)
+  b <- summary(fit)$estimate
+  out <- grep("^educ$", rownames(b))
+  expect_identical(
+    inline(tb, educ, model = "Outcome"),
+    sprintf("%.2f", b[out[2L], "Estimate"])
+  )
+  expect_identical(
+    inline(tb, educ, model = 2),
+    sprintf("%.2f", b[out[1L], "Estimate"])
+  )
+  expect_identical(
+    inline(tb, city, "yes", model = "Outcome"),
+    sprintf("%.2f", b["cityyes", "Estimate"])
+  )
+  err <- expect_error(
+    inline(tb, educ, level = "outcome"),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`model = \"Outcome\"`", fixed = TRUE)
+  # Beside another model, the equation is a level.
+  tbm <- table_regression(list(A = fit, B = fit))
+  expect_identical(
+    inline(tbm, educ, "outcome", model = "A"),
+    sprintf("%.2f", b[out[2L], "Estimate"])
+  )
+})
+
+test_that("a selection model alone in French and in a stack", {
+  fit <- .fit_selection_factors()
+  withr::with_options(list(spicy.language = "fr"), {
+    tb <- table_regression(fit)
+    expect_identical(
+      names(attr(tb, "spanners")),
+      c("R\u00e9sultat", "S\u00e9lection")
+    )
+    expect_identical(
+      inline(tb, educ, model = "R\u00e9sultat"),
+      inline(tb, educ, model = 1)
+    )
+  })
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  ols <- stats::lm(wage ~ exper + educ, data = Mroz87, subset = lfp == 1)
+  st <- table_stack(
+    Heckman = table_regression(fit),
+    OLS = table_regression(ols)
+  )
+  out <- utils::capture.output(print(st))
+  expect_true(any(grepl("Outcome", out[1:3], fixed = TRUE)))
+  expect_true(any(grepl("Selection", out[1:3], fixed = TRUE)))
 })

@@ -92,7 +92,11 @@
 #' rows under the header of a term: the outcome categories of a
 #' multinomial model beside other models (`inline(tbl, age, "Student",
 #' model = "Adjusted")`) and the two equations of a Heckman selection
-#' model (`"selection"`, `"outcome"`). Until spicy 0.14.0 it also
+#' model beside other models (`"selection"`, `"outcome"`). Alone, a
+#' multinomial or selection model has its categories or equations as
+#' column groups, which `model` selects by their label or position
+#' (`inline(tbl, educ, model = "Outcome")`): there, `level = "outcome"`
+#' is an error that gives that call. Until spicy 0.14.0 it also
 #' selected the groups of [table_continuous()], [table_continuous_svy()]
 #' and [table_continuous_lm()]: that use is an error (class
 #' `spicy_defunct`) whose message gives the call to use instead.
@@ -168,7 +172,8 @@
 #'   category shown as a row. `"(Missing)"` addresses the missing-value
 #'   category by role. A group of `by` is selected with `model`. In a
 #'   regression table, the outcome category of a multinomial row or the
-#'   equation of a Heckman row, under the header of its term.
+#'   equation of a Heckman row, under the header of its term, when the
+#'   model sits beside others.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
@@ -679,13 +684,18 @@ inline <- function(
       )
     )
   }
-  if (rlang::is_string(level) && level %in% names(s$spanners)) {
+  # Case aside: the equation of a selection model alone is the column
+  # group "Outcome", which a row of the same model beside others names
+  # "outcome".
+  grp <- names(s$spanners)
+  grp <- if (rlang::is_string(level)) grp[tolower(grp) == tolower(level)]
+  if (length(grp) == 1L) {
     hints <- c(
       hints,
       "i" = sprintf(
         "%s is a column group of this table: select it with `model = %s`.",
         .quote_val(level),
-        .quote_val(level)
+        .quote_val(grp)
       )
     )
   }

@@ -352,7 +352,10 @@ they match by their mgcv label (\code{"s(age)"}, \code{"te(bmi,ped)"}), and
 \code{drop = "^s\\\\("} removes the \verb{Smooth terms} block with its note.
 The \verb{Error terms} of a sample-selection model are coefficients of
 \code{coef()} and follow \code{keep} and \code{drop} under those names (\code{"sigma"},
-\code{"rho"}, \code{"invMillsRatio"}).
+\code{"rho"}, \code{"invMillsRatio"}). A multinomial or sample-selection
+model alone, whose categories or equations are column groups,
+matches its terms without their prefix (\code{"educ"}, \code{"cityyes"});
+beside other models, with it (\code{"Student: age"}, \code{"outcome: educ"}).
 Mutually exclusive with \code{drop}. Filtering is a display
 choice; \code{p_adjust} runs against the full coefficient family
 before filtering. Default \code{NULL} (no filter).}
@@ -542,9 +545,9 @@ flextable / tinytable / Excel / Word renderers). \code{NULL}
 (default) resolves automatically; see \emph{Multi-model semantics}
 for the full rule. A character vector of length
 \code{length(models)} overrides. Refused (error) for a single
-multinomial model: there the column groups are outcome
-categories, relabeled via \code{outcome_labels}
-(\link{table_regression_categorical}).}
+multinomial or sample-selection model: there the column groups
+are outcome categories or equations, relabeled via
+\code{outcome_labels} (\link{table_regression_categorical}).}
 
 \item{outcome_labels}{The \strong{Outcome body row}, which names the
 outcome of each model under the column headers. \code{NULL} (default)
@@ -570,7 +573,9 @@ spans the columns of its model, under the model's name. A stacked gt
 table and the markdown grid of tinytable keep the label in the first
 column of the model, so a long label widens that column.
 For a single multinomial model, the labels of the category
-spanners; see \link{table_regression_categorical}.}
+spanners; see \link{table_regression_categorical}. For a single
+sample-selection model, the labels of its two equation groups, in
+their order (outcome, selection).}
 
 \item{stars}{Significance asterisks. \code{FALSE} (default; the APA
 Manual 7, Section 7.14, p. 204, prefers exact p-values) -- no stars. \code{TRUE} -- APA cutoffs
@@ -683,9 +688,11 @@ would have: \code{c(sexFemale = "Women")} renames the row
 \code{Female (ref.)} to \code{Women (ref.)} when \code{Female} is the reference,
 the mark of \code{reference_label} kept.
 They keep that form whatever the language of the table.
-Classes with no \code{terms}
-component (\code{nls()}, \code{sampleSelection::selection()}) are keyed on
-their coefficient (or parameter) names alone. With several models,
+A class with no \code{terms}
+component (\code{nls()}) is keyed on its parameter names alone. A
+sample-selection model is keyed on the term labels of its two
+equations (\code{"city"} for the header of a factor) and on its
+coefficient names (\code{"cityyes"}). With several models,
 a name is looked up in the terms of all of them and lands on the
 rows where it exists. A name that matches nothing in the table warns
 (class \code{spicy_unknown_name}), with the list of its terms, and is left
@@ -1199,7 +1206,12 @@ reference distribution (e.g. \code{glmmTMB}, survival, ordinal,
 \code{betareg}, \code{mlogit} use z; \code{lm}, \code{lme}, \code{lmer}, \code{rms::ols} use t).
 
 A single \code{nnet::multinom} model sets its outcome categories as column
-groups; see \link{table_regression_categorical}.
+groups; see \link{table_regression_categorical}. A single sample-selection
+model (\code{sampleSelection::selection()}, \code{heckit()}, \code{treatReg()}) sets
+its two equations as column groups, "Outcome" then "Selection", in the
+language of the table, with its \verb{Error terms}, n and AIC under the
+first; beside other models, or under \code{nested = TRUE}, each term has a
+\code{selection} and an \code{outcome} row; see \link{table_regression_models}.
 \subsection{Robust SE availability by model class}{
 
 Not every estimator is defined for every class. A robust \code{vcov}

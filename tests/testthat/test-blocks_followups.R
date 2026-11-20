@@ -191,18 +191,21 @@ test_that("the selection and outcome sub-rows follow the table language", {
   skip_if_not_installed("sampleSelection")
   skip_if_not_installed("broom")
   fit <- fu_selection()
+  # Beside another model, the equations are sub-rows (alone, they are
+  # column groups: test-regression_frame_flexsurv_selection.R).
+  fits <- list(A = fit, B = fit)
   withr::local_options(spicy.language = "fr")
-  rows <- fu_rows(table_regression(fit))
+  rows <- fu_rows(table_regression(fits))
   expect_true(all(c("sélection", "résultat") %in% rows))
   expect_false(any(c("selection", "outcome") %in% rows))
   # The terms stay the names of coef(): keep, drop and tidy() read them.
   td <- broom::tidy(table_regression(fit))
   expect_true(all(c("selection: age", "outcome: exper") %in% td$term))
-  kept <- table_regression(fit, keep = "selection: age", output = "long")
+  kept <- table_regression(fits, keep = "selection: age", output = "long")
   expect_true("selection: age" %in% fu_terms(kept))
   expect_false("outcome: exper" %in% fu_terms(kept))
   withr::local_options(spicy.language = NULL)
-  rows <- fu_rows(table_regression(fit))
+  rows <- fu_rows(table_regression(fits))
   expect_true(all(c("selection", "outcome") %in% rows))
 })
 
@@ -437,13 +440,14 @@ test_that("the exponentiated component intercept is named as its row shows", {
 test_that("a flat selection table names its equations in the table language", {
   skip_if_not_installed("sampleSelection")
   fit <- fu_selection()
+  fits <- list(A = fit, B = fit)
   rows <- withr::with_options(
     list(spicy.language = "fr"),
-    fu_rows(table_regression(fit, factor_layout = "flat"))
+    fu_rows(table_regression(fits, factor_layout = "flat"))
   )
   expect_true("sélection : age" %in% rows)
   expect_true("résultat : exper" %in% rows)
   expect_false("selection: age" %in% rows)
-  rows <- fu_rows(table_regression(fit, factor_layout = "flat"))
+  rows <- fu_rows(table_regression(fits, factor_layout = "flat"))
   expect_true(all(c("selection: age", "outcome: exper") %in% rows))
 })

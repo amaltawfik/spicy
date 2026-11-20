@@ -323,7 +323,12 @@
 #' `betareg`, `mlogit` use z; `lm`, `lme`, `lmer`, `rms::ols` use t).
 #'
 #' A single `nnet::multinom` model sets its outcome categories as column
-#' groups; see [table_regression_categorical].
+#' groups; see [table_regression_categorical]. A single sample-selection
+#' model (`sampleSelection::selection()`, `heckit()`, `treatReg()`) sets
+#' its two equations as column groups, "Outcome" then "Selection", in the
+#' language of the table, with its `Error terms`, n and AIC under the
+#' first; beside other models, or under `nested = TRUE`, each term has a
+#' `selection` and an `outcome` row; see [table_regression_models].
 #'
 #' ## Robust SE availability by model class
 #'
@@ -988,7 +993,10 @@
 #'   `drop = "^s\\("` removes the `Smooth terms` block with its note.
 #'   The `Error terms` of a sample-selection model are coefficients of
 #'   `coef()` and follow `keep` and `drop` under those names (`"sigma"`,
-#'   `"rho"`, `"invMillsRatio"`).
+#'   `"rho"`, `"invMillsRatio"`). A multinomial or sample-selection
+#'   model alone, whose categories or equations are column groups,
+#'   matches its terms without their prefix (`"educ"`, `"cityyes"`);
+#'   beside other models, with it (`"Student: age"`, `"outcome: educ"`).
 #'   Mutually exclusive with `drop`. Filtering is a display
 #'   choice; `p_adjust` runs against the full coefficient family
 #'   before filtering. Default `NULL` (no filter).
@@ -1163,9 +1171,9 @@
 #'   (default) resolves automatically; see *Multi-model semantics*
 #'   for the full rule. A character vector of length
 #'   `length(models)` overrides. Refused (error) for a single
-#'   multinomial model: there the column groups are outcome
-#'   categories, relabeled via `outcome_labels`
-#'   ([table_regression_categorical]).
+#'   multinomial or sample-selection model: there the column groups
+#'   are outcome categories or equations, relabeled via
+#'   `outcome_labels` ([table_regression_categorical]).
 #' @param outcome_labels The **Outcome body row**, which names the
 #'   outcome of each model under the column headers. `NULL` (default)
 #'   shows it when the models do not all have the same outcome and the
@@ -1190,7 +1198,9 @@
 #'   table and the markdown grid of tinytable keep the label in the first
 #'   column of the model, so a long label widens that column.
 #'   For a single multinomial model, the labels of the category
-#'   spanners; see [table_regression_categorical].
+#'   spanners; see [table_regression_categorical]. For a single
+#'   sample-selection model, the labels of its two equation groups, in
+#'   their order (outcome, selection).
 #' @param stars Significance asterisks. `FALSE` (default; the APA
 #'   Manual 7, Section 7.14, p. 204, prefers exact p-values) -- no stars. `TRUE` -- APA cutoffs
 #'   `c("*" = 0.05, "**" = 0.01, "***" = 0.001)`. A named numeric
@@ -1290,9 +1300,11 @@
 #'   `Female (ref.)` to `Women (ref.)` when `Female` is the reference,
 #'   the mark of `reference_label` kept.
 #'   They keep that form whatever the language of the table.
-#'   Classes with no `terms`
-#'   component (`nls()`, `sampleSelection::selection()`) are keyed on
-#'   their coefficient (or parameter) names alone. With several models,
+#'   A class with no `terms`
+#'   component (`nls()`) is keyed on its parameter names alone. A
+#'   sample-selection model is keyed on the term labels of its two
+#'   equations (`"city"` for the header of a factor) and on its
+#'   coefficient names (`"cityyes"`). With several models,
 #'   a name is looked up in the terms of all of them and lands on the
 #'   rows where it exists. A name that matches nothing in the table warns
 #'   (class `spicy_unknown_name`), with the list of its terms, and is left
@@ -1937,12 +1949,12 @@ table_regression <- function(
       c(
         paste0(
           "`model_labels` does not apply to a single multinomial ",
-          "model: the column groups are outcome categories, ",
-          "not models."
+          "or selection model: the column groups are outcome ",
+          "categories or equations, not models."
         ),
         "i" = paste0(
-          "Use `outcome_labels` to relabel the category ",
-          "spanners."
+          "Use `outcome_labels` to relabel the column ",
+          "groups."
         )
       ),
       class = "spicy_invalid_input"
@@ -3738,7 +3750,7 @@ table_regression <- function(
         outcome_labels <- NULL
       }
       mn_spanners <- .multinom_columns_spanners(
-        ex$model_ids,
+        ex$spanners %||% ex$model_ids,
         frames[[1L]]$info$extras$reference_outcome %||% NA_character_,
         outcome_labels
       )
@@ -3786,13 +3798,18 @@ table_regression <- function(
     warn = is.null(panel_req)
   )
   # The error terms each selection model still shows, for the note that
-  # defines them.
+  # defines them. A selection model alone shows them under its first
+  # equation group.
   ca_err <- aligned$coefs_aligned$factor_term %in% .REG_BLOCK_ERROR
   for (i in seq_along(frames)) {
     if (is.data.frame(frames[[i]]$info$extras$error_terms)) {
       frames[[i]]$info$extras$error_terms_shown <- .reg_filter_terms(
         aligned$coefs_aligned
-      )[ca_err & aligned$coefs_aligned$model_id %in% model_ids[[i]]]
+      )[
+        ca_err &
+          aligned$coefs_aligned$model_id %in%
+            if (mn_exploded) model_ids_render else model_ids[[i]]
+      ]
     }
   }
   # A table whose row selection (`keep`, `drop`, `show_intercept =

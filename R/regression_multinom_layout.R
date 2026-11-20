@@ -18,17 +18,21 @@
 # hierarchies keep the per-outcome-rows layout (categories-within-
 # models would need two spanner levels) -- documented in
 # ?table_regression.
+#
+# A sampleSelection model (selection(), heckit(), treatReg()) follows the
+# same rule: alone, its two equations are the column groups.
 .multinom_columns_active <- function(models, nested) {
   if (isTRUE(nested)) {
     return(FALSE)
   }
+  cls <- c("multinom", "selection")
   # A bare fit is a classed list, so test the model class FIRST --
   # `is.list()` alone cannot separate a multinom object from a
   # list-of-models.
-  if (inherits(models, "multinom")) {
+  if (inherits(models, cls)) {
     return(TRUE)
   }
-  is.list(models) && length(models) == 1L && inherits(models[[1L]], "multinom")
+  is.list(models) && length(models) == 1L && inherits(models[[1L]], cls)
 }
 
 
@@ -83,15 +87,30 @@
     lev <- present
   }
   cats <- c(setdiff(lev, ref), if (!is.na(ref) && ref %in% present) ref)
+  # A selection model: the outcome equation first, as the title names its
+  # outcome, then the selection equation. Its rows of the whole model
+  # (the "Error terms" block) print once, under the first group.
+  is_sel <- identical(frame$info$class, "selection")
+  if (is_sel) {
+    cats <- c("outcome", "selection")
+  }
   cats <- cats[cats %in% present]
   if (!length(cats)) {
     return(NULL) # nocov
   }
+  # The groups of a selection model are named by their equation: the
+  # English name identifies it, the spanner prints it in the table
+  # language.
+  ids <- if (is_sel) vapply(cats, capitalize_first, "", USE.NAMES = FALSE)
 
   pseudo <- vector("list", length(cats))
   for (k in seq_along(cats)) {
     cat_k <- cats[[k]]
-    sub <- cf[cf$outcome_level %in% cat_k, , drop = FALSE]
+    rows <- cf$outcome_level %in% cat_k
+    if (is_sel && k == 1L) {
+      rows <- rows | is.na(cf$outcome_level)
+    }
+    sub <- cf[rows, , drop = FALSE]
     prefix <- paste0(cat_k, ": ")
     strip <- function(x) {
       ifelse(startsWith(x, prefix), substring(x, nchar(prefix) + 1L), x)
@@ -104,7 +123,7 @@
 
     pk <- frame
     pk$coefs <- sub
-    pk$info$model_id <- cat_k
+    pk$info$model_id <- if (is_sel) ids[[k]] else cat_k
     if (k > 1L) {
       pk$info$fit_stats <- .blank_fit_stats(pk$info$fit_stats)
       # Display-blank marker: these NAs mean "the model-level value is
@@ -115,7 +134,19 @@
     }
     pseudo[[k]] <- pk
   }
-  list(frames = pseudo, model_ids = cats)
+  if (!is_sel) {
+    return(list(frames = pseudo, model_ids = cats))
+  }
+  list(
+    frames = pseudo,
+    model_ids = ids,
+    spanners = vapply(
+      cats,
+      function(eq) capitalize_first(.reg_equation_display(eq)),
+      "",
+      USE.NAMES = FALSE
+    )
+  )
 }
 
 

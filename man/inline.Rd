@@ -24,7 +24,8 @@ fit-statistic token (\code{"nobs"}, \code{"r2"}, ...) or label (\code{"n"}).}
 category shown as a row. \code{"(Missing)"} addresses the missing-value
 category by role. A group of \code{by} is selected with \code{model}. In a
 regression table, the outcome category of a multinomial row or the
-equation of a Heckman row, under the header of its term.}
+equation of a Heckman row, under the header of its term, when the
+model sits beside others.}
 
 \item{column}{A column token, or a \code{{token}} pattern. \code{NULL} (the
 default) returns the estimate-like column of the row when it is
@@ -114,7 +115,11 @@ Asked with \code{model}, whichever group it names, they are an error (class
 its row of missing values. In a regression table, it also names the
 rows under the header of a term: the outcome categories of a
 multinomial model beside other models (\code{inline(tbl, age, "Student", model = "Adjusted")}) and the two equations of a Heckman selection
-model (\code{"selection"}, \code{"outcome"}). Until spicy 0.14.0 it also
+model beside other models (\code{"selection"}, \code{"outcome"}). Alone, a
+multinomial or selection model has its categories or equations as
+column groups, which \code{model} selects by their label or position
+(\code{inline(tbl, educ, model = "Outcome")}): there, \code{level = "outcome"}
+is an error that gives that call. Until spicy 0.14.0 it also
 selected the groups of \code{\link[=table_continuous]{table_continuous()}}, \code{\link[=table_continuous_svy]{table_continuous_svy()}}
 and \code{\link[=table_continuous_lm]{table_continuous_lm()}}: that use is an error (class
 \code{spicy_defunct}) whose message gives the call to use instead.
