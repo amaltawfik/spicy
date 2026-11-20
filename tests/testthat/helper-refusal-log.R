@@ -252,12 +252,11 @@
         },
         spicy_error = function(e) conditionMessage(e)
       )
-      # The smaller model is the fixture without `x`: an REML fit, whose
-      # hierarchy needs ML fits, or a fixest fit left with its fixed
-      # effects alone. Those refuse the pair, not the token.
+      # The smaller model is the fixture without `x`: a fixest fit left
+      # with its fixed effects alone refuses the pair, not the token.
       if (
         !is.null(err) &&
-          grepl("cannot compare REML fits|fixed effects only", err)
+          grepl("fixed effects only", err, fixed = TRUE)
       ) {
         next
       }

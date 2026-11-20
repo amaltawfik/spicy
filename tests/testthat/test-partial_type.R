@@ -355,7 +355,11 @@ test_that("an aliased coefficient under Type III is an error that names the mode
     .pt_tr(list(f, lm(y ~ A * B + x, e)), show_columns = c("b", "partial_f")),
     error = function(e) conditionMessage(e)
   )
-  expect_match(err2, "model 1 (class `lm`) and model 2 (class `lm`) have an", fixed = TRUE)
+  expect_match(
+    err2,
+    "model 1 (class `lm`) and model 2 (class `lm`) have an",
+    fixed = TRUE
+  )
   # Type II is defined on the same model.
   expect_no_error(table_regression(f, show_columns = c("b", "partial_f")))
   # The same for a glm and an lmer.

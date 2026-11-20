@@ -1521,60 +1521,80 @@
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token(s) "adj_r2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
+      Received by 1:
+        "adj_r2_change": glmmTMB_reml
+      ----
+      error: spicy_invalid_input, spicy_error
+        spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token `"adj_r2_change"` in `show_fit_stats` is not computed on this route.
+        i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 6:
+      Received by 5:
         "adj_r2_change": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi
+            glmmTMB_zi
+      ----
+      error: spicy_invalid_input, spicy_error
+        spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token `"f2_change"` in `show_fit_stats` is not computed on this route.
+        i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
+      Received by 1:
+        "f2_change": glmmTMB_reml
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token(s) "f2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 6:
+      Received by 5:
         "f2_change": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi
+            glmmTMB_zi
+      ----
+      error: spicy_invalid_input, spicy_error
+        spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token `"f_change"` in `show_fit_stats` is not computed on this route.
+        i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
+      Received by 1:
+        "f_change": glmmTMB_reml
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token(s) "f_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 6:
+      Received by 5:
         "f_change": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi
+            glmmTMB_zi
+      ----
+      error: spicy_invalid_input, spicy_error
+        spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token `"r2_change"` in `show_fit_stats` is not computed on this route.
+        i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
+      Received by 1:
+        "r2_change": glmmTMB_reml
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `glmmTMB` fits through the likelihood-ratio chi-square, so token(s) "r2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 6:
+      Received by 5:
         "r2_change": glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi
+            glmmTMB_zi
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `gls` fits through the likelihood-ratio chi-square, so token(s) "adj_r2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 1:
         "adj_r2_change": gls
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `gls` fits through the likelihood-ratio chi-square, so token(s) "f2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 1:
         "f2_change": gls
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `gls` fits through the likelihood-ratio chi-square, so token(s) "f_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 1:
         "f_change": gls
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `gls` fits through the likelihood-ratio chi-square, so token(s) "r2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 1:
         "r2_change": gls
       ----
@@ -1609,28 +1629,24 @@
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `lme` fits through the likelihood-ratio chi-square, so token(s) "adj_r2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 2:
         "adj_r2_change": lme, lme_contrasts
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `lme` fits through the likelihood-ratio chi-square, so token(s) "f2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 2:
         "f2_change": lme, lme_contrasts
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `lme` fits through the likelihood-ratio chi-square, so token(s) "f_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 2:
         "f_change": lme, lme_contrasts
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `lme` fits through the likelihood-ratio chi-square, so token(s) "r2_change" in `show_fit_stats` are not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
-        i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
       Received by 2:
         "r2_change": lme, lme_contrasts
       ----

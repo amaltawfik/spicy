@@ -2676,14 +2676,17 @@ validate_class_appropriate_tokens <- function(
         ),
         # Not for a class whose hierarchy has no test at all (design-based
         # fits and clmm, refused by the nested guard of
-        # table_regression()) or a fixest IV fit, whose likelihood-ratio
-        # row stays empty: no remedy the table would refuse.
+        # table_regression()), an nlme or glmmTMB fit by REML, whose
+        # hierarchy across fixed effects is refused
+        # (check_nested_reml_pair()), or a fixest IV fit, whose
+        # likelihood-ratio row stays empty: no remedy the table would refuse.
         "i" = if (
           !any(vapply(
             eff_models,
             function(m) {
               .is_design_fit(m) ||
                 inherits(m, "clmm") ||
+                is_reml_pair_fit(m) ||
                 (inherits(m, "fixest") && .fixest_is_iv_second_stage(m))
             },
             logical(1)
