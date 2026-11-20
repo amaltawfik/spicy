@@ -732,15 +732,7 @@ as_regression_frame.survreg <- function(
 }
 
 
-# A fit whose frame carries the `concordance` row: a survival::coxph or
-# a survey::svycoxph fit, which inherits coxph. Not rms::cph, which also
-# inherits coxph: on a stratified cph, survival::concordance() and
-# (Dxy + 1) / 2 both give a C other than that of the coxph twin.
 # A survreg fit with one scale: strata() give each stratum its own.
 .survreg_single_scale <- function(fit) {
   length(fit$scale) == 1L
-}
-
-.carries_concordance <- function(m) {
-  inherits(m, "coxph") && !inherits(m, "cph")
 }

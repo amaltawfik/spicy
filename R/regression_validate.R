@@ -3521,10 +3521,11 @@ validate_class_appropriate_tokens <- function(
   # ANY-gate, like Tjur's below. rms::cph inherits coxph but is not
   # covered: neither survival::concordance() on a cph fit nor
   # (Dxy + 1) / 2 gives the C of its coxph twin when the model has strata.
+  # The registry says which models carry it (.reg_offers()).
   if (
     "concordance" %in%
       show_fit_stats &&
-      !any(vapply(eff_models, .carries_concordance, logical(1)))
+      !.reg_any_offers(eff_models, "concordance")
   ) {
     spicy_abort(
       c(

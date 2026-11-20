@@ -2068,7 +2068,7 @@ build_gee_footer_block_from_frames <- function(frames, decimal_mark = ".") {
 # Single-model output examples:
 #   coxph / svycoxph: "Concordance C = 0.60 (SE = 0.03)." (n / events
 #                 are fit-stat rows since 2026-07-09; rms::cph carries
-#                 no concordance, see `.carries_concordance()`)
+#                 no concordance, see the cph cell of .REG_FIT_STATS)
 #   survreg:    "Distribution: Weibull; scale = 0.75."
 #   flexsurv:   "Distribution: Weibull; shape = 1.33, scale = 531.05."
 #

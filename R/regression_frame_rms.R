@@ -1186,7 +1186,7 @@ as_regression_frame.Glm <- function(
       # Cox convention: n AND number of events as fit-stat rows, as for
       # coxph. No concordance, in the rows or the footer: on a stratified
       # cph, survival::concordance() and (Dxy + 1) / 2 both differ from
-      # the C of the coxph twin (`.carries_concordance()`).
+      # the C of the coxph twin (the cph cell of .REG_FIT_STATS).
       n_events = as.integer(st["Events"] %||% NA_integer_)
     )
   } else {
