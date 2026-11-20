@@ -125,8 +125,14 @@ LEAST_SQUARES_CLASSES <- c("lm", "nls")
 )
 
 # TRUE when logLik() yields a finite scalar, i.e. the fit carries a
-# likelihood an LRT can be built from.
+# likelihood an LRT can be built from. Two-stage least squares is not a
+# likelihood fit: the logLik() methods of ivreg and iv_robust come from
+# performance, so without this guard the answer depended on whether
+# performance was loaded.
 has_usable_loglik <- function(fit) {
+  if (inherits(fit, c("ivreg", "iv_robust"))) {
+    return(FALSE)
+  }
   ll <- tryCatch(
     suppressWarnings(stats::logLik(fit)),
     error = function(e) NULL
