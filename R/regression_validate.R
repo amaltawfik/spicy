@@ -2386,6 +2386,17 @@ absorbs_fixed_effects <- function(model) {
   }
 }
 
+# The classes of the fits a message is about, as it names them: "`glm`",
+# "`stanreg`", "`glm` and `negbin`". A glm-family refusal reaches
+# every fit that inherits from glm (stan_glm, glm.nb, ...): it names
+# their own class, not the parent's.
+.fit_classes_label <- function(models) {
+  .fmt_and(sprintf(
+    "`%s`",
+    unique(vapply(models, function(m) class(m)[1L], ""))
+  ))
+}
+
 validate_class_appropriate_tokens <- function(
   models,
   show_columns,
@@ -2531,9 +2542,12 @@ validate_class_appropriate_tokens <- function(
       }
       spicy_abort(
         c(
-          .token_msg(
-            "{Tokens} in `show_columns` {are} not defined for `glm` models.",
-            bad
+          sprintf(
+            .token_msg(
+              "{Tokens} in `show_columns` {are} not defined for %s models.",
+              bad
+            ),
+            .fit_classes_label(eff_models)
           ),
           analog
         ),
@@ -2572,9 +2586,12 @@ validate_class_appropriate_tokens <- function(
     if (length(bad_fit) > 0L) {
       spicy_abort(
         c(
-          .token_msg(
-            "{Tokens} in `show_fit_stats` {are} not defined for `glm` models.",
-            bad_fit
+          sprintf(
+            .token_msg(
+              "{Tokens} in `show_fit_stats` {are} not defined for %s models.",
+              bad_fit
+            ),
+            .fit_classes_label(eff_models)
           ),
           "i" = .fit_stats_remedy(
             eff_models,
