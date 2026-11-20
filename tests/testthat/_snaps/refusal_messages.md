@@ -2215,8 +2215,7 @@
       ----
       error: spicy_unsupported, spicy_error
         RMST / risk-difference columns are not available for a design-based Cox fit.
-        x Their uncertainty comes from resampling subjects to rebuild the baseline hazard, and a row bootstrap ignores the strata and clusters the survey design declares. For a contrast between clusters, that understates the standard error by roughly 1.5x-6x depending on cluster count and size (~3x on a 30 x 25 design with moderate ICC); for a contrast within clusters, or with no clustering, it is about right.
-        i The estimands themselves are not in question: the RMST and risk differences are validated against exact oracles for an unweighted Cox fit.
+        x Their standard errors come from a bootstrap of the rows, which ignores the strata and clusters of the design. For a contrast between clusters, it understates the standard error.
         i For a marginal survival curve under the design, use `survey::svykm()`; for a design-based test of a term, `survey::regTermTest(fit, ~term)`.
       Received by 8:
         show_columns = "risk_diff": svycoxph

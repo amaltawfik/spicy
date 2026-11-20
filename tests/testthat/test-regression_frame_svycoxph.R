@@ -412,23 +412,16 @@ test_that("the survival estimands are refused before any row is built", {
       class = "spicy_unsupported"
     )
     msg <- conditionMessage(err)
-    # The message names the CAUSE, not just the refusal.
-    expect_match(msg, "resampling", fixed = TRUE)
-    expect_match(msg, "strata and", fixed = TRUE)
-    # It says the estimand is not what is in question,
-    expect_match(msg, "not in question", fixed = TRUE)
+    # The message names the CAUSE, not just the refusal,
+    expect_match(msg, "bootstrap of the rows", fixed = TRUE)
+    expect_match(msg, "strata and clusters", fixed = TRUE)
+    expect_match(msg, "between clusters", fixed = TRUE)
     # and it hands over a route.
     expect_match(msg, "survey::svykm()", fixed = TRUE)
     expect_match(msg, "survey::regTermTest", fixed = TRUE)
-    # The size of the problem is a MEASURED RANGE conditional on the
-    # design and the contrast, never one figure: a between-cluster
-    # contrast is understated 1.5x-6x, a within-cluster contrast is
-    # not understated at all. A single number would be wrong on four
-    # designs out of five.
-    expect_match(msg, "1.5x-6x", fixed = TRUE)
-    expect_match(msg, "30 x 25", fixed = TRUE)
-    expect_match(msg, "within clusters", fixed = TRUE)
-    expect_match(msg, "about right", fixed = TRUE)
+    # The measured range (1.5x-6x, by design and contrast) stays in the
+    # code comment and the survey article, not in the message.
+    expect_false(grepl("1.5x", msg, fixed = TRUE))
     # A refusal carries no roadmap promise -- the survey vignette does.
     expect_false(grepl("is planned", msg, fixed = TRUE))
   }
