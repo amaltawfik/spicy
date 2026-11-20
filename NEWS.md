@@ -38,6 +38,17 @@
   computed on the atanh scale and stays within -1 and 1. The option
   `spicy.re_se_max_n` is removed: the computation no longer needs a cap.
 
+* The note of `table_regression()` names a standard-error estimator the
+  same way for every class. "classical (Fisher information)" replaces
+  "Wald asymptotic (z)" for the models fitted by likelihood, and
+  "classical (model-based)" replaces "Wald (model-based)" for `lmer()`,
+  `lme()` and `gls()`. `ols()`, `ivreg()`, `nls()`, estimatr and fixest
+  models say "classical (OLS)", "classical (2SLS)", "classical (nonlinear
+  least squares)", "heteroskedasticity-robust" and "cluster-robust", as
+  `lm()` does. A label keeps the same lower-case form alone and after
+  the name of a model, and the French note says what the English one
+  says.
+
 * `table_regression()` names a transformed outcome as the formula writes
   it, for every model class and no longer for `lm()` and `glm()` only:
   the title, the Outcome row and the `outcome` column of `tidy()` and
@@ -648,6 +659,17 @@
   survey-design model points to `survey::regTermTest()` and `anova()`.
   RMST and risk-difference columns asked of a class that has none are
   refused for the class before a horizon is asked for.
+
+* `table_regression()`: an `lm()`, `glm()` or `glm.nb()` model under
+  `vcov = "CR0"` to `"CR3"` says in the note that its p-values use
+  Satterthwaite degrees of freedom. A weighted `lm()` is labeled
+  "classical (WLS)". A clustered `lm_robust()` model and the cluster
+  bootstrap of `rq()` name their cluster variable.
+
+* `table_regression()`: in a table of several models, a sentence on
+  p-values, on the design or on intervals that holds for some models
+  only names them. Models on the same survey design give their residual
+  degrees of freedom in one sentence.
 
 * The errors of `table_regression()` write a token as it is typed
   (`"aic"`), agree in number, point to the help page of the model
