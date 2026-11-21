@@ -103,7 +103,8 @@ dispatch_regression_output <- function(
       if (length(o) == 0L && !is.null(fs) && "outcome" %in% names(fs)) {
         o <- fs$outcome[fs$model_id == m & !is.na(fs$outcome)]
       }
-      if (length(o) > 0L) o[1L] else NA_character_
+      # A table of outcomes has no one outcome: its rows name theirs.
+      if (length(unique(o)) == 1L) o[1L] else NA_character_
     },
     character(1),
     USE.NAMES = FALSE

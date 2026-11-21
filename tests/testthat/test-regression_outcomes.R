@@ -1144,6 +1144,108 @@ test_that("the t column is refused when linear models and glm mix", {
 })
 
 
+test_that("the partial tests of a factor exposure sit on the header of each block", {
+  d <- .oc_soc()
+  df <- table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, bmi),
+    exposure = employment_status,
+    show_columns = c("n", "b", "p", "partial_f", "partial_eta2"),
+    output = "data.frame"
+  )
+  hdr <- df$.row_role == "factor_header"
+  f_col <- grep("^F", names(df), value = TRUE)[1L]
+  a <- car::Anova(stats::lm(bmi ~ employment_status, data = d), type = 2)
+  expect_equal(
+    df[[f_col]][hdr][2L],
+    a[["F value"]][1L],
+    tolerance = 1e-8
+  )
+  expect_true(all(is.na(df[[f_col]][!hdr])))
+  out <- .oc_print(table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, smoking),
+    exposure = employment_status,
+    family = list(smoking = stats::binomial()),
+    show_columns = c("n", "b", "p", "partial_f", "partial_chi2")
+  ))
+  expect_match(out, "smoking:[^\n]*[(]3[)]")
+})
+
+test_that("each partial test enters its family once", {
+  # The partial F of a factor is one test per model: two outcomes, two
+  # tests, whatever the number of levels. The value repeated on the rows
+  # of the levels in the data must not count once per level.
+  d <- .oc_soc()
+  tbl <- table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, bmi),
+    exposure = employment_status,
+    show_columns = c("n", "b", "p", "partial_f")
+  )
+  td <- broom::tidy(tbl)
+  raw <- vapply(
+    c("wellbeing_score", "bmi"),
+    function(y) {
+      a <- car::Anova(
+        stats::lm(stats::reformulate("employment_status", y), data = d),
+        type = 2
+      )
+      a[["Pr(>F)"]][1L]
+    },
+    numeric(1)
+  )
+  pf <- td[td$estimate_type == "partial_f", , drop = FALSE]
+  skip(paste0(
+    "Depends on the fix of the family of term-level tests ",
+    "(apply_p_adjust_to_frame_coefs(), parallel lot): the value repeated ",
+    "on each level is adjusted once per level today."
+  ))
+  expect_equal(
+    unique(pf$p.value[pf$outcome == "wellbeing_score"]),
+    stats::p.adjust(raw, "holm")[[1L]],
+    tolerance = 1e-10
+  )
+})
+
+test_that("stacked tables of outcomes keep their own families in the note", {
+  d <- .oc_soc()
+  a <- table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, bmi, life_sat_health),
+    exposure = income_k,
+    covariates = c(age, sex)
+  )
+  b <- table_regression_outcomes(
+    d,
+    outcomes = c(smoking, dentist_12m),
+    exposure = employment_status,
+    method = "glm",
+    p_adjust = "BH"
+  )
+  s <- table_stack(a, b)
+  out <- .oc_print(s)
+  # A table of outcomes is no panel of one outcome: the panels take their
+  # number, not the name of their first outcome.
+  expect_match(out, "Panel 1:", fixed = TRUE)
+  expect_match(out, "Panel 2:", fixed = TRUE)
+  expect_true(is.na(attr(a, "outcome")))
+  note <- attr(s, "note", exact = TRUE)
+  expect_match(
+    note,
+    "Panel 1: P-values adjusted across the 3 outcomes for 3 tests (Holm method).",
+    fixed = TRUE
+  )
+  expect_match(
+    note,
+    "Panel 2: P-values adjusted across the 2 outcomes for 6 tests (Benjamini-Hochberg method).",
+    fixed = TRUE
+  )
+  # The stack keeps the header of their first column.
+  expect_match(out, "(^|\n) Outcome +│")
+})
+
+
 # ---- 10. Engines and snapshots --------------------------------------------
 
 test_that("the rich engines render the blocks", {
