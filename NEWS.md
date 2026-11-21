@@ -846,6 +846,23 @@
   previous one. `anova(m1, m2, m3)` tests each step on the residual
   variance of the largest model and gives another F.
 
+* `table_regression()`: a coefficient the model could not estimate (an
+  aliased column, a factor level without observations) has no standard
+  error, p-value or interval, and the note says that the model is
+  rank-deficient, for every class. A `coxph()` or `survreg()` model
+  showed "SE 0.00" beside the dash, and an `AER::tobit()` model stopped
+  on an error. The RMST and risk-difference columns of a Cox model with
+  such a coefficient are refused with its name, where they stopped on a
+  bootstrap error.
+
+* `table_regression()` and `table_regression_uv()`: a variable with a
+  non-syntactic name (`revenu mensuel (CHF)`) is shown without the
+  backticks R quotes it with, and a factor so named gets its header and
+  its reference row. Its levels were printed as separate rows, its
+  events/N counts were those of the whole model, and the univariable
+  screen refused it. `labels` names such a variable with or without the
+  backticks. `tidy()` and `output = "long"` keep R's coefficient names.
+
 * `table_regression()`: a note says that an `lrm()` or `ols()` model
   fitted with `penalty =` is penalized, and gives the penalty.
 
