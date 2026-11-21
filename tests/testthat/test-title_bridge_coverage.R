@@ -471,6 +471,47 @@ test_that("the univariable screen titles are bridged", {
   ))
 })
 
+test_that("the titles of a table of outcomes are bridged", {
+  withr::local_options(spicy.language = "fr")
+  d <- spicy::sochealth
+  title_of <- function(...) {
+    attr(
+      table_regression_outcomes(d, exposure = age, ...),
+      "title",
+      exact = TRUE
+    )
+  }
+  expect_identical(
+    title_of(outcomes = c(smoking, dentist_12m), method = "glm"),
+    "R\u00e9gression logistique de chaque variable d\u00e9pendante sur age"
+  )
+  expect_identical(
+    title_of(outcomes = c(wellbeing_score, bmi)),
+    "R\u00e9gression lin\u00e9aire de chaque variable d\u00e9pendante sur age"
+  )
+  # Models of several kinds: the generic title.
+  expect_identical(
+    title_of(
+      outcomes = c(wellbeing_score, smoking),
+      family = list(smoking = stats::binomial())
+    ),
+    "R\u00e9gression de chaque variable d\u00e9pendante sur age"
+  )
+  # A family no title knows (poisson renamed) keeps a French title, and
+  # its R name in English.
+  fam <- stats::poisson()
+  fam$family <- "foo"
+  expect_identical(
+    title_of(outcomes = c(life_sat_health, life_sat_work), family = fam),
+    "R\u00e9gression de chaque variable d\u00e9pendante sur age"
+  )
+  withr::local_options(spicy.language = "en")
+  expect_identical(
+    title_of(outcomes = c(life_sat_health, life_sat_work), family = fam),
+    "Foo regression of each outcome on age"
+  )
+})
+
 test_that("a univariable screen of an unknown family keeps a French title", {
   # A family no title knows: poisson renamed. English names it by its R
   # name; French falls back to the generic title, never to English.

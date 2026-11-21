@@ -4,7 +4,7 @@
       print(table_regression_outcomes(d, outcomes = c(wellbeing_score, bmi, life_sat_health), exposure = income_k,
       covariates = c(age, sex)))
     Output
-      Regression of each outcome on income_k
+      Linear regression of each outcome on income_k
       
        Variable        │  N      B        95% CI        p   
       ─────────────────┼────────────────────────────────────
@@ -20,7 +20,7 @@
       print(table_regression_outcomes(d, outcomes = c(wellbeing_score, bmi), exposure = employment_status,
       covariates = c(age, sex)))
     Output
-      Regression of each outcome on employment_status
+      Linear regression of each outcome on employment_status
       
        Variable          │  N      B        95% CI        p   
       ───────────────────┼────────────────────────────────────
@@ -43,7 +43,7 @@
       print(table_regression_outcomes(d, outcomes = c(wellbeing_score, bmi), exposure = income_k,
       show_intercept = TRUE))
     Output
-      Regression of each outcome on income_k
+      Linear regression of each outcome on income_k
       
        Variable         │  N      B        95% CI        p   
       ──────────────────┼────────────────────────────────────

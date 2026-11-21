@@ -699,6 +699,10 @@
   # The default title of `table_regression_outcomes()`. One hole: the
   # exposure label.
   title_outcomes = "Regression of each outcome on %s",
+  # The same, when every outcome has the same model. Two holes: the
+  # model, as the title of one such model names it ("Linear
+  # regression"), and the exposure label.
+  title_outcomes_model = "%s of each outcome on %s",
   # The design sentences of that table: the models are separate, and
   # (one hole, the covariates joined by `.join_and()`) what each is
   # adjusted for. Then the range of the per-outcome N.

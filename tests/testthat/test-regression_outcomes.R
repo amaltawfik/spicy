@@ -371,7 +371,7 @@ test_that("the title names the exposure, and labels the rows", {
   out <- .oc_print(tbl)
   expect_match(
     out,
-    "Regression of each outcome on Employment status",
+    "Linear regression of each outcome on Employment status",
     fixed = TRUE
   )
   expect_match(out, "Body mass index:", fixed = TRUE)
@@ -381,7 +381,30 @@ test_that("the title names the exposure, and labels the rows", {
     outcomes = c(wellbeing_score, bmi),
     exposure = income_k
   ))
-  expect_match(plain, "Regression of each outcome on income_k", fixed = TRUE)
+  expect_match(
+    plain,
+    "Linear regression of each outcome on income_k",
+    fixed = TRUE
+  )
+  # The model of one kind is named as the title of one such model names
+  # it; models of several kinds are not.
+  logit <- .oc_print(table_regression_outcomes(
+    d,
+    outcomes = c(smoking, dentist_12m),
+    exposure = income_k,
+    method = "glm"
+  ))
+  expect_match(
+    logit,
+    "^Logistic regression of each outcome on income_k"
+  )
+  mixed <- .oc_print(table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, smoking),
+    exposure = income_k,
+    family = list(smoking = stats::binomial())
+  ))
+  expect_match(mixed, "^Regression of each outcome on income_k")
   typed <- table_regression_outcomes(
     d,
     outcomes = c(wellbeing_score, bmi),
@@ -438,7 +461,7 @@ test_that("note_labels gives the exposure its label in the title", {
   )
   expect_match(
     .oc_print(tbl),
-    "Regression of each outcome on employment",
+    "Linear regression of each outcome on employment",
     fixed = TRUE
   )
   expect_warning(
@@ -464,7 +487,7 @@ test_that("the French table translates its title and its note", {
   out <- .oc_print(tbl)
   expect_match(
     out,
-    "Régression de chaque variable dépendante sur income_k",
+    "Régression linéaire de chaque variable dépendante sur income_k",
     fixed = TRUE
   )
   note <- .oc_note(tbl)

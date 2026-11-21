@@ -744,6 +744,7 @@
   note_uv_common_complete_cases = "Tous les mod\u00E8les sont estim\u00E9s sur les %d m\u00EAmes cas complets.",
   note_uv_varying_n = "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas complets. N varie selon le pr\u00E9dicteur (%d\u2013%d).",
   title_outcomes = "R\u00E9gression de chaque variable d\u00E9pendante sur %s",
+  title_outcomes_model = "%s de chaque variable d\u00E9pendante sur %s",
   note_outcomes_separate = "Un mod\u00E8le par variable d\u00E9pendante, estim\u00E9 s\u00E9par\u00E9ment.",
   note_outcomes_adjusted_for = "Ajust\u00E9 sur %s.",
   note_outcomes_varying_n = "Chaque mod\u00E8le est estim\u00E9 sur ses propres cas complets. N varie selon la variable d\u00E9pendante (%d\u2013%d).",

@@ -297,7 +297,7 @@ table_regression_outcomes <- function(
 
   title_typed <- is.character(title) && nzchar(title)
   if (is.null(title)) {
-    title <- spicy_fmt("title_outcomes", exposure_note)
+    title <- .outcomes_title(models, exposure_note)
   }
 
   .screen_call_table_regression(
@@ -435,6 +435,40 @@ table_regression_outcomes <- function(
     call = call
   )
   list(methods = rep("glm", k), families = rep(list(family), k))
+}
+
+# The default title: "Linear regression of each outcome on income_k",
+# the model named with the prefix the title of one such model takes
+# (through the title bridge, as the univariable screen), when every
+# outcome has the same; "Regression of each outcome on ..." when they mix.
+# A prefix the bridge does not carry keeps the generic title in a
+# translated table, and its own name in English.
+.outcomes_title <- function(models, exposure_note) {
+  prefix <- unique(vapply(
+    seq_along(models$methods),
+    function(k) {
+      capitalize_first(.uv_title_prefix(
+        models$methods[[k]],
+        models$families[[k]]
+      ))
+    },
+    character(1)
+  ))
+  if (length(prefix) > 1L) {
+    return(spicy_fmt("title_outcomes", exposure_note))
+  }
+  disp <- .title_prefix_display(prefix)
+  if (!is.null(disp)) {
+    return(spicy_fmt("title_outcomes_model", disp, exposure_note))
+  }
+  if (
+    is.null(.spicy_title_prefix_table(.spicy_language_option(
+      getOption("spicy.language", "en")
+    )))
+  ) {
+    return(.spicy_fmt_en("title_outcomes_model", prefix, exposure_note))
+  }
+  spicy_fmt("title_outcomes", exposure_note)
 }
 
 # The linear probability model warning and the refusal of a factor of
