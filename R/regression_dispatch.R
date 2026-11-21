@@ -103,12 +103,17 @@ dispatch_regression_output <- function(
       if (length(o) == 0L && !is.null(fs) && "outcome" %in% names(fs)) {
         o <- fs$outcome[fs$model_id == m & !is.na(fs$outcome)]
       }
-      # A table of outcomes has no one outcome: its rows name theirs.
-      if (length(unique(o)) == 1L) o[1L] else NA_character_
+      if (length(o) > 0L) o[1L] else NA_character_
     },
     character(1),
     USE.NAMES = FALSE
   )
+  # A table of outcomes (the one table whose fit statistics come one row
+  # per outcome, .reg_block_fit_stats()) has no one outcome: its rows
+  # name theirs.
+  if (!is.null(aligned$fit_stats_data)) {
+    outcome[] <- NA_character_
+  }
   list(model_ids = model_ids, outcome = outcome)
 }
 
