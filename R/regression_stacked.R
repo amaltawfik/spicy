@@ -127,9 +127,6 @@
   np <- nested_without_penalized(models, nested, arg("show_fit_stats"))
   nested_typed <- nested
   nested <- np$nested
-  if (isTRUE(nested) && length(models) >= 2L) {
-    check_nested_terms(models, call = env)
-  }
   .warn_ignored_output_args(output, names(call))
   validate_output_resources(
     output,

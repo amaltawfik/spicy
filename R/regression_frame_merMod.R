@@ -1595,6 +1595,10 @@ inform_lmertest_hint <- function() {
 # no left-hand side. `unclass()` keeps the call and drops the methods of
 # a `Formula` (mlogit, betareg), whose length() counts its parts.
 .fit_dv <- function(fit, f = stats::formula(fit)) {
+  # formula() of a brmsfit is a brmsformula, a list holding the formula.
+  if (inherits(f, "brmsformula")) {
+    f <- f$formula
+  }
   lhs <- unclass(f)
   while (is.call(lhs) && identical(lhs[[1L]], as.name("~"))) {
     if (length(lhs) < 3L) {

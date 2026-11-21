@@ -597,7 +597,10 @@ numeric.}
 for adjacent models (M2 vs M1, M3 vs M2, ...). \code{FALSE}
 (default) -- pure side-by-side display. \code{TRUE} -- requires
 identical \code{nobs} and identical response variable across all
-models. Under a non-classical \code{vcov}, each pair is tested by a
+models, listed from the smallest to the largest: each model must
+have more parameters than the previous one, or the table is
+refused, and a model that drops a term of the previous one gets a
+warning. Under a non-classical \code{vcov}, each pair is tested by a
 Wald test of the coefficients the current model adds, on that
 model's matrix, shown as "Wald F-change" or "Wald
 \eqn{\chi^2}{chi^2} (change)" by the regime of its coefficient

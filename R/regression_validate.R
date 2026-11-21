@@ -901,16 +901,23 @@ validate_nested_alignment <- function(
 }
 
 # Each model must hold the previous one, asked once the class guard of
-# table_regression() has passed. A model without more
-# parameters than the previous one leaves no change to test: refused. A
-# model that does not carry every term of the previous one may still
-# hold it under another writing (`poly(x, 2)` after `x`): warned.
-# Parameters are the likelihood's degrees of freedom (variance
-# components included), else the estimated coefficients.
-check_nested_terms <- function(models, call) {
-  # One count for both models of a pair: the likelihood's df when both
-  # have one, the coefficients otherwise.
+# table_regression() has passed (in a stacked table, by panel k for the
+# pair k - 1, k; `first` is the number of the first model of `models`). A
+# model without more parameters than the previous one leaves no change
+# to test: refused. A model that does not carry every term of the
+# previous one may still hold it under another writing (`poly(x, 2)`
+# after `x`): warned. Parameters are the likelihood's degrees of freedom
+# (variance components included) when both are whole numbers, else the
+# estimated coefficients: the effective df of a penalized fit (mgcv) can
+# shrink when a smooth is added. A pair whose count cannot be read is
+# left to the class guard.
+check_nested_terms <- function(models, call, first = 1L) {
+  # logLik() is never asked of a Bayesian fit: logLik.brmsfit() builds
+  # the draws x observations matrix.
   ll_df <- function(fit) {
+    if (inherits(fit, c("stanreg", "brmsfit"))) {
+      return(NA_real_)
+    }
     df <- tryCatch(
       attr(suppressWarnings(stats::logLik(fit)), "df"),
       error = function(e) NULL
@@ -919,14 +926,14 @@ check_nested_terms <- function(models, call) {
   }
   n_par <- function(pair) {
     df <- vapply(pair, ll_df, numeric(1))
-    if (!anyNA(df)) {
+    if (!anyNA(df) && all(df == round(df))) {
       return(df)
     }
     vapply(
       pair,
       function(fit) {
         cf <- tryCatch(nested_wald_coefs(fit), error = function(e) NULL)
-        sum(!is.na(cf))
+        if (is.numeric(cf)) sum(!is.na(cf)) else NA_real_
       },
       numeric(1)
     )
@@ -947,13 +954,13 @@ check_nested_terms <- function(models, call) {
   }
   for (k in seq_len(length(models) - 1L)) {
     p <- n_par(models[c(k, k + 1L)])
-    if (p[2L] <= p[1L]) {
+    if (!anyNA(p) && all(p > 0) && p[2L] <= p[1L]) {
       spicy_abort(
         c(
           sprintf(
             "`nested = TRUE`: Model %d has no more parameters than Model %d (%s and %s).",
-            k + 1L,
-            k,
+            k + first,
+            k + first - 1L,
             p[2L],
             p[1L]
           ),
@@ -973,9 +980,9 @@ check_nested_terms <- function(models, call) {
         c(
           sprintf(
             "`nested = TRUE`: Model %d does not contain the term(s) %s of Model %d.",
-            k + 1L,
+            k + first,
             paste0("`", lost, "`", collapse = ", "),
-            k
+            k + first - 1L
           ),
           "i" = paste0(
             "The change test assumes that each model holds the previous ",

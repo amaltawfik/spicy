@@ -2067,3 +2067,74 @@ test_that("a nested table of three models says each change compares a model with
   out <- spicy:::compute_nested_comparisons(list(m1, m2, m3))
   expect_equal(out$f_change[1L], f, tolerance = 1e-10)
 })
+
+test_that("nested = TRUE compares penalized fits by their coefficients", {
+  skip_if_not_installed("mgcv")
+  # The effective df of the smooth of x shrinks once s(z) enters: the
+  # larger model has fewer effective df (8.86 against 9.16).
+  set.seed(141)
+  n <- 100
+  x <- runif(n)
+  z <- x + rnorm(n, sd = 0.05)
+  y <- sin(6 * x) + rnorm(n, sd = 0.6)
+  d <- data.frame(x, z, y)
+  g1 <- mgcv::gam(y ~ s(x, k = 20), data = d, method = "REML")
+  g2 <- mgcv::gam(y ~ s(x, k = 20) + s(z), data = d, method = "REML")
+  expect_lt(attr(logLik(g2), "df"), attr(logLik(g1), "df"))
+  expect_no_error(table_regression(list(g1, g2), nested = TRUE))
+})
+
+test_that("nested = TRUE is silent on a pair whose parameters cannot be counted", {
+  fit <- structure(list(), class = "spicy_test_uncountable")
+  expect_null(spicy:::check_nested_terms(list(fit, fit), call = NULL))
+})
+
+test_that("nested = TRUE in a stack keeps the class refusal first", {
+  skip_if_not_installed("survey")
+  d <- .class_fixture_data()
+  des <- .svy_des(d)
+  # Model 2 has fewer coefficients than Model 1: the class answers.
+  fits <- list(
+    survey::svyglm(y ~ x + z, des),
+    survey::svyglm(y ~ x, des)
+  )
+  for (layout in c("columns", "stacked")) {
+    expect_error(
+      table_regression(fits, nested = TRUE, layout = layout),
+      "is not available for `svyglm`",
+      fixed = TRUE,
+      class = "spicy_invalid_input"
+    )
+  }
+})
+
+test_that("nested = TRUE in a stack numbers the models of the refused pair", {
+  fits <- list(
+    lm(mpg ~ wt, mtcars),
+    lm(mpg ~ wt + hp, mtcars),
+    lm(mpg ~ qsec, mtcars)
+  )
+  expect_error(
+    table_regression(fits, nested = TRUE, layout = "stacked"),
+    "Model 3 has no more parameters than Model 2",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("nested = TRUE on Bayesian fits leaves the refusal to the class", {
+  for (id in c("stanreg", "brmsfit")) {
+    fit <- .class_fixture(id)
+    expect_false(spicy:::has_usable_loglik(fit))
+    for (layout in c("columns", "stacked")) {
+      expect_error(
+        suppressWarnings(
+          table_regression(list(fit, fit), nested = TRUE, layout = layout)
+        ),
+        sprintf("is not available for `%s`", id),
+        fixed = TRUE,
+        class = "spicy_invalid_input"
+      )
+    }
+  }
+})

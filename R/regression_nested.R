@@ -130,7 +130,9 @@ LEAST_SQUARES_CLASSES <- c("lm", "nls")
 # performance, so without this guard the answer depended on whether
 # performance was loaded.
 has_usable_loglik <- function(fit) {
-  if (inherits(fit, c("ivreg", "iv_robust"))) {
+  # A Bayesian fit has no nested comparison here, and logLik.brmsfit()
+  # builds the draws x observations matrix.
+  if (inherits(fit, c("ivreg", "iv_robust", "stanreg", "brmsfit"))) {
     return(FALSE)
   }
   ll <- tryCatch(

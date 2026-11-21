@@ -1242,7 +1242,10 @@
 #'   for adjacent models (M2 vs M1, M3 vs M2, ...). `FALSE`
 #'   (default) -- pure side-by-side display. `TRUE` -- requires
 #'   identical `nobs` and identical response variable across all
-#'   models. Under a non-classical `vcov`, each pair is tested by a
+#'   models, listed from the smallest to the largest: each model must
+#'   have more parameters than the previous one, or the table is
+#'   refused, and a model that drops a term of the previous one gets a
+#'   warning. Under a non-classical `vcov`, each pair is tested by a
 #'   Wald test of the coefficients the current model adds, on that
 #'   model's matrix, shown as "Wald F-change" or "Wald
 #'   \eqn{\chi^2}{chi^2} (change)" by the regime of its coefficient
@@ -3706,8 +3709,16 @@ table_regression <- function(
       )
     }
   }
+  # Panel k of a nested stack asks it of the pair k - 1, k, once its own
+  # class guard has passed (panel 1 has passed it for model 1).
   if (isTRUE(nested) && length(models) >= 2L && is.null(panel_req)) {
     check_nested_terms(models, call = rlang::current_env())
+  } else if (!is.null(panel_req$nested$prev_fit)) {
+    check_nested_terms(
+      list(panel_req$nested$prev_fit, models[[1L]]),
+      call = rlang::current_env(),
+      first = panel_req$nested$k - 1L
+    )
   }
 
   # `exponentiate = TRUE` and `re_*` no-op detection, once every frame is

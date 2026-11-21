@@ -241,6 +241,13 @@ test_that("a robust variance carried by the fit is named, not called classical",
       lab
     )
   }
+  # Non-integer weights: survival turns to the robust variance on its own.
+  wfit <- survival::coxph(surv ~ x, d, weights = w)
+  expect_false(is.null(wfit$naive.var))
+  expect_identical(
+    nl_label(nl_note(wfit, "x", NULL, "en"), "en"),
+    "robust (Lin-Wei)"
+  )
   # The same fits without a robust variance stay classical.
   expect_identical(
     nl_label(nl_note(.class_fixture("coxph"), "coxph", NULL, "en"), "en"),
