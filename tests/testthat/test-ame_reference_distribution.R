@@ -249,3 +249,33 @@ test_that("the note says the AME test when the df differ, and only then", {
     fixed = TRUE
   )))
 })
+
+test_that("an AME whose coefficients are tested on z stays on z in a mixed frame", {
+  # No class mixes z and t rows today: the helper is held to its rule.
+  fit <- lm(mpg ~ wt + hp, data = mtcars)
+  rows <- data.frame(
+    parent_var = c("wt", "hp"),
+    is_ref = FALSE,
+    estimate = c(-3.9, -0.03),
+    std_error = c(0.6, 0.01),
+    df = Inf,
+    test_type = "z",
+    p_value = c(0.001, 0.002),
+    ci_lower = c(-5.1, -0.05),
+    ci_upper = c(-2.7, -0.01),
+    stringsAsFactors = FALSE
+  )
+  out <- spicy:::.ame_rows_min_df(
+    rows,
+    fit,
+    c("(Intercept)" = 20, wt = Inf, hp = 12),
+    0.95
+  )
+  # wt depends on a z coefficient: its row is left as it came.
+  expect_identical(out[1L, ], rows[1L, ])
+  # hp takes the t on its 12 df.
+  expect_identical(out$test_type[[2L]], "t")
+  expect_identical(out$df[[2L]], 12)
+  expect_equal(out$p_value[[2L]], 2 * stats::pt(-3, 12))
+  expect_equal(out$ci_upper[[2L]], -0.03 + stats::qt(0.975, 12) * 0.01)
+})
