@@ -85,10 +85,10 @@
 #'     `"<column>: df"` and, for the F, `"<column>: residual df"`.
 #'     `tidy()` has them in `df` and `df.residual`, and `inline()` cites
 #'     the statistic alone. The test and the partial effect sizes belong
-#'     to the whole term: under the header row of a factor (cyl:, in the
-#'     grouped `factor_layout`) they are shown once, on that row,
-#'     and the level rows leave the cell empty; in the flat layout each
-#'     level row carries them. `tidy()` and the long output keep them
+#'     to the whole term: under the header row of a factor (the grouped
+#'     `factor_layout`) they are shown once, on that row, and the level
+#'     rows leave the cell empty. In the flat layout each level row
+#'     carries them. `tidy()` and the long output keep them
 #'     on every level row, and `inline()` reads them by the variable, or
 #'     by the variable and any of its levels.
 #'   \item Variance explained per fit -- `lm` only: `"r2"`,

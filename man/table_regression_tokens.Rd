@@ -85,10 +85,10 @@ and its df as numbers, in the statistic's column, then
 \code{"<column>: df"} and, for the F, \code{"<column>: residual df"}.
 \code{tidy()} has them in \code{df} and \code{df.residual}, and \code{inline()} cites
 the statistic alone. The test and the partial effect sizes belong
-to the whole term: under the header row of a factor (cyl:, in the
-grouped \code{factor_layout}) they are shown once, on that row,
-and the level rows leave the cell empty; in the flat layout each
-level row carries them. \code{tidy()} and the long output keep them
+to the whole term: under the header row of a factor (the grouped
+\code{factor_layout}) they are shown once, on that row, and the level
+rows leave the cell empty. In the flat layout each level row
+carries them. \code{tidy()} and the long output keep them
 on every level row, and \code{inline()} reads them by the variable, or
 by the variable and any of its levels.
 \item Variance explained per fit -- \code{lm} only: \code{"r2"},
