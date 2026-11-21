@@ -53,9 +53,12 @@
 }
 
 # The console cell of a row of a single-model table.
+# A factor header is named "cyl:" in every language (French writes
+# "cyl\u00a0:").
 .pf_cell_of <- function(tbl, row, col = "F") {
   body <- structure(tbl, class = "data.frame")
-  trimws(body[[col]][trimws(body$Variable) == row])
+  lbl <- sub("[\u00A0 ]:$", ":", trimws(body$Variable))
+  trimws(body[[col]][lbl == row])
 }
 
 # car's default Pearson dispersion is computed at the final fitted means,
@@ -696,17 +699,19 @@ test_that("the F cell is 'value (q, df)', df the residual df of its own model", 
     expect_equal(rows$df.residual, rep(dfr, nrow(rows)), label = nm)
     for (tm in c("wt", "cyl")) {
       r <- .pf_term(rows, tm)
+      # The test of a factor sits on its header row ("cyl:"), once.
       expect_identical(
-        .pf_cell_of(tbl, if (tm == "cyl") "6" else tm),
+        .pf_cell_of(tbl, if (tm == "cyl") "cyl:" else tm),
         .pf_cell(r$estimate, if (tm == "cyl") 2 else 1, dfr),
         label = paste(nm, tm)
       )
     }
     # The typed view: the residual df in a column of its own, beside q.
     df_tbl <- as.data.frame(tbl)
-    at_6 <- df_tbl$variable == "cyl" & df_tbl$level %in% "6"
-    expect_equal(df_tbl[["F: df"]][at_6], 2)
-    expect_equal(df_tbl[["F: residual df"]][at_6], dfr, label = nm)
+    # The displayed table: the factor's test on its header row.
+    at_hdr <- df_tbl$variable == "cyl" & df_tbl$.row_role %in% "factor_header"
+    expect_equal(df_tbl[["F: df"]][at_hdr], 2)
+    expect_equal(df_tbl[["F: residual df"]][at_hdr], dfr, label = nm)
     meta <- as_structured(tbl)$col_meta[["F: residual df"]]
     expect_identical(meta$source_field, "df_residual")
     expect_true(meta$is_df)
@@ -742,8 +747,9 @@ test_that("the F cell is 'value (q, df)', df the residual df of its own model", 
     glm(am ~ wt + cyl, data = d, family = binomial),
     show_columns = c("b", "partial_chi2")
   )
+  # The test of a factor sits on its header row ("cyl:"), once.
   expect_match(
-    .pf_cell_of(chi, "6", "\u03C7\u00B2"),
+    .pf_cell_of(chi, "cyl:", "\u03C7\u00B2"),
     "^[0-9]+[.][0-9]{2} \\(2\\)$"
   )
   expect_true(all(is.na(.pf_rows(chi, "partial_chi2")$df.residual)))
@@ -828,8 +834,9 @@ test_that("the F cell is 'value (q, df)', df the residual df of its own model", 
   withr::local_options(spicy.language = "fr")
   fr <- table_regression(fits$gamma, show_columns = c("b", "partial_f"))
   r <- .pf_term(.pf_rows(fr), "cyl")
+  # The test of a factor sits on its header row ("cyl:"), once.
   expect_identical(
-    .pf_cell_of(fr, "6"),
+    .pf_cell_of(fr, "cyl:"),
     .pf_cell(r$estimate, 2, df.residual(fits$gamma), mark = ",")
   )
   expect_match(attr(fr, "note"), "F = statistique F partielle", fixed = TRUE)
@@ -852,8 +859,9 @@ test_that("a residual df of 1000 or more prints without a separator", {
   rows <- .pf_rows(tbl)
   f_x <- .pf_term(rows, "x")$estimate
   expect_identical(.pf_cell_of(tbl, "x"), .pf_cell(f_x, 1, dfr))
+  # The test of the factor g sits on its header row ("g:").
   expect_identical(
-    .pf_cell_of(tbl, "b"),
+    .pf_cell_of(tbl, "g:"),
     .pf_cell(.pf_term(rows, "g")$estimate, 2, dfr)
   )
   # Nor in French, whose thousands separator is a space.
@@ -879,7 +887,7 @@ test_that("a residual df of 1000 or more prints without a separator", {
 # The cell of the row labelled `row` in column `col` of an engine's data.
 .pf_engine_cell <- function(df, row, col) {
   df <- as.data.frame(df, stringsAsFactors = FALSE)
-  .pf_norm(df[[col]][.pf_norm(df[[1L]]) == row])
+  .pf_norm(df[[col]][sub(" :$", ":", .pf_norm(df[[1L]])) == row])
 }
 
 # The rows of a clipboard payload, as character vectors.
@@ -932,8 +940,9 @@ test_that("tinytable prints the term-level test in one column, as the console", 
       output = "tinytable"
     )
     expect_identical(tt@names, c("Variable", "B", head))
+    # The test of a factor sits on its header row ("cyl:"), once.
     got <- vapply(
-      c("wt", "6"),
+      c("wt", "cyl:"),
       function(r) .pf_engine_cell(tt@data, r, 3L),
       "",
       USE.NAMES = FALSE
@@ -941,7 +950,7 @@ test_that("tinytable prints the term-level test in one column, as the console", 
     expect_identical(got, cells)
     expect_identical(
       got,
-      c(.pf_cell_of(tbl, "wt", head), .pf_cell_of(tbl, "6", head))
+      c(.pf_cell_of(tbl, "wt", head), .pf_cell_of(tbl, "cyl:", head))
     )
   }
   check(fl, "partial_f", "F", c("18.08 (1, 28)", "7.29 (2, 28)"))
@@ -990,7 +999,8 @@ test_that("gt, flextable, Word and the clipboard print the same column", {
   ft <- build("flextable")
   hdr <- ft$header$dataset
   expect_identical(unname(unlist(hdr[nrow(hdr), ])), c("Variable", "B", "F"))
-  expect_identical(.pf_engine_cell(ft$body$dataset, "6", 3L), "7.29 (2, 28)")
+  # The test of a factor sits on its header row ("cyl:"), once.
+  expect_identical(.pf_engine_cell(ft$body$dataset, "cyl:", 3L), "7.29 (2, 28)")
   skip_if_not_installed("officer")
   path <- tempfile(fileext = ".docx")
   build("word", word_path = path)
@@ -1027,12 +1037,13 @@ test_that("Excel keeps the statistic a number, its df in the number format", {
     tolerance = 1e-12
   )
   expect_identical(x$numfmt(paste0("C", wt)), "0.00\" (1, 28)\"")
-  expect_identical(x$numfmt(paste0("C", x$row("6"))), "0.00\" (2, 28)\"")
+  # The test of a factor sits on its header row ("cyl:"), once.
+  expect_identical(x$numfmt(paste0("C", x$row("cyl:"))), "0.00\" (2, 28)\"")
   expect_true(x$type(paste0("C", wt)) %in% c(NA, ""))
   # The chi-square: its one df.
   y <- .pf_xlsx(fb, show_columns = c("b", "partial_chi2"))
   expect_identical(ncol(y$sheet), 3L)
-  expect_identical(y$numfmt(paste0("C", y$row("6"))), "0.00\" (2)\"")
+  expect_identical(y$numfmt(paste0("C", y$row("cyl:"))), "0.00\" (2)\"")
   # Under a decimal comma the statistic stays a number, which Excel shows
   # with the reader's separator; its df keep their comma.
   z <- .pf_xlsx(fl, show_columns = c("b", "partial_f"), decimal_mark = ",")
@@ -1160,7 +1171,8 @@ test_that("the test column stays aligned on its decimal mark, digits 2 or 0", {
       digits = es,
       effect_size_digits = es
     )
-    cell <- .pf_cell_of(do.call(table_regression, args), "6")
+    # The test of a factor sits on its header row ("cyl:"), once.
+    cell <- .pf_cell_of(do.call(table_regression, args), "cyl:")
     expect_identical(cell, if (es == 2L) "7.29 (2, 28)" else "7 (2, 28)")
     tt <- do.call(table_regression, c(args, output = "tinytable"))
     g <- do.call(table_regression, c(args, output = "gt"))
@@ -1199,8 +1211,9 @@ test_that("the term-level tests follow `digits`, as the change rows do", {
   lm2 <- lm(mpg ~ wt + cyl, data = d)
   bn1 <- glm(am ~ wt, data = d, family = binomial)
   bn2 <- glm(am ~ wt + cyl, data = d, family = binomial)
-  # Every "value (df)" cell of the printed table: the four per-term
-  # tests of the two models and the change row of the footer.
+  # Every "value (df)" cell of the printed table: the three per-term
+  # tests of the two models (the factor's once, on its header row) and
+  # the change row of the footer.
   decimals <- function(tbl) {
     out <- capture.output(print(tbl))
     hit <- unlist(regmatches(
@@ -1217,7 +1230,7 @@ test_that("the term-level tests follow `digits`, as the change rows do", {
       show_columns = c("b", "partial_f"),
       digits = dg
     )
-    expect_length(decimals(tf), 5L)
+    expect_length(decimals(tf), 4L)
     expect_identical(unique(decimals(tf)), dg)
     tc <- suppressWarnings(table_regression(
       list(bn1, bn2),
@@ -1225,7 +1238,7 @@ test_that("the term-level tests follow `digits`, as the change rows do", {
       show_columns = c("b", "partial_chi2"),
       digits = dg
     ))
-    expect_length(decimals(tc), 5L)
+    expect_length(decimals(tc), 4L)
     expect_identical(unique(decimals(tc)), dg)
   }
   # The typed contract (Excel number format, inline()) reads the same
@@ -1243,4 +1256,140 @@ test_that("the term-level tests follow `digits`, as the change rows do", {
   expect_identical(cm[[which(tok %in% "partial_eta2")]]$precision, 1L)
   expect_identical(inline(t3, wt, column = "partial_f"), "18.080")
   expect_identical(inline(t3, wt, column = "partial_eta2"), "0.4")
+})
+
+# ---- Term-level values on the factor header (lot-bench-fixes-3, C) -------
+
+.tl_data <- function() {
+  d <- mtcars
+  d$cyl <- factor(d$cyl)
+  d
+}
+
+.tl_line <- function(out, pattern) {
+  grep(pattern, out, value = TRUE)[1L]
+}
+
+test_that("the term-level test of a factor sits on its header row", {
+  d <- .tl_data()
+  fit <- lm(mpg ~ wt + cyl, d)
+  out <- capture.output(print(table_regression(
+    fit,
+    show_columns = c("b", "partial_f", "partial_eta2", "partial_eta2_ci")
+  )))
+  expect_match(.tl_line(out, "^ cyl:"), "7.29 (2, 28)", fixed = TRUE)
+  expect_match(.tl_line(out, "^ cyl:"), "[0.02, 0.50]", fixed = TRUE)
+  expect_no_match(.tl_line(out, "^   6 "), "7.29", fixed = TRUE)
+  expect_no_match(.tl_line(out, "^   8 "), "0.34", fixed = TRUE)
+  # A one-row term keeps its value on its row.
+  expect_match(.tl_line(out, "^ wt "), "18.08 (1, 28)", fixed = TRUE)
+})
+
+test_that("the flat layout keeps the term-level test on every level row", {
+  d <- .tl_data()
+  out <- capture.output(print(table_regression(
+    lm(mpg ~ wt + cyl, d),
+    show_columns = c("b", "partial_f"),
+    factor_layout = "flat"
+  )))
+  expect_match(.tl_line(out, "^ cyl6 "), "7.29 (2, 28)", fixed = TRUE)
+  expect_match(.tl_line(out, "^ cyl8 "), "7.29 (2, 28)", fixed = TRUE)
+})
+
+test_that("the term-level chi-square of a glm sits on the header, side by side and stacked", {
+  d <- .tl_data()
+  fits <- list(
+    glm(am ~ wt + cyl, binomial, d),
+    glm(am ~ wt + cyl + hp, binomial, d)
+  )
+  for (layout in c("columns", "stacked")) {
+    out <- capture.output(print(suppressWarnings(table_regression(
+      fits,
+      show_columns = c("b", "partial_chi2"),
+      layout = layout
+    ))))
+    hdr <- grep("^ cyl:", out, value = TRUE)
+    lvl <- grep("^   [68] ", out, value = TRUE)
+    expect_true(all(grepl("(2)", hdr, fixed = TRUE)), info = layout)
+    expect_false(any(grepl("(2)", lvl, fixed = TRUE)), info = layout)
+  }
+})
+
+test_that("the data outputs keep the term-level values on the level rows", {
+  d <- .tl_data()
+  fit <- lm(mpg ~ wt + cyl, d)
+  long <- table_regression(
+    fit,
+    show_columns = c("b", "partial_f"),
+    output = "long"
+  )
+  pf <- long[long$estimate_type == "partial_f", ]
+  expect_identical(pf$term, c("wt", "cyl6", "cyl8"))
+  expect_equal(pf$estimate[2L], pf$estimate[3L])
+  # output = "data.frame" is the displayed table: it follows the display.
+  df <- table_regression(
+    fit,
+    show_columns = c("b", "partial_f"),
+    output = "data.frame"
+  )
+  expect_equal(df$F[df$.row_role == "factor_header"], pf$estimate[2L])
+  expect_true(all(is.na(df$F[df$.row_role %in% c("level", "reference")])))
+})
+
+test_that("the rich engines put the term-level test on the header row", {
+  skip_if_not_installed("tinytable")
+  d <- .tl_data()
+  tt <- table_regression(
+    lm(mpg ~ wt + cyl, d),
+    show_columns = c("b", "partial_f"),
+    output = "tinytable"
+  )
+  dat <- tt@data
+  hdr <- which(trimws(dat[[1L]]) == "cyl:")
+  expect_match(dat[[3L]][hdr], "7.29", fixed = TRUE)
+  expect_false(any(grepl("7.29", dat[[3L]][hdr + 1:3], fixed = TRUE)))
+})
+
+test_that("inline() still cites a term-level test by variable and by level", {
+  d <- .tl_data()
+  tab <- table_regression(
+    lm(mpg ~ wt + cyl, d),
+    show_columns = c("b", "partial_f")
+  )
+  # The value sits on the header row; a level still reaches it.
+  expect_identical(
+    format(inline(tab, "cyl", level = "6", column = "partial_f")),
+    "7.29"
+  )
+  expect_identical(
+    format(inline(tab, "cyl", level = "8", column = "partial_f")),
+    "7.29"
+  )
+  expect_identical(format(inline(tab, "cyl", column = "partial_f")), "7.29")
+  expect_identical(
+    format(inline(tab, "cyl", level = "6", column = "b")),
+    "-4.26"
+  )
+})
+
+test_that("the screen shows the N and R-squared of a factor on its header", {
+  d <- .tl_data()
+  out <- capture.output(print(table_regression_uv(
+    d,
+    outcome = "mpg",
+    predictors = c("wt", "cyl"),
+    show_columns = c("n", "b", "p", "r2")
+  )))
+  expect_match(.tl_line(out, "^ cyl:"), "32", fixed = TRUE)
+  expect_match(.tl_line(out, "^ cyl:"), "0.73", fixed = TRUE)
+  expect_no_match(.tl_line(out, "^   6 "), "0.73", fixed = TRUE)
+  expect_match(.tl_line(out, "^ wt "), "0.75", fixed = TRUE)
+  out_mv <- capture.output(print(table_regression_uv(
+    d,
+    outcome = "mpg",
+    predictors = c("wt", "cyl"),
+    multivariable = TRUE
+  )))
+  expect_match(.tl_line(out_mv, "^ cyl:"), "32", fixed = TRUE)
+  expect_false(grepl("^   6 +32", .tl_line(out_mv, "^   6 ")))
 })

@@ -30,7 +30,8 @@
 #' # Sample sizes
 #' By default each univariable model is fit on its **own complete
 #' cases**, so N varies across predictors -- that is what the `N`
-#' column discloses (shown on the first row of each block), and a
+#' column discloses (shown on the predictor's row, or once on the header
+#' row of a factor), and a
 #' table note states it whenever the Ns differ. The multivariable
 #' model is fit on the complete cases of **all** its variables (its
 #' `n` appears in the fit-statistics rows). Pass
@@ -41,7 +42,7 @@
 #' `show_columns = c("n", "b", "ci", "p", "r2")` adds an
 #' \eqn{R^2}{R^2} column to the screen (`method = "lm"`): each
 #' predictor block reports its **own** model's \eqn{R^2}{R^2}, on the
-#' first row of the block like `N`. It answers what a coefficient and
+#' row that carries `N`. It answers what a coefficient and
 #' its interval cannot -- how much of the outcome the predictor
 #' accounts for -- and often shows that a firmly established
 #' association still explains a small share of the variance. Add

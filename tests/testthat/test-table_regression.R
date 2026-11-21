@@ -3532,12 +3532,13 @@ test_that("eta2 and omega2 CI cells are identical; reference row stays blank", {
   # Single Steiger noncentral-F interval shared by both estimands
   # (MBESS convention): the rendered cells are identical row by row.
   expect_identical(df[[eta_ci_col]], df[[om_ci_col]])
-  # The k-1 non-reference dummies of A broadcast one joint value.
+  # The joint value of A belongs to the whole term: it sits once on the
+  # header row "A:", and its k-1 dummies leave the cell empty.
   eta_col <- setdiff(grep("η²", names(df)), eta_ci_col)
   rows_b <- which(trimws(df$Variable) == "b")
   rows_c <- which(trimws(df$Variable) == "c")
-  expect_identical(df[[eta_col]][rows_b], df[[eta_col]][rows_c])
-  expect_match(df[[eta_col]][rows_b], "[0-9]")
+  expect_identical(trimws(df[[eta_col]][c(rows_b, rows_c)]), c("", ""))
+  expect_match(df[[eta_col]][trimws(df$Variable) == "A:"], "[0-9]")
   # Reference rows leave every effect-size cell blank (the B cell
   # carries the reference dash).
   ref_rows <- grep("(ref.)", df$Variable, fixed = TRUE)

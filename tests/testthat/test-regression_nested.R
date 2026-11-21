@@ -1866,9 +1866,10 @@ test_that("change df: the partial F cell keeps its integer df", {
   a <- anova(lm(mpg ~ wt, data = d), fit)
   tbl <- table_regression(fit, show_columns = c("b", "partial_f"))
   body <- structure(tbl, class = "data.frame")
-  cells <- trimws(body$F[trimws(body$Variable) %in% c("6", "8")])
-  expect_identical(cells, rep(.cd_f(a$F[2L], a$Df[2L], a$Res.Df[2L]), 2L))
-  expect_identical(cells[[1L]], "7.29 (2, 28)")
+  # The factor's test sits once on its header row, which the term owns.
+  cells <- trimws(body$F[trimws(body$Variable) == "cyl:"])
+  expect_identical(cells, .cd_f(a$F[2L], a$Df[2L], a$Res.Df[2L]))
+  expect_identical(cells, "7.29 (2, 28)")
 })
 
 test_that("change df: Excel keeps the statistic a number, the df in its format", {

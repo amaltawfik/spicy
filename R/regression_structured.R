@@ -682,6 +682,9 @@ build_structured_body <- function(
     stats::setNames(character(0), character(0))
 
   current_factor <- NA_character_
+  # The factor blocks whose term-level cells their header carries (the
+  # console's rule, .reg_lift_term_cells()).
+  term_blocks <- list()
   for (i in seq_len(nrow(term_meta))) {
     rt <- term_meta[i, , drop = FALSE]
 
@@ -699,12 +702,19 @@ build_structured_body <- function(
       )
       hdr <- empty_row
       hdr$Variable <- header_label
-      push_row(
+      h <- push_row(
         hdr,
         variable = rt$factor_term,
         level = NA_character_,
         role = "factor_header"
       )
+      if (!.reg_is_block(rt$factor_term)) {
+        term_blocks[[length(term_blocks) + 1L]] <- list(
+          header = h,
+          rows = integer(0),
+          levels = integer(0)
+        )
+      }
       current_factor <- rt$factor_term
     }
     new_factor_row <- !is.na(rt$factor_term) &&
@@ -751,7 +761,7 @@ build_structured_body <- function(
     # A multinomial row under the header of its term is a level of it:
     # its outcome category.
     no_level <- is.na(rt$factor_level) || !nzchar(rt$factor_level)
-    push_row(
+    r <- push_row(
       new_row,
       variable = if (is.na(rt$factor_term)) rt$term else rt$factor_term,
       level = if (no_level && !is.na(rt$outcome_prefix)) {
@@ -781,6 +791,19 @@ build_structured_body <- function(
         0L
       }
     )
+    nb <- length(term_blocks)
+    if (
+      nb > 0L &&
+        isTRUE(group_factor_levels) &&
+        !is.na(rt$factor_term) &&
+        !.reg_is_block(rt$factor_term) &&
+        identical(rt$factor_term, current_factor)
+    ) {
+      term_blocks[[nb]]$rows <- c(term_blocks[[nb]]$rows, r)
+      if (!isTRUE(rt$is_reference)) {
+        term_blocks[[nb]]$levels <- c(term_blocks[[nb]]$levels, r)
+      }
+    }
   }
 
   # --- Fit-stat rows ---
@@ -849,6 +872,40 @@ build_structured_body <- function(
     body_df <- do.call(rbind, rows)
     rownames(body_df) <- NULL
   }
+  # The term-level cells of a factor on its header row, with their
+  # display text, star and status.
+  lift_cols <- struct_col_names[vapply(
+    struct_col_names,
+    function(nm) isTRUE(col_meta[[nm]]$token %in% .REG_TERM_LEVEL_TOKENS),
+    logical(1)
+  )]
+  side <- c("display_by_row", "stars_by_row", "status_by_row")
+  body_df <- .reg_lift_term_cells(
+    body_df,
+    term_blocks,
+    lift_cols,
+    is_empty = is.na,
+    move = function(from, to, cn) {
+      for (s in side) {
+        tab <- get(s)
+        src <- tab[[as.character(from)]]
+        if (cn %in% names(src)) {
+          tab[[as.character(to)]][cn] <- src[cn]
+          assign(s, tab, inherits = TRUE)
+        }
+      }
+    },
+    clear = function(r, cn) {
+      for (s in side) {
+        tab <- get(s)
+        key <- as.character(r)
+        if (cn %in% names(tab[[key]])) {
+          tab[[key]] <- tab[[key]][setdiff(names(tab[[key]]), cn)]
+          assign(s, tab, inherits = TRUE)
+        }
+      }
+    }
+  )
   # ---- Row identity columns (v3) ---------------------------------------
   # Appended AFTER the value columns: `body[[1L]]` stays `Variable` and
   # every column index already published (`spanners`, `ci_pairs`) keeps

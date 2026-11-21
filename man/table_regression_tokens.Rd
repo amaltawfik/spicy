@@ -84,11 +84,18 @@ number with its df in the number format (\verb{0.00" (2, 28)"}).
 and its df as numbers, in the statistic's column, then
 \code{"<column>: df"} and, for the F, \code{"<column>: residual df"}.
 \code{tidy()} has them in \code{df} and \code{df.residual}, and \code{inline()} cites
-the statistic alone.
+the statistic alone. The test and the partial effect sizes belong
+to the whole term: under the header of a factor (\code{"cyl:"}, the
+grouped \code{factor_layout}) they are shown once, on the header row,
+and the level rows leave the cell empty; in the flat layout each
+level row carries them. \code{tidy()} and \code{output = "long"} keep them
+on every level row, and \code{inline()} reads them by the variable, or
+by the variable and any of its levels.
 \item Variance explained per fit -- \code{lm} only: \code{"r2"},
 \code{"adj_r2"}. Like \code{"n"}, these are \emph{per-fit} columns: they are
 populated by \code{\link[=table_regression_uv]{table_regression_uv()}} screens, where each
-predictor block is its own model and the \eqn{R^2}{R^2}
+predictor block is its own model (its value on the predictor's
+row, or on the header row of a factor) and the \eqn{R^2}{R^2}
 answers "how much of the outcome does this predictor explain
 on its own". A model whose \eqn{R^2}{R^2} is a single
 model-level number drops the column and reports it in the

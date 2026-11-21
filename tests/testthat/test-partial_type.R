@@ -819,15 +819,18 @@ test_that("the Type III cells and note reach the rich outputs, in English and Fr
     }
     console <- .pt_tr(f, show_columns = sc)
     body <- structure(console, class = "data.frame")
-    want <- cell(body[["F"]][trimws(body$Variable) == "a2"])
+    # The test of the factor A sits on its header row ("A:", "A :" in
+    # French), once.
+    hdr <- if (en) "A:" else "A :"
+    want <- cell(body[["F"]][cell(body$Variable) == hdr])
     expect_identical(want, if (en) "5.72 (2, 83)" else "5,72 (2, 83)")
     skip_if_not_installed("tinytable")
     tt <- .pt_tr(f, show_columns = sc, output = "tinytable")
-    expect_identical(row_cell(tt@data, "a2"), want)
+    expect_identical(row_cell(tt@data, hdr), want)
     expect_match(unlist(tt@notes), note, fixed = TRUE)
     skip_if_not_installed("gt")
     g <- .pt_tr(f, show_columns = sc, output = "gt")
-    expect_identical(row_cell(g[["_data"]], "a2"), want)
+    expect_identical(row_cell(g[["_data"]], hdr), want)
     expect_match(
       gsub("\\", "", unlist(g[["_source_notes"]]), fixed = TRUE),
       note,
@@ -835,7 +838,7 @@ test_that("the Type III cells and note reach the rich outputs, in English and Fr
     )
     skip_if_not_installed("flextable")
     ft <- .pt_tr(f, show_columns = sc, output = "flextable")
-    expect_identical(row_cell(ft$body$dataset, "a2"), want)
+    expect_identical(row_cell(ft$body$dataset, hdr), want)
     foot <- unlist(lapply(ft$footer$content$data, function(p) {
       paste(p$txt, collapse = "")
     }))
@@ -847,7 +850,7 @@ test_that("the Type III cells and note reach the rich outputs, in English and Fr
     strings <- cell(unlist(sheet))
     expect_true(any(grepl(note, strings, fixed = TRUE)))
     # The cell holds the Type III F as a number.
-    xa2 <- sheet[which(cell(sheet[[1L]]) == "a2"), 3L]
+    xa2 <- sheet[which(cell(sheet[[1L]]) == hdr), 3L]
     expect_equal(round(as.numeric(xa2), 2), 5.72)
   }
   check(TRUE)

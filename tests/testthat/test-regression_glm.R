@@ -3307,10 +3307,11 @@ test_that("partial_chi2 renders as 'value (df)' and is refused for lm", {
     mpg_cell,
     sprintf("%.2f (%d)", dr["mpg", "LRT"], as.integer(dr["mpg", "Df"]))
   )
-  # Factor term: k-1 df shared across its dummies
-  lvl_cells <- trimws(chi_col[trimws(d$Variable) %in% c("6", "8")])
+  # Factor term: k-1 df, shown once on the factor's header row (the test
+  # belongs to the whole term).
+  lvl_cells <- trimws(chi_col[trimws(d$Variable) == "factor(cyl):"])
   expect_identical(
-    unique(lvl_cells),
+    lvl_cells,
     sprintf(
       "%.2f (%d)",
       dr["factor(cyl)", "LRT"],

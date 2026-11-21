@@ -329,10 +329,36 @@ inline <- function(
   }
 
   row <- .inline_resolve_row(s, formatted, rows, var_chr, level, column, cols)
+  if (inherits(x, "spicy_regression_table") && !is.null(level)) {
+    row <- .inline_term_level_row(s, formatted, rows, row, column, cols)
+  }
   if (grepl("{", column, fixed = TRUE)) {
     return(.inline_pattern(s, formatted, row, column, cols))
   }
   .inline_cell(s, formatted, row, column, cols)
+}
+
+# A regression table shows a term-level value (a term's test, its partial
+# effect size, the N of a univariable model) once, on the header of the
+# factor (.REG_TERM_LEVEL_TOKENS): asked of a level, it is read there.
+.inline_term_level_row <- function(s, formatted, rows, row, column, cols) {
+  tokens <- .inline_requested_tokens(column)
+  if (
+    length(tokens) == 0L ||
+      # The df tokens of a test ("partial_f_df_num") are its own.
+      !all(sub("_df(_num|_den)?$", "", tokens) %in% .REG_TERM_LEVEL_TOKENS) ||
+      length(.inline_rows_carrying(s, formatted, row, tokens, cols)) > 0L
+  ) {
+    return(row)
+  }
+  hdr <- rows[s$body$.row_role[rows] %in% "factor_header"]
+  if (
+    length(hdr) == 1L &&
+      length(.inline_rows_carrying(s, formatted, hdr, tokens, cols)) > 0L
+  ) {
+    return(hdr)
+  }
+  row
 }
 
 # The variable argument as a string: a bare name is captured, a string

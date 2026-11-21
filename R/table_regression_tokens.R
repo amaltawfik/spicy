@@ -84,11 +84,18 @@
 #'     and its df as numbers, in the statistic's column, then
 #'     `"<column>: df"` and, for the F, `"<column>: residual df"`.
 #'     `tidy()` has them in `df` and `df.residual`, and `inline()` cites
-#'     the statistic alone.
+#'     the statistic alone. The test and the partial effect sizes belong
+#'     to the whole term: under the header of a factor (`"cyl:"`, the
+#'     grouped `factor_layout`) they are shown once, on the header row,
+#'     and the level rows leave the cell empty; in the flat layout each
+#'     level row carries them. `tidy()` and `output = "long"` keep them
+#'     on every level row, and `inline()` reads them by the variable, or
+#'     by the variable and any of its levels.
 #'   \item Variance explained per fit -- `lm` only: `"r2"`,
 #'     `"adj_r2"`. Like `"n"`, these are *per-fit* columns: they are
 #'     populated by [table_regression_uv()] screens, where each
-#'     predictor block is its own model and the \eqn{R^2}{R^2}
+#'     predictor block is its own model (its value on the predictor's
+#'     row, or on the header row of a factor) and the \eqn{R^2}{R^2}
 #'     answers "how much of the outcome does this predictor explain
 #'     on its own". A model whose \eqn{R^2}{R^2} is a single
 #'     model-level number drops the column and reports it in the

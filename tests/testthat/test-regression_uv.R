@@ -368,12 +368,13 @@ test_that("the R-squared column is one value per block, blank elsewhere", {
   r2_col <- grep("(^|: )R²$", names(body), value = TRUE)
   expect_length(r2_col, 1L)
   cells <- trimws(body[[r2_col]], whitespace = "[\\h\\v]")
-  # age row + Male row carry a value; the "sex:" header row is blank and
-  # the reference row keeps the en-dash of an absent estimate.
+  # The age row and the "sex:" header row carry a value: the R-squared of
+  # a factor's own model belongs to the whole factor, so it sits on its
+  # header row, once.
   expect_identical(sum(nzchar(cells) & cells != "–"), 2L)
-  # Blank, never an en-dash, where the value simply belongs to another
-  # row of the same fit (the N convention).
-  expect_identical(cells[body$Variable == "sex:"], "")
+  expect_true(nzchar(cells[body$Variable == "sex:"]))
+  # Blank, never an en-dash, on the level rows (the N convention).
+  expect_identical(cells[trimws(body$Variable) == "Male"], "")
 })
 
 

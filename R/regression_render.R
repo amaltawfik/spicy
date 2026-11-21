@@ -303,6 +303,9 @@ render_regression_table <- function(
   # never on a polynomial-trend row (.L / .Q / .C / ^k) which has
   # no per-level reference semantics.
   annotation_lifted_for <- character(0)
+  # The rows of each factor under its header, whose term-level cells the
+  # header carries (.reg_term_level_blocks()).
+  term_blocks <- list()
   for (i in seq_len(nrow(term_meta))) {
     rt <- term_meta[i, , drop = FALSE]
     # Insert factor header row at the start of each factor group
@@ -329,6 +332,13 @@ render_regression_table <- function(
         reference_style = reference_style,
         ref_level = ref_lvl
       )
+      if (!.reg_is_block(rt$factor_term)) {
+        term_blocks[[length(term_blocks) + 1L]] <- list(
+          header = length(rows),
+          rows = integer(0),
+          levels = integer(0)
+        )
+      }
       current_factor <- rt$factor_term
     }
     if (is.na(rt$factor_term)) {
@@ -390,6 +400,19 @@ render_regression_table <- function(
       }
     }
     rows[[length(rows) + 1L]] <- new_row
+    nb <- length(term_blocks)
+    if (
+      nb > 0L &&
+        isTRUE(group_factor_levels) &&
+        !is.na(rt$factor_term) &&
+        !.reg_is_block(rt$factor_term) &&
+        identical(rt$factor_term, current_factor)
+    ) {
+      term_blocks[[nb]]$rows <- c(term_blocks[[nb]]$rows, length(rows))
+      if (!isTRUE(rt$is_reference)) {
+        term_blocks[[nb]]$levels <- c(term_blocks[[nb]]$levels, length(rows))
+      }
+    }
   }
 
   body <- if (length(rows)) {
@@ -404,6 +427,13 @@ render_regression_table <- function(
       )
     )
   }
+
+  body <- .reg_lift_term_cells(
+    body,
+    term_blocks,
+    .reg_term_level_cols(col_spec),
+    is_empty = function(v) is.na(v) | !nzchar(trimws(v))
+  )
 
   # Prepend outcome row when applicable (Q11b \u2013 multi-DV display).
   # The row prints the explicit `outcome_labels` only.
@@ -796,8 +826,9 @@ build_column_spec <- function(
   ci_hdr <- lab_fmt("header_ci_spanner", ci_pct, lab(ci_label_key))
   base <- list(
     # B-coefficient family \u2013 atomic, one cell = one component.
-    # Per-row N: the fit sample size, shown on the first row of a
-    # predictor block by univariable-screening frames. Models without
+    # Per-row N: the fit sample size of each univariable model, on its
+    # predictor's row or the header of its factor
+    # (.reg_lift_term_cells()). Models without
     # per-row N data (n_obs all NA) drop the column for their group
     # (models_with_n): their single n is a fit-stat row instead.
     n = list(
@@ -2714,6 +2745,62 @@ format_fixed <- function(x, digits, decimal_mark = ".") {
 .reg_ref_level_label <- function(factor_term, level, labels) {
   key <- paste0(factor_term, level)
   if (!is.null(labels) && key %in% names(labels)) labels[[key]] else level
+}
+
+# The columns whose value belongs to a term as a whole, not to one of its
+# rows: the term-level tests and partial effect sizes of
+# table_regression(), and the N and R-squared of each univariable model of
+# table_regression_uv(). Under the header of a factor ("cyl:") they are
+# shown once, on the header, and the level rows leave the cell empty; a
+# term of one row, or the flat layout, keeps them on its row. Display
+# only: tidy(), glance() and output = "long" keep them on every row.
+.REG_TERM_LEVEL_TOKENS <- c(.PARTIAL_ES_TOKENS, "n", "r2", "adj_r2")
+
+.reg_term_level_cols <- function(col_spec) {
+  tk <- vapply(col_spec, function(cs) cs$token %||% NA_character_, "")
+  vapply(col_spec, `[[`, character(1), "col_name")[
+    tk %in% .REG_TERM_LEVEL_TOKENS
+  ]
+}
+
+# Moves the term-level cells of each block onto its header row: the first
+# filled cell of a level row (they all carry the same value, or the first
+# alone, as N does), then empties the cells of every row of the block.
+# `blocks`: list(header, rows, levels) of body row indices. Shared by
+# the console body (strings) and the structured body (numbers, with the
+# per-cell display, star and status side tables of each row moved along:
+# `move(from, to, col)` and `clear(row, col)`).
+.reg_lift_term_cells <- function(
+  body,
+  blocks,
+  cols,
+  is_empty,
+  move = NULL,
+  clear = NULL
+) {
+  if (length(blocks) == 0L || length(cols) == 0L) {
+    return(body)
+  }
+  for (b in blocks) {
+    for (cn in cols) {
+      v <- body[[cn]]
+      src <- b$levels[!is_empty(v[b$levels])]
+      if (length(src) == 0L) {
+        next
+      }
+      body[[cn]][b$header] <- v[src[1L]]
+      if (!is.null(move)) {
+        move(src[1L], b$header, cn)
+      }
+      body[[cn]][b$rows] <- if (is.character(v)) "" else NA
+      if (!is.null(clear)) {
+        for (r in b$rows) {
+          clear(r, cn)
+        }
+      }
+    }
+  }
+  body
 }
 
 build_factor_header_row <- function(
