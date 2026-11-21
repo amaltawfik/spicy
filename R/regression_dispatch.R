@@ -231,7 +231,8 @@ output_long <- function(aligned, note = NULL) {
   body,
   ci_spanners,
   spanners = NULL,
-  col_meta = NULL
+  col_meta = NULL,
+  stub = spicy_str("header_variable")
 ) {
   n <- ncol(body)
   # Prefer `col_meta$display_label` per column when available: it
@@ -244,7 +245,7 @@ output_long <- function(aligned, note = NULL) {
     vapply(
       names(body),
       function(nm) {
-        .lookup_display_label(nm, col_meta)
+        .lookup_display_label(nm, col_meta, stub)
       },
       character(1)
     )
@@ -275,7 +276,11 @@ output_long <- function(aligned, note = NULL) {
 # `col_meta` but merged into one `"95% CI"` / `"95% CI.2"` cell in
 # the char body — the direct lookup misses, so we fall back to the
 # `: LL` variant which carries the same `display_label` ("95% CI").
-.lookup_display_label <- function(nm, col_meta) {
+.lookup_display_label <- function(
+  nm,
+  col_meta,
+  stub = spicy_str("header_variable")
+) {
   m <- col_meta[[nm]]
   if (!is.null(m)) {
     return(m$display_label %||% nm)
@@ -290,7 +295,7 @@ output_long <- function(aligned, note = NULL) {
   # the console, the Excel sheet and the clipboard would each print
   # the frozen key while every other engine printed the label.
   if (identical(nm, .REG_KEY_VARIABLE)) {
-    return(spicy_str("header_variable"))
+    return(stub)
   }
   nm
 }
@@ -493,7 +498,7 @@ output_tinytable <- function(rendered) {
     # the registry. Both callers below reach it -- the no-spanner
     # branch as a column label, the spanner branch as a 1-wide group.
     if (j == 1L) {
-      return(spicy_str("header_variable"))
+      return(.reg_stub_header(struct))
     }
     # Look up `col_meta` by the ORIGINAL prefixed col name (e.g.
     # "Step 1: p.2") because `col_meta` is keyed on the structured
@@ -950,7 +955,7 @@ output_gt <- function(rendered) {
     # `display_label`.
     lbl <- struct$col_meta[[orig_names[j]]]$display_label
     bare <- if (j == 1L) {
-      spicy_str("header_variable")
+      .reg_stub_header(struct)
     } else if (identical(lbl, "")) {
       # A column a stacked table leaves unlabeled at the top: an empty
       # label would print the column key.
@@ -1821,7 +1826,7 @@ output_flextable <- function(rendered) {
   display_labels[[orig_names[1L]]] <- if (has_ci_spanner) {
     ""
   } else {
-    spicy_str("header_variable")
+    .reg_stub_header(struct)
   }
   for (j in seq_len(n_cols)) {
     if (j == 1L) {
@@ -1885,7 +1890,7 @@ output_flextable <- function(rendered) {
     sub_key_at_col <- paste0("col", seq_len(n_cols))
     for (j in seq_len(n_cols)) {
       if (j == 1L) {
-        sub_label_at_col[j] <- spicy_str("header_variable")
+        sub_label_at_col[j] <- .reg_stub_header(struct)
       } else if (j %in% ci_col_set) {
         for (k in seq_along(ci_spanners)) {
           if (j %in% ci_spanners[[k]]$cols) {
@@ -2493,7 +2498,8 @@ output_excel <- function(rendered, excel_path, excel_sheet) {
     body,
     ci_spanners,
     spanners,
-    col_meta = struct$col_meta
+    col_meta = struct$col_meta,
+    stub = .reg_stub_header(struct)
   )
   wb <- write_spanner_row(wb, hdr$top, header_top_excel)
   # Merge "95% CI" across each LL+UL pair on the top header row.
@@ -3210,7 +3216,8 @@ clipboard_payload <- function(rendered, clipboard_delim) {
     body,
     ci_spanners,
     spanners,
-    col_meta = struct$col_meta
+    col_meta = struct$col_meta,
+    stub = .reg_stub_header(struct)
   )
   add_row(hdr$top)
   if (has_ci_spanner) {
@@ -3702,7 +3709,7 @@ print.spicy_regression_table <- function(x, ...) {
     vapply(
       names(x),
       function(nm) {
-        .lookup_display_label(nm, struct$col_meta)
+        .lookup_display_label(nm, struct$col_meta, .reg_stub_header(struct))
       },
       character(1)
     )

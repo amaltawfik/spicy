@@ -1176,6 +1176,56 @@ test_that("the rich engines render the blocks", {
   )
 })
 
+test_that("every engine heads the first column Outcome", {
+  d <- .oc_soc()
+  oc <- function(o, ...) {
+    table_regression_outcomes(
+      d,
+      outcomes = c(wellbeing_score, bmi),
+      exposure = employment_status,
+      output = o,
+      ...
+    )
+  }
+  console <- .oc_print(oc("default"))
+  expect_match(console, "\n Outcome  ", fixed = TRUE)
+  expect_no_match(console, "Variable", fixed = TRUE)
+  # The table of one model keeps its header.
+  expect_match(
+    .oc_print(table_regression(stats::lm(bmi ~ sex, data = d))),
+    "Variable",
+    fixed = TRUE
+  )
+  clip <- spicy:::clipboard_payload(oc("default"), "\t")
+  expect_match(clip, "\nOutcome\t", fixed = TRUE)
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  skip_if_not_installed("openxlsx2")
+  # Without an interval the header is one row; with one, the label sits
+  # on the row above the bounds.
+  for (sc in list(c("n", "b", "p"), c("n", "b", "ci", "p"))) {
+    md <- tinytable::save_tt(oc("tinytable", show_columns = sc), "markdown")
+    expect_match(md, "| Outcome ", fixed = TRUE)
+    html <- as.character(gt::as_raw_html(oc("gt", show_columns = sc)))
+    expect_match(html, ">Outcome<", fixed = TRUE)
+    chunks <- flextable::information_data_chunk(
+      oc("flextable", show_columns = sc)
+    )
+    hdr <- chunks$txt[chunks$.part == "header"]
+    expect_true("Outcome" %in% hdr)
+    expect_false("Variable" %in% hdr)
+  }
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  oc("excel", excel_path = path)
+  wb <- openxlsx2::read_xlsx(path, col_names = FALSE, skip_empty_rows = TRUE)
+  expect_true("Outcome" %in% unlist(wb[, 1L]))
+  # In French, the key that names the outcome rows.
+  withr::local_options(spicy.language = "fr")
+  expect_match(.oc_print(oc("default")), "Variable dépendante", fixed = TRUE)
+})
+
+
 test_that("console snapshot: a numeric exposure, one row per outcome", {
   skip_on_cran()
   d <- .oc_soc()

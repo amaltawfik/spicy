@@ -214,6 +214,14 @@
 # just below serve every class, and read this one.
 .REG_KEY_VARIABLE <- "Variable"
 
+# The header of the label column, for every engine: the key of the
+# registry the structured body names in `stub_label` ("row_outcome" for a
+# table of outcomes, whose rows are its outcomes), else
+# `header_variable`. Resolved at render time, as the other headers.
+.reg_stub_header <- function(struct) {
+  spicy_str(struct$stub_label %||% "header_variable")
+}
+
 # The two interval bounds. `.REG_CI_ROLE_*` is the `col_meta$ci_role`
 # TOKEN -- read back by `as_structured()`'s pair builder and by
 # `inline()` to find the two halves of an interval -- and it doubles as

@@ -6,7 +6,7 @@
     Output
       Linear regression of each outcome on income_k
       
-       Variable        │  N      B        95% CI        p   
+       Outcome         │  N      B        95% CI        p   
       ─────────────────┼────────────────────────────────────
        wellbeing_score │ 1200   5.30  [ 4.73,  5.88]  <.001 
        bmi             │ 1188  -0.75  [-0.90, -0.60]  <.001 
@@ -22,7 +22,7 @@
     Output
       Linear regression of each outcome on employment_status
       
-       Variable          │  N      B        95% CI        p   
+       Outcome           │  N      B        95% CI        p   
       ───────────────────┼────────────────────────────────────
        wellbeing_score:  │ 1200                               
          Employed (ref.) │         –          –          –    
@@ -45,7 +45,7 @@
     Output
       Linear regression of each outcome on income_k
       
-       Variable         │  N      B        95% CI        p   
+       Outcome          │  N      B        95% CI        p   
       ──────────────────┼────────────────────────────────────
        wellbeing_score: │ 1200                               
          (Intercept)    │       48.58  [46.30, 50.85]  <.001 
@@ -64,7 +64,7 @@
     Output
       Regression of each outcome on income_k
       
-       Variable            │  N    Estimate      95% CI        p   
+       Outcome             │  N    Estimate      95% CI        p   
       ─────────────────────┼───────────────────────────────────────
        wellbeing_score (B) │ 1200      5.30  [ 4.73,  5.88]  <.001 
        bmi (B)             │ 1188     -0.75  [-0.90, -0.60]  <.001 

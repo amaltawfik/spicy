@@ -4286,6 +4286,19 @@ table_regression <- function(
     re_columns = re_columns_val,
     fit_only = fit_only
   )
+  # A table of outcomes heads its label column "Outcome": its rows are
+  # its outcomes (.reg_stub_header(), read by every engine).
+  if (
+    any(vapply(
+      frames,
+      function(f) is.data.frame(f$info$extras$outcome_blocks),
+      logical(1)
+    ))
+  ) {
+    st <- attr(rendered, "structured")
+    st$stub_label <- "row_outcome"
+    attr(rendered, "structured") <- st
+  }
   # A fit-only table with no row at all. A token named in the call is
   # refused before, by .reg_check_requested_rows(), and every default
   # set holds `nobs`: no test reaches this guard, kept for a default

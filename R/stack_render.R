@@ -481,6 +481,15 @@
   attr(out, "note") <- note
   attr(out, "panels") <- stats::setNames(tables, panel_labels)
   attr(out, "panel_rows") <- stats::setNames(panel_rows, panel_labels)
+  # A stack of tables of outcomes keeps their header of the label column.
+  stubs <- unique(vapply(
+    views,
+    function(v) v$stub_label %||% "header_variable",
+    character(1)
+  ))
+  if (length(stubs) == 1L && !identical(stubs, "header_variable")) {
+    struct$stub_label <- stubs
+  }
   attr(out, "structured") <- struct
   attr(out, "section_rows") <- section_rows
   attr(out, "header_rows") <- header_rows
@@ -492,7 +501,7 @@
   attr(out, "section_sep_rows") <- section_sep_rows
   attr(out, "fit_merge_specs") <- fit_merge_specs
   attr(out, "display_labels") <- c(
-    spicy_str("header_variable"),
+    .reg_stub_header(struct),
     unname(dl1),
     rep("", length(dkeys) - length(dl1))
   )
