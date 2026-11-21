@@ -879,8 +879,9 @@ nested_wald_change <- function(fit_prev, fit_curr, frame, vcov, cluster, k) {
 
 # TRUE when the fit carries a robust variance of its own, which its
 # coefficient rows report under the classical `vcov` token: a fixest
-# fit estimated with a non-iid vcov, survreg(robust = TRUE), an rms fit
-# passed through robcov() or bootcov().
+# fit estimated with a non-iid vcov, a coxph or survreg fit with
+# `robust = TRUE` or clusters, an rms fit passed through robcov() or
+# bootcov().
 nested_own_robust_vcov <- function(fit) {
   if (inherits(fit, "fixest")) {
     vt <- attr(fit$cov.scaled, "vcov_type")
@@ -889,7 +890,7 @@ nested_own_robust_vcov <- function(fit) {
   if (inherits(fit, "rms")) {
     return(.rms_has_own_vcov(fit))
   }
-  inherits(fit, "survreg") && !is.null(fit$naive.var)
+  inherits(fit, c("survreg", "coxph")) && !is.null(fit$naive.var)
 }
 
 # The matrix of the current model when its frame did not keep one: the
@@ -1761,6 +1762,14 @@ anova_test_df <- function(av) {
 # the caller may recompute from the likelihoods. When a method exists and
 # raised, this ABORTS instead: see below.
 nested_lrt_anova <- function(fit_prev, fit_curr) {
+  # anova.coxph refuses a robust fit (it reads fit$rscore), though its
+  # LRT uses the likelihoods only. Such a pair gets the Wald change test
+  # (nested_own_robust_vcov()), and the LRT is asked of the fits without
+  # their robust score, for the deviance and information-criterion rows.
+  if (inherits(fit_prev, "coxph") && !inherits(fit_prev, "rms")) {
+    fit_prev$rscore <- NULL
+    fit_curr$rscore <- NULL
+  }
   # suppressMessages as well as suppressWarnings: ordinal::anova.clm
   # prints "'test' argument ignored in anova.clm" as a message when the
   # explicit form is tried.

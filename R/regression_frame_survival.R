@@ -572,12 +572,52 @@ as_regression_frame.survreg <- function(
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% spicy_str("note_vcov_classical_glm"),
+    vcov_label = vcov_label %||%
+      .survival_own_vcov_label(fit, "Lin-Wei") %||%
+      spicy_str("note_vcov_classical_glm"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,
     extras = extras
   )
+}
+
+
+# The label of the robust variance a coxph or survreg fit carries itself
+# (`robust = TRUE`, `cluster = `, a `cluster()` term, or a coxph `id`
+# under `robust = TRUE`): vcov() and the coefficient rows report it in
+# place of the model's, which survival keeps in fit$naive.var. NULL for
+# a fit that kept the model's. The sandwich is named as for an rms fit
+# passed through robcov(): Lin-Wei for a Cox model, Huber for a
+# parametric one; both are CR0, without small-sample factor.
+.survival_own_vcov_label <- function(fit, estimator) {
+  if (is.null(fit$naive.var)) {
+    return(NULL)
+  }
+  cl <- fit$call$cluster
+  if (is.null(cl)) {
+    find <- function(e) {
+      if (!is.call(e)) {
+        return(NULL)
+      }
+      head <- e[[1L]]
+      named <- identical(head, quote(cluster)) ||
+        identical(head, quote(survival::cluster))
+      if (named && length(e) == 2L) {
+        return(e[[2L]])
+      }
+      for (a in as.list(e)[-1L]) {
+        if (!is.null(r <- find(a))) return(r)
+      }
+      NULL
+    }
+    cl <- find(tryCatch(stats::formula(fit), error = function(e) NULL)) %||%
+      fit$call$id
+  }
+  if (is.null(cl)) {
+    return(spicy_fmt("note_vcov_robust_plain", estimator))
+  }
+  .robust_vcov_label("CR0", extract_arg_column_name(cl), estimator)
 }
 
 
@@ -670,7 +710,9 @@ as_regression_frame.survreg <- function(
     random_effects = empty_random_effects(),
     fit_stats = fit_stats,
     vcov_kind = vcov_kind,
-    vcov_label = vcov_label %||% spicy_str("note_vcov_classical_glm"),
+    vcov_label = vcov_label %||%
+      .survival_own_vcov_label(fit, "Huber") %||%
+      spicy_str("note_vcov_classical_glm"),
     ci_level = as.numeric(ci_level),
     ci_method = ci_method,
     supports = supports,

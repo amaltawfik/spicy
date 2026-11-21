@@ -709,6 +709,15 @@ as_regression_frame.Glm <- function(
     return(NULL)
   }
   cl <- fit$clusterInfo$name
+  if (!is.null(cl)) {
+    # robcov() deparses its argument: "d$id" is named "id", as the
+    # `cluster` of table_regression() is.
+    nm <- tryCatch(
+      extract_arg_column_name(str2lang(cl)),
+      error = function(e) NA_character_
+    )
+    cl <- if (is.na(nm)) cl else nm
+  }
   if (!is.null(fit[["B"]])) {
     reps <- spicy_fmt("note_vcov_bootstrap_reps", as.integer(fit[["B"]]))
     if (is.null(cl)) {

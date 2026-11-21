@@ -32,7 +32,7 @@ test_that("an ols passed through robcov() says sandwich, whatever the method", {
   }
   expect_identical(
     as_regression_frame(rms::robcov(o, cluster = d$g))$info$vcov_label,
-    "cluster-robust (sandwich), clusters by d$g"
+    "cluster-robust (sandwich), clusters by g"
   )
   withr::local_options(spicy.language = "fr")
   expect_identical(

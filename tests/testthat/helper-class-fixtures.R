@@ -460,6 +460,32 @@
     },
     c("rms", "survival")
   ),
+  # Fits that carry a robust variance of their own, which vcov() and the
+  # table report in place of the model's.
+  coxph_cluster = .cf(
+    "coxph",
+    function(d) {
+      survival::coxph(survival::Surv(time, status) ~ x, d, cluster = id)
+    },
+    "survival"
+  ),
+  survreg_robust = .cf(
+    "survreg",
+    function(d) {
+      survival::survreg(survival::Surv(time, status) ~ x, d, robust = TRUE)
+    },
+    "survival"
+  ),
+  lrm_robcov = .cf(
+    "lrm",
+    function(d) {
+      rms::robcov(
+        rms::lrm(yb ~ x, data = d, x = TRUE, y = TRUE),
+        cluster = d$id
+      )
+    },
+    "rms"
+  ),
   # The Stan fixtures of test-regression_frame_stan.R, read from the same
   # cache (the bodies match it character for character).
   stanreg = .cf(

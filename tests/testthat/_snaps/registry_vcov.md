@@ -199,8 +199,8 @@
         `vcov = "CR0"` is not available for `survreg` models.
         i sandwich::vcovCL() computes one cluster-robust estimator for this class: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR0": survreg, survreg_strata
+      Received by 3:
+        vcov = "CR0": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR0"` is not available for `svycoxph` models.
@@ -295,8 +295,8 @@
         `vcov = "CR1"` is not available for `coxph` models.
         i The Lin-Wei sandwich of `coxph(cluster = )` is one cluster-robust estimator, with no small-sample factor: CR0.
         i This class supports: classical, CR0.
-      Received by 2:
-        vcov = "CR1": coxph, coxph_strata
+      Received by 3:
+        vcov = "CR1": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `cph` models.
@@ -368,8 +368,8 @@
         `vcov = "CR1"` is not available for `lrm` models.
         i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
-      Received by 1:
-        vcov = "CR1": lrm_xy
+      Received by 2:
+        vcov = "CR1": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1"` is not available for `lrm` models.
@@ -525,8 +525,8 @@
         `vcov = "CR1S"` is not available for `coxph` models.
         i The Lin-Wei sandwich of `coxph(cluster = )` is one cluster-robust estimator, with no small-sample factor: CR0.
         i This class supports: classical, CR0.
-      Received by 2:
-        vcov = "CR1S": coxph, coxph_strata
+      Received by 3:
+        vcov = "CR1S": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `cph` models.
@@ -630,8 +630,8 @@
         `vcov = "CR1S"` is not available for `lrm` models.
         i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
-      Received by 1:
-        vcov = "CR1S": lrm_xy
+      Received by 2:
+        vcov = "CR1S": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `lrm` models.
@@ -704,8 +704,8 @@
         `vcov = "CR1S"` is not available for `survreg` models.
         i sandwich::vcovCL() computes one cluster-robust estimator for this class: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR1S": survreg, survreg_strata
+      Received by 3:
+        vcov = "CR1S": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR1S"` is not available for `svycoxph` models.
@@ -828,8 +828,8 @@
         `vcov = "CR2"` is not available for `coxph` models.
         i The Lin-Wei sandwich of `coxph(cluster = )` is one cluster-robust estimator, with no small-sample factor: CR0.
         i This class supports: classical, CR0.
-      Received by 2:
-        vcov = "CR2": coxph, coxph_strata
+      Received by 3:
+        vcov = "CR2": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `cph` models.
@@ -915,8 +915,8 @@
         `vcov = "CR2"` is not available for `lrm` models.
         i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
-      Received by 1:
-        vcov = "CR2": lrm_xy
+      Received by 2:
+        vcov = "CR2": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `lrm` models.
@@ -989,8 +989,8 @@
         `vcov = "CR2"` is not available for `survreg` models.
         i sandwich::vcovCL() computes one cluster-robust estimator for this class: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR2": survreg, survreg_strata
+      Received by 3:
+        vcov = "CR2": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR2"` is not available for `svycoxph` models.
@@ -1114,8 +1114,8 @@
         `vcov = "CR3"` is not available for `coxph` models.
         i The Lin-Wei sandwich of `coxph(cluster = )` is one cluster-robust estimator, with no small-sample factor: CR0.
         i This class supports: classical, CR0.
-      Received by 2:
-        vcov = "CR3": coxph, coxph_strata
+      Received by 3:
+        vcov = "CR3": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `cph` models.
@@ -1201,8 +1201,8 @@
         `vcov = "CR3"` is not available for `lrm` models.
         i spicy computes the cluster-robust variance of an rms fit with `rms::robcov()`, whose Huber estimator is CR0.
         i This class supports: classical, CR0.
-      Received by 1:
-        vcov = "CR3": lrm_xy
+      Received by 2:
+        vcov = "CR3": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `lrm` models.
@@ -1275,8 +1275,8 @@
         `vcov = "CR3"` is not available for `survreg` models.
         i sandwich::vcovCL() computes one cluster-robust estimator for this class: CR1, the CR0 sandwich scaled by G/(G-1).
         i This class supports: classical, CR1.
-      Received by 2:
-        vcov = "CR3": survreg, survreg_strata
+      Received by 3:
+        vcov = "CR3": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "CR3"` is not available for `svycoxph` models.
@@ -1394,8 +1394,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC0": coxph, coxph_strata
+      Received by 3:
+        vcov = "HC0": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `cph` models.
@@ -1494,8 +1494,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "HC0": lrm_xy
+      Received by 2:
+        vcov = "HC0": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `lrm` models.
@@ -1563,8 +1563,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC0": survreg, survreg_strata
+      Received by 3:
+        vcov = "HC0": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC0"` is not available for `svycoxph` models.
@@ -1680,8 +1680,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC1": coxph, coxph_strata
+      Received by 3:
+        vcov = "HC1": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `cph` models.
@@ -1780,8 +1780,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "HC1": lrm_xy
+      Received by 2:
+        vcov = "HC1": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `lrm` models.
@@ -1849,8 +1849,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC1": survreg, survreg_strata
+      Received by 3:
+        vcov = "HC1": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC1"` is not available for `svycoxph` models.
@@ -1966,8 +1966,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC2": coxph, coxph_strata
+      Received by 3:
+        vcov = "HC2": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `cph` models.
@@ -2073,8 +2073,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "HC2": lrm_xy
+      Received by 2:
+        vcov = "HC2": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `lrm` models.
@@ -2142,8 +2142,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC2": survreg, survreg_strata
+      Received by 3:
+        vcov = "HC2": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC2"` is not available for `svycoxph` models.
@@ -2259,8 +2259,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC3": coxph, coxph_strata
+      Received by 3:
+        vcov = "HC3": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `cph` models.
@@ -2366,8 +2366,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "HC3": lrm_xy
+      Received by 2:
+        vcov = "HC3": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `lrm` models.
@@ -2435,8 +2435,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC3": survreg, survreg_strata
+      Received by 3:
+        vcov = "HC3": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC3"` is not available for `svycoxph` models.
@@ -2552,8 +2552,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC4": coxph, coxph_strata
+      Received by 3:
+        vcov = "HC4": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `cph` models.
@@ -2659,8 +2659,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "HC4": lrm_xy
+      Received by 2:
+        vcov = "HC4": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `lrm` models.
@@ -2728,8 +2728,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC4": survreg, survreg_strata
+      Received by 3:
+        vcov = "HC4": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC4"` is not available for `svycoxph` models.
@@ -2845,8 +2845,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC5": coxph, coxph_strata
+      Received by 3:
+        vcov = "HC5": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `cph` models.
@@ -2952,8 +2952,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "HC5": lrm_xy
+      Received by 2:
+        vcov = "HC5": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `lrm` models.
@@ -3021,8 +3021,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "HC5": survreg, survreg_strata
+      Received by 3:
+        vcov = "HC5": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "HC5"` is not available for `svycoxph` models.
@@ -3138,8 +3138,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "bootstrap": coxph, coxph_strata
+      Received by 3:
+        vcov = "bootstrap": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `cph` models.
@@ -3252,8 +3252,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "bootstrap": lrm_xy
+      Received by 2:
+        vcov = "bootstrap": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `lrm` models.
@@ -3312,8 +3312,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "bootstrap": survreg, survreg_strata
+      Received by 3:
+        vcov = "bootstrap": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "bootstrap"` is not available for `svycoxph` models.
@@ -3420,8 +3420,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "iid": coxph, coxph_strata
+      Received by 3:
+        vcov = "iid": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `cph` models.
@@ -3545,8 +3545,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "iid": lrm_xy
+      Received by 2:
+        vcov = "iid": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `lrm` models.
@@ -3611,8 +3611,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "iid": survreg, survreg_strata
+      Received by 3:
+        vcov = "iid": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "iid"` is not available for `svycoxph` models.
@@ -3719,8 +3719,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "jackknife": coxph, coxph_strata
+      Received by 3:
+        vcov = "jackknife": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `cph` models.
@@ -3833,8 +3833,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "jackknife": lrm_xy
+      Received by 2:
+        vcov = "jackknife": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `lrm` models.
@@ -3900,8 +3900,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "jackknife": survreg, survreg_strata
+      Received by 3:
+        vcov = "jackknife": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "jackknife"` is not available for `svycoxph` models.
@@ -4008,8 +4008,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "ker": coxph, coxph_strata
+      Received by 3:
+        vcov = "ker": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `cph` models.
@@ -4133,8 +4133,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "ker": lrm_xy
+      Received by 2:
+        vcov = "ker": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `lrm` models.
@@ -4199,8 +4199,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "ker": survreg, survreg_strata
+      Received by 3:
+        vcov = "ker": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "ker"` is not available for `svycoxph` models.
@@ -4307,8 +4307,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "nid": coxph, coxph_strata
+      Received by 3:
+        vcov = "nid": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `cph` models.
@@ -4432,8 +4432,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "nid": lrm_xy
+      Received by 2:
+        vcov = "nid": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `lrm` models.
@@ -4498,8 +4498,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "nid": survreg, survreg_strata
+      Received by 3:
+        vcov = "nid": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "nid"` is not available for `svycoxph` models.
@@ -4606,8 +4606,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `coxph` models.
         i This class supports: classical, CR0. See ?table_regression_survival.
-      Received by 2:
-        vcov = "rank": coxph, coxph_strata
+      Received by 3:
+        vcov = "rank": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `cph` models.
@@ -4731,8 +4731,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `lrm` models.
         i This class supports: classical, CR0. See ?table_regression.
-      Received by 1:
-        vcov = "rank": lrm_xy
+      Received by 2:
+        vcov = "rank": lrm_robcov, lrm_xy
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `lrm` models.
@@ -4797,8 +4797,8 @@
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `survreg` models.
         i This class supports: classical, CR1. See ?table_regression_survival.
-      Received by 2:
-        vcov = "rank": survreg, survreg_strata
+      Received by 3:
+        vcov = "rank": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_unsupported_vcov, spicy_error
         `vcov = "rank"` is not available for `svycoxph` models.
@@ -5168,8 +5168,8 @@
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `coxph`: "classical", "CR0".
-      Received by 2:
-        vcov = "HC9": coxph, coxph_strata
+      Received by 3:
+        vcov = "HC9": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
@@ -5302,8 +5302,8 @@
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `lrm`: "classical", "CR0".
-      Received by 1:
-        vcov = "HC9": lrm_xy
+      Received by 2:
+        vcov = "HC9": lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
@@ -5374,8 +5374,8 @@
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
         i Valid types for `survreg`: "classical", "CR1".
-      Received by 2:
-        vcov = "HC9": survreg, survreg_strata
+      Received by 3:
+        vcov = "HC9": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_invalid_input, spicy_error
         Unknown `vcov` type(s): "HC9".
@@ -5435,9 +5435,9 @@
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
         i Set `vcov` to `"CR0"` to use the cluster vector for cluster-robust SE.
-      Received by 6:
-        cluster with vcov = "classical": coxph, coxph_strata, cph_xy, lrm_xy,
-            ols_xy, rms_Glm_xy
+      Received by 8:
+        cluster with vcov = "classical": coxph, coxph_cluster, coxph_strata,
+            cph_xy, lrm_robcov, lrm_xy, ols_xy, rms_Glm_xy
       ----
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
@@ -5450,10 +5450,10 @@
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.
         i Set `vcov` to `"CR1"` to use the cluster vector for cluster-robust SE.
-      Received by 14:
+      Received by 15:
         cluster with vcov = "classical": bam, betareg, clm, gam, gam_logit,
-            gam_nb, hurdle, mlogit, multinom, polr, survreg, survreg_strata,
-            tobit, zeroinfl
+            gam_nb, hurdle, mlogit, multinom, polr, survreg, survreg_robust,
+            survreg_strata, tobit, zeroinfl
       ----
       warning: spicy_ignored_arg, spicy_warning
         Model 1: `cluster` supplied but `vcov = "classical"` is not cluster-robust; the cluster vector is ignored.

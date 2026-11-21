@@ -7,12 +7,12 @@
       error: spicy_invalid_input, spicy_error
         Token `"adj_r2"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 31:
-        "adj_r2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_strata, cph,
-            cph_xy, fenegbin, fepois, fepois_nofe, flexsurvreg, gls, hurdle,
-            hurdle_negbin, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rq,
-            selection, survreg, survreg_strata, svycoxph, svyolr, tobit,
-            zeroinfl, zeroinfl_negbin
+      Received by 33:
+        "adj_r2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_cluster,
+            coxph_strata, cph, cph_xy, fenegbin, fepois, fepois_nofe,
+            flexsurvreg, gls, hurdle, hurdle_negbin, mlogit, multinom, nls, ols,
+            ols_xy, polr, rlm, rq, selection, survreg, survreg_robust,
+            survreg_strata, svycoxph, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"adj_r2"` in `show_fit_stats` is not defined for GEE fits (`geeglm`).
@@ -67,8 +67,8 @@
         Token `"adj_r2"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "adj_r2": lrm, lrm_xy
+      Received by 3:
+        "adj_r2": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"adj_r2"` in `show_fit_stats` is not defined for `negbin` models.
@@ -156,8 +156,8 @@
         Token `"adj_r2_change"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "adj_r2_change": lrm, lrm_xy
+      Received by 3:
+        "adj_r2_change": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"adj_r2_change"` in `show_fit_stats` is not defined for `mgcv` GAMs.
@@ -231,20 +231,20 @@
       error: spicy_invalid_input, spicy_error
         Token `"aic_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
         i Pass the models from the smallest to the largest, with `nested = TRUE`.
-      Received by 77:
+      Received by 80:
         "aic_change": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"aic_change"` in `show_fit_stats` is not defined for `rlm` models.
@@ -281,20 +281,20 @@
       error: spicy_invalid_input, spicy_error
         Token `"aicc_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
         i Pass the models from the smallest to the largest, with `nested = TRUE`.
-      Received by 77:
+      Received by 80:
         "aicc_change": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"aicc_change"` in `show_fit_stats` is not defined for `rlm` models.
@@ -307,19 +307,19 @@
         Token `"alpha"` in `show_fit_stats` is defined only for NB2 negative-binomial fits (`MASS::glm.nb()`, `lme4::glmer.nb()`, `fixest::fenegbin()`, mgcv `nb()`, pscl `zeroinfl()` or `hurdle()` with `dist = "negbin"`, glmmTMB `nbinom2`), and no model in the table is one.
         i theta is the NB2 dispersion (V = mu + mu<U+00B2>/theta) and alpha its reciprocal. An NB1 fit (glmmTMB `nbinom1`) reports `"delta"` instead; other families have no such parameter.
         i A theta fixed in the call (`negative.binomial(theta)` in `glm()`, mgcv `negbin(theta)` or `nb(theta)`) is not an estimate and has no row.
-      Received by 71:
+      Received by 74:
         "alpha": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, feols, feols_iv, feols_nofe, fepois,
-            fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, geeglm,
-            glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
-            glm_quasi, glmer, glmmTMB, glmmTMB_beta, glmmTMB_disp,
+            coxph_cluster, coxph_strata, cph, cph_xy, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, geeglm, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
+            glm_probit, glm_quasi, glmer, glmmTMB, glmmTMB_beta, glmmTMB_disp,
             glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_ordinal, glmmTMB_reml,
             glmmTMB_zi, gls, hurdle, iv_robust, ivreg, lm, lm_robust,
             lm_robust_fe, lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm,
-            lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
-            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
-            survreg_strata, svycoxph, svyglm, svyglm_binomial,
-            svyglm_quasibinomial, svyolr, tobit, zeroinfl
+            lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy,
+            polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
+            survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"bic"` in `show_fit_stats` has no value for any model in the table.
@@ -349,20 +349,20 @@
       error: spicy_invalid_input, spicy_error
         Token `"bic_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
         i Pass the models from the smallest to the largest, with `nested = TRUE`.
-      Received by 77:
+      Received by 80:
         "bic_change": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"bic_change"` in `show_fit_stats` is not defined for `rlm` models.
@@ -374,7 +374,7 @@
       error: spicy_invalid_input, spicy_error
         Token `"concordance"` in `show_fit_stats` is defined only for `survival::coxph()` and `survey::svycoxph()` fits, and no model in the table is one.
         i It is Harrell's C of the fit, the value `summary()` of a `coxph` model reports.
-      Received by 75:
+      Received by 77:
         "concordance": bam, betareg, clm, clm_nominal, clm_scale, clmm, cph,
             cph_xy, fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe,
             flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
@@ -383,37 +383,40 @@
             glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
             glmmTMB_reml, glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust,
             ivreg, lm, lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts,
-            lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols,
-            ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
-            survreg, survreg_strata, svyglm, svyglm_binomial,
-            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
+            lmer, lmer_ml, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit,
+            multinom, nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit,
+            rms_Glm_xy, rq, selection, survreg, survreg_robust, survreg_strata,
+            svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr, tobit,
+            zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"delta"` in `show_fit_stats` is defined only for NB1 negative-binomial fits (glmmTMB `nbinom1`, `truncated_nbinom1`), and no model in the table is one.
         i delta is the NB1 dispersion (V = mu(1 + delta), Stata's `nbreg, dispersion(constant)`). An NB2 fit reports `"theta"` and `"alpha"` instead; other families have no such parameter.
-      Received by 77:
+      Received by 80:
         "delta": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom2, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust,
-            ivreg, lm, lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts,
-            lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols,
-            ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
-            survreg, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom2,
+            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
             svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"deviance"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 30:
-        "deviance": betareg, clm, clm_nominal, clm_scale, coxph, coxph_strata,
-            cph, cph_xy, flexsurvreg, glmmTMB_beta, glmmTMB_hurdle,
+      Received by 32:
+        "deviance": betareg, clm, clm_nominal, clm_scale, coxph, coxph_cluster,
+            coxph_strata, cph, cph_xy, flexsurvreg, glmmTMB_beta, glmmTMB_hurdle,
             glmmTMB_ordinal, gls, hurdle, hurdle_negbin, iv_robust, ivreg,
             lm_robust, lm_robust_fe, lme, lme_contrasts, mlogit, rlm, rq,
-            selection, survreg, survreg_strata, tobit, zeroinfl, zeroinfl_negbin
+            selection, survreg, survreg_robust, survreg_strata, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"deviance"` in `show_fit_stats` is not defined for GEE fits (`geeglm`).
@@ -437,20 +440,21 @@
       error: spicy_invalid_input, spicy_error
         Token `"deviance_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
         i Pass the models from the smallest to the largest, with `nested = TRUE`.
-      Received by 77:
+      Received by 80:
         "deviance_change": bam, betareg, clm, clm_nominal, clm_scale, clmm,
-            coxph, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
-            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
-            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
-            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
-            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
-            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
-            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
-            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            coxph, coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols,
+            feols_iv, feols_nofe, fepois, fepois_nofe, flexsurvreg, gam,
+            gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_gamma,
+            glm_gaussian, glm_logit, glm_poisson, glm_probit, glm_quasi, glmer,
+            glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml,
+            glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm,
+            lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts, lmer,
+            lmer_ml, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls,
+            ols, ols_xy, polr, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
+            survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"deviance_change"` in `show_fit_stats` is not defined for `rlm` models.
@@ -462,48 +466,49 @@
       error: spicy_invalid_input, spicy_error
         Token `"eff_p"` in `show_fit_stats` has no value for any model in the table.
         i `"eff_p"` is the effective number of parameters of a `svyglm()` design.
-      Received by 75:
+      Received by 78:
         "eff_p": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyolr, tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"elpd_loo"` in `show_fit_stats` is defined only for Bayesian fits.
         i They are computed from the posterior draws (Bayesian R<U+00B2>; PSIS-LOO).
-      Received by 78:
+      Received by 81:
         "elpd_loo": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"f2"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 38:
-        "f2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_strata, cph,
-            cph_xy, fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe,
-            flexsurvreg, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm_robust,
-            lm_robust_fe, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rq,
-            selection, survreg, survreg_strata, svycoxph, svyolr, tobit,
-            zeroinfl, zeroinfl_negbin
+      Received by 40:
+        "f2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_cluster,
+            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
+            fepois, fepois_nofe, flexsurvreg, gls, hurdle, hurdle_negbin,
+            iv_robust, ivreg, lm_robust, lm_robust_fe, mlogit, multinom, nls,
+            ols, ols_xy, polr, rlm, rq, selection, survreg, survreg_robust,
+            survreg_strata, svycoxph, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"f2"` in `show_fit_stats` is not defined for GEE fits (`geeglm`).
@@ -558,8 +563,8 @@
         Token `"f2"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "f2": lrm, lrm_xy
+      Received by 3:
+        "f2": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"f2"` in `show_fit_stats` is not defined for `mgcv` GAMs.
@@ -671,8 +676,8 @@
         Token `"f2_change"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "f2_change": lrm, lrm_xy
+      Received by 3:
+        "f2_change": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"f2_change"` in `show_fit_stats` is not defined for `mgcv` GAMs.
@@ -771,8 +776,8 @@
         Token `"f_change"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "f_change": lrm, lrm_xy
+      Received by 3:
+        "f_change": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"f_change"` in `show_fit_stats` is not defined for `mgcv` GAMs.
@@ -826,17 +831,18 @@
       error: spicy_invalid_input, spicy_error
         Token `"fixed_effects"` in `show_fit_stats` is defined only for fits that absorb fixed effects (fixest, or estimatr with `fixed_effects =`).
         i `"fixed_effects"` discloses the absorbed fixed effects (one Yes/No row per factor) and `"within_r2"` is the FE-partialed R<U+00B2>; other classes have neither.
-      Received by 71:
+      Received by 74:
         "fixed_effects": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, flexsurvreg, gam, gam_betar, gam_logit,
-            gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit,
-            glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB,
-            glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
-            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
-            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_weighted,
-            lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit,
-            multinom, nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit,
-            rms_Glm_xy, rq, selection, survreg, survreg_strata, svycoxph, svyglm,
+            coxph_cluster, coxph_strata, cph, cph_xy, flexsurvreg, gam,
+            gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_gamma,
+            glm_gaussian, glm_logit, glm_poisson, glm_probit, glm_quasi, glmer,
+            glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml,
+            glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm,
+            lm_robust, lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm,
+            lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy,
+            polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
+            survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
             svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
             zeroinfl_negbin
       ----
@@ -850,17 +856,18 @@
       error: spicy_invalid_input, spicy_error
         Token `"icc"` in `show_fit_stats` has no value for any model in the table.
         i `"icc"` is computed for the mixed models of lme4, glmmTMB and nlme.
-      Received by 63:
+      Received by 66:
         "icc": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, gls, hurdle, hurdle_negbin, iv_robust, ivreg,
-            lm, lm_robust, lm_robust_fe, lm_weighted, lrm, lrm_ordinal, lrm_xy,
-            mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom,
+            nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq,
+            selection, survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"log_lik"` in `show_fit_stats` is not defined for GEE fits (`geeglm`).
@@ -879,37 +886,38 @@
       error: spicy_invalid_input, spicy_error
         Token `"looic"` in `show_fit_stats` is defined only for Bayesian fits.
         i They are computed from the posterior draws (Bayesian R<U+00B2>; PSIS-LOO).
-      Received by 78:
+      Received by 81:
         "looic": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
-            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
-      ----
-      error: spicy_invalid_input, spicy_error
-        Token `"lrt_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
-        i Pass the models from the smallest to the largest, with `nested = TRUE`.
-      Received by 73:
-        "lrt_change": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_logit, glm_poisson, glm_probit, glmer, glmer_nb,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
             glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
             glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
             hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"lrt_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
+        i Pass the models from the smallest to the largest, with `nested = TRUE`.
+      Received by 76:
+        "lrt_change": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_logit, glm_poisson,
+            glm_probit, glmer, glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp,
+            glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
+            glmmTMB_reml, glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust,
+            ivreg, lm, lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts,
+            lmer, lmer_ml, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit,
+            multinom, nls, ols, ols_xy, polr, rms_Glm, rms_Glm_logit, rms_Glm_xy,
+            selection, survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"lrt_change"` in `show_fit_stats` is not computed for models whose dispersion is estimated.
@@ -935,25 +943,25 @@
       error: spicy_invalid_input, spicy_error
         Token `"max_cluster_size"` in `show_fit_stats` is defined only for GEE fits (`geepack::geeglm`).
         i `"qic"` / `"qicu"` are the quasi-likelihood information criteria (Pan 2001), `"scale"` the estimated scale (dispersion) parameter, and `"max_cluster_size"` the largest cluster in the estimation sample.
-      Received by 77:
+      Received by 80:
         "max_cluster_size": bam, betareg, clm, clm_nominal, clm_scale, clmm,
-            coxph, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
-            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
-            gam_logit, gam_nb, glm.nb, glm_gamma, glm_gaussian, glm_logit,
-            glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB,
-            glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            coxph, coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols,
+            feols_iv, feols_nofe, fepois, fepois_nofe, flexsurvreg, gam,
+            gam_betar, gam_logit, gam_nb, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
             glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
             hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"n_events"` in `show_fit_stats` has no value for any model in the table.
         i `"n_events"` counts the events of a Cox model.
-      Received by 73:
+      Received by 75:
         "n_events": bam, betareg, clm, clm_nominal, clm_scale, clmm, fenegbin,
             feols, feols_iv, feols_nofe, fepois, fepois_nofe, flexsurvreg, gam,
             gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_gamma,
@@ -962,10 +970,11 @@
             glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml,
             glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm,
             lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts, lmer,
-            lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols,
-            ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
-            survreg, survreg_strata, svyglm, svyglm_binomial,
-            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
+            lmer_ml, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls,
+            ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq,
+            selection, survreg, survreg_robust, survreg_strata, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"n_groups"` in `show_fit_stats` has no value for any model in the table.
@@ -976,27 +985,28 @@
       error: spicy_invalid_input, spicy_error
         Token `"n_groups"` in `show_fit_stats` has no value for any model in the table.
         i `"n_groups"` counts the groups of a mixed model or a GEE, or the fixed effects absorbed by a fixest model or by an estimatr model with `fixed_effects =`.
-      Received by 54:
+      Received by 57:
         "n_groups": bam, betareg, clm, clm_nominal, clm_scale, coxph,
-            coxph_strata, cph, cph_xy, flexsurvreg, gam, gam_betar, gam_logit,
-            gam_nb, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, gls, hurdle, hurdle_negbin, iv_robust, ivreg,
-            lm, lm_robust, lm_weighted, lrm, lrm_ordinal, lrm_xy, mlogit,
-            multinom, nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit,
-            rms_Glm_xy, rq, selection, survreg, survreg_strata, svycoxph, svyglm,
+            coxph_cluster, coxph_strata, cph, cph_xy, flexsurvreg, gam,
+            gam_betar, gam_logit, gam_nb, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_weighted, lrm,
+            lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy,
+            polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
+            survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
             svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
             zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"omega2"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 38:
-        "omega2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_strata, cph,
-            cph_xy, fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe,
-            flexsurvreg, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm_robust,
-            lm_robust_fe, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rq,
-            selection, survreg, survreg_strata, svycoxph, svyolr, tobit,
-            zeroinfl, zeroinfl_negbin
+      Received by 40:
+        "omega2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_cluster,
+            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
+            fepois, fepois_nofe, flexsurvreg, gls, hurdle, hurdle_negbin,
+            iv_robust, ivreg, lm_robust, lm_robust_fe, mlogit, multinom, nls,
+            ols, ols_xy, polr, rlm, rq, selection, survreg, survreg_robust,
+            survreg_strata, svycoxph, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"omega2"` in `show_fit_stats` is not defined for GEE fits (`geeglm`).
@@ -1051,8 +1061,8 @@
         Token `"omega2"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "omega2": lrm, lrm_xy
+      Received by 3:
+        "omega2": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"omega2"` in `show_fit_stats` is not defined for `mgcv` GAMs.
@@ -1114,20 +1124,20 @@
       error: spicy_invalid_input, spicy_error
         Token `"p_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
         i Pass the models from the smallest to the largest, with `nested = TRUE`.
-      Received by 77:
+      Received by 80:
         "p_change": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"p_change"` in `show_fit_stats` is not defined for `rlm` models.
@@ -1140,47 +1150,48 @@
         Token `"phi"` in `show_fit_stats` is defined only for fits with a beta precision (`betareg::betareg()`, mgcv `betar()`, glmmTMB `beta_family()`, `betabinomial()`, `ordbeta()`), and no model in the table is one.
         i In beta regression, Var(y) = mu(1-mu)/(1+phi): higher phi = less dispersion. For `betabinomial()` and `ordbeta()`, phi is the precision parameter of the beta part. Other families have no such parameter.
         i A phi fixed in the call (mgcv `betar(theta)` with theta > 0) is not an estimate and has no row.
-      Received by 75:
-        "phi": bam, clm, clm_nominal, clm_scale, clmm, coxph, coxph_strata, cph,
-            cph_xy, fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe,
-            flexsurvreg, gam, gam_logit, gam_nb, geeglm, glm.nb, glm_gamma,
-            glm_gaussian, glm_logit, glm_poisson, glm_probit, glm_quasi, glmer,
-            glmer_nb, glmmTMB, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
-            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
-            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
-            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+      Received by 78:
+        "phi": bam, clm, clm_nominal, clm_scale, clmm, coxph, coxph_cluster,
+            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
+            fepois, fepois_nofe, flexsurvreg, gam, gam_logit, gam_nb, geeglm,
+            glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
+            glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml,
+            glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm,
+            lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts, lmer,
+            lmer_ml, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls,
+            ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq,
+            selection, survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"pseudo_r2_ferrari"` in `show_fit_stats` is defined only for beta regressions fitted with `betareg::betareg()`.
         i It is the squared correlation between the linear predictor and the link-transformed response (Ferrari & Cribari-Neto 2004), which `summary()` of a betareg fit reports.
-      Received by 77:
+      Received by 80:
         "pseudo_r2_ferrari": bam, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"pseudo_r2_mcfadden"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 26:
-        "pseudo_r2_mcfadden": betareg, coxph, coxph_strata, cph, cph_xy, feols,
-            feols_iv, feols_nofe, flexsurvreg, glm_quasi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm_robust, lm_robust_fe, mlogit,
-            nls, rq, selection, survreg, survreg_strata, tobit, zeroinfl,
-            zeroinfl_negbin
+      Received by 28:
+        "pseudo_r2_mcfadden": betareg, coxph, coxph_cluster, coxph_strata, cph,
+            cph_xy, feols, feols_iv, feols_nofe, flexsurvreg, glm_quasi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm_robust, lm_robust_fe,
+            mlogit, nls, rq, selection, survreg, survreg_robust, survreg_strata,
+            tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"pseudo_r2_mcfadden"` in `show_fit_stats` is for `glm` models only.
@@ -1264,12 +1275,12 @@
       error: spicy_invalid_input, spicy_error
         Token `"pseudo_r2_nagelkerke"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 29:
-        "pseudo_r2_nagelkerke": betareg, coxph, coxph_strata, cph, cph_xy,
-            fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe,
+      Received by 31:
+        "pseudo_r2_nagelkerke": betareg, coxph, coxph_cluster, coxph_strata, cph,
+            cph_xy, fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe,
             flexsurvreg, glm_quasi, gls, hurdle, hurdle_negbin, iv_robust, ivreg,
             lm_robust, lm_robust_fe, mlogit, nls, rq, selection, survreg,
-            survreg_strata, tobit, zeroinfl, zeroinfl_negbin
+            survreg_robust, survreg_strata, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"pseudo_r2_nagelkerke"` in `show_fit_stats` is for `glm` models only.
@@ -1353,11 +1364,12 @@
       error: spicy_invalid_input, spicy_error
         Token `"pseudo_r2_tjur"` in `show_fit_stats` is defined only for binomial models (binary outcomes), and no model in the table is a binomial-family `glm` or a binary `rms::lrm()`.
         i Tjur's R<U+00B2> (2009) is mean(fitted | y = 1) - mean(fitted | y = 0), which needs a binary outcome (the trials of a grouped binomial response count as such).
-      Received by 25:
-        "pseudo_r2_tjur": betareg, coxph, coxph_strata, cph, cph_xy, feols,
-            feols_iv, feols_nofe, flexsurvreg, gls, hurdle, hurdle_negbin,
-            iv_robust, ivreg, lm_robust, lm_robust_fe, mlogit, nls, rq,
-            selection, survreg, survreg_strata, tobit, zeroinfl, zeroinfl_negbin
+      Received by 27:
+        "pseudo_r2_tjur": betareg, coxph, coxph_cluster, coxph_strata, cph,
+            cph_xy, feols, feols_iv, feols_nofe, flexsurvreg, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm_robust, lm_robust_fe, mlogit,
+            nls, rq, selection, survreg, survreg_robust, survreg_strata, tobit,
+            zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"pseudo_r2_tjur"` in `show_fit_stats` is defined only for binomial models (binary outcomes), and no model in the table is a binomial-family `glm` or a binary `rms::lrm()`.
@@ -1463,46 +1475,48 @@
       error: spicy_invalid_input, spicy_error
         Token `"qic"` in `show_fit_stats` is defined only for GEE fits (`geepack::geeglm`).
         i `"qic"` / `"qicu"` are the quasi-likelihood information criteria (Pan 2001), `"scale"` the estimated scale (dispersion) parameter, and `"max_cluster_size"` the largest cluster in the estimation sample.
-      Received by 77:
+      Received by 80:
         "qic": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
-            glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp,
-            glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust,
-            ivreg, lm, lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts,
-            lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols,
-            ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
-            survreg, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, glm.nb, glm_gamma, glm_gaussian, glm_logit,
+            glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB,
+            glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
             svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"qicu"` in `show_fit_stats` is defined only for GEE fits (`geepack::geeglm`).
         i `"qic"` / `"qicu"` are the quasi-likelihood information criteria (Pan 2001), `"scale"` the estimated scale (dispersion) parameter, and `"max_cluster_size"` the largest cluster in the estimation sample.
-      Received by 77:
+      Received by 80:
         "qicu": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
-            glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp,
-            glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust,
-            ivreg, lm, lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts,
-            lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols,
-            ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
-            survreg, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, glm.nb, glm_gamma, glm_gaussian, glm_logit,
+            glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB,
+            glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
             svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 29:
-        "r2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_strata, cph,
-            cph_xy, fenegbin, fepois, fepois_nofe, flexsurvreg, gls, hurdle,
-            hurdle_negbin, mlogit, multinom, nls, polr, rlm, rq, selection,
-            survreg, survreg_strata, svycoxph, svyolr, tobit, zeroinfl,
-            zeroinfl_negbin
+      Received by 31:
+        "r2": betareg, clm, clm_nominal, clm_scale, coxph, coxph_cluster,
+            coxph_strata, cph, cph_xy, fenegbin, fepois, fepois_nofe,
+            flexsurvreg, gls, hurdle, hurdle_negbin, mlogit, multinom, nls, polr,
+            rlm, rq, selection, survreg, survreg_robust, survreg_strata,
+            svycoxph, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2"` in `show_fit_stats` is not defined for GEE fits (`geeglm`).
@@ -1557,8 +1571,8 @@
         Token `"r2"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "r2": lrm, lrm_xy
+      Received by 3:
+        "r2": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2"` in `show_fit_stats` is not defined for `mgcv` GAMs.
@@ -1620,20 +1634,20 @@
       error: spicy_invalid_input, spicy_error
         Token `"r2_bayes"` in `show_fit_stats` is defined only for Bayesian fits.
         i They are computed from the posterior draws (Bayesian R<U+00B2>; PSIS-LOO).
-      Received by 78:
+      Received by 81:
         "r2_bayes": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2_change"` in `show_fit_stats` compares adjacent models: it needs `nested = TRUE` and at least two models.
@@ -1688,8 +1702,8 @@
         Token `"r2_change"` in `show_fit_stats` is not defined for `lrm` models.
         i Use the R<U+00B2> of `lrm` fits instead: `"pseudo_r2_mcfadden"` (McFadden 1974), `"pseudo_r2_nagelkerke"` (Nagelkerke 1991) or `"pseudo_r2_tjur"` (Tjur 2009).
         i For a nested glm comparison, use `"lrt_change"` + `"p_change"` (likelihood-ratio chi-square).
-      Received by 2:
-        "r2_change": lrm, lrm_xy
+      Received by 3:
+        "r2_change": lrm, lrm_robcov, lrm_xy
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2_change"` in `show_fit_stats` is not defined for `mgcv` GAMs.
@@ -1751,34 +1765,36 @@
       error: spicy_invalid_input, spicy_error
         Token `"r2_conditional"` in `show_fit_stats` has no value for any model in the table.
         i `"r2_conditional"` is computed for the mixed models of lme4, glmmTMB and nlme.
-      Received by 63:
+      Received by 66:
         "r2_conditional": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, gls, hurdle, hurdle_negbin, iv_robust, ivreg,
-            lm, lm_robust, lm_robust_fe, lm_weighted, lrm, lrm_ordinal, lrm_xy,
-            mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom,
+            nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq,
+            selection, survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2_deviance"` in `show_fit_stats` is defined only for `glm` and `mgcv` GAM families other than the binomial, and no model in the table is one.
         i For a binomial, ordinal or multinomial response, the deviance R<U+00B2> equals McFadden's R<U+00B2>: use `"pseudo_r2_mcfadden"`.
-      Received by 12:
+      Received by 13:
         "r2_deviance": clm, clm_nominal, clm_scale, gam_logit, glm_logit,
-            glm_probit, lrm, lrm_ordinal, lrm_xy, multinom, polr, rms_Glm_logit
+            glm_probit, lrm, lrm_ordinal, lrm_robcov, lrm_xy, multinom, polr,
+            rms_Glm_logit
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2_deviance"` in `show_fit_stats` is defined only for `glm` and `mgcv` GAM families other than the binomial, and no model in the table is one.
         i It is 1 - deviance / null deviance of a `glm` or a GAM of a gaussian, Gamma, inverse Gaussian, Tweedie, Poisson, negative binomial or quasi family.
-      Received by 29:
-        "r2_deviance": betareg, coxph, coxph_strata, cph, cph_xy, fenegbin,
-            feols, feols_iv, feols_nofe, fepois, fepois_nofe, flexsurvreg,
-            gam_betar, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm_robust,
-            lm_robust_fe, mlogit, nls, rq, selection, survreg, survreg_strata,
-            tobit, zeroinfl, zeroinfl_negbin
+      Received by 31:
+        "r2_deviance": betareg, coxph, coxph_cluster, coxph_strata, cph, cph_xy,
+            fenegbin, feols, feols_iv, feols_nofe, fepois, fepois_nofe,
+            flexsurvreg, gam_betar, gls, hurdle, hurdle_negbin, iv_robust, ivreg,
+            lm_robust, lm_robust_fe, mlogit, nls, rq, selection, survreg,
+            survreg_robust, survreg_strata, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2_deviance"` in `show_fit_stats` is for `glm` models only.
@@ -1847,116 +1863,120 @@
       error: spicy_invalid_input, spicy_error
         Token `"r2_marginal"` in `show_fit_stats` has no value for any model in the table.
         i `"r2_marginal"` is computed for the mixed models of lme4, glmmTMB and nlme.
-      Received by 63:
+      Received by 66:
         "r2_marginal": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, gls, hurdle, hurdle_negbin, iv_robust, ivreg,
-            lm, lm_robust, lm_robust_fe, lm_weighted, lrm, lrm_ordinal, lrm_xy,
-            mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom,
+            nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq,
+            selection, survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
+            zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"rmse"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 69:
+      Received by 72:
         "rmse": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glmer, glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp,
-            glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust,
-            ivreg, lm_robust, lm_robust_fe, lme, lme_contrasts, lmer, lmer_ml,
-            lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr,
-            rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
+            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
+            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
+            hurdle_negbin, iv_robust, ivreg, lm_robust, lm_robust_fe, lme,
+            lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal, lrm_robcov, lrm_xy,
+            mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
+            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_robust,
             survreg_strata, svycoxph, svyglm, svyglm_binomial,
             svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"scale"` in `show_fit_stats` is defined only for GEE fits (`geepack::geeglm`).
         i `"qic"` / `"qicu"` are the quasi-likelihood information criteria (Pan 2001), `"scale"` the estimated scale (dispersion) parameter, and `"max_cluster_size"` the largest cluster in the estimation sample.
-      Received by 77:
+      Received by 80:
         "scale": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
-            glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp,
-            glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
-            glmmTMB_reml, glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust,
-            ivreg, lm, lm_robust, lm_robust_fe, lm_weighted, lme, lme_contrasts,
-            lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols,
-            ols_xy, polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
-            survreg, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, glm.nb, glm_gamma, glm_gaussian, glm_logit,
+            glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB,
+            glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
             svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"sigma"` in `show_fit_stats` has no value for any model in the table.
         i The `show_fit_stats` section of ?table_regression lists the models each token is computed for.
-      Received by 46:
-        "sigma": betareg, clm, clm_nominal, clm_scale, clmm, coxph, coxph_strata,
-            cph, cph_xy, fenegbin, flexsurvreg, gam_betar, gam_nb, geeglm,
-            glm.nb, glmer_nb, glmmTMB_beta, glmmTMB_disp, glmmTMB_nbinom1,
-            glmmTMB_nbinom2, glmmTMB_ordinal, hurdle, hurdle_negbin, iv_robust,
-            ivreg, lm_robust, lm_robust_fe, lrm, lrm_ordinal, lrm_xy, mlogit,
-            multinom, polr, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
-            survreg_strata, svycoxph, svyglm, svyglm_binomial,
-            svyglm_quasibinomial, svyolr, zeroinfl, zeroinfl_negbin
+      Received by 48:
+        "sigma": betareg, clm, clm_nominal, clm_scale, clmm, coxph,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, flexsurvreg,
+            gam_betar, gam_nb, geeglm, glm.nb, glmer_nb, glmmTMB_beta,
+            glmmTMB_disp, glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm_robust, lm_robust_fe,
+            lrm, lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, polr,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg_strata,
+            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
+            zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"theta"` in `show_fit_stats` is defined only for NB2 negative-binomial fits (`MASS::glm.nb()`, `lme4::glmer.nb()`, `fixest::fenegbin()`, mgcv `nb()`, pscl `zeroinfl()` or `hurdle()` with `dist = "negbin"`, glmmTMB `nbinom2`), and no model in the table is one.
         i theta is the NB2 dispersion (V = mu + mu<U+00B2>/theta) and alpha its reciprocal. An NB1 fit (glmmTMB `nbinom1`) reports `"delta"` instead; other families have no such parameter.
         i A theta fixed in the call (`negative.binomial(theta)` in `glm()`, mgcv `negbin(theta)` or `nb(theta)`) is not an estimate and has no row.
-      Received by 71:
+      Received by 74:
         "theta": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, feols, feols_iv, feols_nofe, fepois,
-            fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, geeglm,
-            glm_gamma, glm_gaussian, glm_logit, glm_poisson, glm_probit,
-            glm_quasi, glmer, glmmTMB, glmmTMB_beta, glmmTMB_disp,
+            coxph_cluster, coxph_strata, cph, cph_xy, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, geeglm, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
+            glm_probit, glm_quasi, glmer, glmmTMB, glmmTMB_beta, glmmTMB_disp,
             glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_ordinal, glmmTMB_reml,
             glmmTMB_zi, gls, hurdle, iv_robust, ivreg, lm, lm_robust,
             lm_robust_fe, lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm,
-            lrm_ordinal, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
-            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
-            survreg_strata, svycoxph, svyglm, svyglm_binomial,
-            svyglm_quasibinomial, svyolr, tobit, zeroinfl
+            lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy,
+            polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
+            survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
+            svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"waic"` in `show_fit_stats` is defined only for Bayesian fits.
         i They are computed from the posterior draws (Bayesian R<U+00B2>; PSIS-LOO).
-      Received by 78:
+      Received by 81:
         "waic": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
             lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal,
-            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
-            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_strata,
-            svycoxph, svyglm, svyglm_binomial, svyglm_quasibinomial, svyolr,
-            tobit, zeroinfl, zeroinfl_negbin
+            lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm,
+            rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection, survreg,
+            survreg_robust, survreg_strata, svycoxph, svyglm, svyglm_binomial,
+            svyglm_quasibinomial, svyolr, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"weighted_nobs"` in `show_fit_stats` has no value for any model in the table.
         i `"weighted_nobs"` is the weighted count of a model fitted with weights or on a survey design.
-      Received by 72:
+      Received by 75:
         "weighted_nobs": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv, feols_nofe,
-            fepois, fepois_nofe, flexsurvreg, gam, gam_betar, gam_logit, gam_nb,
-            geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit, glm_poisson,
-            glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB, glmmTMB_beta,
-            glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1, glmmTMB_nbinom2,
-            glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls, hurdle,
-            hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe, lme,
-            lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit,
-            multinom, nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit,
-            rms_Glm_xy, rq, selection, survreg, survreg_strata, tobit, zeroinfl,
-            zeroinfl_negbin
+            coxph_cluster, coxph_strata, cph, cph_xy, fenegbin, feols, feols_iv,
+            feols_nofe, fepois, fepois_nofe, flexsurvreg, gam, gam_betar,
+            gam_logit, gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian,
+            glm_logit, glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb,
+            glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
+            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
+            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_robust_fe,
+            lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal, lrm_robcov,
+            lrm_xy, mlogit, multinom, nls, ols, ols_xy, polr, rlm, rms_Glm,
+            rms_Glm_logit, rms_Glm_xy, rq, selection, survreg, survreg_robust,
+            survreg_strata, tobit, zeroinfl, zeroinfl_negbin
       ----
       error: spicy_invalid_input, spicy_error
         Token `"within_r2"` in `show_fit_stats` has no value for any model in the table.
@@ -1967,17 +1987,18 @@
       error: spicy_invalid_input, spicy_error
         Token `"within_r2"` in `show_fit_stats` is defined only for fits that absorb fixed effects (fixest, or estimatr with `fixed_effects =`).
         i `"fixed_effects"` discloses the absorbed fixed effects (one Yes/No row per factor) and `"within_r2"` is the FE-partialed R<U+00B2>; other classes have neither.
-      Received by 71:
+      Received by 74:
         "within_r2": bam, betareg, clm, clm_nominal, clm_scale, clmm, coxph,
-            coxph_strata, cph, cph_xy, flexsurvreg, gam, gam_betar, gam_logit,
-            gam_nb, geeglm, glm.nb, glm_gamma, glm_gaussian, glm_logit,
-            glm_poisson, glm_probit, glm_quasi, glmer, glmer_nb, glmmTMB,
-            glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle, glmmTMB_nbinom1,
-            glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml, glmmTMB_zi, gls,
-            hurdle, hurdle_negbin, iv_robust, ivreg, lm, lm_robust, lm_weighted,
-            lme, lme_contrasts, lmer, lmer_ml, lrm, lrm_ordinal, lrm_xy, mlogit,
-            multinom, nls, ols, ols_xy, polr, rlm, rms_Glm, rms_Glm_logit,
-            rms_Glm_xy, rq, selection, survreg, survreg_strata, svycoxph, svyglm,
+            coxph_cluster, coxph_strata, cph, cph_xy, flexsurvreg, gam,
+            gam_betar, gam_logit, gam_nb, geeglm, glm.nb, glm_gamma,
+            glm_gaussian, glm_logit, glm_poisson, glm_probit, glm_quasi, glmer,
+            glmer_nb, glmmTMB, glmmTMB_beta, glmmTMB_disp, glmmTMB_hurdle,
+            glmmTMB_nbinom1, glmmTMB_nbinom2, glmmTMB_ordinal, glmmTMB_reml,
+            glmmTMB_zi, gls, hurdle, hurdle_negbin, iv_robust, ivreg, lm,
+            lm_robust, lm_weighted, lme, lme_contrasts, lmer, lmer_ml, lrm,
+            lrm_ordinal, lrm_robcov, lrm_xy, mlogit, multinom, nls, ols, ols_xy,
+            polr, rlm, rms_Glm, rms_Glm_logit, rms_Glm_xy, rq, selection,
+            survreg, survreg_robust, survreg_strata, svycoxph, svyglm,
             svyglm_binomial, svyglm_quasibinomial, svyolr, tobit, zeroinfl,
             zeroinfl_negbin
       ----
@@ -2065,29 +2086,29 @@
         spicy compares hierarchies of `coxph` fits through the likelihood-ratio chi-square, so token `"adj_r2_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "adj_r2_change": coxph, coxph_strata
+      Received by 3:
+        "adj_r2_change": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `coxph` fits through the likelihood-ratio chi-square, so token `"f2_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "f2_change": coxph, coxph_strata
+      Received by 3:
+        "f2_change": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `coxph` fits through the likelihood-ratio chi-square, so token `"f_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "f_change": coxph, coxph_strata
+      Received by 3:
+        "f_change": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `coxph` fits through the likelihood-ratio chi-square, so token `"r2_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "r2_change": coxph, coxph_strata
+      Received by 3:
+        "r2_change": coxph, coxph_cluster, coxph_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `cph` fits through the likelihood-ratio chi-square, so token `"adj_r2_change"` in `show_fit_stats` is not computed on this route.
@@ -2501,29 +2522,29 @@
         spicy compares hierarchies of `survreg` fits through the likelihood-ratio chi-square, so token `"adj_r2_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "adj_r2_change": survreg, survreg_strata
+      Received by 3:
+        "adj_r2_change": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `survreg` fits through the likelihood-ratio chi-square, so token `"f2_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "f2_change": survreg, survreg_strata
+      Received by 3:
+        "f2_change": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `survreg` fits through the likelihood-ratio chi-square, so token `"f_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "f_change": survreg, survreg_strata
+      Received by 3:
+        "f_change": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `survreg` fits through the likelihood-ratio chi-square, so token `"r2_change"` in `show_fit_stats` is not computed on this route.
         i The nested comparison for these fits is a likelihood-ratio chi-square, which reports no variance-explained change.
         i Use `"lrt_change"` + `"p_change"`, which is also what `nested = TRUE` selects for this hierarchy by default.
-      Received by 2:
-        "r2_change": survreg, survreg_strata
+      Received by 3:
+        "r2_change": survreg, survreg_robust, survreg_strata
       ----
       error: spicy_invalid_input, spicy_error
         spicy compares hierarchies of `svycoxph` fits through the likelihood-ratio chi-square, so token `"adj_r2_change"` in `show_fit_stats` is not computed on this route.

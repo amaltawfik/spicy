@@ -192,6 +192,62 @@ test_that("twin fits print the same default label", {
   }
 })
 
+# A fit that carries a robust variance of its own is labeled by that
+# variance, never as classical: coxph and survreg keep the model's in
+# fit$naive.var, an rms fit in fit$orig.var.
+test_that("a robust variance carried by the fit is named, not called classical", {
+  skip_on_cran()
+  skip_if_not_installed("survival")
+  skip_if_not_installed("rms")
+  want <- list(
+    coxph_cluster = c(
+      "cluster-robust (Lin-Wei), clusters by id",
+      "robustes aux grappes (Lin-Wei), grappes définies par id"
+    ),
+    survreg_robust = c("robust (Huber)", "robustes (Huber)"),
+    lrm_robcov = c(
+      "cluster-robust (Huber), clusters by id",
+      "robustes aux grappes (Huber), grappes définies par id"
+    )
+  )
+  for (id in names(want)) {
+    fit <- .class_fixture(id)
+    expect_identical(
+      nl_label(nl_note(fit, id, NULL, "en"), "en"),
+      want[[id]][1]
+    )
+    expect_identical(
+      nl_label(nl_note(fit, id, NULL, "fr"), "fr"),
+      want[[id]][2]
+    )
+  }
+  d <- .class_fixture_data()
+  surv <- survival::Surv(d$time, d$status)
+  fits <- list(
+    "robust (Lin-Wei)" = survival::coxph(surv ~ x, d, robust = TRUE),
+    "cluster-robust (Lin-Wei), clusters by id" = survival::coxph(
+      surv ~ x + survival::cluster(id),
+      d
+    ),
+    "cluster-robust (Huber), clusters by id" = survival::survreg(
+      surv ~ x,
+      d,
+      cluster = id
+    )
+  )
+  for (lab in names(fits)) {
+    expect_identical(
+      nl_label(nl_note(fits[[lab]], "x", NULL, "en"), "en"),
+      lab
+    )
+  }
+  # The same fits without a robust variance stay classical.
+  expect_identical(
+    nl_label(nl_note(.class_fixture("coxph"), "coxph", NULL, "en"), "en"),
+    "classical (Fisher information)"
+  )
+})
+
 test_that("an inference sentence of some models only names them", {
   skip_on_cran()
   skip_if_not_installed("lme4")

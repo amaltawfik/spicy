@@ -842,6 +842,23 @@ test_that("Wald change, a robust variance the fit carries: fixest and survreg(ro
     .by_hand_wald(coef(s2)[c("x2", "x3")], s2$var[3:4, 3:4]),
     tolerance = 1e-8
   )
+
+  # coxph(cluster = ) as well: anova.coxph() refuses a robust fit, the
+  # pair gets the Wald test on the fit's own (Lin-Wei) matrix.
+  c1 <- survival::coxph(survival::Surv(time, status) ~ x1, d, cluster = g)
+  c2 <- survival::coxph(
+    survival::Surv(time, status) ~ x1 + x2 + x3,
+    d,
+    cluster = g
+  )
+  gotc <- .wald_pair(c1, c2, "classical")
+  expect_equal(
+    gotc$wald_chi2_change,
+    .by_hand_wald(coef(c2)[c("x2", "x3")], c2$var[2:3, 2:3]),
+    tolerance = 1e-8
+  )
+  expect_true(is.na(gotc$lrt_change))
+  expect_true(is.finite(gotc$aic_change))
 })
 
 test_that("Wald change, the classical vcov keeps every classical test", {
