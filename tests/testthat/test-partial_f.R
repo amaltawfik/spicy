@@ -1372,6 +1372,29 @@ test_that("inline() still cites a term-level test by variable and by level", {
   )
 })
 
+test_that("inline() refuses a level whose header row is empty for its model", {
+  d <- .tl_data()
+  tab <- table_regression(
+    list(lm(mpg ~ wt, d), lm(mpg ~ wt + cyl, d)),
+    show_columns = c("b", "partial_f")
+  )
+  # The header of cyl carries the test of Model 2 only.
+  expect_identical(
+    format(inline(tab, "cyl", level = "6", column = "partial_f", model = 2)),
+    "7.29"
+  )
+  # Model 1 has no cyl: the level row is read, and its cell is empty.
+  err <- expect_error(
+    inline(tab, "cyl", level = "6", column = "partial_f", model = 1),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "The \"partial_f\" cell of this row is empty in the table.",
+    fixed = TRUE
+  )
+})
+
 test_that("the screen shows the N and R-squared of a factor on its header", {
   d <- .tl_data()
   out <- capture.output(print(table_regression_uv(

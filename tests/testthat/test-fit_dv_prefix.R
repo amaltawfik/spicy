@@ -17,6 +17,14 @@ test_that("a qualified call loses its prefix, at any depth", {
   expect_identical(dv(cbind(s, f) ~ x), "cbind(s, f)")
 })
 
+test_that("the formula of a brmsfit is read inside its brmsformula", {
+  # formula() of a brmsfit is a list of class brmsformula that holds the
+  # formula: the dependent variable is read from that formula.
+  bf <- function(f) structure(list(formula = f), class = "brmsformula")
+  expect_identical(.fit_dv(list(), bf(y ~ x)), "y")
+  expect_identical(.fit_dv(list(), bf(base::log(y) ~ x + z)), "log(y)")
+})
+
 test_that("coxph and lm are titled without the prefix", {
   skip_if_not_installed("survival")
   d <- survival::lung

@@ -2090,6 +2090,40 @@ test_that("nested = TRUE is silent on a pair whose parameters cannot be counted"
   expect_null(spicy:::check_nested_terms(list(fit, fit), call = NULL))
 })
 
+test_that("nested = TRUE never asks logLik() of a Bayesian fit", {
+  # logLik() would give Model 2 fewer parameters than Model 1, which is
+  # refused; a Bayesian pair is never counted that way, and is left to
+  # the class guard.
+  called <- 0L
+  local_mocked_bindings(
+    logLik = function(object, ...) {
+      called <<- called + 1L
+      structure(0, df = if (isTRUE(object$big)) 3 else 2)
+    },
+    .package = "stats"
+  )
+  for (cls in c("stanreg", "brmsfit")) {
+    pair <- list(
+      structure(list(big = TRUE), class = cls),
+      structure(list(big = FALSE), class = cls)
+    )
+    expect_no_warning(expect_no_error(
+      spicy:::check_nested_terms(pair, call = NULL)
+    ))
+  }
+  expect_identical(called, 0L)
+  # The same pair of another class is counted by logLik(), and refused.
+  pair <- list(
+    structure(list(big = TRUE), class = "spicy_test_ll"),
+    structure(list(big = FALSE), class = "spicy_test_ll")
+  )
+  expect_error(
+    spicy:::check_nested_terms(pair, call = NULL),
+    class = "spicy_invalid_input"
+  )
+  expect_identical(called, 2L)
+})
+
 test_that("nested = TRUE in a stack keeps the class refusal first", {
   skip_if_not_installed("survey")
   d <- .class_fixture_data()

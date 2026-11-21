@@ -41,6 +41,24 @@ test_that("an ols passed through robcov() says sandwich, whatever the method", {
   )
 })
 
+test_that("a robcov() cluster given as an expression is named by that expression", {
+  skip_if_not_installed("rms")
+  d <- robcov_data()
+  d$h <- factor(rep(1:2, length.out = nrow(d)))
+  o <- rms::ols(y ~ x1 + x2, data = d, x = TRUE, y = TRUE)
+  # No column to read the name from: the label keeps robcov()'s text.
+  expect_identical(
+    as_regression_frame(
+      rms::robcov(o, cluster = interaction(d$g, d$h))
+    )$info$vcov_label,
+    "cluster-robust (sandwich), clusters by interaction(d$g, d$h)"
+  )
+  expect_identical(
+    as_regression_frame(rms::robcov(o, cluster = paste(d$g)))$info$vcov_label,
+    "cluster-robust (sandwich), clusters by paste(d$g)"
+  )
+})
+
 test_that("an lrm passed through robcov() keeps Huber's name", {
   skip_if_not_installed("rms")
   d <- robcov_data()

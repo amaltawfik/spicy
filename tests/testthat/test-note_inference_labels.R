@@ -255,6 +255,41 @@ test_that("a robust variance carried by the fit is named, not called classical",
   )
 })
 
+test_that("a tobit keeps cluster() in its formula, and the note names the cluster", {
+  skip_if_not_installed("AER")
+  skip_if_not_installed("survival")
+  set.seed(3)
+  d <- data.frame(x = rnorm(120), id = rep(1:30, each = 4))
+  d$time <- pmax(0, 1 + 0.5 * d$x + rnorm(120) + rep(rnorm(30), each = 4))
+  fit <- AER::tobit(time ~ x + cluster(id), data = d)
+  # survival rewrites the call of coxph() and survreg(); tobit() does
+  # not, so the cluster is read from the formula.
+  expect_null(fit$call$cluster)
+  expect_false(is.null(fit$naive.var))
+  # The standard errors shown are the robust ones the fit carries.
+  tab <- table_regression(
+    fit,
+    show_columns = c("b", "se"),
+    output = "data.frame"
+  )
+  expect_equal(
+    tab$SE[tab$.row_role == "coef"],
+    unname(sqrt(diag(stats::vcov(fit)))[c("(Intercept)", "x")])
+  )
+  expect_false(isTRUE(all.equal(
+    tab$SE[tab$.row_role == "coef"],
+    sqrt(diag(fit$naive.var))[1:2]
+  )))
+  expect_identical(
+    nl_label(nl_note(fit, "x", NULL, "en"), "en"),
+    "cluster-robust (Huber), clusters by id"
+  )
+  expect_identical(
+    nl_label(nl_note(fit, "x", NULL, "fr"), "fr"),
+    "robustes aux grappes (Huber), grappes définies par id"
+  )
+})
+
 test_that("an inference sentence of some models only names them", {
   skip_on_cran()
   skip_if_not_installed("lme4")

@@ -4590,3 +4590,10 @@ test_that("the events of a non-syntactic factor are counted per level", {
     as.numeric(sum(d$`statut pro` == "b"))
   )
 })
+
+test_that("a name already backticked, empty or missing is not ticked again", {
+  expect_identical(
+    spicy:::.reg_tick_names(c(NA, "", "`a b`", "a b", "x")),
+    c(NA, "", "`a b`", "`a b`", "x")
+  )
+})
