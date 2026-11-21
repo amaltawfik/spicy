@@ -243,7 +243,11 @@ table_regression_uv <- function(
   # name is refused here, naming it, rather than by base R's "unused
   # argument" (whose call deparses the whole body of `table_regression()`)
   # or by partial matching (`effect_size =` reaching `effect_size_digits`).
-  .uv_check_dots(names(as.list(substitute(list(...)))[-1L]), ...length())
+  .screen_check_dots(
+    names(as.list(substitute(list(...)))[-1L]),
+    ...length(),
+    names(formals(table_regression_uv))
+  )
   family_supplied <- !missing(family)
   method_supplied <- !missing(method)
   # A `family` without a `method` can only mean the glm screen (family
@@ -287,36 +291,9 @@ table_regression_uv <- function(
       class = "spicy_invalid_input"
     )
   }
-  # Normalize `family` the way stats::glm() itself does -- the name
-  # ("binomial") or the bare constructor (binomial) becomes the family
-  # object -- so every check below can read `family$family` safely
-  # instead of erroring on `$` for atomic vectors / closures. The
-  # method routing above keys on whether `family` was SUPPLIED, never
-  # on its form, so normalization cannot change the route.
-  if (is.character(family) && length(family) == 1L && !is.na(family)) {
-    family <- tryCatch(
-      get(family, mode = "function", envir = parent.frame()),
-      error = function(e) family
-    )
-  }
-  if (is.function(family)) {
-    family <- tryCatch(family(), error = function(e) family)
-  }
-  if (!inherits(family, "family")) {
-    spicy_abort(
-      c(
-        paste0(
-          "`family` must be a stats::family object, its name, or ",
-          "its constructor function."
-        ),
-        "i" = paste0(
-          "E.g. `family = binomial()`, `family = \"binomial\"`, ",
-          "or `family = binomial`."
-        )
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
+  # The method routing above keys on whether `family` was SUPPLIED,
+  # never on its form, so normalization cannot change the route.
+  family <- .screen_normalize_family(family, parent.frame())
   # Mirror the coxph refusal for the linear screen: a non-gaussian
   # `family` with `method = "lm"` is a contradiction, not a no-op.
   # `gaussian()` with the identity link is exactly what lm fits -- and
@@ -348,25 +325,7 @@ table_regression_uv <- function(
       )
     }
   }
-  # A gaussian/identity glm is lm by another name; in the screen the
-  # right spelling exists as an argument, so point straight at it
-  # (the generic "refit with lm()" caveat would be off-target here).
-  if (
-    identical(method, "glm") &&
-      identical(family$family, "gaussian") &&
-      identical(family$link, "identity")
-  ) {
-    spicy_abort(
-      c(
-        paste0(
-          "`family = gaussian()` with the identity link is ",
-          "`lm` by another name."
-        ),
-        "i" = "Use `method = \"lm\"` for the linear screen."
-      ),
-      class = "spicy_invalid_input"
-    )
-  }
+  .screen_refuse_gaussian_glm(method, family)
 
   if (identical(method, "coxph")) {
     .check_survival_available()
@@ -445,11 +404,10 @@ table_regression_uv <- function(
   )
 
   dots <- list(...)
-  # Cluster contract for the screen: ONE value per row of `data`. The
-  # single-model contract (length = the fit's estimation sample) cannot
-  # be satisfied by one vector when the univariable Ns differ, so the
-  # screen aligns the vector itself: per fit via na.action inside the
-  # bundle's frame method, and below for the multivariable fit.
+  # Cluster contract for the screen: ONE value per row of `data`
+  # (.screen_check_cluster()). The screen aligns the vector itself: per
+  # fit via na.action inside the bundle's frame method, and below for
+  # the multivariable fit.
   # The user-facing column name is captured HERE (the expression is
   # evaluated before table_regression() sees it) and stamped as an
   # attribute after every subset, so the footer can say "clusters by
@@ -457,30 +415,7 @@ table_regression_uv <- function(
   cluster_name <- extract_arg_column_name(
     match.call(expand.dots = TRUE)$cluster
   )
-  if (!is.null(dots$cluster)) {
-    if (!is.atomic(dots$cluster)) {
-      spicy_abort(
-        c(
-          "`cluster` must be a single vector for a univariable screen.",
-          "i" = paste0(
-            "Supply one value per row of `data`; per-model ",
-            "cluster lists are not meaningful here."
-          )
-        ),
-        class = "spicy_invalid_input"
-      )
-    }
-    if (length(dots$cluster) != nrow(data)) {
-      spicy_abort(
-        sprintf(
-          "`cluster` must have one value per row of `data` (%d), not %d.",
-          nrow(data),
-          length(dots$cluster)
-        ),
-        class = "spicy_invalid_input"
-      )
-    }
-  }
+  .screen_check_cluster(dots$cluster, nrow(data))
   want_estimands <- any(
     c(
       "rmst",
@@ -545,122 +480,42 @@ table_regression_uv <- function(
   dots$show_intercept <- show_intercept
 
   if (isTRUE(complete_cases)) {
-    cc <- stats::complete.cases(data[, c(outcome_vars, pred_names)])
-    # `[.data.frame` drops the `label` attribute of plain vectors and
-    # factors (a tibble keeps it): the screen's own subset must not take
-    # the predictors' labels away from `labels = TRUE`.
-    kept <- data[cc, , drop = FALSE]
-    for (nm in c(outcome_vars, pred_names)) {
-      lab <- attr(data[[nm]], "label", exact = TRUE)
-      if (!is.null(lab)) {
-        attr(kept[[nm]], "label") <- lab
-      }
-    }
-    data <- kept
-    if (!is.null(dots$cluster)) dots$cluster <- dots$cluster[cc]
+    cc <- .screen_complete_cases(
+      data,
+      c(outcome_vars, pred_names),
+      dots$cluster
+    )
+    data <- cc$data
+    dots$cluster <- cc$cluster
   }
 
-  # Linear screen on a categorical outcome: lm() cannot model a
-  # factor response. A two-level outcome is coded 0/1 on its second
-  # level -- the glm convention -- so the linear screen is a linear
-  # probability model for P(outcome = second level). Under the
-  # DEFAULTED method the choice is disclosed in a classed warning
-  # (LPM coefficients are probability differences, comparable across
-  # models; Mood 2010); explicit `method = "lm"` is an informed
-  # choice and stays silent. More than two observed levels are
-  # refused: a multinomial outcome has no linear screen.
+  # Linear screen on a categorical outcome: a two-level one is fitted as
+  # a linear probability model, more than two observed levels are
+  # refused (a multinomial outcome has no linear screen).
   if (identical(method, "lm")) {
-    y <- data[[outcome_name]]
-    lpm_level <- NULL
-    if (is.factor(y) || is.character(y) || is.logical(y)) {
-      y_fac <- if (is.logical(y)) {
-        factor(y, levels = c(FALSE, TRUE))
-      } else {
-        droplevels(as.factor(y))
-      }
-      if (nlevels(y_fac) == 2L) {
-        lpm_level <- levels(y_fac)[2L]
-        data[[outcome_name]] <- as.integer(y_fac) - 1L
-      } else {
-        spicy_abort(
-          c(
-            sprintf(
-              "The linear screen needs a numeric or two-level outcome; `%s` has %d observed levels.",
-              outcome_name,
-              nlevels(y_fac)
-            ),
-            "i" = paste0(
-              "Multinomial outcomes have no univariable screen: fit ",
-              "`nnet::multinom()` models and pass them to ",
-              "`table_regression()`."
-            )
-          ),
-          class = "spicy_invalid_data"
-        )
-      }
-    } else if (all(y[!is.na(y)] %in% c(0, 1)) && any(!is.na(y))) {
-      lpm_level <- "1"
-    }
-    if (!is.null(lpm_level) && !method_supplied) {
-      spicy_warn(
-        c(
-          sprintf(
-            "`%s` is binary: the default linear screen fits a linear probability model for P(%s = %s).",
-            outcome_name,
-            outcome_name,
-            lpm_level
-          ),
-          "i" = paste0(
-            "Its coefficients are probability differences ",
-            "(comparable across models; Mood 2010). Consider ",
-            "`vcov = \"HC3\"` for the model's built-in ",
-            "heteroskedasticity."
-          ),
-          "i" = paste0(
-            "For the logistic screen, use `method = \"glm\"` ",
-            "(odds ratios with `exponentiate = TRUE`)."
-          )
-        ),
-        class = "spicy_model_choice"
-      )
-    }
+    data <- .screen_lpm_recode(data, outcome_name, method_supplied)
   }
 
-  bt <- function(x) paste0("`", x, "`")
   # The formula LHS: a backticked column name (lm/glm) or the verbatim
   # Surv() expression (coxph).
   response_str <- if (identical(method, "coxph")) {
     outcome_name
   } else {
-    bt(outcome_name)
-  }
-  fit_one <- function(rhs_names) {
-    f <- stats::reformulate(bt(rhs_names), response = response_str)
-    environment(f) <- environment()
-    switch(
-      method,
-      lm = stats::lm(f, data = data),
-      coxph = survival::coxph(f, data = data),
-      stats::glm(f, data = data, family = family)
-    )
+    paste0("`", outcome_name, "`")
   }
   fits <- vector("list", length(pred_names))
   for (k in seq_along(pred_names)) {
-    fits[[k]] <- tryCatch(
-      fit_one(pred_names[k]),
-      error = function(e) {
-        spicy_abort(
-          c(
-            sprintf(
-              "The univariable model for `%s` failed to fit.",
-              pred_names[k]
-            ),
-            "x" = conditionMessage(e)
-          ),
-          class = "spicy_invalid_data",
-          call = uv_env
-        )
-      }
+    fits[[k]] <- .screen_fit_or_abort(
+      pred_names[k],
+      response_str,
+      method,
+      data,
+      family,
+      failed = sprintf(
+        "The univariable model for `%s` failed to fit.",
+        pred_names[k]
+      ),
+      call = uv_env
     )
   }
   names(fits) <- pred_names
@@ -678,18 +533,14 @@ table_regression_uv <- function(
 
   models <- list(Univariable = bundle)
   if (isTRUE(multivariable)) {
-    fit_multi <- tryCatch(
-      fit_one(pred_names),
-      error = function(e) {
-        spicy_abort(
-          c(
-            "The multivariable model failed to fit.",
-            "x" = conditionMessage(e)
-          ),
-          class = "spicy_invalid_data",
-          call = uv_env
-        )
-      }
+    fit_multi <- .screen_fit_or_abort(
+      pred_names,
+      response_str,
+      method,
+      data,
+      family,
+      failed = "The multivariable model failed to fit.",
+      call = uv_env
     )
     models$Multivariable <- fit_multi
     # The multivariable fit goes through the ordinary single-model path,
@@ -705,16 +556,7 @@ table_regression_uv <- function(
     }
   }
   # Stamp the captured column name (subsetting stripped attributes).
-  if (!is.null(dots$cluster) && !is.na(cluster_name)) {
-    if (is.list(dots$cluster)) {
-      dots$cluster <- lapply(dots$cluster, function(x) {
-        attr(x, "spicy_cluster_name") <- cluster_name
-        x
-      })
-    } else {
-      attr(dots$cluster, "spicy_cluster_name") <- cluster_name
-    }
-  }
+  dots$cluster <- .screen_stamp_cluster(dots$cluster, cluster_name)
 
   # The title the screen builds reaches table_regression() as a typed
   # one: whether the caller typed it is stamped on the table afterwards,
@@ -755,103 +597,20 @@ table_regression_uv <- function(
     }
   }
 
-  # `do.call()` hands `table_regression()` the function itself, so an
-  # error raised in it carries no name a header can print ("Error:"),
-  # and a base error the deparse of its whole body. Both are re-signaled
-  # with the call of the screen, the function the user called.
-  res <- withVisible(withCallingHandlers(
-    do.call(
-      table_regression,
-      c(
-        list(
-          models,
-          show_columns = show_columns,
-          labels = labels,
-          title = title,
-          note = note,
-          note_add = note_add
-        ),
-        dots
-      )
-    ),
-    error = function(e) {
-      cl <- conditionCall(e)
-      if (
-        inherits(e, "spicy_error") || (is.call(cl) && is.function(cl[[1L]]))
-      ) {
-        e$call <- uv_call
-        stop(e)
-      }
-    }
-  ))
-  out <- res$value
-  if (inherits(out, "spicy_regression_table")) {
-    attr(out, "spicy_title_typed") <- title_typed
-  }
-  # The path of a file, the table sent to the clipboard: invisibly.
-  if (res$visible) out else invisible(out)
-}
-
-# The names `...` passes to `table_regression()`: every one an argument
-# of it, typed in full. `models` and the arguments the screen sets itself
-# are not, and an unnamed argument has nowhere to go.
-.uv_check_dots <- function(dot_names, n_dots, call = rlang::caller_env()) {
-  if (n_dots == 0L) {
-    return(invisible(NULL))
-  }
-  if (is.null(dot_names) || any(!nzchar(dot_names))) {
-    spicy_abort(
-      c(
-        "Every argument passed through `...` must be named.",
-        "i" = "They go to `table_regression()`, by name."
-      ),
-      class = "spicy_invalid_input",
-      call = call
-    )
-  }
-  # `layout` lays out several models; the screen is one table.
-  if ("layout" %in% dot_names) {
-    spicy_abort(
-      c(
-        "`layout` does not apply to a univariable screen: the screen is one table.",
-        "i" = "Stack several screens with `table_stack()`."
-      ),
-      class = "spicy_invalid_input",
-      call = call
-    )
-  }
-  known <- setdiff(
-    names(formals(table_regression)),
-    c("models", "layout", names(formals(table_regression_uv)))
-  )
-  bad <- setdiff(dot_names, known)
-  if (length(bad) == 0L) {
-    return(invisible(NULL))
-  }
-  hints <- character(0)
-  for (b in bad) {
-    cand <- known[startsWith(known, b)]
-    if (length(cand) == 1L) {
-      hints <- c(
-        hints,
-        "i" = sprintf(
-          "Did you mean `%s`? Arguments are matched by their full name.",
-          cand
-        )
-      )
-    }
-  }
-  spicy_abort(
+  .screen_call_table_regression(
+    models,
     c(
-      sprintf(
-        "Unknown argument%s passed to `table_regression()` through `...`: %s.",
-        if (length(bad) > 1L) "s" else "",
-        paste0("`", bad, "`", collapse = ", ")
+      list(
+        show_columns = show_columns,
+        labels = labels,
+        title = title,
+        note = note,
+        note_add = note_add
       ),
-      hints
+      dots
     ),
-    class = "spicy_invalid_input",
-    call = call
+    call = uv_call,
+    title_typed = title_typed
   )
 }
 
@@ -956,58 +715,29 @@ as_regression_frame.spicy_uv_screen <- function(
   bundle <- fit
   blocks <- list()
   ns <- integer(0)
-  base_info <- NULL
-  any_singular <- FALSE
-  singular_terms <- character(0)
-  any_partial_es <- FALSE
+  # The frame of every fit (pooled into the composite's `info`), and the
+  # positions of those whose block is kept.
+  frames <- vector("list", length(bundle$fits))
+  kept <- integer(0)
 
   for (k in seq_along(bundle$fits)) {
     pred <- bundle$predictors[k]
-    # The screen-level cluster vector has one value per row of the data;
-    # each univariable fit wants one per row of its OWN estimation sample.
-    cluster_k <- cluster
-    if (!is.null(cluster_k) && is.atomic(cluster_k)) {
-      om <- stats::na.action(bundle$fits[[k]])
-      if (
-        !is.null(om) &&
-          length(cluster_k) != .uv_fit_n(bundle$fits[[k]])
-      ) {
-        cluster_k <- cluster_k[-om]
-      }
-    }
-    fr <- as_regression_frame_validated(
+    fr <- .screen_block_frame(
       bundle$fits[[k]],
       model_id = model_id,
       vcov = vcov,
-      cluster = cluster_k,
+      cluster = .screen_cluster_for_fit(cluster, bundle$fits[[k]]),
       boot_n = boot_n,
       ci_level = ci_level,
       ci_method = ci_method,
-      standardized = "none",
       exponentiate = exponentiate,
-      show_columns = setdiff(show_columns, "n"),
+      show_columns = show_columns,
       show_fit_stats = show_fit_stats,
-      use_ame_satterthwaite = FALSE,
       cluster_name = cluster_name,
       tau = tau,
       at_time = at_time
     )
-    if (is.null(base_info)) {
-      base_info <- fr$info
-    }
-    # Per-fit flags must be pooled, not read off the first fit: any
-    # rank-deficient univariable model keeps its footer disclosure.
-    if (isTRUE(fr$info$extras$has_singular)) {
-      any_singular <- TRUE
-      singular_terms <- c(singular_terms, fr$info$extras$singular_terms)
-    }
-    # Partial effect sizes are computed PER FIT and their rows survive
-    # into the screen, so the pooled frame declares the capability the
-    # wrapped fits actually have -- an lm / glm / mixed screen fills the
-    # column, a coxph or multinom screen leaves it empty and says so.
-    if (isTRUE(fr$info$supports$partial_effect_size)) {
-      any_partial_es <- TRUE
-    }
+    frames[[k]] <- fr
     cf <- fr$coefs
     # A non-syntactic predictor names its rows backticked.
     block <- cf[
@@ -1073,16 +803,7 @@ as_regression_frame.spicy_uv_screen <- function(
     }
     ns <- c(ns, n_k)
     blocks[[length(blocks) + 1L]] <- block
-    # Pool the estimand disclosure across the per-predictor bootstraps:
-    # one shared horizon, the most pessimistic replicate count.
-    es_k <- fr$info$extras$survival_estimands
-    if (!is.null(es_k)) {
-      es_pool <- base_info$extras$survival_estimands %||% es_k
-      es_pool$boot_valid <- min(es_pool$boot_valid, es_k$boot_valid)
-      es_pool$stratified <- isTRUE(es_pool$stratified) ||
-        isTRUE(es_k$stratified)
-      base_info$extras$survival_estimands <- es_pool
-    }
+    kept <- c(kept, k)
   }
   if (length(blocks) == 0L) {
     # nocov start -- defensive: reachable only through the empty-block
@@ -1096,36 +817,22 @@ as_regression_frame.spicy_uv_screen <- function(
   coefs <- do.call(rbind, blocks)
   rownames(coefs) <- NULL
 
-  info <- base_info
-  info$class <- "uv_screen"
-  # The classes the screen stands for. `info$class` is the composite's
-  # own name, which says nothing to a user reading a refusal: a message
-  # about `uv_screen` names an internal object, not the models they
-  # passed. Capability guards read this instead.
-  info$extras$screen_classes <- unique(vapply(
-    bundle$fits,
-    function(f) class(f)[1L],
-    character(1)
-  ))
-  info$n_obs <- max(ns)
-  info$extras$has_singular <- any_singular
-  info$extras$singular_terms <- unique(singular_terms)
-  # The composite is not class "glm", so the footer's vcov theme would
-  # fall back to the frame's raw vcov_label and print a different
-  # string than the multivariable glm's ("Model-based (asymptotic)"
-  # vs "classical (Fisher information)"), splitting the note into
-  # per-model lines. Resolve the label the same way the footer would
-  # for the underlying fits, so the two groups dedupe to one line.
-  info$vcov_label <- format_vcov_label_from_frame(
-    list(info = base_info)
-  )
-  # Model-level statistics are undefined for a screen (one fit per
-  # block): blank them so the fit-stat rows print nothing under the
-  # Univariable group -- the per-predictor N column carries the sample
-  # information instead. The display-blank marker keeps the renderers
-  # from en-dashing these cells like a mixed-table class mismatch.
-  info$fit_stats <- .blank_fit_stats(info$fit_stats)
-  info$extras$fit_stats_display_blank <- TRUE
+  # The per-predictor N column carries the sample information the
+  # blanked fit statistics of the Univariable group leave out.
+  info <- .screen_pool_info(frames, bundle$fits, ns, "uv_screen")
+  # Pool the estimand disclosure across the per-predictor bootstraps:
+  # one shared horizon, the most pessimistic replicate count.
+  es_pool <- frames[[1L]]$info$extras$survival_estimands
+  for (k in kept) {
+    es_k <- frames[[k]]$info$extras$survival_estimands
+    if (!is.null(es_k)) {
+      es_pool <- es_pool %||% es_k
+      es_pool$boot_valid <- min(es_pool$boot_valid, es_k$boot_valid)
+      es_pool$stratified <- isTRUE(es_pool$stratified) ||
+        isTRUE(es_k$stratified)
+    }
+  }
+  info$extras$survival_estimands <- es_pool
   # Disclosure line (footer theme below). Silence when nothing needs
   # saying: equal Ns without complete_cases is self-evident.
   info$extras$uv_disclosure <- if (isTRUE(bundle$complete_cases)) {
@@ -1135,15 +842,6 @@ as_regression_frame.spicy_uv_screen <- function(
   } else {
     NULL
   }
-  # The pooled frame is not a fit: no AME backend, no single R-squared,
-  # nothing to compare a hierarchy against (`nested = TRUE` is refused
-  # upstream). The partial-effect flag is the exception, because those
-  # rows come from the wrapped fits and are already in `coefs`.
-  info$supports$ame <- FALSE
-  info$supports$partial_effect_size <- any_partial_es
-  info$supports$classical_r2 <- FALSE
-  info$supports$nested_lrt <- FALSE
-  info$supports$standardise_refit <- FALSE
 
   new_regression_frame(coefs, info, bundle)
 }
