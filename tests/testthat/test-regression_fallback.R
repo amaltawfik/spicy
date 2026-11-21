@@ -309,6 +309,41 @@ test_that("rich outputs carry the rows and the note", {
   expect_true(any(grepl("broom::tidy()", cells, fixed = TRUE)))
 })
 
+test_that("beside a selection model, the fallback model keeps one column group", {
+  skip_if_not_installed("broom")
+  skip_if_not_installed("sampleSelection")
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  sel <- sampleSelection::selection(
+    lfp ~ age + kids5,
+    wage ~ exper,
+    data = Mroz87,
+    method = "2step"
+  )
+  fit <- stats::arima(datasets::lh, order = c(1, 0, 0))
+  td <- broom::tidy(table_regression(
+    list(Sel = sel, AR = fit),
+    fallback = "broom"
+  ))
+  ar <- td[td$model_id == "AR", ]
+  expect_identical(ar$term, c("ar1", "intercept"))
+  expect_equal(ar$estimate, broom::tidy(fit)$estimate)
+})
+
+test_that("the AME df column beside an lm is the refusal of the fallback", {
+  skip_if_not_installed("broom")
+  fit <- stats::arima(datasets::lh, order = c(1, 0, 0))
+  m <- lm(mpg ~ wt, data = mtcars)
+  expect_error(
+    table_regression(
+      list(m, fit),
+      fallback = "broom",
+      show_columns = c("b", "ame_df")
+    ),
+    "AME column `\"ame_df\"` is not available for model 2",
+    class = "spicy_unsupported"
+  )
+})
+
 test_that("the outcome is read from the formula, else from insight", {
   .local_fake_methods()
   .local_fake_method("formula", "stats", function(x, ...) y ~ x)
