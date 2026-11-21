@@ -1998,7 +1998,7 @@ resolve_label <- function(term, labels) {
 # no model frame a label can be read off (nlme, fixest, geepack). Silent
 # throughout: a variable no source labels keeps its name.
 .reg_model_var_labels <- function(fit) {
-  if (inherits(fit, "spicy_uv_screen")) {
+  if (inherits(fit, "spicy_screen")) {
     return(.reg_union_labels(lapply(fit$fits, .reg_model_var_labels)))
   }
   mf <- tryCatch(stats::model.frame(fit), error = function(e) NULL)

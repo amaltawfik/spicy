@@ -1178,10 +1178,10 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 #     jackknife is inconsistent for non-smooth estimators.
 #   * geeglm, lm_robust, iv_robust, fixest: the fit carries its variance.
 .robust_vcov_support <- function(fit) {
-  # Univariable screen bundle: the request is forwarded to every
-  # underlying fit, so the capability is theirs (homogeneous lm/glm).
-  if (identical(class(fit)[1L], "spicy_uv_screen")) {
-    return(.robust_vcov_support(fit$fits[[1L]]))
+  # A bundle of fits (`spicy_screen`): the request is forwarded to every
+  # underlying fit, so the capability is what they all accept.
+  if (inherits(fit, "spicy_screen")) {
+    return(Reduce(intersect, lapply(fit$fits, .robust_vcov_support)))
   }
   cls <- .reg_vcov_class(fit)
   if (is.na(cls)) {
@@ -1211,8 +1211,15 @@ compute_satt_df_per_coef <- function(fit, vc, cluster) {
 # condition the registry gives them (`CR0 (classical only without x =
 # TRUE, y = TRUE)`), NULL when there are none.
 .vcov_cited <- function(fit) {
-  if (identical(class(fit)[1L], "spicy_uv_screen")) {
-    fit <- fit$fits[[1L]]
+  # A bundle of fits cites the values every fit accepts, and the values
+  # with a condition that its fits name.
+  if (inherits(fit, "spicy_screen")) {
+    cited <- lapply(fit$fits, .vcov_cited)
+    others <- unique(unlist(lapply(cited, `[[`, "others")))
+    return(list(
+      values = Reduce(intersect, lapply(cited, `[[`, "values")),
+      others = if (length(others) > 0L) paste(others, collapse = "; ")
+    ))
   }
   cls <- .reg_vcov_class(fit)
   if (is.na(cls)) {

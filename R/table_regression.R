@@ -4551,7 +4551,7 @@ table_regression <- function(
   }
   for (i in seq_along(models)) {
     m <- models[[i]]
-    if (inherits(m, c("spicy_uv_screen", "svycoxph"))) {
+    if (inherits(m, c("spicy_screen", "svycoxph"))) {
       next
     }
     if (inherits(m, "tobit")) {

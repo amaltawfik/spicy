@@ -1032,8 +1032,8 @@ detect_factor_term_meta <- function(fit) {
 #   * stanreg: names(fit$coefficients) which already match lm/glm
 #     convention.
 .spicy_fixed_coef_names <- function(fit) {
-  if (inherits(fit, "spicy_uv_screen")) {
-    # Univariable-screen bundle: the union over the underlying fits.
+  if (inherits(fit, "spicy_screen")) {
+    # A bundle of fits: the union over the underlying fits.
     return(unique(unlist(lapply(fit$fits, .spicy_fixed_coef_names))))
   }
   if (inherits(fit, "merMod")) {

@@ -244,7 +244,17 @@ align_frames <- function(
       }
       data.frame(
         model_id = rep(model_ids[i], nrow(cf)),
-        outcome = rep(frames[[i]]$info$dv, nrow(cf)),
+        # A frame whose rows come from several models carries the outcome
+        # of each row; a row without one takes the frame's.
+        outcome = if (!is.null(cf$outcome)) {
+          ifelse(
+            is.na(cf$outcome),
+            frames[[i]]$info$dv,
+            as.character(cf$outcome)
+          )
+        } else {
+          rep(frames[[i]]$info$dv, nrow(cf))
+        },
         term = cf$term,
         estimate_type = cf$estimate_type,
         estimate = cf$estimate,
@@ -539,7 +549,8 @@ group_factor_terms <- function(term_order, coefs_long) {
     "factor_term",
     "factor_level",
     "factor_level_pos",
-    "is_reference"
+    "is_reference",
+    "is_intercept"
   )])
   meta <- meta[!duplicated(meta$term), , drop = FALSE]
   rownames(meta) <- meta$term
@@ -571,8 +582,11 @@ group_factor_terms <- function(term_order, coefs_long) {
         drop = FALSE
       ]
     } else {
+      # A block's own intercept (a bundle keys one fit's rows under one
+      # factor_term) opens it, before the reference.
       group_meta[
         order(
+          !group_meta$is_intercept,
           !group_meta$is_reference,
           group_meta$factor_level_pos,
           na.last = TRUE

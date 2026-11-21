@@ -1904,13 +1904,13 @@ validate_show_columns <- function(
   invisible(NULL)
 }
 
-# Replace every univariable-screen bundle in `models` by the fits it
+# Replace every bundle of fits (`spicy_screen`) in `models` by the fits it
 # wraps, so a class gate sees the models that will actually be
 # estimated. Everything else passes through untouched.
 .unwrap_screen_bundles <- function(models) {
   out <- list()
   for (m in models) {
-    if (inherits(m, "spicy_uv_screen")) {
+    if (inherits(m, "spicy_screen")) {
       out <- c(out, m$fits)
     } else {
       out <- c(out, list(m))
@@ -2036,7 +2036,7 @@ absorbs_fixed_effects <- function(model) {
 .term_test_facts <- function(models, eff_models) {
   owner <- unlist(lapply(seq_along(models), function(i) {
     m <- models[[i]]
-    rep(i, if (inherits(m, "spicy_uv_screen")) length(m$fits) else 1L)
+    rep(i, if (inherits(m, "spicy_screen")) length(m$fits) else 1L)
   }))
   disp <- vapply(eff_models, .is_dispersion_glm, logical(1))
   lm_fit <- vapply(

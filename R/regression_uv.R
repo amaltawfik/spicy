@@ -528,7 +528,9 @@ table_regression_uv <- function(
       complete_cases = isTRUE(complete_cases),
       n_data = nrow(data)
     ),
-    class = "spicy_uv_screen"
+    # `spicy_screen` is the parent of every bundle of fits a function
+    # builds itself: the branches that hold for any bundle test it.
+    class = c("spicy_uv_screen", "spicy_screen")
   )
 
   models <- list(Univariable = bundle)
