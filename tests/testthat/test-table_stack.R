@@ -3824,3 +3824,53 @@ test_that("a stacked table refuses fixest models with fixed effects only", {
     "Model 1, Model 3 have no rows to show: they have fixed effects only."
   )
 })
+
+test_that("a fallback panel keeps its own sentence out of the std. errors one", {
+  skip_if_not_installed("broom")
+  ar <- stats::arima(datasets::lh, order = c(1, 0, 0))
+  ols <- lm(mpg ~ wt, data = mtcars)
+  side <- attr(table_regression(list(ols, ar), fallback = "broom"), "note")
+  stacked <- attr(
+    table_regression(list(ols, ar), fallback = "broom", layout = "stacked"),
+    "note"
+  )
+  want <- paste(
+    "Std. errors: Model 1: classical (OLS).",
+    "Model 2: Estimates, standard errors, tests and intervals as returned",
+    "by broom::tidy()."
+  )
+  expect_match(side, want, fixed = TRUE)
+  expect_match(stacked, want, fixed = TRUE)
+  st <- attr(
+    table_stack(
+      OLS = table_regression(ols),
+      AR = table_regression(ar, fallback = "broom")
+    ),
+    "note"
+  )
+  expect_match(
+    st,
+    "Std. errors: OLS: classical (OLS). AR: Estimates, standard errors",
+    fixed = TRUE
+  )
+  # Every panel read by its tidier: the sentence once, bare.
+  both <- attr(
+    table_regression(list(ar, ar), fallback = "broom", layout = "stacked"),
+    "note"
+  )
+  expect_no_match(both, "Std. errors", fixed = TRUE)
+  expect_match(both, "Regression models. Estimates", fixed = TRUE)
+  withr::local_options(spicy.language = "fr")
+  fr <- attr(
+    table_regression(list(ols, ar), fallback = "broom", layout = "stacked"),
+    "note"
+  )
+  expect_match(
+    fr,
+    paste(
+      "Erreurs standards : Modèle 1 : classiques (MCO).",
+      "Modèle 2 : Estimations, erreurs standards"
+    ),
+    fixed = TRUE
+  )
+})

@@ -849,6 +849,10 @@ table_stack <- function(
     ))
   type_txt <- NULL
   vcov_txt <- NULL
+  # A panel of a model read by its tidier (`fallback`) has no estimator to
+  # name: it keeps its own sentence, after its label.
+  fb <- auto & vapply(parts, function(p) anyNA(p$models$vcov), logical(1))
+  se <- auto & !fb
   if (per_model) {
     refs <- panel_labels[auto]
     types <- vapply(parts[auto], function(p) p$models$type, character(1))
@@ -876,10 +880,13 @@ table_stack <- function(
         decimal_mark = mark
       )
     }
-    vcov_txt <- .note_std_errors(
-      vapply(parts[auto], function(p) p$models$vcov, character(1)),
-      refs
-    )
+    vcov_txt <- if (any(se)) {
+      .note_std_errors(
+        vapply(parts[se], function(p) p$models$vcov, character(1)),
+        panel_labels[se],
+        bare = !any(fb)
+      )
+    }
   } else if (
     any(auto) &&
       all(vapply(parts[auto], function(p) length(p$models$vcov) == 1L, NA))
@@ -887,11 +894,13 @@ table_stack <- function(
     # Another panel brings its own note, or none: the estimator of these
     # panels after their labels, in one sentence ("Std. errors: A, B:
     # classical (OLS)."), not the sentence of the panel behind its label.
-    vcov_txt <- .note_std_errors(
-      vapply(parts[auto], function(p) p$models$vcov, character(1)),
-      panel_labels[auto],
-      bare = FALSE
-    )
+    vcov_txt <- if (any(se)) {
+      .note_std_errors(
+        vapply(parts[se], function(p) p$models$vcov, character(1)),
+        panel_labels[se],
+        bare = FALSE
+      )
+    }
   }
   # The adjustment of the p-values, its family each model: worded as side
   # by side ("within each model"), each panel's own sentence, that of a
@@ -978,6 +987,7 @@ table_stack <- function(
     missing = merge_kind(kind("missing")),
     inference = c(
       vcov_txt,
+      if (!is.null(vcov_txt)) merge_kind(kind("vcov", fb)),
       merge_kind(kind(
         if (is.null(vcov_txt)) c("vcov", "inference") else "inference"
       )),

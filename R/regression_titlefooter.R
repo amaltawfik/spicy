@@ -587,7 +587,19 @@ build_regression_footer_from_frames <- function(
         function(f) f$info$extras$title_prefix %||% "Regression",
         character(1)
       ),
-      vcov = vapply(frames, format_vcov_label_from_frame, character(1)),
+      # NA for a model read by its tidier: it has no estimator to name, its
+      # own sentence stays in the `vcov` paragraph (`.fallback_note()`).
+      vcov = vapply(
+        frames,
+        function(f) {
+          if (is.null(f$info$extras$fallback)) {
+            format_vcov_label_from_frame(f)
+          } else {
+            NA_character_
+          }
+        },
+        character(1)
+      ),
       # The method and the family sizes of each model, when the p-values
       # are adjusted.
       p_adjust = if (!is.null(p_adjust) && !identical(p_adjust, "none")) {
