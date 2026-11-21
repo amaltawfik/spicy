@@ -156,6 +156,8 @@
 
   # -- table_regression(): column headers -----------------------------------
   header_events_n = "\u00C9v\u00E9nements/N",
+  header_estimate = "Estimation",
+  label_outcome_measure = "%s (%s)",
   header_df = "ddl",
 
   # -- table_regression(): fit-statistic row labels -------------------------

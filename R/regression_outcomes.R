@@ -646,11 +646,49 @@ as_regression_frame.spicy_outcomes_screen <- function(
     parent_var = coefs$.orig_parent,
     stringsAsFactors = FALSE
   )
+  # The scale of each block: each fit was exponentiated by its own frame
+  # where its link allows it, so the blocks may mix B, OR and IRR. The
+  # column is headed by their common measure, "Estimate" when they
+  # differ (each outcome then names its own, .reg_outcome_block_labels()),
+  # and the composite is never exponentiated again.
+  exp_k <- vapply(
+    frames,
+    function(fr) isTRUE(fr$info$extras$exp_applied),
+    logical(1)
+  )
+  measure <- vapply(
+    frames,
+    function(fr) {
+      if (isTRUE(fr$info$extras$exp_applied)) {
+        fr$info$extras$exp_header
+      } else {
+        spicy_str("header_b")
+      }
+    },
+    character(1)
+  )
+  mixed <- length(unique(measure)) > 1L
+  info$extras$exp_applied <- any(exp_k)
+  info$extras$exp_header <- if (mixed) {
+    spicy_str("header_estimate")
+  } else if (any(exp_k)) {
+    measure[[1L]]
+  } else {
+    NA_character_
+  }
+  info$supports$exponentiate <- FALSE
+  .outcomes_refuse_mixed_t(coefs, show_columns)
   info$extras$outcome_blocks <- data.frame(
     outcome = bundle$outcomes,
     n = ns,
+    exp_applied = exp_k,
+    measure = measure,
+    mixed_scale = mixed,
     stringsAsFactors = FALSE
   )
+  # The frame of each model, for the themes of the note that speak of the
+  # models (.reg_expand_blocks()).
+  info$extras$outcome_infos <- lapply(frames, `[[`, "info")
   info$extras$outcomes_design <- paste(
     c(
       spicy_str("note_outcomes_separate"),
@@ -708,19 +746,89 @@ build_outcomes_design_footer_block_from_frames <- function(frames) {
 # The labels of the rows of a table of outcomes: `terms` (the lookup of
 # `.reg_variable_labels()`) gives each row keyed "<outcome>: <term>" the
 # label of its term, so that `labels` names a level or the exposure once
-# for every block. The outcome itself is labeled under its own name.
+# for every block. The outcome itself is labeled under its own name and,
+# when the blocks are on different scales, followed by its measure
+# ("smoking (OR)"). Returns the labels and the frames, each table of
+# outcomes stamped with the bare label of its outcomes
+# (`outcome_blocks$display`), which the note names its models by.
 .reg_outcome_block_labels <- function(frames, terms) {
-  for (f in frames) {
-    keys <- f$info$extras$outcome_keys
-    if (!is.data.frame(keys) || length(terms) == 0L) {
+  for (i in seq_along(frames)) {
+    keys <- frames[[i]]$info$extras$outcome_keys
+    if (!is.data.frame(keys)) {
       next
     }
-    keyed <- keys$key != keys$outcome &
-      keys$term %in% names(terms) &
-      !keys$key %in% names(terms)
-    terms[keys$key[keyed]] <- terms[keys$term[keyed]]
+    if (length(terms) > 0L) {
+      keyed <- keys$key != keys$outcome &
+        keys$term %in% names(terms) &
+        !keys$key %in% names(terms)
+      terms[keys$key[keyed]] <- terms[keys$term[keyed]]
+    }
+    ob <- frames[[i]]$info$extras$outcome_blocks
+    display <- ob$outcome
+    has <- display %in% names(terms)
+    display[has] <- unname(terms[display[has]])
+    frames[[i]]$info$extras$outcome_blocks$display <- display
+    if (isTRUE(ob$mixed_scale[1L])) {
+      if (is.null(terms)) {
+        terms <- character(0)
+      }
+      terms[ob$outcome] <- spicy_fmt(
+        "label_outcome_measure",
+        display,
+        ob$measure
+      )
+    }
   }
-  terms
+  list(terms = terms, frames = frames)
+}
+
+# The frames of the note's themes that speak of each model (its type, the
+# scale of its coefficients, its standard errors, its abbreviations): a
+# table of outcomes stands for one model per outcome, named by its
+# outcome, each with its own frame. Other frames are returned as they are.
+.reg_expand_blocks <- function(frames) {
+  out <- list()
+  for (f in frames) {
+    infos <- f$info$extras$outcome_infos
+    if (is.null(infos)) {
+      out[[length(out) + 1L]] <- f
+      next
+    }
+    ob <- f$info$extras$outcome_blocks
+    for (k in seq_along(infos)) {
+      sub <- f
+      sub$info <- infos[[k]]
+      sub$info$model_label <- (ob$display %||% ob$outcome)[[k]]
+      # The table shows no fit statistic of its models.
+      sub$info$fit_stats <- f$info$fit_stats
+      sub$info$extras$fit_stats_display_blank <- TRUE
+      sub$coefs <- f$coefs[f$coefs$outcome == ob$outcome[[k]], , drop = FALSE]
+      out[[length(out) + 1L]] <- sub
+    }
+  }
+  out
+}
+
+# The "t" column holds one statistic: a t for a linear model, a z for a
+# glm with a fixed dispersion. Outcomes that mix the two have no header
+# for it.
+.outcomes_refuse_mixed_t <- function(
+  coefs,
+  show_columns,
+  call = rlang::caller_env()
+) {
+  tt <- unique(coefs$test_type[coefs$estimate_type == "B" & !coefs$is_ref])
+  if ("t" %in% show_columns && length(tt[!is.na(tt)]) > 1L) {
+    spicy_abort(
+      c(
+        "The `\"t\"` column is not available when the outcomes mix t and z statistics.",
+        "i" = "Its linear models report a t, its glm models a z: drop `\"t\"` from `show_columns`."
+      ),
+      class = "spicy_invalid_input",
+      call = call
+    )
+  }
+  invisible(NULL)
 }
 
 # The frames of a table of outcomes with each row named by its model's

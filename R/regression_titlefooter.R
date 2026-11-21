@@ -410,6 +410,13 @@ build_regression_footer_from_frames <- function(
     frames,
     decimal_mark = decimal_mark
   )
+  # The themes that speak of each model read a table of outcomes as its
+  # models, one per outcome, named by it (.reg_expand_blocks()): its type,
+  # the scale of its coefficients, the state of its fit, its standard
+  # errors and intervals, the abbreviations of its measures. The others
+  # (the design, the cases, the adjustment, the references) read the one
+  # table.
+  model_frames <- .reg_expand_blocks(frames)
   thresholds_as_rows <- any(vapply(
     frames,
     function(f) isTRUE(any(f$coefs$is_threshold)),
@@ -432,7 +439,7 @@ build_regression_footer_from_frames <- function(
     # coefficients are read against.
     type = .footer_paragraph(
       build_regression_type_footer_block_from_frames(
-        frames,
+        model_frames,
         decimal_mark = decimal_mark
       )
     ),
@@ -452,10 +459,10 @@ build_regression_footer_from_frames <- function(
       ),
       if (coef_note && !thresholds_as_rows) thresholds,
       if (coef_note) {
-        build_exponentiate_footer_block_from_frames(frames, show_columns)
+        build_exponentiate_footer_block_from_frames(model_frames, show_columns)
       },
       build_exp_intercept_footer_block_from_frames(
-        frames,
+        model_frames,
         show_columns,
         show_intercept,
         intercept_label
@@ -467,7 +474,7 @@ build_regression_footer_from_frames <- function(
         coef_note
       ),
       build_singular_footer_block_from_frames(
-        frames,
+        model_frames,
         fit_only = fit_only,
         re_se_ci_shown = re_se_ci_shown
       ),
@@ -477,7 +484,7 @@ build_regression_footer_from_frames <- function(
         build_reference_alternative_footer_block_from_frames(frames)
       },
       build_convergence_footer_block_from_frames(
-        frames,
+        model_frames,
         decimal_mark = decimal_mark
       ),
       build_reference_categories_footer_block_from_frames(
@@ -495,12 +502,12 @@ build_regression_footer_from_frames <- function(
     # the adjustment, the predictive accuracy.
     vcov = .footer_paragraph(
       if (coef_note || any(.NESTED_WALD_CHANGE_TOKENS %in% show_fit_stats)) {
-        build_vcov_footer_block_from_frames(frames)
+        build_vcov_footer_block_from_frames(model_frames)
       }
     ),
     inference = .footer_paragraph(
       build_ci_method_footer_block_from_frames(
-        frames,
+        model_frames,
         show_columns,
         decimal_mark = decimal_mark
       ),
@@ -564,7 +571,7 @@ build_regression_footer_from_frames <- function(
     # force puts them.
     abbreviation_items = build_abbreviations_footer_block_from_frames(
       show_columns,
-      frames,
+      model_frames,
       standardized,
       show_fit_stats = show_fit_stats,
       re_scale = re_scale,
@@ -574,7 +581,7 @@ build_regression_footer_from_frames <- function(
     # of the outputs that head them so (`.reg_bounds_note()`).
     abbreviation_items_bounds = build_abbreviations_footer_block_from_frames(
       show_columns,
-      frames,
+      model_frames,
       standardized,
       show_fit_stats = show_fit_stats,
       re_scale = re_scale,
@@ -590,14 +597,14 @@ build_regression_footer_from_frames <- function(
     # from) and the label of its standard errors.
     models = list(
       type = vapply(
-        frames,
+        model_frames,
         function(f) f$info$extras$title_prefix %||% "Regression",
         character(1)
       ),
       # NA for a model read by its tidier: it has no estimator to name, its
       # own sentence stays in the `vcov` paragraph (`.fallback_note()`).
       vcov = vapply(
-        frames,
+        model_frames,
         function(f) {
           if (is.null(f$info$extras$fallback)) {
             format_vcov_label_from_frame(f)

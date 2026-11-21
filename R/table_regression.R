@@ -3804,7 +3804,11 @@ table_regression <- function(
   # descriptive tables (`.warn_unknown_label_names()`), once the rows are
   # aligned (below).
   var_labs <- .reg_variable_labels(labels, models, frames)
-  var_labs$terms <- .reg_outcome_block_labels(frames, var_labs$terms)
+  # A table of outcomes: the label of each block, and the outcomes the
+  # note names its models by.
+  ob_labs <- .reg_outcome_block_labels(frames, var_labs$terms)
+  var_labs$terms <- ob_labs$terms
+  frames <- ob_labs$frames
   for (i in seq_along(frames)) {
     frames[[i]]$info$dv_display <- var_labs$outcomes[[i]]
   }

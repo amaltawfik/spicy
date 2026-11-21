@@ -218,7 +218,7 @@ test_that("the note says the models are separate and names the covariates", {
   note <- .oc_note(tbl)
   expect_match(
     note,
-    "Linear regression. One model per outcome, fitted separately. Adjusted for age, sex, and education.",
+    "Linear regression models. One model per outcome, fitted separately. Adjusted for age, sex, and education.",
     fixed = TRUE
   )
   plain <- table_regression_outcomes(
@@ -731,11 +731,19 @@ test_that("the model of each outcome follows method and family as typed", {
           "income_k",
           4L
         ],
-        summary(stats::glm(smoking ~ income_k, binomial, data = d))$coefficients[
+        summary(stats::glm(
+          smoking ~ income_k,
+          binomial,
+          data = d
+        ))$coefficients[
           "income_k",
           4L
         ],
-        summary(stats::glm(life_sat_work ~ income_k, poisson, data = d))$coefficients[
+        summary(stats::glm(
+          life_sat_work ~ income_k,
+          poisson,
+          data = d
+        ))$coefficients[
           "income_k",
           4L
         ]
@@ -775,7 +783,11 @@ test_that("a binary outcome of a linear model is a linear probability model", {
   )
   expect_length(w, 2L)
   expect_match(w[[1L]], "P(info_doctor = TRUE)", fixed = TRUE)
-  expect_match(w[[2L]], "family = list(physical_activity = binomial())", fixed = TRUE)
+  expect_match(
+    w[[2L]],
+    "family = list(physical_activity = binomial())",
+    fixed = TRUE
+  )
   # `method = "lm"` typed is a choice: no warning.
   expect_no_warning(
     table_regression_outcomes(
@@ -920,7 +932,152 @@ test_that("a survey design is refused", {
 })
 
 
-# ---- 9. Engines and snapshots ---------------------------------------------
+# ---- 9. Scales of the blocks ----------------------------------------------
+
+test_that("exponentiate = TRUE exponentiates the glm blocks alone", {
+  d <- .oc_soc()
+  expect_no_warning(
+    tbl <- table_regression_outcomes(
+      d,
+      c(wellbeing_score, bmi, smoking),
+      income_k,
+      covariates = c(age, sex),
+      family = list(smoking = stats::binomial()),
+      exponentiate = TRUE
+    )
+  )
+  td <- broom::tidy(tbl)
+  g <- stats::glm(smoking ~ income_k + age + sex, binomial, data = d)
+  f <- stats::lm(bmi ~ income_k + age + sex, data = d)
+  expect_equal(td$estimate[3L], exp(unname(stats::coef(g)[["income_k"]])))
+  expect_equal(
+    td$conf.low[3L],
+    exp(unname(stats::confint.default(g)["income_k", 1L])),
+    tolerance = 1e-8
+  )
+  expect_equal(td$estimate[2L], unname(stats::coef(f)[["income_k"]]))
+  out <- .oc_print(tbl)
+  # The column has no one measure: each outcome names its own.
+  expect_match(out, "Estimate", fixed = TRUE)
+  expect_match(out, "smoking (OR)", fixed = TRUE)
+  expect_match(out, "bmi (B)", fixed = TRUE)
+  note <- .oc_note(tbl)
+  expect_match(
+    note,
+    "wellbeing_score, bmi: linear regression; smoking: logistic regression.",
+    fixed = TRUE
+  )
+  expect_match(
+    note,
+    "smoking: coefficients exponentiated and displayed as OR",
+    fixed = TRUE
+  )
+  expect_match(
+    note,
+    "Std. errors: wellbeing_score, bmi: classical (OLS); smoking: classical (Fisher information).",
+    fixed = TRUE
+  )
+  # The models are named by their labels, without the measure.
+  lab <- .oc_note(table_regression_outcomes(
+    d,
+    c(wellbeing_score, smoking),
+    income_k,
+    family = list(smoking = stats::binomial()),
+    exponentiate = TRUE,
+    labels = TRUE
+  ))
+  expect_match(lab, "Current smoker: logistic regression.", fixed = TRUE)
+  # The note does not list the fit statistics the table does not show.
+  expect_no_match(note, "AIC", fixed = TRUE)
+})
+
+test_that("blocks on one scale share its header", {
+  d <- .oc_soc()
+  or <- table_regression_outcomes(
+    d,
+    c(smoking, dentist_12m),
+    employment_status,
+    method = "glm",
+    exponentiate = TRUE
+  )
+  out <- .oc_print(or)
+  expect_match(out, " OR ", fixed = TRUE)
+  expect_no_match(out, "(OR)", fixed = TRUE)
+  expect_match(out, "smoking:", fixed = TRUE)
+  expect_match(.oc_note(or), "Logistic regression models.", fixed = TRUE)
+  # Unexponentiated, a logit and a linear model are both on the B scale.
+  b <- .oc_print(table_regression_outcomes(
+    d,
+    c(wellbeing_score, smoking),
+    income_k,
+    family = list(smoking = stats::binomial())
+  ))
+  expect_no_match(b, "Estimate", fixed = TRUE)
+  expect_no_match(b, "(B)", fixed = TRUE)
+  # OR and IRR differ: the header is Estimate, each names its measure, and
+  # the note glosses IRR.
+  mix <- table_regression_outcomes(
+    d,
+    c(smoking, life_sat_work),
+    income_k,
+    family = list(smoking = stats::binomial(), life_sat_work = "poisson"),
+    exponentiate = TRUE
+  )
+  out <- .oc_print(mix)
+  expect_match(out, "life_sat_work (IRR)", fixed = TRUE)
+  expect_match(.oc_note(mix), "IRR = incidence rate ratio", fixed = TRUE)
+  # exponentiate = TRUE on linear models alone has no effect, and says so.
+  expect_warning(
+    table_regression_outcomes(
+      d,
+      c(wellbeing_score, bmi),
+      income_k,
+      exponentiate = TRUE
+    ),
+    class = "spicy_ignored_arg"
+  )
+})
+
+test_that("the French table names the measure of each outcome", {
+  d <- .oc_soc()
+  withr::local_options(spicy.language = "fr")
+  out <- .oc_print(table_regression_outcomes(
+    d,
+    c(wellbeing_score, smoking),
+    income_k,
+    family = list(smoking = stats::binomial()),
+    exponentiate = TRUE
+  ))
+  expect_match(out, "Estimation", fixed = TRUE)
+  expect_match(out, "smoking (OR)", fixed = TRUE)
+})
+
+test_that("the t column is refused when linear models and glm mix", {
+  d <- .oc_soc()
+  expect_error(
+    table_regression_outcomes(
+      d,
+      c(wellbeing_score, smoking),
+      income_k,
+      family = list(smoking = stats::binomial()),
+      show_columns = c("b", "t", "p")
+    ),
+    "mix t and z statistics",
+    class = "spicy_invalid_input"
+  )
+  # One kind of model keeps it.
+  tbl <- table_regression_outcomes(
+    d,
+    c(smoking, dentist_12m),
+    income_k,
+    method = "glm",
+    show_columns = c("b", "t", "p")
+  )
+  expect_match(.oc_print(tbl), " z ", fixed = TRUE)
+})
+
+
+# ---- 10. Engines and snapshots --------------------------------------------
 
 test_that("the rich engines render the blocks", {
   d <- .oc_soc()
@@ -985,5 +1142,19 @@ test_that("console snapshot: the intercepts shown", {
     outcomes = c(wellbeing_score, bmi),
     exposure = income_k,
     show_intercept = TRUE
+  )))
+})
+
+test_that("console snapshot: scales mixed under exponentiate = TRUE", {
+  skip_on_cran()
+  d <- .oc_soc()
+  withr::local_options(width = 100)
+  expect_snapshot(print(table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, bmi, smoking),
+    exposure = income_k,
+    covariates = c(age, sex),
+    family = list(smoking = stats::binomial()),
+    exponentiate = TRUE
   )))
 })

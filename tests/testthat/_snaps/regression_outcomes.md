@@ -12,7 +12,7 @@
        bmi             │ 1188  -0.75  [-0.90, -0.60]  <.001 
        life_sat_health │ 1192   0.36  [ 0.31,  0.40]  <.001 
       
-      Note. Linear regression. One model per outcome, fitted separately. Adjusted for age and sex. Each model is fit on its own complete cases; N varies by outcome (1188–1200). Std. errors: classical (OLS). P-values adjusted across the 3 outcomes for 3 tests (Holm method). CI = confidence interval.
+      Note. Linear regression models. One model per outcome, fitted separately. Adjusted for age and sex. Each model is fit on its own complete cases; N varies by outcome (1188–1200). Std. errors: classical (OLS). P-values adjusted across the 3 outcomes for 3 tests (Holm method). CI = confidence interval.
 
 # console snapshot: a factor exposure, one block per outcome
 
@@ -35,7 +35,7 @@
          Unemployed      │        0.14  [-0.48,  0.75]  1.000 
          Inactive        │        0.16  [-0.55,  0.88]  1.000 
       
-      Note. Linear regression. One model per outcome, fitted separately. Adjusted for age and sex. Each model is fit on its own complete cases; N varies by outcome (1188–1200). Std. errors: classical (OLS). P-values adjusted across the 2 outcomes for 6 tests (Holm method). CI = confidence interval.
+      Note. Linear regression models. One model per outcome, fitted separately. Adjusted for age and sex. Each model is fit on its own complete cases; N varies by outcome (1188–1200). Std. errors: classical (OLS). P-values adjusted across the 2 outcomes for 6 tests (Holm method). CI = confidence interval.
 
 # console snapshot: the intercepts shown
 
@@ -54,5 +54,21 @@
          (Intercept)    │       28.41  [27.81, 29.01]  <.001 
          income_k       │       -0.65  [-0.80, -0.50]  <.001 
       
-      Note. Linear regression. One model per outcome, fitted separately. Each model is fit on its own complete cases; N varies by outcome (1188–1200). Std. errors: classical (OLS). P-values adjusted across the 2 outcomes for 2 tests (Holm method). CI = confidence interval.
+      Note. Linear regression models. One model per outcome, fitted separately. Each model is fit on its own complete cases; N varies by outcome (1188–1200). Std. errors: classical (OLS). P-values adjusted across the 2 outcomes for 2 tests (Holm method). CI = confidence interval.
+
+# console snapshot: scales mixed under exponentiate = TRUE
+
+    Code
+      print(table_regression_outcomes(d, outcomes = c(wellbeing_score, bmi, smoking), exposure = income_k,
+      covariates = c(age, sex), family = list(smoking = stats::binomial()), exponentiate = TRUE))
+    Output
+      Regression of each outcome on income_k
+      
+       Variable            │  N    Estimate      95% CI        p   
+      ─────────────────────┼───────────────────────────────────────
+       wellbeing_score (B) │ 1200      5.30  [ 4.73,  5.88]  <.001 
+       bmi (B)             │ 1188     -0.75  [-0.90, -0.60]  <.001 
+       smoking (OR)        │ 1175      0.83  [ 0.75,  0.92]  <.001 
+      
+      Note. wellbeing_score, bmi: linear regression; smoking: logistic regression. One model per outcome, fitted separately. Adjusted for age and sex. smoking: coefficients exponentiated and displayed as OR; CI bounds exponentiated. Each model is fit on its own complete cases; N varies by outcome (1175–1200). Std. errors: wellbeing_score, bmi: classical (OLS); smoking: classical (Fisher information). P-values adjusted across the 3 outcomes for 3 tests (Holm method). CI = confidence interval.
 

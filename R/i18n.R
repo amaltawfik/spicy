@@ -255,6 +255,11 @@
   header_n_upper = "N",
   header_events_n = "Events/N",
   header_b = "B",
+  # The coefficient header of a table of outcomes whose blocks are on
+  # different scales (B, OR, IRR): each outcome then names its measure,
+  # `label_outcome_measure` (the outcome, the measure).
+  header_estimate = "Estimate",
+  label_outcome_measure = "%s (%s)",
   header_p = "p",
   header_df = "df",
   header_pd = "pd",
