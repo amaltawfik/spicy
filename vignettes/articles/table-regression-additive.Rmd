@@ -367,7 +367,8 @@ work are not selected on what the model does not observe, and a
 regression on them alone would do. Here ρ is −0.13, p = .424: these
 data give no sign of such a selection.
 
-Beside another model, the equations go back to rows: each variable has
+Beside another selection model, the equations go back to rows, which
+set the two estimators of a coefficient on one line: each variable has
 a `selection` row, an `outcome` row, or both.
 
 ```{r sel-two, eval = have_sel}
@@ -394,6 +395,23 @@ The help of `selection()` states what these models assume: "a known
 "standard errors tend to be large without a strong exclusion
 restriction", that is, without a variable that enters the selection
 equation and not the outcome equation.
+
+### Beside least squares
+
+A selection model is usually read against the regression it corrects.
+Beside a model of another class, its two equations become two groups
+of columns, and the rows align term by term.
+
+```{r sel-ols, eval = have_sel}
+fit_ols <- lm(wage ~ exper + I(exper^2) + educ + city, data = Mroz87,
+              subset = lfp == 1)
+table_regression(list(OLS = fit_ols, Heckman = fit_ml),
+                 show_columns = c("b", "se"))
+```
+
+A year of education is worth 0.48 by least squares on the women who
+work and 0.46 in the outcome equation. The correction changes little
+here, as ρ suggested.
 
 ### Comparing two selection models
 

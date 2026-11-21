@@ -64,15 +64,18 @@
   first, as a multinomial model alone shows its categories. Its default
   columns are B, SE and p: ask for the interval with `show_columns`. A
   factor or a logical predictor has a header, its levels and a reference
-  row, where the table read `kidsTRUE`. Beside other models, or under
-  `nested = TRUE`, the equations stay in rows. `outcome_labels` renames
-  the two groups. `keep` and `drop` match the terms of such a table
-  without their prefix (`"educ"`), and `inline()` selects the equation
-  with `model`, under its name in any language
-  (`inline(tbl, educ, model = "outcome")`), no longer with `level`.
-  `tidy()` and `output = "long"` keep the prefixed terms and fill
-  `factor_term` and `factor_level`; the long output gains the reference
-  rows.
+  row, where the table read `kidsTRUE`. `outcome_labels` renames the two
+  groups. Beside a model of another class, a selection model shows the
+  same two groups, "Heckman: Outcome" and "Heckman: Selection", and its
+  rows align with those of the other model, as in a table of least
+  squares next to the corrected estimates. Two selection models side by
+  side, and `nested = TRUE`, keep the equations in rows. In the tables
+  with groups, `keep` and `drop` match the terms without their prefix
+  (`"educ"`), and `inline()` selects the equation with `model`, under
+  its name in any language (`model = "outcome"`,
+  `model = "Heckman: outcome"`), no longer with `level`. `tidy()` and
+  `output = "long"` keep the prefixed terms and fill `factor_term` and
+  `factor_level`; the long output gains the reference rows.
 
 * `table_regression()` names the rows of a fixest model as `lm()` and
   `ivreg()` name them: `education` for the endogenous regressor of an IV
