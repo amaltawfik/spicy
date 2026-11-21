@@ -1989,15 +1989,22 @@ resolve_label <- function(term, labels) {
 # The `data` of a fit's call, evaluated where its formula was written, or
 # NULL.
 .reg_call_data <- function(fit) {
-  env <- tryCatch(environment(stats::formula(fit)), error = function(e) NULL)
-  if (!is.environment(env)) {
-    return(NULL)
-  }
-  dat <- tryCatch(
-    eval(stats::getCall(fit)$data, env),
-    error = function(e) NULL
+  # A sampleSelection fit keeps the environment of its call on the terms
+  # of its equations.
+  envs <- list(
+    tryCatch(environment(stats::formula(fit)), error = function(e) NULL),
+    if (inherits(fit, "selection")) environment(fit$termsS)
   )
-  if (is.data.frame(dat)) dat
+  for (env in Filter(is.environment, envs)) {
+    dat <- tryCatch(
+      eval(stats::getCall(fit)$data, env),
+      error = function(e) NULL
+    )
+    if (is.data.frame(dat)) {
+      return(dat)
+    }
+  }
+  NULL
 }
 
 # Labels from several maps, the first map first.

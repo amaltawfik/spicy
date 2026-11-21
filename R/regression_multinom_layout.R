@@ -83,7 +83,10 @@
     for (k in seq_along(ex$frames)) {
       ex$frames[[k]]$info$model_id <- rid[[k]]
       if (identical(ex$model_ids[[k]], "Selection") && !is.na(sel_dv)) {
+        # The name as its own label: table_regression() resolves it as
+        # any outcome (.reg_variable_labels()).
         ex$frames[[k]]$info$dv <- sel_dv
+        ex$frames[[k]]$info$dv_label <- sel_dv
         ex$frames[[k]]$info$dv_display <- sel_dv
       }
     }

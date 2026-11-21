@@ -281,7 +281,7 @@ inline <- function(
     cols <- .inline_model_cols(s, NULL)
     .inline_check_variable_stat(s, var_chr, column, cols)
   } else {
-    cols <- .inline_model_cols(s, model)
+    cols <- .inline_model_cols(s, model, level = level)
   }
 
   # A battery sets the levels of its scale out as columns, not rows:
@@ -1241,8 +1241,17 @@ inline <- function(
 # ("Heckman: Outcome"), match whatever the case.
 # NA when no group, or several, carry it.
 .inline_model_by_id <- function(s, spans, model) {
+  ids <- .inline_group_ids(s, spans)
+  # A selection model beside others: "<model id>: Outcome".
+  eq <- grepl("(^|: )(Outcome|Selection)$", ids)
+  hit <- which(ids %in% model | (eq & tolower(ids) == tolower(model)))
+  if (length(hit) == 1L) hit else NA_integer_
+}
+
+# The model identity the columns of each group carry.
+.inline_group_ids <- function(s, spans) {
   body_cols <- names(.struct_display_body(s$body))
-  ids <- vapply(
+  vapply(
     spans,
     function(ix) {
       id <- unlist(lapply(s$col_meta[body_cols[ix]], `[[`, "model_id"))
@@ -1250,16 +1259,53 @@ inline <- function(
     },
     character(1)
   )
-  # A selection model beside others: "<model id>: Outcome".
-  eq <- grepl("(^|: )(Outcome|Selection)$", ids)
-  hit <- which(ids %in% model | (eq & tolower(ids) == tolower(model)))
-  if (length(hit) == 1L) hit else NA_integer_
+}
+
+# A `model` the table shows as the two equation groups of a selection
+# model ("Heckman" for "Heckman: Outcome"): the hint that gives the call,
+# the group of the equation `level` names when it names one. NULL when
+# `model` names no such model.
+.inline_equation_groups_hint <- function(s, spans, model, level) {
+  if (!rlang::is_string(model)) {
+    return(NULL)
+  }
+  ids <- .inline_group_ids(s, spans)
+  lab <- names(spans)
+  # The label of the model, then the colon of the table language.
+  colon <- paste0("^[[:space:]", intToUtf8(160L), "]*: ")
+  by_label <- startsWith(lab, model) &
+    grepl(colon, substring(lab, nchar(model) + 1L))
+  by_id <- startsWith(tolower(ids), paste0(tolower(model), ": "))
+  hit <- which((by_label | by_id) & grepl(": (Outcome|Selection)$", ids))
+  if (!length(hit)) {
+    return(NULL)
+  }
+  eq <- tolower(sub("^.*: ", "", ids[hit]))
+  if (rlang::is_string(level)) {
+    shown <- tolower(vapply(eq, .reg_equation_display, ""))
+    pick <- tolower(level) == eq | tolower(level) == shown
+    if (any(pick)) {
+      hit <- hit[pick]
+    }
+  }
+  c(
+    "i" = sprintf(
+      "%s is shown as column groups, one per equation: select one with %s.",
+      .quote_val(model),
+      paste(sprintf("`model = %s`", .quote_val(lab[hit])), collapse = " or ")
+    )
+  )
 }
 
 # The candidate columns after the `model` filter: NULL model on a
 # single-model table keeps every column; on a multi-model table the
 # choice is required as soon as a token is ambiguous across models.
-.inline_model_cols <- function(s, model, call = rlang::caller_env()) {
+.inline_model_cols <- function(
+  s,
+  model,
+  call = rlang::caller_env(),
+  level = NULL
+) {
   all_cols <- setdiff(names(s$col_meta), .REG_KEY_VARIABLE)
   spans <- s$spanners
   if (is.null(model)) {
@@ -1319,6 +1365,7 @@ inline <- function(
     spicy_abort(
       c(
         sprintf("Unknown model %s.", .quote_val(as.character(model))),
+        .inline_equation_groups_hint(s, spans, model, level),
         "i" = paste0(
           "Available: ",
           paste(.quote_val(names(spans)), collapse = ", "),

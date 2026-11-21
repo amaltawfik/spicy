@@ -851,3 +851,74 @@ test_that("Excel writes the groups of a selection model beside another model", {
     df[["Heckman: Selection: B"]][df$variable == "educ"]
   )
 })
+
+test_that("the selection variable of the Outcome row is named as any outcome", {
+  fit <- .fit_selection_factors()
+  ols <- .fit_selection_ols()
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  po <- stats::glm(kids5 ~ educ, data = Mroz87, family = stats::poisson)
+  outcome_row <- function(tb) {
+    out <- trimws(unlist(tb[trimws(tb$Variable) == "Outcome", -1L]))
+    unname(out[nzchar(out)])
+  }
+  # A named vector, without the warning of a name that matches nothing.
+  tb <- expect_no_warning(table_regression(
+    list(OLS = ols, Poisson = po, Heckman = fit),
+    labels = c(lfp = "Participation")
+  ))
+  expect_identical(
+    outcome_row(tb),
+    c("wage", "kids5", "wage", "Participation")
+  )
+  # outcome_labels names the models; labels the selection variable.
+  tb <- table_regression(
+    list(OLS = ols, Poisson = po, Heckman = fit),
+    outcome_labels = c("Wage", "Children", "Wage"),
+    labels = c(lfp = "Participation")
+  )
+  expect_identical(
+    outcome_row(tb),
+    c("Wage", "Children", "Wage", "Participation")
+  )
+  # The label attribute, on the attribute base only.
+  attr(Mroz87$lfp, "label") <- "Labour force participation"
+  sel <- sampleSelection::selection(
+    lfp ~ age + educ,
+    wage ~ exper + educ,
+    data = Mroz87
+  )
+  fits <- list(OLS = ols, Poisson = po, Heckman = sel)
+  expect_identical(
+    outcome_row(table_regression(fits, labels = TRUE))[[4L]],
+    "Labour force participation"
+  )
+  expect_identical(outcome_row(table_regression(fits))[[4L]], "lfp")
+})
+
+test_that("inline() gives the group of a model shown as two equation groups", {
+  fit <- .fit_selection_factors()
+  tb <- table_regression(list(OLS = .fit_selection_ols(), Heckman = fit))
+  err <- expect_error(
+    inline(tb, educ, "outcome", model = "Heckman"),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "select one with `model = \"Heckman: Outcome\"`.",
+    fixed = TRUE
+  )
+  err <- expect_error(
+    inline(tb, educ, model = "Heckman"),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "`model = \"Heckman: Outcome\"` or `model = \"Heckman: Selection\"`",
+    fixed = TRUE
+  )
+  err <- expect_error(
+    inline(tb, educ, model = "Probit"),
+    class = "spicy_invalid_input"
+  )
+  expect_no_match(conditionMessage(err), "column groups", fixed = TRUE)
+})

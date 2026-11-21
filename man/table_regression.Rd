@@ -568,7 +568,8 @@ built with \code{FALSE} taking no row. A multinomial model alone has no
 Outcome row, its title naming the outcome; in a stack, its panel
 takes one by this rule, the label once, across its columns. A
 selection model beside a model of another class gives its label to
-its outcome group; its selection group shows the selection variable.
+its outcome group; its selection group shows the selection variable,
+named as any outcome by \code{labels}.
 The console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
 print each label across the columns of its model. gt, which merges
 no cells of the body, moves the row into the header: each label

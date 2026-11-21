@@ -1196,7 +1196,8 @@
 #'   Outcome row, its title naming the outcome; in a stack, its panel
 #'   takes one by this rule, the label once, across its columns. A
 #'   selection model beside a model of another class gives its label to
-#'   its outcome group; its selection group shows the selection variable.
+#'   its outcome group; its selection group shows the selection variable,
+#'   named as any outcome by `labels`.
 #'   The console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
 #'   print each label across the columns of its model. gt, which merges
 #'   no cells of the body, moves the row into the header: each label
@@ -3790,6 +3791,17 @@ table_regression <- function(
     sel_owner <- ex$owner
     sel_labels <- ex$labels
     sel_keys <- ex$keys
+    # The selection variable is named as any outcome of the table:
+    # `labels`, else its `label` attribute on the attribute base.
+    sel_dv <- which(duplicated(sel_owner))
+    sel_disp <- .reg_variable_labels(
+      labels,
+      models[sel_owner[sel_dv]],
+      frames_render[sel_dv]
+    )$outcomes
+    for (k in seq_along(sel_dv)) {
+      frames_render[[sel_dv[[k]]]]$info$dv_display <- sel_disp[[k]]
+    }
   }
 
   # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
@@ -3819,7 +3831,15 @@ table_regression <- function(
   # not know. The panel of a stack names one model only: its driver
   # checks the names against all.
   if (is.null(panel_req)) {
-    .reg_warn_label_names(models, frames, labels, note_labels, filter_terms)
+    # Beside another class, the selection variable is the outcome of a
+    # group, which `labels` names.
+    .reg_warn_label_names(
+      models,
+      if (sel_mixed) frames_render else frames,
+      labels,
+      note_labels,
+      filter_terms
+    )
   }
   aligned <- apply_keep_drop_filter(
     aligned,
@@ -4097,7 +4117,11 @@ table_regression <- function(
     outcome_labels <- ifelse(
       sel_eq,
       outcome_labels[sel_owner],
-      vapply(frames_render, function(f) f$info$dv %||% NA_character_, "")
+      vapply(
+        frames_render,
+        function(f) f$info$dv_display %||% f$info$dv %||% NA_character_,
+        ""
+      )
     )
   }
 
