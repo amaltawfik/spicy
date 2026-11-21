@@ -321,3 +321,20 @@ test_that("the singular caveat names both boundary regimes, never 'exactly zero'
   expect_match(msg, "a correlation of \u00B11", fixed = TRUE)
   expect_false(grepl("exactly zero", msg, fixed = TRUE))
 })
+
+test_that("a mixed fit that keeps a dropped fixed coefficient gets the rank-deficiency note", {
+  skip_if_not_installed("glmmTMB")
+  set.seed(2)
+  d <- data.frame(x = rnorm(120), g = factor(rep(1:12, each = 10)))
+  d$x2 <- 2 * d$x
+  d$y <- 1 + d$x + rnorm(12)[d$g] + rnorm(120)
+  fit <- suppressWarnings(glmmTMB::glmmTMB(y ~ x + x2 + (1 | g), d))
+  expect_true(is.na(glmmTMB::fixef(fit)$cond[["x2"]]))
+  out <- paste(
+    capture.output(print(suppressWarnings(table_regression(fit)))),
+    collapse = "\n"
+  )
+  expect_match(out, "Rank-deficient model", fixed = TRUE)
+  # The random part is not singular: no boundary sentence.
+  expect_no_match(out, "boundary of the parameter space", fixed = TRUE)
+})

@@ -392,6 +392,40 @@ as_regression_frame_validated <- function(fit, ..., fallback = NULL) {
   }
   frame <- as_regression_frame(fit, ...)
   validate_regression_frame(frame)
+  .unestimated_coefs(frame)
+}
+
+# A coefficient the fit could not estimate (an aliased column, a level
+# without observations) has no SE, statistic, p or interval, whatever
+# the class's own accessors return beside it: vcov.coxph() puts 0 on the
+# row and column of an NA coefficient, which printed "SE 0.00" next to a
+# dashed estimate. Asked once here, for every class, and the model gets
+# the rank-deficiency note an lm gets. A mixed frame keeps its own flag,
+# which says that the random part is singular.
+.unestimated_coefs <- function(frame) {
+  cf <- frame$coefs
+  gone <- is.na(cf$estimate) & !cf$is_ref
+  if (!any(gone)) {
+    return(frame)
+  }
+  cols <- c(
+    "std_error",
+    "ci_lower",
+    "ci_upper",
+    "statistic",
+    "p_value",
+    "df",
+    "df_residual",
+    "pd",
+    "test_type"
+  )
+  for (col in intersect(cols, names(cf))) {
+    cf[[col]][gone] <- NA
+  }
+  frame$coefs <- cf
+  if (!.is_mixed_frame(frame)) {
+    frame$info$extras$has_singular <- TRUE
+  }
   frame
 }
 

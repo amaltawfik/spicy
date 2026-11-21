@@ -368,14 +368,16 @@ as_regression_frame.survreg <- function(
   se <- sqrt(diag(V))
   nm <- keep
 
-  sm <- summary(fit)$table
+  # summary.tobit() stops on an aliased coefficient (its overall test
+  # calls car::linearHypothesis()): the Wald z is then computed here.
+  sm <- tryCatch(summary(fit)$table, error = function(e) NULL)
   # survreg uses asymptotic Wald-z (column header is "z" / "p").
   if (!is.null(sm) && all(c("z", "p") %in% colnames(sm))) {
     stat <- unname(sm[nm, "z"])
     p_value <- unname(sm[nm, "p"])
   } else {
-    stat <- est / se # nocov
-    p_value <- 2 * stats::pnorm(-abs(stat)) # nocov
+    stat <- est / se
+    p_value <- 2 * stats::pnorm(-abs(stat))
   }
   df <- rep(Inf, length(est))
   z_crit <- stats::qnorm(0.5 + ci_level / 2)

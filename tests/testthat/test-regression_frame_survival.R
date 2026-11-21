@@ -531,3 +531,82 @@ test_that("survreg Weibull coefs match parameters::model_parameters() (oracle)",
   }
   expect_oracle_covered(n_checked)
 })
+
+# ---- A coefficient the fit could not estimate ------------------------------
+
+.na_coef_data <- function() {
+  skip_if_not_installed("survival")
+  set.seed(1)
+  d <- data.frame(
+    time = rexp(200),
+    status = rbinom(200, 1, 0.8),
+    x = rnorm(200),
+    g = factor(
+      sample(c("a", "b", "c"), 200, TRUE),
+      levels = c("a", "b", "c", "e")
+    )
+  )
+  d$x2 <- 2 * d$x
+  d
+}
+
+test_that("an unestimated coxph coefficient has no SE, statistic, p or CI", {
+  d <- .na_coef_data()
+  fit <- survival::coxph(survival::Surv(time, status) ~ x + g, d)
+  # vcov.coxph() puts 0 on the row of the NA coefficient.
+  expect_identical(unname(stats::vcov(fit)["ge", "ge"]), 0)
+  long <- table_regression(fit, output = "long")
+  row <- long[long$term == "ge", ]
+  expect_true(is.na(row$estimate))
+  for (col in c("std.error", "statistic", "p.value", "conf.low", "conf.high")) {
+    expect_true(is.na(row[[col]]), info = col)
+  }
+  out <- capture.output(print(table_regression(fit)))
+  expect_false(any(grepl(
+    "0.00",
+    grep("^ +e ", out, value = TRUE),
+    fixed = TRUE
+  )))
+  expect_match(
+    paste(out, collapse = "\n"),
+    "Rank-deficient model: dropped coefficient(s) shown as",
+    fixed = TRUE
+  )
+})
+
+test_that("an aliased survreg or tobit coefficient gets the rank-deficiency note", {
+  skip_if_not_installed("AER")
+  d <- .na_coef_data()
+  fits <- list(
+    survival::survreg(survival::Surv(time, status) ~ x + x2, d),
+    AER::tobit(time ~ x + x2, left = 0.5, data = d)
+  )
+  for (fit in fits) {
+    long <- table_regression(fit, output = "long")
+    row <- long[long$term == "x2", ]
+    expect_true(is.na(row$std.error))
+    expect_true(is.na(row$p.value))
+    expect_match(
+      paste(capture.output(print(table_regression(fit))), collapse = "\n"),
+      "Rank-deficient model",
+      fixed = TRUE
+    )
+  }
+})
+
+test_that("RMST and risk-difference columns refuse an unestimated coefficient", {
+  d <- .na_coef_data()
+  fit <- survival::coxph(survival::Surv(time, status) ~ x + g, d)
+  expect_error(
+    table_regression(fit, show_columns = c("b", "rmst"), tau = 1),
+    "Not estimated: `ge`",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    table_regression(fit, show_columns = c("b", "risk_diff"), at_time = 1),
+    "need every coefficient of the fit estimated",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})

@@ -3205,10 +3205,13 @@ build_singular_footer_block_from_frames <- function(
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
+  # A mixed frame's flag says that its random part is singular; a fixed
+  # coefficient it dropped is read off its rows.
   flags <- vapply(
     frames,
     function(f) {
-      isTRUE(f$info$extras$has_singular)
+      isTRUE(f$info$extras$has_singular) ||
+        (.is_mixed_frame(f) && .frame_has_dropped_coefs(f))
     },
     logical(1)
   )
@@ -3221,8 +3224,14 @@ build_singular_footer_block_from_frames <- function(
   # and conditional R-squared rows rest on, and leaves the rank-deficient
   # design, a fact about coefficients it does not show.
   if (fit_only) {
-    affected <- affected[is_mixed]
-    is_mixed <- is_mixed[is_mixed]
+    keep <- is_mixed &
+      vapply(
+        frames[affected],
+        function(f) isTRUE(f$info$extras$has_singular),
+        logical(1)
+      )
+    affected <- affected[keep]
+    is_mixed <- is_mixed[keep]
     if (length(affected) == 0L) {
       return(NULL)
     }
@@ -3256,6 +3265,7 @@ build_singular_footer_block_from_frames <- function(
 #     reporting unreliable values; the footer now tells the
 #     reader why.
 .singular_msg_for_frame <- function(frame, is_mixed, fit_only = FALSE) {
+  rank_msg <- spicy_fmt("note_rank_deficient", spicy_str("cell_undefined"))
   if (isTRUE(is_mixed)) {
     # Table notes state facts about what is shown; the actionable advice
     # ("consider simplifying the random structure") is for the ANALYST
@@ -3268,13 +3278,29 @@ build_singular_footer_block_from_frames <- function(
     # near it), and a random-effect correlation pinned at +/-1 is a
     # boundary estimate with no zero variance at all.
     # A fit-only table shows no variance component: the fact alone.
-    return(spicy_str(
-      if (fit_only) "note_singular_mixed_fit" else "note_singular_mixed"
-    ))
+    # A mixed fit that dropped a fixed coefficient (glmmTMB keeps it as
+    # NA) gets the rank-deficiency fact too, when its rows are shown.
+    msg <- c(
+      if (!isFALSE(frame$info$extras$has_singular)) {
+        spicy_str(
+          if (fit_only) "note_singular_mixed_fit" else "note_singular_mixed"
+        )
+      },
+      if (!fit_only && .frame_has_dropped_coefs(frame)) rank_msg
+    )
+    return(paste(msg, collapse = " "))
   }
   # The note names the glyph the cells carry, so it takes it as an
   # argument rather than re-typing it.
-  spicy_fmt("note_rank_deficient", spicy_str("cell_undefined"))
+  rank_msg
+}
+
+# A coefficient row the fit could not estimate (.unestimated_coefs()).
+.frame_has_dropped_coefs <- function(frame) {
+  cf <- frame$coefs
+  is.data.frame(cf) &&
+    nrow(cf) > 0L &&
+    any(is.na(cf$estimate) & !cf$is_ref)
 }
 
 .is_mixed_frame <- function(frame) {

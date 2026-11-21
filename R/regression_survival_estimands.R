@@ -718,6 +718,28 @@
     return(NULL)
   }
   gates_fn(fit, model_id)
+  # A coefficient the fit could not estimate is read as 0 by predict():
+  # the contrast would be a phantom, and every replicate is refused below.
+  cf <- stats::coef(fit)
+  if (anyNA(cf)) {
+    spicy_abort(
+      c(
+        sprintf(
+          "RMST / risk-difference columns need every coefficient of the fit estimated%s.",
+          .estimand_model_suffix(model_id)
+        ),
+        "x" = sprintf(
+          "Not estimated: %s.",
+          paste0("`", names(cf)[is.na(cf)], "`", collapse = ", ")
+        ),
+        "i" = paste0(
+          "An aliased column or a factor level without observations; ",
+          "drop it from the model and refit."
+        )
+      ),
+      class = "spicy_invalid_input"
+    )
+  }
   data <- data_fn(fit)
 
   # tau = "minmax": the smallest, across the levels of every factor
