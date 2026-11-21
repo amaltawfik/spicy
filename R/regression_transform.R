@@ -40,12 +40,36 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
     if (length(rows) == 0L) {
       next
     }
-    coefs$p_value[rows] <- stats::p.adjust(
-      coefs$p_value[rows],
+    # A term-level test repeats its value on every coefficient row of
+    # its term: the family counts the term once, and the adjusted value
+    # goes back to each of its rows.
+    grp <- if (et %in% .PARTIAL_ES_TOKENS) {
+      .reg_term_test_groups(coefs, rows)
+    } else {
+      seq_along(rows)
+    }
+    adj <- stats::p.adjust(
+      coefs$p_value[rows][!duplicated(grp)],
       method = method
     )
+    coefs$p_value[rows] <- adj[grp]
   }
   coefs
+}
+
+# The term of each row `rows` of a term-level test, as consecutive group
+# numbers: the rows of one term (the levels of a factor, the columns of a
+# `poly()` or of an interaction) follow each other and carry the same
+# test, which no `term` or `parent_var` names for every kind of term.
+.reg_term_test_groups <- function(coefs, rows) {
+  ol <- coefs$outcome_level %||% rep(NA_character_, nrow(coefs))
+  key <- paste(
+    ol[rows],
+    coefs$statistic[rows],
+    coefs$df[rows],
+    coefs$p_value[rows]
+  )
+  cumsum(key != c("", key[-length(key)]))
 }
 
 

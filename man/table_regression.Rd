@@ -303,7 +303,8 @@ model (intercept and reference rows excluded). One of
 \code{\link[stats:p.adjust]{stats::p.adjust()}}; applied per-model and per \code{estimate_type}
 (B and AME p-values are adjusted independently within their
 own families). The tests of the smooth terms of a GAM join the
-B family. Active adjustments are documented in the
+B family. A term-level test (\code{"partial_f"}, \code{"partial_chi2"})
+counts once per term in its own family, a factor's included. Active adjustments are documented in the
 footer (method + family size). See the \emph{Multiple-comparison
 adjustment} section for when this is and is not appropriate.}
 

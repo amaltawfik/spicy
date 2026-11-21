@@ -4066,6 +4066,21 @@ build_p_adjust_footer_block_from_frames <- function(
     )
   }
   sizes <- vapply(frames, family_size, integer(1), type = "B")
+  # A table of term-level columns alone adjusts only its term tests (a
+  # partial F or chi-square), a family of one test per term.
+  test <- intersect(show_columns, c("partial_f", "partial_chi2"))
+  if (length(test) > 0L && all(show_columns %in% .PARTIAL_ES_TOKENS)) {
+    sizes <- vapply(
+      frames,
+      function(f) {
+        cf <- f$coefs
+        rows <- which(cf$estimate_type %in% test & !is.na(cf$p_value))
+        rows <- rows[!(cf$is_ref[rows] %in% TRUE)]
+        length(unique(.reg_term_test_groups(cf, rows)))
+      },
+      integer(1)
+    )
+  }
   # The AME p-values are a family of their own, which the note counts when
   # the table shows them: as large as the coefficients' for a single
   # outcome, k times larger for the AME on k outcome categories.

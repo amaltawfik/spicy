@@ -399,3 +399,103 @@ test_that("keep / drop filters on term names, never on display labels", {
   expect_false(any(td$term == "wt"))
   expect_true(any(td$term == "hp"))
 })
+
+
+# ---- p_adjust: a term-level test counts once per term ---------------------
+
+term_test_p <- function(tb, type) {
+  td <- broom::tidy(tb)
+  td <- td[td$estimate_type == type, ]
+  stats::setNames(td$p.value, td$term)
+}
+
+test_that("p_adjust counts the partial F of a factor once, as car::Anova", {
+  skip_if_not_installed("car")
+  fit <- lm(mpg ~ factor(cyl) + wt + hp, data = mtcars)
+  raw <- car::Anova(fit, type = 2)[["Pr(>F)"]][1:3]
+  raw_b <- summary(fit)$coefficients[-1, 4]
+  for (m in c("holm", "bonferroni")) {
+    tb <- table_regression(
+      fit,
+      show_columns = c("b", "p", "partial_f"),
+      p_adjust = m
+    )
+    # Three tests: the factor's two rows carry the same adjusted value.
+    expect_equal(
+      unname(term_test_p(tb, "partial_f")),
+      stats::p.adjust(raw, m)[c(1, 1, 2, 3)],
+      tolerance = 1e-12,
+      info = m
+    )
+    # The coefficients keep their own family of four.
+    expect_equal(
+      unname(term_test_p(tb, "B")[-1]),
+      unname(stats::p.adjust(raw_b, m)),
+      tolerance = 1e-12,
+      info = m
+    )
+  }
+  # The oracle of the report: Holm on three tests, not four.
+  tb <- table_regression(
+    fit,
+    show_columns = c("b", "p", "partial_f"),
+    p_adjust = "holm"
+  )
+  expect_equal(
+    unname(term_test_p(tb, "partial_f")[c(1, 3, 4)]),
+    c(0.1272254, 0.0004325, 0.1272254),
+    tolerance = 1e-5
+  )
+})
+
+test_that("a factor of five levels and a poly() term count once each", {
+  skip_if_not_installed("car")
+  d <- mtcars
+  d$g <- factor(rep(1:5, length.out = 32))
+  fit <- lm(mpg ~ g + poly(hp, 2) + wt, data = d)
+  raw <- car::Anova(fit, type = 2)[["Pr(>F)"]][1:3]
+  tb <- table_regression(
+    fit,
+    show_columns = c("b", "p", "partial_f"),
+    p_adjust = "holm"
+  )
+  expect_equal(
+    unname(term_test_p(tb, "partial_f")),
+    stats::p.adjust(raw, "holm")[c(1, 1, 1, 1, 2, 2, 3)],
+    tolerance = 1e-12
+  )
+})
+
+test_that("the partial chi-square of a mixed model counts once per term", {
+  skip_if_not_installed("car")
+  skip_if_not_installed("lme4")
+  d <- lme4::sleepstudy
+  d$g <- factor(rep(1:4, length.out = nrow(d)))
+  fit <- lme4::lmer(Reaction ~ Days + g + (1 | Subject), data = d)
+  raw <- car::Anova(fit, type = 2)[["Pr(>Chisq)"]]
+  tb <- table_regression(
+    fit,
+    show_columns = c("b", "p", "partial_chi2"),
+    p_adjust = "bonferroni"
+  )
+  expect_equal(
+    unname(term_test_p(tb, "partial_chi2")),
+    stats::p.adjust(raw, "bonferroni")[c(1, 2, 2, 2)],
+    tolerance = 1e-8
+  )
+})
+
+test_that("the note counts the terms when it reports the term tests", {
+  fit <- lm(mpg ~ factor(cyl) + wt + hp, data = mtcars)
+  note <- function(sc) {
+    attr(table_regression(fit, show_columns = sc, p_adjust = "holm"), "note")
+  }
+  # The term tests alone: three terms.
+  expect_match(note("partial_f"), "adjusted for 3 tests", fixed = TRUE)
+  # Beside the coefficients, the note counts the coefficients' family.
+  expect_match(
+    note(c("b", "p", "partial_f")),
+    "adjusted for 4 tests",
+    fixed = TRUE
+  )
+})
