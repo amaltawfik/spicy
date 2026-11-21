@@ -116,8 +116,8 @@ And when you fit something the guide does not cover: if the class is
 supported, the registry below renders it; if it is not, spicy
 refuses with a classed error that lists the supported classes and
 points to `table_regression_models()` (see *When a class is not
-supported*) -- it never renders an approximation of a model it does
-not understand.
+supported*). It never dresses a model it does not understand as one it
+does: `fallback` shows what a tidier returns for it, and says so.
 
 ## The registry
 
@@ -350,6 +350,22 @@ An unsupported class fails fast with a classed error
 fit <- loess(dist ~ speed, data = cars)
 table_regression(fit)
 ```
+
+The last line of the error gives the way out. `fallback = "broom"` or
+`fallback = "parameters"` builds the rows from what `broom::tidy()` or
+`parameters::model_parameters()` returns for the fit, when one of them
+reads its class:
+
+```{r fallback}
+fit_ar <- arima(lh, order = c(1, 0, 0))
+table_regression(fit_ar, fallback = "parameters")
+```
+
+The table holds one coefficient per row, n and the AIC, and its note
+names the function the numbers come from. spicy does not know how such
+a model was fitted, so it refuses for it what needs that knowledge: a
+robust variance, the AME, `standardized`, `nested = TRUE` and
+`exponentiate`.
 
 The same contract applies inside a family: a request a class cannot
 honor -- `HC*` for `multinom`, AME for `mlogit`, `exponentiate` on

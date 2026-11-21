@@ -372,6 +372,16 @@
 
 ## New features
 
+* `table_regression()` gains `fallback`, for a model class that has no
+  table of its own. Such a class is still refused by default, and the
+  error now says how to proceed: `fallback = "broom"` or
+  `fallback = "parameters"` builds the rows from what `broom::tidy()` or
+  `parameters::model_parameters()` returns, one coefficient per row, with
+  n and the AIC when they can be read. The note names the function the
+  numbers come from. A robust variance, `cluster`, the AME,
+  `standardized`, `nested = TRUE` and `exponentiate` are refused for
+  such a model, since the table does not know how it was fitted.
+
 * `table_regression()` shows the smooth terms of an `mgcv::gam()` or
   `bam()` model in a "Smooth terms (edf)" block: one row per term, with
   its effective degrees of freedom in the B column and the p-value of
