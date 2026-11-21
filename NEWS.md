@@ -770,6 +770,12 @@
   TRUE, y = TRUE)" for an rms model. A survey-design model under `vcov =
   "CR1S"` is pointed to its design instead of to `"CR2"`.
 
+* `table_regression()`: `show_columns = "n"`, `"r2"` or `"adj_r2"` on a
+  table without a univariable screen is refused, and the error points to
+  the fit statistic of the same quantity. These columns belong to
+  `table_regression_uv()` and were dropped without a word. The help of
+  `excel_path` says that each call writes a new workbook.
+
 * `table_regression()`: `labels` names the reference level of a factor
   by the name its coefficient would have. With `Male` as the reference,
   `labels = c(sexMale = "Men")` gives the row "Men (ref.)", the header
