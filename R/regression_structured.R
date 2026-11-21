@@ -872,8 +872,8 @@ build_structured_body <- function(
     body_df <- do.call(rbind, rows)
     rownames(body_df) <- NULL
   }
-  # The term-level cells of a factor on its header row, with their
-  # display text, star and status.
+  # The term-level cells of a factor on its header row; the rows they
+  # leave drop their side-table entries for these cells.
   lift_cols <- struct_col_names[vapply(
     struct_col_names,
     function(nm) isTRUE(col_meta[[nm]]$token %in% .REG_TERM_LEVEL_TOKENS),
@@ -885,16 +885,6 @@ build_structured_body <- function(
     term_blocks,
     lift_cols,
     is_empty = is.na,
-    move = function(from, to, cn) {
-      for (s in side) {
-        tab <- get(s)
-        src <- tab[[as.character(from)]]
-        if (cn %in% names(src)) {
-          tab[[as.character(to)]][cn] <- src[cn]
-          assign(s, tab, inherits = TRUE)
-        }
-      }
-    },
     clear = function(r, cn) {
       for (s in side) {
         tab <- get(s)

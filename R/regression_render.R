@@ -2767,15 +2767,15 @@ format_fixed <- function(x, digits, decimal_mark = ".") {
 # filled cell of a level row (they all carry the same value, or the first
 # alone, as N does), then empties the cells of every row of the block.
 # `blocks`: list(header, rows, levels) of body row indices. Shared by
-# the console body (strings) and the structured body (numbers, with the
-# per-cell display, star and status side tables of each row moved along:
-# `move(from, to, col)` and `clear(row, col)`).
+# the console body (strings) and the structured body (numbers), whose
+# emptied cells drop their entries in the side tables of their row
+# (`clear(row, col)`). A lifted value has none to move: the display and
+# star tables hold other tokens, and the status table only empty cells.
 .reg_lift_term_cells <- function(
   body,
   blocks,
   cols,
   is_empty,
-  move = NULL,
   clear = NULL
 ) {
   if (length(blocks) == 0L || length(cols) == 0L) {
@@ -2789,9 +2789,6 @@ format_fixed <- function(x, digits, decimal_mark = ".") {
         next
       }
       body[[cn]][b$header] <- v[src[1L]]
-      if (!is.null(move)) {
-        move(src[1L], b$header, cn)
-      }
       body[[cn]][b$rows] <- if (is.character(v)) "" else NA
       if (!is.null(clear)) {
         for (r in b$rows) {
