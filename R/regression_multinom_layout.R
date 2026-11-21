@@ -76,10 +76,14 @@
       next
     }
     rid <- paste0(model_ids[[i]], ": ", ex$model_ids)
-    sel_dv <- tryCatch(
-      deparse(models[[i]]$termsS[[2L]]),
-      error = function(e) NA_character_
-    )
+    # A two-step fit keeps no `termsS`: its formula is in the call
+    # (.selection_equation_terms()).
+    sel_terms <- .selection_equation_terms(models[[i]], "selection")
+    sel_dv <- if (is.null(sel_terms)) {
+      NA_character_
+    } else {
+      tryCatch(deparse(sel_terms[[2L]]), error = function(e) NA_character_)
+    }
     for (k in seq_along(ex$frames)) {
       ex$frames[[k]]$info$model_id <- rid[[k]]
       if (identical(ex$model_ids[[k]], "Selection") && !is.na(sel_dv)) {

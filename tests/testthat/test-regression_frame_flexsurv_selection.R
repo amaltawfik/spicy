@@ -893,6 +893,13 @@ test_that("the selection variable of the Outcome row is named as any outcome", {
     "Labour force participation"
   )
   expect_identical(outcome_row(table_regression(fits))[[4L]], "lfp")
+  # A two-step fit keeps no terms of its selection equation: the
+  # variable is read from its call.
+  two <- .fit_selection_factors(two_step = TRUE)
+  expect_identical(
+    outcome_row(table_regression(list(Poisson = po, Heckit = two))),
+    c("kids5", "wage", "lfp")
+  )
 })
 
 test_that("inline() gives the group of a model shown as two equation groups", {
