@@ -466,6 +466,49 @@ test_that("a factor of five levels and a poly() term count once each", {
   )
 })
 
+test_that("two terms with the same F stay two tests", {
+  # A balanced 2 x 2 design gives `a` and `b` bit-identical tests.
+  d <- data.frame(
+    a = rep(c(0, 0, 1, 1), 3),
+    b = rep(c(0, 1, 0, 1), 3),
+    y = rep(c(1, 2, 2, 3), 3) + rep(c(0.1, -0.1, 0), each = 4)
+  )
+  fit <- lm(y ~ a + b, data = d)
+  raw <- anova(fit)[["Pr(>F)"]][1:2]
+  expect_identical(raw[1], raw[2])
+  tb <- table_regression(
+    fit,
+    show_columns = c("b", "p", "partial_f"),
+    p_adjust = "bonferroni"
+  )
+  expect_equal(
+    unname(term_test_p(tb, "partial_f")),
+    2 * raw,
+    tolerance = 1e-12
+  )
+  note <- attr(
+    table_regression(fit, show_columns = "partial_f", p_adjust = "bonferroni"),
+    "note"
+  )
+  expect_match(note, "adjusted for 2 tests", fixed = TRUE)
+})
+
+test_that("an ns() term beside a factor counts once each", {
+  skip_if_not_installed("car")
+  fit <- lm(mpg ~ factor(cyl) + splines::ns(disp, 3) + wt, data = mtcars)
+  raw <- car::Anova(fit, type = 2)[["Pr(>F)"]][1:3]
+  tb <- table_regression(
+    fit,
+    show_columns = c("b", "p", "partial_f"),
+    p_adjust = "holm"
+  )
+  expect_equal(
+    unname(term_test_p(tb, "partial_f")),
+    stats::p.adjust(raw, "holm")[c(1, 1, 2, 2, 2, 3)],
+    tolerance = 1e-12
+  )
+})
+
 test_that("the partial chi-square of a mixed model counts once per term", {
   skip_if_not_installed("car")
   skip_if_not_installed("lme4")

@@ -207,6 +207,7 @@ extract_lm_phase1 <- function(
       outcome = outcome
     )
     if (nrow(partial_rows) > 0L) {
+      coefs_long$model_term <- rep(NA_character_, nrow(coefs_long))
       coefs_long <- rbind(coefs_long, partial_rows)
     }
   }

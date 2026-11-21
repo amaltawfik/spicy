@@ -682,6 +682,7 @@ validate_regression_frame <- function(frame) {
     p_value = "double",
     pd = "double",
     test_type = "character",
+    model_term = "character",
     row_extras = "list"
   )
   for (col in names(optional_specs)) {

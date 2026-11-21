@@ -57,19 +57,16 @@ apply_p_adjust_to_frame_coefs <- function(coefs, method) {
   coefs
 }
 
-# The term of each row `rows` of a term-level test, as consecutive group
-# numbers: the rows of one term (the levels of a factor, the columns of a
-# `poly()` or of an interaction) follow each other and carry the same
-# test, which no `term` or `parent_var` names for every kind of term.
+# The test of each row `rows` of a term-level test, as group numbers: its
+# model term (`model_term`: "factor(cyl)", "poly(hp, 2)", "factor(cyl):wt")
+# within its model and equation (`outcome`, `outcome_level`). A row with
+# no model term is a test of its own.
 .reg_term_test_groups <- function(coefs, rows) {
-  ol <- coefs$outcome_level %||% rep(NA_character_, nrow(coefs))
-  key <- paste(
-    ol[rows],
-    coefs$statistic[rows],
-    coefs$df[rows],
-    coefs$p_value[rows]
-  )
-  cumsum(key != c("", key[-length(key)]))
+  col <- function(nm) coefs[[nm]] %||% rep(NA_character_, nrow(coefs))
+  mt <- col("model_term")[rows]
+  key <- paste(col("outcome")[rows], col("outcome_level")[rows], mt)
+  key[is.na(mt)] <- paste("row", which(is.na(mt)))
+  match(key, unique(key))
 }
 
 

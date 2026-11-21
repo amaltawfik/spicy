@@ -260,6 +260,7 @@ extract_partial_effect_rows <- function(
   }
 
   rows <- list()
+  model_term <- character(0)
   for (i in seq_along(cf_names)) {
     term_idx <- assign_idx[i]
     if (term_idx == 0L) {
@@ -277,6 +278,7 @@ extract_partial_effect_rows <- function(
     fmeta <- factor_meta[[nm]]
     for (tok in active_tokens) {
       vals <- eff[[tok]]
+      model_term <- c(model_term, term_labels[term_idx])
       rows[[length(rows) + 1L]] <- build_one_b_row(
         nm = nm,
         model_id = model_id,
@@ -305,7 +307,10 @@ extract_partial_effect_rows <- function(
   if (length(rows) == 0L) {
     return(empty_coefs_long())
   }
-  do.call(rbind, rows)
+  # The model term each row is tested with, the key of its p_adjust family.
+  out <- do.call(rbind, rows)
+  out$model_term <- model_term
+  out
 }
 
 
@@ -445,6 +450,7 @@ extract_partial_test_rows_glm <- function(
   }
 
   rows <- list()
+  model_term <- character(0)
   for (i in seq_along(cf_names)) {
     term_idx <- assign_idx[i]
     if (term_idx == 0L) {
@@ -481,11 +487,14 @@ extract_partial_test_rows_glm <- function(
       factor_level = fmeta$factor_level %||% NA_character_,
       df_residual = if (is_f) eff$df_residual else NA_real_
     )
+    model_term <- c(model_term, term_labels[term_idx])
   }
   if (length(rows) == 0L) {
     return(empty_coefs_long())
   }
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  out$model_term <- model_term
+  out
 }
 
 
@@ -774,6 +783,7 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
       ci_lower = NA_real_,
       ci_upper = NA_real_,
       test_type = "X2",
+      model_term = term_labels[term_idx],
       stringsAsFactors = FALSE
     )
   }
@@ -801,6 +811,7 @@ type2_wald_hypothesis_matrix <- function(p, rel_cols, focal_cols, V) {
   if (is.null(rows) || nrow(rows) == 0L) {
     return(coefs)
   }
+  coefs$model_term <- rep(NA_character_, nrow(coefs))
   for (col in setdiff(colnames(coefs), colnames(rows))) {
     rows[[col]] <- coefs[[col]][NA_integer_]
   }

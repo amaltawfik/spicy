@@ -201,6 +201,8 @@ as_regression_frame.glm <- function(fit, ...) {
     test_type = as.character(legacy_coefs$test_type),
     stringsAsFactors = FALSE
   )
+  # The model term of a term-level test row (extract_partial_effect_rows()).
+  out$model_term <- legacy_coefs[["model_term"]]
   # m1: an aliased (perfectly collinear) predictor has an NA coefficient and an
   # en-dashed B row, but its AME comes back as a finite 0 -- a misleading
   # "0.00". Mirror the B-row NA so the AME cell en-dashes identically (the

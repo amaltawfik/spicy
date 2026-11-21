@@ -209,8 +209,11 @@ test_that("attach helper pads coefs-only columns on the chi^2 rows", {
   # ... and the coefs-only column is NA on every appended chi^2 row.
   pchi <- out[out$estimate_type == "partial_chi2", ]
   expect_true(all(is.na(pchi$extra_marker)))
-  # Column ordering matches the original coefs schema.
-  expect_identical(colnames(out), colnames(coefs))
+  # Column ordering matches the original coefs schema, with the model term
+  # of the chi^2 rows (NA on the coefficient rows) at the end.
+  expect_identical(colnames(out), c(colnames(coefs), "model_term"))
+  expect_true(all(is.na(out$model_term[out$estimate_type == "B"])))
+  expect_identical(pchi$model_term, c("Days", "period", "period"))
 })
 
 
