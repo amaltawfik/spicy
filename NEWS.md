@@ -232,6 +232,14 @@
   χ² change printed `+204.01` reads `204.01 (4)`, an F-change
   `12.38 (1, 29)`. `output = "data.frame"` keeps the statistic alone.
 
+* `table_regression(nested = TRUE)` refuses a model that has no more
+  parameters than the one before it. Two models that were not nested
+  (`y ~ x`, then `y ~ z`) showed a negative ΔR² and no test, and a
+  hierarchy listed from the largest model to the smallest came out
+  without change rows. A model that adds parameters but leaves out a
+  term of the previous one is compared, with a warning: it may hold the
+  term under another writing, `poly(x, 2)` after `x`.
+
 * `table_categorical_svy()` gains `percent_base` and, like
   `table_categorical()`, estimates its percentages on the observed
   values by default: the `(Missing)` row shows its count and no
@@ -815,7 +823,28 @@
   asymptotic". For an `ols()` model it says "sandwich", since the fit
   does not record whether `robcov()` used Huber's or Efron's method.
   `vcov = "CR0"` on such a model starts again from the model-based
-  variance instead of building a sandwich on a sandwich.
+  variance instead of building a sandwich on a sandwich. Clusters given
+  as `d$id` are named "id" in the note, as for the `cluster` argument.
+
+* `table_regression()`: a `coxph()` model fitted with `cluster =`, a
+  `cluster()` term, `robust = TRUE` or non-integer weights, and a
+  `survreg()` model fitted with `cluster =` or `robust = TRUE`, report
+  the robust variance survival computed, and the note called it
+  "classical (Fisher information)". It now reads "cluster-robust
+  (Lin-Wei), clusters by id" or "robust (Lin-Wei)" for a Cox model, and
+  "(Huber)" for a parametric one, an `AER::tobit()` model included. The
+  standard errors do not change. Under `nested = TRUE`, two such Cox
+  models are compared by a Wald test on that variance, where the table
+  stopped on an error of `anova()`.
+
+* `table_regression()`: under a robust `vcov`, `"f_change"` or
+  `"lrt_change"` in `show_fit_stats` shows the Wald change row that
+  takes its place. The request was refused as having no value.
+
+* `table_regression(nested = TRUE)`: with three models or more, the
+  note says that each change statistic compares a model with the
+  previous one. `anova(m1, m2, m3)` tests each step on the residual
+  variance of the largest model and gives another F.
 
 * `table_regression()`: a note says that an `lrm()` or `ols()` model
   fitted with `penalty =` is penalized, and gives the penalty.
