@@ -13,10 +13,41 @@
 #' covariates, and shows the exposure's coefficients in one table: one
 #' row per outcome for a numeric exposure, one block of rows per outcome
 #' for a factor. The covariates enter every model and are named in the
-#' note, not shown in the table. This version fits linear models
-#' ([stats::lm()]) only.
+#' note, not shown in the table. Each outcome is fitted by [stats::lm()]
+#' or [stats::glm()], as `method` and `family` say.
 #'
 #' @details
+#' # Which model for which outcome
+#' The function does not guess a model from the type of an outcome: it
+#' fits what `method` and `family` say.
+#'
+#' | You type | Models |
+#' |---|---|
+#' | neither `method` nor `family` | every outcome by `lm()` |
+#' | `method = "glm"` | every outcome by `glm()`, `family = binomial()` |
+#' | `family = poisson()` (one family) | every outcome by `glm()` with that family |
+#' | `family = list(smoking = binomial(), visits = poisson())` | the named outcomes by `glm()`, the others by `lm()` |
+#' | a list and `method` | an error: the list already says which outcomes are glm |
+#'
+#' A family is given in any form [stats::glm()] takes: the object, its
+#' name or its constructor, in a list as alone. A name of the list that is
+#' not an outcome is an error, and so is `gaussian()` with the identity
+#' link (leave that outcome out of the list: it is then fitted by `lm()`).
+#' A two-level outcome (a factor, a logical, or 0/1) fitted by `lm()` is a
+#' linear probability model of its second level, and a warning says so
+#' unless `method = "lm"` was typed.
+#'
+#' # Scales
+#' `exponentiate = TRUE` exponentiates the blocks of the glm with a log
+#' or logit link (odds ratios, rate ratios) and leaves the linear models
+#' on their scale. When every block has the same measure, the column is
+#' headed by it ("B", "OR", "IRR"). When the measures differ, the column
+#' is headed "Estimate" and each outcome names its own ("smoking (OR)",
+#' "bmi (B)"); the note says which models are exponentiated. `tidy()` and
+#' `output = "long"` say it row by row in their `exponentiated` column.
+#' The `"t"` column is refused when linear models and glm mix: it would
+#' hold a t for some rows and a z for others.
+#'
 #' # Sample sizes
 #' By default each model is fit on its **own complete cases** (its
 #' outcome, the exposure and the covariates), so N can vary across
@@ -24,10 +55,9 @@
 #' outcome, or on the header of its block (the line that names the
 #' outcome) when the outcome has several rows, and the note gives the
 #' range whenever the Ns differ. The R-squared columns are placed the same
-#' way. Pass
-#' `complete_cases = TRUE` to fit every model on the rows complete on
-#' all the outcomes, the exposure and the covariates; the note then gives
-#' that common N.
+#' way. Pass `complete_cases = TRUE` to fit every model on the rows
+#' complete on all the outcomes, the exposure and the covariates; the
+#' note then gives that common N.
 #'
 #' # Multiplicity
 #' The p-values are adjusted by default (`p_adjust = "holm"`), across
@@ -44,22 +74,32 @@
 #' the table then gives each outcome a block of rows, headed by the
 #' outcome, opening with its model's `(Intercept)` row.
 #'
+#' # Refused
+#' `nested`, `layout`, `keep`, `drop`, `factor_layout = "flat"`,
+#' `outcome_labels`, `standardized`, the AME columns,
+#' `show_columns = "none"` and a survey design are refused, each with
+#' what to do instead; so are an exposure that is also an outcome or a
+#' covariate, and a single outcome (use [table_regression()]).
+#'
 #' @param data A data frame. A survey design is refused with a pointer to
 #'   the design-based route (class `spicy_wrong_regime`).
 #' @param outcomes The outcome columns, two at least (tidyselect, e.g.
-#'   `c(bmi, wellbeing_score)` or `starts_with("life_sat")`). Numeric
-#'   columns only in this version. The exposure is not part of the
-#'   selection: `everything()` and the other helpers skip it, and naming
-#'   it is an error.
+#'   `c(bmi, wellbeing_score)` or `starts_with("life_sat")`). The exposure
+#'   is not part of the selection: `everything()` and the other helpers
+#'   skip it, and naming it is an error.
 #' @param exposure The exposure column (unquoted name, tidyselect): numeric,
 #'   logical, a factor or a character column.
 #' @param covariates Covariate columns entered in every model (tidyselect),
 #'   or `NULL` (default) for unadjusted models. The exposure and the
 #'   outcomes are not part of the selection.
-#' @param method The model fitted for every outcome. `"lm"` (default) is
-#'   the only value accepted in this version.
-#' @param family Not accepted in this version, which fits linear models
-#'   only.
+#' @param method The model fitted for every outcome: `"lm"` (default) or
+#'   `"glm"`. Not combined with a list of families. See *Which model for
+#'   which outcome*.
+#' @param family The family of the glm: one family for every outcome
+#'   (default `binomial()`, used when `method = "glm"`; typing a family
+#'   alone selects `glm()`), or a named list giving a family to some
+#'   outcomes, the others fitted by `lm()`. See *Which model for which
+#'   outcome*.
 #' @param complete_cases Logical, default `FALSE`. `TRUE` fits every
 #'   model on the rows complete on all the outcomes, the exposure and the
 #'   covariates. See *Sample sizes*.
@@ -81,8 +121,10 @@
 #'   names are the columns and the coefficient names (`"sexMale"` names
 #'   the row of one level, in every block). The default reads
 #'   `options(spicy.var_labels)`.
-#' @param title Table title; `NULL` (default) builds
-#'   `"Regression of each outcome on <exposure>"`.
+#' @param title Table title; `NULL` (default) names the model when every
+#'   outcome has the same (`"Linear regression of each outcome on
+#'   <exposure>"`, `"Logistic regression of each outcome on <exposure>"`),
+#'   else `"Regression of each outcome on <exposure>"`.
 #' @param ... Passed to [table_regression()] (`exponentiate`, `vcov`,
 #'   `cluster`, `ci_level`, `digits`, `output`, ...), each by its full
 #'   name: an unknown or abbreviated name is an error. `nested`, `layout`,
@@ -95,10 +137,12 @@
 #'   outcomes are named in the rows and take none.
 #' @inheritParams table_categorical
 #'
-#' @return See [table_regression()] (same output contract). `tidy()` and
-#'   `output = "long"` give one row per outcome and coefficient of the
-#'   exposure, named as R names the coefficient, with the outcome in the
-#'   `outcome` column.
+#' @return See [table_regression()] (same output contract). The first
+#'   column is headed "Outcome". `tidy()` and `output = "long"` give one
+#'   row per outcome and coefficient of the exposure, named as R names the
+#'   coefficient, with the outcome in the `outcome` column and whether the
+#'   estimate is exponentiated in `exponentiated`. `glance()` gives one row
+#'   per outcome, the fit statistics of its model.
 #'
 #' @seealso [table_regression_uv()] for one outcome and several candidate
 #'   predictors, [table_regression()] for models fitted beforehand.
@@ -119,6 +163,17 @@
 #'   exposure   = employment_status,
 #'   covariates = c(age, sex),
 #'   labels     = TRUE
+#' )
+#'
+#' # A binary outcome in a logistic model, beside two linear ones: its
+#' # odds ratio next to their coefficients.
+#' table_regression_outcomes(
+#'   sochealth,
+#'   outcomes     = c(wellbeing_score, bmi, smoking),
+#'   exposure     = age,
+#'   covariates   = sex,
+#'   family       = list(smoking = binomial()),
+#'   exponentiate = TRUE
 #' )
 #' @export
 table_regression_outcomes <- function(
@@ -852,41 +907,30 @@ build_outcomes_design_footer_block_from_frames <- function(frames) {
   out
 }
 
-# The fit statistics glance() reads (`fit_stats`, one row per model, as
-# align_frames() builds them), with the row of a table of outcomes
-# replaced by one row per outcome, each its own model's. NULL when no
-# frame is a table of outcomes: glance() then reads `fit_stats` itself.
-.reg_block_fit_stats <- function(fit_stats, frames, model_ids) {
-  has <- vapply(
-    frames,
-    function(f) !is.null(f$info$extras$block_fit_stats),
-    logical(1)
-  )
-  if (!any(has) || !is.data.frame(fit_stats)) {
+# The fit statistics glance() reads for a table of outcomes: one row per
+# outcome, each its own model's, in the shape align_frames() gives the
+# fit statistics. NULL for any other table: glance() then reads those of
+# align_frames().
+.reg_block_fit_stats <- function(frames, model_ids) {
+  # A table of outcomes is the one model of its call.
+  fs <- if (length(frames) == 1L) frames[[1L]]$info$extras$block_fit_stats
+  if (is.null(fs)) {
     return(NULL)
   }
-  rows <- lapply(seq_along(frames), function(i) {
-    own <- fit_stats[fit_stats$model_id == model_ids[[i]], , drop = FALSE]
-    if (!has[[i]]) {
-      return(own)
-    }
-    ob <- frames[[i]]$info$extras$outcome_blocks
-    fs <- frames[[i]]$info$extras$block_fit_stats
-    Reduce(
-      .rbind_union,
-      lapply(seq_along(fs), function(k) {
-        as.data.frame(
-          .compact_fit_stats_for_legacy(
-            fs[[k]],
-            model_ids[[i]],
-            ob$outcome[[k]]
-          ),
-          stringsAsFactors = FALSE
-        )
-      })
-    )
-  })
-  out <- Reduce(.rbind_union, rows)
+  ob <- frames[[1L]]$info$extras$outcome_blocks
+  out <- Reduce(
+    .rbind_union,
+    lapply(seq_along(fs), function(k) {
+      as.data.frame(
+        .compact_fit_stats_for_legacy(
+          fs[[k]],
+          model_ids[[1L]],
+          ob$outcome[[k]]
+        ),
+        stringsAsFactors = FALSE
+      )
+    })
+  )
   rownames(out) <- NULL
   out
 }

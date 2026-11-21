@@ -28,10 +28,9 @@ table_regression_outcomes(
 the design-based route (class \code{spicy_wrong_regime}).}
 
 \item{outcomes}{The outcome columns, two at least (tidyselect, e.g.
-\code{c(bmi, wellbeing_score)} or \code{starts_with("life_sat")}). Numeric
-columns only in this version. The exposure is not part of the
-selection: \code{everything()} and the other helpers skip it, and naming
-it is an error.}
+\code{c(bmi, wellbeing_score)} or \code{starts_with("life_sat")}). The exposure
+is not part of the selection: \code{everything()} and the other helpers
+skip it, and naming it is an error.}
 
 \item{exposure}{The exposure column (unquoted name, tidyselect): numeric,
 logical, a factor or a character column.}
@@ -40,11 +39,15 @@ logical, a factor or a character column.}
 or \code{NULL} (default) for unadjusted models. The exposure and the
 outcomes are not part of the selection.}
 
-\item{method}{The model fitted for every outcome. \code{"lm"} (default) is
-the only value accepted in this version.}
+\item{method}{The model fitted for every outcome: \code{"lm"} (default) or
+\code{"glm"}. Not combined with a list of families. See \emph{Which model for
+which outcome}.}
 
-\item{family}{Not accepted in this version, which fits linear models
-only.}
+\item{family}{The family of the glm: one family for every outcome
+(default \code{binomial()}, used when \code{method = "glm"}; typing a family
+alone selects \code{glm()}), or a named list giving a family to some
+outcomes, the others fitted by \code{lm()}. See \emph{Which model for which
+outcome}.}
 
 \item{complete_cases}{Logical, default \code{FALSE}. \code{TRUE} fits every
 model on the rows complete on all the outcomes, the exposure and the
@@ -72,8 +75,9 @@ names are the columns and the coefficient names (\code{"sexMale"} names
 the row of one level, in every block). The default reads
 \code{options(spicy.var_labels)}.}
 
-\item{title}{Table title; \code{NULL} (default) builds
-\code{"Regression of each outcome on <exposure>"}.}
+\item{title}{Table title; \code{NULL} (default) names the model when every
+outcome has the same (\code{"Linear regression of each outcome on <exposure>"}, \code{"Logistic regression of each outcome on <exposure>"}),
+else \code{"Regression of each outcome on <exposure>"}.}
 
 \item{...}{Passed to \code{\link[=table_regression]{table_regression()}} (\code{exponentiate}, \code{vcov},
 \code{cluster}, \code{ci_level}, \code{digits}, \code{output}, ...), each by its full
@@ -111,19 +115,54 @@ An \code{NA} or an empty string is an error, and so is \code{note_add} with
 \code{note = FALSE}, which leaves no note to add to.}
 }
 \value{
-See \code{\link[=table_regression]{table_regression()}} (same output contract). \code{tidy()} and
-\code{output = "long"} give one row per outcome and coefficient of the
-exposure, named as R names the coefficient, with the outcome in the
-\code{outcome} column.
+See \code{\link[=table_regression]{table_regression()}} (same output contract). The first
+column is headed "Outcome". \code{tidy()} and \code{output = "long"} give one
+row per outcome and coefficient of the exposure, named as R names the
+coefficient, with the outcome in the \code{outcome} column and whether the
+estimate is exponentiated in \code{exponentiated}. \code{glance()} gives one row
+per outcome, the fit statistics of its model.
 }
 \description{
 Fits one model per outcome, each with the same exposure and the same
 covariates, and shows the exposure's coefficients in one table: one
 row per outcome for a numeric exposure, one block of rows per outcome
 for a factor. The covariates enter every model and are named in the
-note, not shown in the table. This version fits linear models
-(\code{\link[stats:lm]{stats::lm()}}) only.
+note, not shown in the table. Each outcome is fitted by \code{\link[stats:lm]{stats::lm()}}
+or \code{\link[stats:glm]{stats::glm()}}, as \code{method} and \code{family} say.
 }
+\section{Which model for which outcome}{
+The function does not guess a model from the type of an outcome: it
+fits what \code{method} and \code{family} say.\tabular{ll}{
+   You type \tab Models \cr
+   neither \code{method} nor \code{family} \tab every outcome by \code{lm()} \cr
+   \code{method = "glm"} \tab every outcome by \code{glm()}, \code{family = binomial()} \cr
+   \code{family = poisson()} (one family) \tab every outcome by \code{glm()} with that family \cr
+   \code{family = list(smoking = binomial(), visits = poisson())} \tab the named outcomes by \code{glm()}, the others by \code{lm()} \cr
+   a list and \code{method} \tab an error: the list already says which outcomes are glm \cr
+}
+
+
+A family is given in any form \code{\link[stats:glm]{stats::glm()}} takes: the object, its
+name or its constructor, in a list as alone. A name of the list that is
+not an outcome is an error, and so is \code{gaussian()} with the identity
+link (leave that outcome out of the list: it is then fitted by \code{lm()}).
+A two-level outcome (a factor, a logical, or 0/1) fitted by \code{lm()} is a
+linear probability model of its second level, and a warning says so
+unless \code{method = "lm"} was typed.
+}
+
+\section{Scales}{
+\code{exponentiate = TRUE} exponentiates the blocks of the glm with a log
+or logit link (odds ratios, rate ratios) and leaves the linear models
+on their scale. When every block has the same measure, the column is
+headed by it ("B", "OR", "IRR"). When the measures differ, the column
+is headed "Estimate" and each outcome names its own ("smoking (OR)",
+"bmi (B)"); the note says which models are exponentiated. \code{tidy()} and
+\code{output = "long"} say it row by row in their \code{exponentiated} column.
+The \code{"t"} column is refused when linear models and glm mix: it would
+hold a t for some rows and a z for others.
+}
+
 \section{Sample sizes}{
 By default each model is fit on its \strong{own complete cases} (its
 outcome, the exposure and the covariates), so N can vary across
@@ -131,10 +170,9 @@ outcomes. The \code{N} column shows each model's N on the row of its
 outcome, or on the header of its block (the line that names the
 outcome) when the outcome has several rows, and the note gives the
 range whenever the Ns differ. The R-squared columns are placed the same
-way. Pass
-\code{complete_cases = TRUE} to fit every model on the rows complete on
-all the outcomes, the exposure and the covariates; the note then gives
-that common N.
+way. Pass \code{complete_cases = TRUE} to fit every model on the rows
+complete on all the outcomes, the exposure and the covariates; the
+note then gives that common N.
 }
 
 \section{Multiplicity}{
@@ -154,6 +192,14 @@ the table then gives each outcome a block of rows, headed by the
 outcome, opening with its model's \code{(Intercept)} row.
 }
 
+\section{Refused}{
+\code{nested}, \code{layout}, \code{keep}, \code{drop}, \code{factor_layout = "flat"},
+\code{outcome_labels}, \code{standardized}, the AME columns,
+\code{show_columns = "none"} and a survey design are refused, each with
+what to do instead; so are an exposure that is also an outcome or a
+covariate, and a single outcome (use \code{\link[=table_regression]{table_regression()}}).
+}
+
 \examples{
 # A numeric exposure: one row per outcome.
 table_regression_outcomes(
@@ -170,6 +216,17 @@ table_regression_outcomes(
   exposure   = employment_status,
   covariates = c(age, sex),
   labels     = TRUE
+)
+
+# A binary outcome in a logistic model, beside two linear ones: its
+# odds ratio next to their coefficients.
+table_regression_outcomes(
+  sochealth,
+  outcomes     = c(wellbeing_score, bmi, smoking),
+  exposure     = age,
+  covariates   = sex,
+  family       = list(smoking = binomial()),
+  exponentiate = TRUE
 )
 }
 \seealso{

@@ -4041,11 +4041,7 @@ table_regression <- function(
 
   # glance(): a table of outcomes gives the fit statistics of each of its
   # models, one row per outcome, where the table shows none.
-  aligned_data$fit_stats_data <- .reg_block_fit_stats(
-    aligned_data$fit_stats_aligned,
-    frames,
-    model_ids
-  )
+  aligned_data$fit_stats_data <- .reg_block_fit_stats(frames, model_ids)
 
   # ---- Title + footer (Step 7) -------------------------------------------
   # `title` / `note` resolution: NULL -> auto, FALSE -> suppress,

@@ -195,6 +195,28 @@ test_that("the char body and the typed view span the same models", {
   }
 })
 
+test_that("a table of outcomes is one model on both sides, row for row", {
+  # One column group: no model spanner in the char body nor in the typed
+  # view, and the same rows, labeled alike.
+  d <- as.data.frame(sochealth)
+  x <- table_regression_outcomes(
+    d,
+    outcomes = c(bmi, wellbeing_score, smoking),
+    exposure = sex,
+    covariates = age,
+    family = list(smoking = binomial()),
+    exponentiate = TRUE
+  )
+  s <- as_structured(x)
+  expect_null(attr(x, "spanners"))
+  expect_length(s$spanners, 0L)
+  expect_identical(trimws(s$body$Variable), trimws(x$Variable))
+  expect_identical(
+    unique(s$body$.variable),
+    c("bmi", "wellbeing_score", "smoking")
+  )
+})
+
 test_that(".model_spanner_ranges – the contract of the shared producer", {
   lmap <- stats::setNames(c("A", "B", "C"), c("M1", "M2", "M3"))
 

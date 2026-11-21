@@ -857,6 +857,49 @@ test_that("the identity columns survive the flat layout and the uv screen", {
   )
 })
 
+test_that("a table of outcomes reaches every engine as printed", {
+  # One block per outcome, each on its own scale, the N on the header of
+  # the block: the console body, cell for cell, in every engine.
+  d <- .ep_data()
+  build <- function(o) {
+    table_regression_outcomes(
+      d,
+      outcomes = c(wellbeing_score, dentist_12m),
+      exposure = educ,
+      covariates = c(age, sex),
+      family = list(dentist_12m = stats::binomial()),
+      exponentiate = TRUE,
+      show_columns = c("n", "b", "p"),
+      output = o
+    )
+  }
+  console <- .ep_expect_all_engines(build)
+  expect_identical(
+    console[["Variable"]][c(1L, 5L)],
+    c("wellbeing_score (B):", "dentist_12m (OR):")
+  )
+  expect_identical(console[["N"]][c(1L, 5L)], c("1200", "1200"))
+  expect_true(all(console[["N"]][-c(1L, 5L)] == ""))
+  # The identity columns name each block by its outcome.
+  s <- as_structured(build("default"))
+  expect_identical(
+    unique(s$body$.variable),
+    c("wellbeing_score", "dentist_12m")
+  )
+  # The numeric exposure: one row per outcome.
+  flat <- function(o) {
+    table_regression_outcomes(
+      d,
+      outcomes = c(wellbeing_score, bmi),
+      exposure = age,
+      show_columns = c("n", "b", "se", "p"),
+      output = o
+    )
+  }
+  console <- .ep_expect_all_engines(flat)
+  expect_identical(console[["Variable"]], c("wellbeing_score", "bmi"))
+})
+
 test_that("subordinate blocks name themselves in the identity columns", {
   skip_if_not_installed("MASS")
   fit <- MASS::polr(
