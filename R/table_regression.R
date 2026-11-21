@@ -3770,6 +3770,7 @@ table_regression <- function(
       nested = isTRUE(nested) && length(models) >= 2L
     )
     .reg_check_df_column(models, frames, show_columns)
+    .reg_check_n_column(frames, show_columns)
   }
   if (fit_only) {
     .reg_warn_ic_not_comparable(models, frames, show_fit_stats)
@@ -5161,6 +5162,63 @@ table_regression <- function(
           "The column gives the degrees of freedom of t tests (`lm`, a ",
           "`glm` whose dispersion is estimated, `nlme::lme`, a survey ",
           "design, a cluster-robust `vcov = \"CR2\"`, ...)."
+        )
+      }
+    ),
+    class = "spicy_invalid_input",
+    call = call
+  )
+}
+
+# `show_columns = "n"`, `"r2"` and `"adj_r2"` print the sample size and
+# the R^2 of each univariable model of a screen (on the first row of its
+# block). An ordinary model has one of each, a fit statistic: the column
+# would be empty and the renderer drops it, so the call is refused.
+.reg_check_n_column <- function(
+  frames,
+  show_columns,
+  call = rlang::caller_env()
+) {
+  col <- c(n = "n_obs", r2 = "r2", adj_r2 = "adj_r2")
+  tk <- intersect(names(col), show_columns)
+  has <- vapply(
+    tk,
+    function(k) {
+      any(vapply(
+        frames,
+        function(fr) any(!is.na(fr$coefs[[col[[k]]]])),
+        logical(1)
+      ))
+    },
+    logical(1)
+  )
+  if (all(has)) {
+    return(invisible(NULL))
+  }
+  tk <- tk[!has][[1L]]
+  is_n <- identical(tk, "n")
+  spicy_abort(
+    c(
+      sprintf(
+        paste0(
+          "Token `\"%s\"` in `show_columns` has no value for any model in ",
+          "the table: the column gives the %s of each univariable model of ",
+          "`table_regression_uv()`."
+        ),
+        tk,
+        if (is_n) "sample size" else "R\u00B2"
+      ),
+      "i" = if (is_n) {
+        paste0(
+          "The sample size of a model is the fit statistic `\"nobs\"` of ",
+          "`show_fit_stats`, its number of events `\"n_events\"` there ",
+          "(Cox) or in `show_columns` (binary outcome)."
+        )
+      } else {
+        sprintf(
+          "The %s of a model is the fit statistic `\"%s\"` of `show_fit_stats`.",
+          if (identical(tk, "r2")) "R\u00B2" else "adjusted R\u00B2",
+          tk
         )
       }
     ),

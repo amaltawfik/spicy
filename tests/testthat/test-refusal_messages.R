@@ -12,6 +12,7 @@
 
 rm_tokens <- c(
   "df",
+  "n",
   "beta",
   "n_events",
   "pd",

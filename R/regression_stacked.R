@@ -292,6 +292,7 @@
     )
   }
   .reg_check_df_column(models, frames, arg("show_columns"), call = env)
+  .reg_check_n_column(frames, arg("show_columns"), call = env)
   .reg_warn_label_names(
     models,
     frames,

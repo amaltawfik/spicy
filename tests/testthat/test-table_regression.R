@@ -2688,12 +2688,39 @@ test_that("ci_level moves B, beta, AME and partial CI bounds together", {
   expect_lt(b90$conf.high, b95$conf.high)
 })
 
-test_that("'n' column is dropped for a plain multivariable fit", {
+test_that("'n' column is refused for a plain multivariable fit", {
   skip_on_cran()
-  # rd-core:show-columns-n-uv-populated (no per-row N data -> no column)
+  # rd-core:show-columns-n-uv-populated (no per-row N data -> refused,
+  # as `df` is when it has nothing to show)
   fit <- lm(mpg ~ wt + cyl, data = mt)
-  out <- table_regression(fit, show_columns = c("b", "n"))
-  expect_identical(names(out), c("Variable", "B"))
+  err <- expect_error(
+    table_regression(fit, show_columns = c("b", "n")),
+    class = "spicy_invalid_input"
+  )
+  expect_match(conditionMessage(err), "`table_regression_uv()`", fixed = TRUE)
+  expect_match(conditionMessage(err), "`\"nobs\"`", fixed = TRUE)
+  gfit <- glm(am ~ wt, data = mt, family = binomial)
+  expect_error(
+    table_regression(gfit, show_columns = c("n", "b", "p")),
+    class = "spicy_invalid_input"
+  )
+  # The stacked layout runs the same check over its panels.
+  expect_error(
+    table_regression(
+      list(fit, gfit),
+      layout = "stacked",
+      show_columns = c("b", "n")
+    ),
+    class = "spicy_invalid_input"
+  )
+  # A screen keeps its N column.
+  uv <- table_regression_uv(
+    mt,
+    outcome = mpg,
+    predictors = c(wt, cyl),
+    method = "lm"
+  )
+  expect_true("Univariable: N" %in% names(as_structured(uv)$body))
 })
 
 test_that("partial_f2 / partial_eta2 / partial_omega2 are refused for glm", {

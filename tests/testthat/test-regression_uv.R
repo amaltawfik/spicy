@@ -404,10 +404,19 @@ test_that("the multivariable side keeps R-squared as a fit-stat row", {
     tolerance = 1e-10
   )
 
-  # A single model (no screen) has nothing to put in the column: it is
-  # dropped for that group, exactly as the N column is.
-  df <- table_regression(m_full, show_columns = c("b", "r2"))
-  expect_identical(names(df), c("Variable", "B"))
+  # A single model (no screen) has nothing to put in the column: the
+  # call is refused, as for the N column, and points to the fit statistic.
+  for (tk in c("r2", "adj_r2")) {
+    err <- expect_error(
+      table_regression(m_full, show_columns = c("b", tk)),
+      class = "spicy_invalid_input"
+    )
+    expect_match(
+      conditionMessage(err),
+      sprintf("fit statistic `\"%s\"` of `show_fit_stats`", tk),
+      fixed = TRUE
+    )
+  }
 })
 
 

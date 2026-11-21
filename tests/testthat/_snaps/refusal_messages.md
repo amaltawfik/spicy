@@ -926,6 +926,12 @@
         show_columns = "partial_omega2_ci": zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
+        Token `"adj_r2"` in `show_columns` has no value for any model in the table: the column gives the R<U+00B2> of each univariable model of `table_regression_uv()`.
+        i The adjusted R<U+00B2> of a model is the fit statistic `"adj_r2"` of `show_fit_stats`.
+      Received by 3:
+        show_columns = "adj_r2": lm, ols, rlm
+      ----
+      error: spicy_invalid_input, spicy_error
         Token `"adj_r2"` in `show_columns` is not defined for `Glm` models.
         i The column reports the classical R<U+00B2> of the least-squares variance partition. Outside it only pseudo-R<U+00B2> measures exist (McFadden 1974, Cox & Snell 1989, Nagelkerke 1991, Tjur 2009); they disagree with one another, so spicy does not print one under an R<U+00B2> header without naming it.
         i Name the one you want as a fit-statistics row, e.g. `show_fit_stats = c("nobs", "pseudo_r2_mcfadden")`.
@@ -1362,6 +1368,17 @@
         i In a mixed table the automatic convergence guard already reports sampler problems per model in the footer.
       Received by 41:
         show_columns = "mcse": bam, betareg, clm, clmm, coxph, cph, feols,
+            flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
+            glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
+            lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
+            rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
+            zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"n"` in `show_columns` has no value for any model in the table: the column gives the sample size of each univariable model of `table_regression_uv()`.
+        i The sample size of a model is the fit statistic `"nobs"` of `show_fit_stats`, its number of events `"n_events"` there (Cox) or in `show_columns` (binary outcome).
+      Received by 41:
+        show_columns = "n": bam, betareg, clm, clmm, coxph, cph, feols,
             flexsurvreg, gam, gam_betar, gam_logit, gam_nb, geeglm, glm.nb,
             glm_gaussian, glmer, glmmTMB, gls, hurdle, iv_robust, ivreg, lm,
             lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
@@ -1870,6 +1887,12 @@
             lm_robust, lme, lmer, lrm, mlogit, multinom, nls, ols, polr, rlm,
             rms_Glm, rq, selection, survreg, svycoxph, svyglm, svyolr, tobit,
             zeroinfl
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"r2"` in `show_columns` has no value for any model in the table: the column gives the R<U+00B2> of each univariable model of `table_regression_uv()`.
+        i The R<U+00B2> of a model is the fit statistic `"r2"` of `show_fit_stats`.
+      Received by 3:
+        show_columns = "r2": lm, ols, rlm
       ----
       error: spicy_invalid_input, spicy_error
         Token `"r2"` in `show_columns` is not defined for `Glm` models.
@@ -4324,6 +4347,12 @@
         i The column gives the degrees of freedom of t tests (`lm`, a `glm` whose dispersion is estimated, `nlme::lme`, a survey design, a cluster-robust `vcov = "CR2"`, ...).
       Received by 2:
         show_columns = "df": brmsfit, stanreg
+      ----
+      error: spicy_invalid_input, spicy_error
+        Token `"n"` in `show_columns` has no value for any model in the table: the column gives the sample size of each univariable model of `table_regression_uv()`.
+        i The sample size of a model is the fit statistic `"nobs"` of `show_fit_stats`, its number of events `"n_events"` there (Cox) or in `show_columns` (binary outcome).
+      Received by 2:
+        show_columns = "n": brmsfit, stanreg
       ----
       error: spicy_invalid_input, spicy_error
         Token `"partial_eta2"` in `show_columns` is not defined for `stanreg` models.
