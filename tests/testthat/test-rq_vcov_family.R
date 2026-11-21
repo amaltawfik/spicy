@@ -80,6 +80,34 @@ test_that("rq rank inversion renders CIs only, at the requested level", {
   )
 })
 
+test_that("rq rank: the default leaves out the SE and p columns no model fills", {
+  skip_if_not_installed("quantreg")
+  fit <- .rq_engel()
+  cols <- function(...) names(table_regression(..., output = "data.frame"))
+  hdr <- c("B", "SE", "95% CI LL", "95% CI UL", "p")
+  expect_identical(
+    setdiff(hdr, cols(fit, vcov = "rank")),
+    c("SE", "p")
+  )
+  # Asked for by name, they stay, with their dashes.
+  expect_true(all(
+    hdr %in% cols(fit, vcov = "rank", show_columns = c("b", "se", "ci", "p"))
+  ))
+  # A model of the table that fills them keeps them for every model.
+  data("engel", package = "quantreg", envir = environment())
+  both <- cols(
+    list(fit, lm(foodexp ~ income, data = engel)),
+    vcov = list("rank", "classical")
+  )
+  expect_true(all(c("Model 1: SE", "Model 1: p") %in% both))
+  # The note is the one of the rank vcov, unchanged.
+  expect_match(
+    attr(table_regression(fit, vcov = "rank"), "note"),
+    "rank-test inversion (CIs only)",
+    fixed = TRUE
+  )
+})
+
 
 test_that("rq bootstrap is quantreg-native, z-based, one draw", {
   skip_if_not_installed("quantreg")

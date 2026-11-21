@@ -996,7 +996,9 @@
 #'   layout: `"all_b"` (single model) or `"all_b_compact"`
 #'   (multi-model, and the single-multinomial outcome-as-columns
 #'   layout, which has the same width pressure -- restore CIs with
-#'   atomic tokens, e.g. `c("b", "se", "ci", "p")`). The `"p"`
+#'   atomic tokens, e.g. `c("b", "se", "ci", "p")`). Under the
+#'   default, a `"se"`, `"ci"` or `"p"` column that no model of the
+#'   table fills is left out; asked for by name, it is shown. The `"p"`
 #'   token is always the B / beta p-value; for the AME-specific
 #'   p-value use `"ame_p"`. `"none"` shows the fit statistics alone,
 #'   one column per model (see *Fit statistics alone* in
@@ -3712,9 +3714,10 @@ table_regression <- function(
     .reg_warn_exponentiate_noop(frames, exponentiate)
     .reg_warn_re_args_noop(frames, re_scale, re_columns, re_test, re_ci)
   }
-  # A default column that the tidier of a fallback model returns for no
-  # row of any model (no p-value for an arima read by broom) is left out.
-  if (default_columns && any(vapply(frames, .is_fallback_frame, NA))) {
+  # A default column that no row of any model fills (no p-value for an
+  # arima read by broom, no SE or p for an rq under `vcov = "rank"`) is
+  # left out. Asked for by `show_columns`, it stays with its dashes.
+  if (default_columns) {
     cols <- c(se = "std_error", ci = "ci_lower", p = "p_value")
     none <- vapply(
       cols,

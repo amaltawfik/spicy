@@ -332,7 +332,9 @@ the full enumeration. Default \code{NULL} selects a context-aware
 layout: \code{"all_b"} (single model) or \code{"all_b_compact"}
 (multi-model, and the single-multinomial outcome-as-columns
 layout, which has the same width pressure -- restore CIs with
-atomic tokens, e.g. \code{c("b", "se", "ci", "p")}). The \code{"p"}
+atomic tokens, e.g. \code{c("b", "se", "ci", "p")}). Under the
+default, a \code{"se"}, \code{"ci"} or \code{"p"} column that no model of the
+table fills is left out; asked for by name, it is shown. The \code{"p"}
 token is always the B / beta p-value; for the AME-specific
 p-value use \code{"ame_p"}. \code{"none"} shows the fit statistics alone,
 one column per model (see \emph{Fit statistics alone} in
