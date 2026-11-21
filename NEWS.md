@@ -38,6 +38,20 @@
   computed on the atanh scale and stays within -1 and 1. The option
   `spicy.re_se_max_n` is removed: the computation no longer needs a cap.
 
+* `table_regression()` tests an average marginal effect on the
+  reference distribution of the coefficients it depends on. Where the
+  coefficients share their degrees of freedom, the AME is tested on a t
+  with them: `rms::ols()`, `nlme::gls()`, `AER::ivreg()`, `estimatr`
+  models, `quantreg::rq()` and a Gaussian `mgcv::gam()` tested it on z,
+  so that an `ols()` model gave an AME p-value other than the one of the
+  same `lm()`. Where the degrees of freedom go by coefficient
+  (`nlme::lme()`, lmerTest, a clustered `lm_robust()` under CR2), each
+  AME takes the smallest among the coefficients of the terms that hold
+  its variable, and the note says so. The p-values and intervals of
+  these AME widen in small samples: on 24 observations, an interval went
+  from [-0.017, 0.611] to [-0.036, 0.630]. Models tested on z do not
+  change.
+
 * The note of `table_regression()` names a standard-error estimator the
   same way for every class. "classical (Fisher information)" replaces
   "Wald asymptotic (z)" for the models fitted by likelihood, and
