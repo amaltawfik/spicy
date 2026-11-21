@@ -92,12 +92,14 @@
 #' rows under the header of a term: the outcome categories of a
 #' multinomial model beside other models (`inline(tbl, age, "Student",
 #' model = "Adjusted")`) and the two equations of a Heckman selection
-#' model beside other models (`"selection"`, `"outcome"`). Alone, a
-#' multinomial or selection model has its categories or equations as
-#' column groups, which `model` selects by their label or position
-#' (`inline(tbl, educ, model = "Outcome")`): there, `level = "outcome"`
-#' is an error that gives that call. Until spicy 0.14.0 it also
-#' selected the groups of [table_continuous()], [table_continuous_svy()]
+#' model beside other selection models (`"selection"`, `"outcome"`).
+#' Alone, a multinomial or selection model has its categories or
+#' equations as column groups, which `model` selects by their label or
+#' position (`inline(tbl, educ, model = "Outcome")`): there,
+#' `level = "outcome"` is an error that gives that call. Beside a model of
+#' another class, a selection model has two groups as well, selected by
+#' their label (`model = "Heckman: Selection"`) or position. Until spicy
+#' 0.14.0 it also selected the groups of [table_continuous()], [table_continuous_svy()]
 #' and [table_continuous_lm()]: that use is an error (class
 #' `spicy_defunct`) whose message gives the call to use instead.
 #'
@@ -173,7 +175,7 @@
 #'   category by role. A group of `by` is selected with `model`. In a
 #'   regression table, the outcome category of a multinomial row or the
 #'   equation of a Heckman row, under the header of its term, when the
-#'   model sits beside others.
+#'   model sits beside others shown in rows.
 #' @param column A column token, or a `{token}` pattern. `NULL` (the
 #'   default) returns the estimate-like column of the row when it is
 #'   unambiguous: the family's primary estimate. That is the
@@ -192,8 +194,9 @@
 #'   its label (as displayed) or its position. A value that is no
 #'   displayed label is also looked up among the identities of the
 #'   models (`"M1"`, and the equations `"outcome"` and `"selection"` of a
-#'   selection model alone, in any case), so a call survives the language
-#'   of the table. See *Groups and models*.
+#'   selection model alone, in any case; beside another class, the
+#'   identifier of the model and the equation, `"Heckman: outcome"`), so
+#'   a call survives the language of the table. See *Groups and models*.
 #'
 #' @return A character scalar.
 #'
@@ -1234,7 +1237,8 @@ inline <- function(
 # The position of the group whose columns carry `model` as their model
 # identity, for a `model` that names no displayed label: the identity
 # does not change with the language of the table. The two equations of a
-# selection model alone ("Outcome", "Selection") match whatever the case.
+# selection model alone ("Outcome", "Selection"), or beside another class
+# ("Heckman: Outcome"), match whatever the case.
 # NA when no group, or several, carry it.
 .inline_model_by_id <- function(s, spans, model) {
   body_cols <- names(.struct_display_body(s$body))
@@ -1246,7 +1250,8 @@ inline <- function(
     },
     character(1)
   )
-  eq <- ids %in% c("Outcome", "Selection")
+  # A selection model beside others: "<model id>: Outcome".
+  eq <- grepl("(^|: )(Outcome|Selection)$", ids)
   hit <- which(ids %in% model | (eq & tolower(ids) == tolower(model)))
   if (length(hit) == 1L) hit else NA_integer_
 }
