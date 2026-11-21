@@ -384,7 +384,12 @@ as_regression_frame <- function(fit, ...) {
 # is ~30 column and field checks, not a row scan. One
 # table_regression(lm) call is ~90 ms, so the whole validation budget is
 # well under 1% of a table.
-as_regression_frame_validated <- function(fit, ...) {
+as_regression_frame_validated <- function(fit, ..., fallback = NULL) {
+  # A class without a method, read by its tidier under `fallback`
+  # (R/regression_frame_fallback.R).
+  if (!is.null(fallback) && .needs_fallback(fit)) {
+    return(.fallback_frame(fit, fallback, ...))
+  }
   frame <- as_regression_frame(fit, ...)
   validate_regression_frame(frame)
   frame
@@ -762,7 +767,11 @@ validate_regression_frame <- function(frame) {
     "weights_kind"
   )) {
     val <- info[[field]]
-    if (!is.character(val) || length(val) != 1L || is.na(val)) {
+    # A fit read by its tidier (`fallback`) may have no readable outcome.
+    na_ok <- identical(field, "dv") &&
+      is.list(info$extras) &&
+      !is.null(info$extras$fallback)
+    if (!is.character(val) || length(val) != 1L || (is.na(val) && !na_ok)) {
       spicy_abort(
         c(
           sprintf(

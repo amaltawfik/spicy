@@ -776,7 +776,8 @@
   "clipboard_delim",
   "word_path",
   "word_template",
-  "style"
+  "style",
+  "fallback"
 )
 
 # The help page of each family that has one.

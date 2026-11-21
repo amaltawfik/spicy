@@ -1500,6 +1500,10 @@
   note_adjustment_proportional = "proportional",
   note_adjustment_balanced = "balanced",
   note_std_errors_single = "Std. errors: %s.",
+  # A model read by its tidier (`fallback`): the tidier, in place of the
+  # standard errors, and the random-effect rows it does not show.
+  note_fallback_source = "Estimates, standard errors, tests and intervals as returned by %s.",
+  note_fallback_re_dropped = "Its random-effect rows are not shown.",
   # Index-based model reference: frame-layer messages raised before the
   # display labels exist (e.g. the geeglm cluster refusal).
   note_model_prefix = "Model %d: %s",

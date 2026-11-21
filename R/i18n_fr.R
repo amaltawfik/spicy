@@ -634,6 +634,8 @@
   note_adjustment_proportional = "proportionnel",
   note_adjustment_balanced = "\u00E9quilibr\u00E9",
   note_std_errors_single = "Erreurs standards\u00A0: %s.",
+  note_fallback_source = "Estimations, erreurs standards, tests et intervalles tels que rendus par %s.",
+  note_fallback_re_dropped = "Ses lignes d'effets al\u00E9atoires ne sont pas affich\u00E9es.",
   label_model_name = "Mod\u00E8le %d",
   note_model_line = "%s\u00A0: %s",
   label_panel_name = "Panneau %d",

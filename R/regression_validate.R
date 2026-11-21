@@ -260,7 +260,11 @@
 # narrower, and each keeps refusing what it does not offer.
 .VCOV_COMPUTE_MODES <- unique(c(.VCOV_MODES, "HC4m"))
 
-validate_models_input <- function(models, call = rlang::caller_env()) {
+validate_models_input <- function(
+  models,
+  fallback = NULL,
+  call = rlang::caller_env()
+) {
   # Step 1: handle NULL upfront (R's `inherits` and `is.list` both
   # return FALSE on NULL, so it would otherwise slip through)
   if (is.null(models)) {
@@ -347,6 +351,11 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
     },
     character(1)
   )
+  # Under `fallback`, a class without a table of its own is read by its
+  # tidier (R/regression_frame_fallback.R).
+  if (!is.null(fallback)) {
+    problems[vapply(models, .needs_fallback, logical(1))] <- ""
+  }
   bad <- problems[nzchar(problems)]
   if (length(bad) > 0L) {
     spicy_abort(
@@ -357,7 +366,10 @@ validate_models_input <- function(models, call = rlang::caller_env()) {
           "Supported model classes: ",
           paste(.supported_models_registry()$class, collapse = ", "),
           ". `table_regression_models()` lists them with their engines."
-        )
+        ),
+        if (any(vapply(models, .needs_fallback, logical(1)))) {
+          c("i" = .fallback_hint())
+        }
       ),
       class = "spicy_unsupported",
       call = call

@@ -245,8 +245,10 @@ build_regression_title_from_frames <- function(
     },
     character(1)
   )
-  shown <- shown[!is.na(outcomes)]
-  outcomes <- outcomes[!is.na(outcomes)]
+  # A model whose outcome cannot be read (a fit read by its tidier) leaves
+  # the title without one: no outcome is shared.
+  shown <- shown[!anyNA(outcomes)]
+  outcomes <- outcomes[!anyNA(outcomes)]
   n <- length(frames)
 
   prefixes <- .table_title_prefixes(frames)
@@ -989,9 +991,22 @@ build_vcov_footer_block_from_frames <- function(frames) {
   if (!is.list(frames) || length(frames) == 0L) {
     return(NULL)
   }
-  .note_std_errors(
-    vapply(frames, format_vcov_label_from_frame, character(1)),
-    vapply(seq_along(frames), function(i) .model_ref(frames, i), character(1))
+  # A model read by its tidier (`fallback`) has no estimator spicy can
+  # name: its sentence names the tidier (`.fallback_note()`).
+  own <- which(vapply(
+    frames,
+    function(f) is.null(f$info$extras$fallback),
+    logical(1)
+  ))
+  c(
+    if (length(own) > 0L) {
+      .note_std_errors(
+        vapply(frames[own], format_vcov_label_from_frame, character(1)),
+        vapply(own, function(i) .model_ref(frames, i), character(1)),
+        bare = length(own) == length(frames)
+      )
+    },
+    .fallback_note(frames)
   )
 }
 

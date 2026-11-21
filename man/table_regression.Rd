@@ -60,7 +60,8 @@ table_regression(
   clipboard_delim = "\\t",
   word_path = NULL,
   word_template = NULL,
-  style = NULL
+  style = NULL,
+  fallback = NULL
 )
 }
 \arguments{
@@ -75,8 +76,8 @@ cumulative-link mixed models \code{ordinal::clmm} and \code{glmmTMB} with
 \code{mgcv::gam}/\code{bam}, \code{betareg}, \code{mlogit}, \code{survey::svyglm}, \code{rms}
 (\code{ols}/\code{lrm}/\code{cph}/\code{Glm}), and Bayesian (\code{rstanarm}/\code{brms}),
 among others. An unsupported class raises
-\code{spicy_unsupported}. Raw data + formula is not accepted
--- fit-only API.}
+\code{spicy_unsupported}, unless \code{fallback} is set. Raw data + formula
+is not accepted -- fit-only API.}
 
 \item{vcov}{Variance-covariance estimator: \code{"classical"},
 \code{"HC0"}-\code{"HC5"}, \code{"CR0"}-\code{"CR3"}, \code{"bootstrap"}, or
@@ -867,6 +868,12 @@ covers numeric formatting, the word that opens the note and the
 abbreviations the note defines, not full editorial conformity;
 \code{?spicy_style} lists the exact rules each one encodes and the
 official document they come from. An unknown name is an error.}
+
+\item{fallback}{\code{NULL} (the default), \code{"broom"} or \code{"parameters"}. For
+a model whose class has no table of its own, the tidier whose output
+gives its rows (\code{broom::tidy()} or \code{parameters::model_parameters()});
+with \code{NULL}, such a model is refused. Classes that have a table of
+their own ignore it. See \emph{Classes without a table of their own}.}
 }
 \value{
 A \code{spicy_regression_table} object (a \code{data.frame}
@@ -937,6 +944,24 @@ follow the rules of this page. GEE fits are described in
 \code{\link[=table_regression_models]{table_regression_models()}}, which lists every supported class. The
 tokens of \code{show_columns} and \code{show_fit_stats} are on
 \link{table_regression_tokens}.
+}
+
+\section{Classes without a table of their own}{
+A class that is not in \code{\link[=table_regression_models]{table_regression_models()}} is refused by
+default. With \code{fallback = "broom"} or \code{fallback = "parameters"}, its
+rows come from \code{broom::tidy(fit, conf.int = TRUE, conf.level = ci_level)} or \code{parameters::model_parameters(fit, ci = ci_level)}: one
+row per coefficient under the name the tidier gives it, without factor
+headers or reference rows, and the estimate, standard error, interval,
+test and p-value the tidier returns (a quantity it does not return is
+shown as missing). A model with several components, responses or levels
+has its terms prefixed by them (\code{"count: x"}); random-effect rows are
+not shown. The title names the outcome when the fit has a formula. The
+note names the tidier in place of the standard errors, and the fit
+statistics are n, AIC, BIC and the log-likelihood when the fit returns
+them. spicy does not know how these numbers were computed, so a robust
+\code{vcov}, \code{cluster}, the AME columns, \code{standardized}, \code{exponentiate} and
+\code{nested} are refused for such a model. A class that spicy refuses by
+name (see \code{\link[=table_regression_models]{table_regression_models()}}) stays refused.
 }
 
 \section{Vocabulary tokens}{

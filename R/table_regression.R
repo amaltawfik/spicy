@@ -51,6 +51,25 @@
 #' tokens of `show_columns` and `show_fit_stats` are on
 #' [table_regression_tokens].
 #'
+#' # Classes without a table of their own
+#'
+#' A class that is not in [table_regression_models()] is refused by
+#' default. With `fallback = "broom"` or `fallback = "parameters"`, its
+#' rows come from `broom::tidy(fit, conf.int = TRUE, conf.level =
+#' ci_level)` or `parameters::model_parameters(fit, ci = ci_level)`: one
+#' row per coefficient under the name the tidier gives it, without factor
+#' headers or reference rows, and the estimate, standard error, interval,
+#' test and p-value the tidier returns (a quantity it does not return is
+#' shown as missing). A model with several components, responses or levels
+#' has its terms prefixed by them (`"count: x"`); random-effect rows are
+#' not shown. The title names the outcome when the fit has a formula. The
+#' note names the tidier in place of the standard errors, and the fit
+#' statistics are n, AIC, BIC and the log-likelihood when the fit returns
+#' them. spicy does not know how these numbers were computed, so a robust
+#' `vcov`, `cluster`, the AME columns, `standardized`, `exponentiate` and
+#' `nested` are refused for such a model. A class that spicy refuses by
+#' name (see [table_regression_models()]) stays refused.
+#'
 #' # Vocabulary tokens
 #'
 #' `show_columns` and `show_fit_stats` take tokens that select what the
@@ -733,8 +752,8 @@
 #'   `mgcv::gam`/`bam`, `betareg`, `mlogit`, `survey::svyglm`, `rms`
 #'   (`ols`/`lrm`/`cph`/`Glm`), and Bayesian (`rstanarm`/`brms`),
 #'   among others. An unsupported class raises
-#'   `spicy_unsupported`. Raw data + formula is not accepted
-#'   -- fit-only API.
+#'   `spicy_unsupported`, unless `fallback` is set. Raw data + formula
+#'   is not accepted -- fit-only API.
 #' @param vcov Variance-covariance estimator: `"classical"`,
 #'   `"HC0"`-`"HC5"`, `"CR0"`-`"CR3"`, `"bootstrap"`, or
 #'   `"jackknife"`. A scalar is recycled to all models; a list
@@ -1424,6 +1443,11 @@
 #'   abbreviations the note defines, not full editorial conformity;
 #'   `?spicy_style` lists the exact rules each one encodes and the
 #'   official document they come from. An unknown name is an error.
+#' @param fallback `NULL` (the default), `"broom"` or `"parameters"`. For
+#'   a model whose class has no table of its own, the tidier whose output
+#'   gives its rows (`broom::tidy()` or `parameters::model_parameters()`);
+#'   with `NULL`, such a model is refused. Classes that have a table of
+#'   their own ignore it. See *Classes without a table of their own*.
 #' @inheritParams table_categorical
 #'
 #' @return A `spicy_regression_table` object (a `data.frame`
@@ -1790,7 +1814,8 @@ table_regression <- function(
   clipboard_delim = "\t",
   word_path = NULL,
   word_template = NULL,
-  style = NULL
+  style = NULL,
+  fallback = NULL
 ) {
   # A panel of `layout = "stacked"` (R/regression_stacked.R) is told so by
   # the request its driver set for this call; NULL for any other call.
@@ -1877,7 +1902,8 @@ table_regression <- function(
   # ====================================================================
 
   # Phase A -- input class (steps 1-3)
-  models <- validate_models_input(models)
+  .check_fallback_arg(fallback)
+  models <- validate_models_input(models, fallback)
   n_models <- length(models)
   # A model outside the scope of its frame (an ordinal or categorical
   # Bayesian fit, a GAM with several linear predictors) is refused before
@@ -1885,6 +1911,20 @@ table_regression <- function(
   for (m in models) {
     .with_public_call(.refuse_out_of_scope_model(m), public_call)
   }
+  if (!is.null(fallback) && !any(vapply(models, .needs_fallback, logical(1)))) {
+    .warn_ignored(
+      "fallback",
+      "when every model has a table of its own",
+      spicy_gather = .reg_gather(panel_req, "fallback", every = TRUE)
+    )
+  }
+  .fallback_refusals(
+    models,
+    fallback,
+    panel_req,
+    nested = nested,
+    cluster = cluster
+  )
 
   # `show_columns = "none"`: the fit statistics alone, the models in
   # columns. The arguments that reach only the coefficients are said to
@@ -2350,6 +2390,14 @@ table_regression <- function(
   # term-level test of the glm family where the other one is the test
   # (partial_f where the dispersion is estimated). The check runs on
   # the resolved (class-aware default OR user-supplied) vector.
+  .fallback_refusals(
+    models,
+    fallback,
+    panel_req,
+    exponentiate = exponentiate,
+    show_columns = show_columns,
+    fit_stats = requested_fit_stats
+  )
   validate_class_appropriate_tokens(models, show_columns, show_fit_stats)
   # `partial_type = "III"`: a model with an aliased coefficient is refused,
   # and a factor that interacts with a numeric covariate is said to be
@@ -2920,6 +2968,7 @@ table_regression <- function(
     frames[[i]] <- .with_public_call(
       as_regression_frame_validated(
         models[[i]],
+        fallback = fallback,
         # A panel of a stacked table names its model in the messages of
         # the frame as the side-by-side table would; its display keeps
         # `model_ids`, those of the model alone.
