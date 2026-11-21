@@ -38,6 +38,8 @@ test_that("the registry matches the as_regression_frame dispatch methods", {
     "spicy_uv_screen", # internal bundle built by
     # table_regression_uv(), not a
     # user-fitted model class
+    "spicy_outcomes_screen", # the same, built by
+    # table_regression_outcomes()
     "gee" # refusal stub: gee::gee fits inherit glm and would
     # otherwise silently get naive SEs; the method points at
     # geepack::geeglm (the supported, registry-listed engine)
