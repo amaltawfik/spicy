@@ -1478,9 +1478,12 @@
 #'   as-is in `output = "data.frame"`. If `TRUE`, the empty cells of its
 #'   statistic columns become empty strings (the columns become text).
 #' @param excel_path Path for `output = "excel"`, ending in `".xlsx"`, in
-#'   a directory that exists. Defaults to `NULL`.
+#'   a directory that exists. Defaults to `NULL`. A file already at that
+#'   path is replaced: each call writes a new workbook.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the
-#'   default) uses `"Categorical"`.
+#'   default) uses `"Categorical"`. The workbook holds this one sheet: a
+#'   second call with the same `excel_path` replaces the file and does
+#'   not add a sheet.
 #' @param clipboard_delim Delimiter for clipboard text export. Defaults
 #'   to `"\t"`. A cell holding the delimiter itself, a double quote or
 #'   a line break is quoted RFC 4180-style, so the grid survives

@@ -291,10 +291,13 @@ table with its numbers, \code{"long"} one row per \verb{(variable x group)}
 with every statistic, as in \code{\link[=table_continuous]{table_continuous()}}; see \emph{Value}.}
 
 \item{excel_path}{File path for \code{output = "excel"}, ending in
-\code{".xlsx"}, in a directory that exists.}
+\code{".xlsx"}, in a directory that exists. A file already at that path
+is replaced: each call writes a new workbook.}
 
 \item{excel_sheet}{Sheet name for \code{output = "excel"}. \code{NULL} (the
-default) uses \code{"Descriptives"}.}
+default) uses \code{"Descriptives"}. The workbook holds this one sheet: a
+second call with the same \code{excel_path} replaces the file and does
+not add a sheet.}
 
 \item{clipboard_delim}{Delimiter for \code{output = "clipboard"}
 (default: \code{"\\t"}). A cell holding the delimiter itself, a double

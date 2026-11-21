@@ -784,10 +784,13 @@ tables); \code{"excel"} (writes to \code{excel_path}); \code{"clipboard"}
 
 \item{excel_path}{File path for \code{output = "excel"}, ending in
 \code{".xlsx"}, in a directory that exists. Default \code{NULL} (required when
-\code{output = "excel"}).}
+\code{output = "excel"}). A file already at that path is replaced: each
+call writes a new workbook.}
 
 \item{excel_sheet}{Sheet name when writing to Excel. \code{NULL} (the
-default) uses \code{"Regression"}.}
+default) uses \code{"Regression"}. The workbook holds this one sheet: a
+second call with the same \code{excel_path} replaces the file and does
+not add a sheet.}
 
 \item{clipboard_delim}{Field delimiter for
 \code{output = "clipboard"}. Default \code{"\\t"} (tab-separated, pastes

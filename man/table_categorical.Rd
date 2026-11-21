@@ -469,10 +469,13 @@ as-is in \code{output = "data.frame"}. If \code{TRUE}, the empty cells of its
 statistic columns become empty strings (the columns become text).}
 
 \item{excel_path}{Path for \code{output = "excel"}, ending in \code{".xlsx"}, in
-a directory that exists. Defaults to \code{NULL}.}
+a directory that exists. Defaults to \code{NULL}. A file already at that
+path is replaced: each call writes a new workbook.}
 
 \item{excel_sheet}{Sheet name for Excel export. \code{NULL} (the
-default) uses \code{"Categorical"}.}
+default) uses \code{"Categorical"}. The workbook holds this one sheet: a
+second call with the same \code{excel_path} replaces the file and does
+not add a sheet.}
 
 \item{clipboard_delim}{Delimiter for clipboard text export. Defaults
 to \code{"\\t"}. A cell holding the delimiter itself, a double quote or

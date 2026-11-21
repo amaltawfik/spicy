@@ -309,9 +309,12 @@
 #'   - `"clipboard"` (requires `clipr`)
 #'   - `"word"` (requires `flextable` and `officer`)
 #' @param excel_path File path for `output = "excel"`, ending in
-#'   `".xlsx"`, in a directory that exists.
+#'   `".xlsx"`, in a directory that exists. A file already at that path
+#'   is replaced: each call writes a new workbook.
 #' @param excel_sheet Sheet name for `output = "excel"`. `NULL` (the
-#'   default) uses `"Descriptives"`.
+#'   default) uses `"Descriptives"`. The workbook holds this one sheet: a
+#'   second call with the same `excel_path` replaces the file and does
+#'   not add a sheet.
 #' @param clipboard_delim Delimiter for `output = "clipboard"`
 #'   (default: `"\t"`). A cell holding the delimiter itself, a double
 #'   quote or a line break is quoted RFC 4180-style, so the grid

@@ -745,7 +745,9 @@ abort_outcome_by_renamed <- function() {
 #'   table with its numbers, `"long"` the compute frame with every
 #'   statistic, as in [table_continuous()]; see *Value*.
 #' @param excel_sheet Sheet name for `output = "excel"`. `NULL` (the
-#'   default) uses `"Outcome"`.
+#'   default) uses `"Outcome"`. The workbook holds this one sheet: a
+#'   second call with the same `excel_path` replaces the file and does
+#'   not add a sheet.
 #' @param user_na Logical. If `TRUE` (the default), declared missing
 #'   values are treated as missing: those of the outcome leave its
 #'   statistics and are disclosed in the table note (`Declared missing

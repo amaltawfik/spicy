@@ -1390,9 +1390,12 @@
 #'   `word_path`).
 #' @param excel_path File path for `output = "excel"`, ending in
 #'   `".xlsx"`, in a directory that exists. Default `NULL` (required when
-#'   `output = "excel"`).
+#'   `output = "excel"`). A file already at that path is replaced: each
+#'   call writes a new workbook.
 #' @param excel_sheet Sheet name when writing to Excel. `NULL` (the
-#'   default) uses `"Regression"`.
+#'   default) uses `"Regression"`. The workbook holds this one sheet: a
+#'   second call with the same `excel_path` replaces the file and does
+#'   not add a sheet.
 #' @param clipboard_delim Field delimiter for
 #'   `output = "clipboard"`. Default `"\t"` (tab-separated, pastes
 #'   cleanly into Excel / Google Sheets / Word). The clipboard

@@ -160,7 +160,9 @@
 #'   string opens with one), `note_add` after it, and `FALSE` removes it,
 #'   as in every table function.
 #' @param excel_sheet Sheet name for Excel export. `NULL` (the default)
-#'   uses `"Item battery"`.
+#'   uses `"Item battery"`. The workbook holds this one sheet: a second
+#'   call with the same `excel_path` replaces the file and does not add a
+#'   sheet.
 #' @param word_path File path for `output = "word"`. Defaults to `NULL`.
 #'
 #' @return Depends on `output`:
