@@ -390,6 +390,24 @@
 
 ## New features
 
+* New `table_regression_outcomes()`, experimental: one exposure across
+  several outcomes. It fits one model per outcome, each with the same
+  exposure and the same covariates, and shows the coefficients of the
+  exposure in one table: one row per outcome for a numeric exposure,
+  one block of levels per outcome for a factor. An outcome is fitted by
+  `lm()`, or by `glm()` with the family `family` gives it, so linear and
+  logistic models can share a table. Under `exponentiate = TRUE` the
+  column is then headed "Estimate" and each outcome names its measure
+  ("smoking (OR)", "bmi (B)"). The p-values are adjusted across the
+  outcomes by default (`p_adjust = "holm"`). The note says that the
+  models are fitted separately, names the covariates and gives the
+  range of the sample sizes. `tidy()` and `glance()` give one row per
+  outcome.
+
+* `tidy()` and `output = "long"` of a regression table gain an
+  `exponentiated` column, `TRUE` on the rows whose estimate is shown
+  exponentiated.
+
 * `table_regression()` gains `fallback`, for a model class that has no
   table of its own. Such a class is still refused by default, and the
   error now says how to proceed: `fallback = "broom"` or
