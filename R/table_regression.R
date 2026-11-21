@@ -3117,6 +3117,17 @@ table_regression <- function(
     )
     frames[[i]]$coefs <- exp_out$coefs
     frames[[i]]$info <- exp_out$info
+    # The rows the exponentiation reached, for tidy() and the long output:
+    # the B and beta rows of an exponentiated frame, here, before the rows
+    # bound in below (cut-points, components, random effects), which carry
+    # their own flag or none. A frame that knows its rows better (a table
+    # of outcomes, whose blocks have their own scale) sets it itself.
+    if (is.null(frames[[i]]$coefs$exponentiated)) {
+      frames[[i]]$coefs$exponentiated <- .reg_rows_exponentiated(
+        frames[[i]]$coefs,
+        isTRUE(frames[[i]]$info$extras$exp_applied)
+      )
+    }
 
     # Attach precomputed non-additivity metadata so the standardized
     # caveat footer (build_standardized_caveat_footer_block_from_frames())
@@ -4028,6 +4039,14 @@ table_regression <- function(
     .reg_dekey_aligned(aligned, frames)
   }
 
+  # glance(): a table of outcomes gives the fit statistics of each of its
+  # models, one row per outcome, where the table shows none.
+  aligned_data$fit_stats_data <- .reg_block_fit_stats(
+    aligned_data$fit_stats_aligned,
+    frames,
+    model_ids
+  )
+
   # ---- Title + footer (Step 7) -------------------------------------------
   # `title` / `note` resolution: NULL -> auto, FALSE -> suppress,
   # character -> override. The auto-build is gated by `is.null(title)`
@@ -4636,6 +4655,16 @@ table_regression <- function(
 # method (polr / clm / multinom / fixest / betareg / ...). Asked once the
 # frames are built: by table_regression(), or for all the panels of a
 # stack by its driver.
+# The rows of a frame's coefficients that exp() reaches when the frame is
+# exponentiated (`applied`, one flag or one per row): the B and beta rows
+# with an estimate, never a reference row.
+.reg_rows_exponentiated <- function(coefs, applied) {
+  applied &
+    coefs$estimate_type %in% c("B", "beta") &
+    !(coefs$is_ref %in% TRUE) &
+    !is.na(coefs$estimate)
+}
+
 .reg_warn_exponentiate_noop <- function(frames, exponentiate) {
   if (
     isTRUE(exponentiate) &&

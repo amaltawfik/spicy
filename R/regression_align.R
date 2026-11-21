@@ -328,6 +328,17 @@ align_frames <- function(
         } else {
           rep(NA_real_, nrow(cf))
         },
+        # Whether the row's estimate is exponentiated, as its frame set it
+        # (table_regression()); a frame aligned without the flag reads it
+        # off its own exponentiation.
+        exponentiated = if (!is.null(cf$exponentiated)) {
+          cf$exponentiated %in% TRUE
+        } else {
+          .reg_rows_exponentiated(
+            cf,
+            isTRUE(frames[[i]]$info$extras$exp_applied)
+          )
+        },
         mcse = if (!is.null(cf$mcse)) {
           as.numeric(cf$mcse)
         } else {

@@ -48,11 +48,16 @@
 #' `partial_type` of [table_regression()]), and is `NA` on every other row.
 #' `outcome_level` names the response category of per-category rows
 #' (ordinal / multinomial average marginal effects) and is `NA` for
-#' single-outcome models. Reference-row placeholders (factor reference
+#' single-outcome models. `exponentiated` is `TRUE` on the rows whose
+#' `estimate`, `std.error` and interval are exponentiated (`exponentiate =
+#' TRUE` on a model with a log or logit link: odds, rate, hazard ratios),
+#' `FALSE` on every other row, so that a table mixing scales says which is
+#' which. Reference-row placeholders (factor reference
 #' levels) and singular coefficients (NA estimates) are dropped. Columns:
 #' `model_id, outcome, outcome_level, term, estimate_type, estimate,
 #' std.error, conf.low, conf.high, statistic, df, df.residual, p.value,
-#' test_type, is_intercept, factor_term, factor_level, partial_type`.
+#' test_type, is_intercept, factor_term, factor_level, partial_type,
+#' exponentiated`.
 #'
 #' `glance()` returns one row per `(model_id, outcome)` with
 #' model-level statistics. Columns: `model_id, outcome, nobs,
@@ -134,6 +139,7 @@ tidy.spicy_regression_table <- function(x, ...) {
     factor_term = long$factor_term,
     factor_level = long$factor_level,
     partial_type = partial_type,
+    exponentiated = .reg_long_exponentiated(long),
     stringsAsFactors = FALSE
   )
   rownames(out) <- NULL
@@ -369,8 +375,19 @@ empty_tidy_long <- function() {
     factor_term = character(0),
     factor_level = character(0),
     partial_type = character(0),
+    exponentiated = logical(0),
     stringsAsFactors = FALSE
   )
+}
+
+# The `exponentiated` column of tidy() and of the long output: TRUE on the
+# rows whose estimate and interval are exponentiated, FALSE elsewhere, and
+# on every row of a long frame that does not carry it.
+.reg_long_exponentiated <- function(long) {
+  if (is.null(long$exponentiated)) {
+    return(rep(FALSE, nrow(long)))
+  }
+  long$exponentiated %in% TRUE
 }
 
 empty_glance <- function() {

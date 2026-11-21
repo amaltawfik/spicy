@@ -2931,6 +2931,10 @@ build_component_blocks_footer_block_from_frames <- function(
       test_type = ifelse(rows$is_ref, NA_character_, "z"),
       outcome_level = NA_character_,
       is_component = TRUE,
+      # The block's coefficients are B rows, its own `exp_ok` their gate.
+      exponentiated = (isTRUE(exponentiate) && isTRUE(blk$exp_ok)) &
+        !(rows$is_ref %in% TRUE) &
+        !is.na(rows$estimate),
       stringsAsFactors = FALSE
     )
     coefs <- .rbind_union(coefs, new)

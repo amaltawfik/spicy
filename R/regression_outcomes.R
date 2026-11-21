@@ -711,6 +711,10 @@ as_regression_frame.spicy_outcomes_screen <- function(
     NA_character_
   }
   info$supports$exponentiate <- FALSE
+  coefs$exponentiated <- .reg_rows_exponentiated(
+    coefs,
+    exp_k[match(coefs$outcome, bundle$outcomes)]
+  )
   .outcomes_refuse_mixed_t(coefs, show_columns)
   info$extras$outcome_blocks <- data.frame(
     outcome = bundle$outcomes,
@@ -723,6 +727,11 @@ as_regression_frame.spicy_outcomes_screen <- function(
   # The frame of each model, for the themes of the note that speak of the
   # models (.reg_expand_blocks()).
   info$extras$outcome_infos <- lapply(frames, `[[`, "info")
+  # The fit statistics of each model, for glance() (.reg_block_fit_stats()):
+  # the table itself shows none.
+  info$extras$block_fit_stats <- lapply(frames, function(fr) {
+    fr$info$fit_stats
+  })
   info$extras$outcomes_design <- paste(
     c(
       spicy_str("note_outcomes_separate"),
@@ -840,6 +849,45 @@ build_outcomes_design_footer_block_from_frames <- function(frames) {
       out[[length(out) + 1L]] <- sub
     }
   }
+  out
+}
+
+# The fit statistics glance() reads (`fit_stats`, one row per model, as
+# align_frames() builds them), with the row of a table of outcomes
+# replaced by one row per outcome, each its own model's. NULL when no
+# frame is a table of outcomes: glance() then reads `fit_stats` itself.
+.reg_block_fit_stats <- function(fit_stats, frames, model_ids) {
+  has <- vapply(
+    frames,
+    function(f) !is.null(f$info$extras$block_fit_stats),
+    logical(1)
+  )
+  if (!any(has) || !is.data.frame(fit_stats)) {
+    return(NULL)
+  }
+  rows <- lapply(seq_along(frames), function(i) {
+    own <- fit_stats[fit_stats$model_id == model_ids[[i]], , drop = FALSE]
+    if (!has[[i]]) {
+      return(own)
+    }
+    ob <- frames[[i]]$info$extras$outcome_blocks
+    fs <- frames[[i]]$info$extras$block_fit_stats
+    Reduce(
+      .rbind_union,
+      lapply(seq_along(fs), function(k) {
+        as.data.frame(
+          .compact_fit_stats_for_legacy(
+            fs[[k]],
+            model_ids[[i]],
+            ob$outcome[[k]]
+          ),
+          stringsAsFactors = FALSE
+        )
+      })
+    )
+  })
+  out <- Reduce(.rbind_union, rows)
+  rownames(out) <- NULL
   out
 }
 

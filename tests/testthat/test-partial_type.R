@@ -647,8 +647,15 @@ test_that("the note, tidy() and the long output name the type", {
   expect_true(all(is.na(td$partial_type[!part])))
   lo <- .pt_tr(f, show_columns = sc, output = "long")
   # The last column, in both data frames.
-  expect_identical(utils::tail(names(lo), 1L), "partial_type")
-  expect_identical(utils::tail(names(td), 1L), "partial_type")
+  # Before the flag of exponentiation, in both data frames.
+  expect_identical(
+    utils::tail(names(lo), 2L),
+    c("partial_type", "exponentiated")
+  )
+  expect_identical(
+    utils::tail(names(td), 2L),
+    c("partial_type", "exponentiated")
+  )
   expect_true(all(lo$partial_type[lo$estimate_type == "partial_f"] == "III"))
   expect_true(all(is.na(lo$partial_type[lo$estimate_type == "b"])))
 

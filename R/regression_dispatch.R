@@ -117,7 +117,8 @@ dispatch_regression_output <- function(
 # `as.data.frame()`.
 output_default <- function(rendered, aligned, labels = NULL) {
   attr(rendered, "spicy_long") <- aligned$coefs_aligned
-  attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_aligned
+  attr(rendered, "spicy_fit_stats") <- aligned$fit_stats_data %||%
+    aligned$fit_stats_aligned
   prov <- .regression_provenance(aligned)
   attr(rendered, "model_ids") <- prov$model_ids
   attr(rendered, "outcome") <- prov$outcome
@@ -169,8 +170,11 @@ output_long <- function(aligned, note = NULL) {
     )
   )
   long$order_idx <- NULL
-  # The hypothesis of the partial rows' test, last, as in tidy().
-  long <- long[c(setdiff(names(long), "partial_type"), "partial_type")]
+  # The hypothesis of the partial rows' test, then whether the estimate is
+  # exponentiated, last, as in tidy().
+  long$exponentiated <- .reg_long_exponentiated(long)
+  last <- c("partial_type", "exponentiated")
+  long <- long[c(setdiff(names(long), last), last)]
   out <- maybe_as_tibble(long)
   attr(out, "note") <- note
   out

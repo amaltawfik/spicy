@@ -358,7 +358,8 @@ test_that("tidy/glance column sets are frozen (stabilizing contract)", {
       "is_intercept",
       "factor_term",
       "factor_level",
-      "partial_type"
+      "partial_type",
+      "exponentiated"
     )
   )
   expect_identical(
@@ -480,7 +481,8 @@ test_that("tidy – exact documented column vector and tbl_df return", {
       "is_intercept",
       "factor_term",
       "factor_level",
-      "partial_type"
+      "partial_type",
+      "exponentiated"
     )
   )
   expect_s3_class(td, "tbl_df")
@@ -575,6 +577,67 @@ test_that("tidy – one row per (model_id, term, estimate_type, outcome_level)",
   keys <- td[, c("model_id", "term", "estimate_type", "outcome_level")]
   expect_false(any(duplicated(keys)))
   expect_gt(nrow(td), 6L)
+})
+
+test_that("tidy and the long output say which rows are exponentiated", {
+  # The column closes both data frames; TRUE on the B rows of an
+  # exponentiated fit, FALSE on its AME rows, on a linear model beside it,
+  # and on every row when nothing is exponentiated.
+  g <- glm(am ~ wt + hp, data = mt, family = binomial)
+  f <- lm(mpg ~ wt, data = mt)
+  tbl <- table_regression(
+    list(g, f),
+    exponentiate = TRUE,
+    show_columns = c("b", "ci", "p", "ame", "ame_p")
+  )
+  td <- broom::tidy(tbl)
+  expect_identical(utils::tail(names(td), 1L), "exponentiated")
+  expect_type(td$exponentiated, "logical")
+  expect_identical(
+    td$exponentiated,
+    td$model_id == "M1" & td$estimate_type == "B"
+  )
+  expect_equal(
+    td$estimate[
+      td$model_id == "M1" & td$term == "wt" & td$estimate_type == "B"
+    ],
+    exp(unname(stats::coef(g)[["wt"]]))
+  )
+  lo <- table_regression(list(g, f), exponentiate = TRUE, output = "long")
+  expect_identical(utils::tail(names(lo), 1L), "exponentiated")
+  # The reference rows of the long output are not exponentiated.
+  expect_identical(
+    lo$exponentiated,
+    lo$model_id == "M1" & !lo$is_reference
+  )
+  expect_false(any(broom::tidy(table_regression(g))$exponentiated))
+})
+
+test_that("cut-points stay on their scale, flagged as such", {
+  skip_if_not_installed("MASS")
+  d <- mt
+  d$gear_o <- factor(d$gear, ordered = TRUE)
+  fit <- MASS::polr(gear_o ~ wt, data = d, Hess = TRUE)
+  td <- broom::tidy(table_regression(fit, exponentiate = TRUE))
+  thr <- grepl("|", td$term, fixed = TRUE)
+  expect_true(any(thr))
+  expect_false(any(td$exponentiated[thr]))
+  expect_true(all(td$exponentiated[td$term == "wt"]))
+})
+
+test_that("a component block is flagged by its own exponentiation", {
+  skip_if_not_installed("pscl")
+  set.seed(7)
+  d <- data.frame(x = rnorm(200))
+  d$zcnt <- ifelse(runif(200) < 0.3, 0L, rpois(200, exp(0.5 + 0.3 * d$x)))
+  fit <- pscl::zeroinfl(zcnt ~ x | x, data = d)
+  td <- broom::tidy(table_regression(fit, exponentiate = TRUE))
+  zero <- grepl("::", td$term, fixed = TRUE)
+  expect_true(any(zero))
+  # The zero part is a logit: odds ratios, exponentiated too.
+  expect_true(all(td$exponentiated))
+  td0 <- broom::tidy(table_regression(fit))
+  expect_false(any(td0$exponentiated))
 })
 
 test_that("as.data.frame – row.names and optional are ignored", {

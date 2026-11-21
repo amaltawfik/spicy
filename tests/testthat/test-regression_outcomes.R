@@ -552,6 +552,50 @@ test_that("inline() cites an outcome's row, and a level of its block", {
 })
 
 
+test_that("tidy() and the long output flag the exponentiated blocks", {
+  d <- .oc_soc()
+  args <- list(
+    d,
+    outcomes = quote(c(wellbeing_score, smoking)),
+    exposure = quote(sex),
+    family = list(smoking = stats::binomial()),
+    exponentiate = TRUE,
+    show_intercept = TRUE
+  )
+  tbl <- do.call(table_regression_outcomes, args)
+  td <- broom::tidy(tbl)
+  expect_identical(utils::tail(names(td), 1L), "exponentiated")
+  expect_identical(td$exponentiated, td$outcome == "smoking")
+  lo <- do.call(table_regression_outcomes, c(args, output = "long"))
+  expect_identical(utils::tail(names(lo), 1L), "exponentiated")
+  expect_identical(
+    lo$exponentiated,
+    lo$outcome == "smoking" & !lo$is_reference
+  )
+})
+
+test_that("glance() gives one row per outcome, each its own model's", {
+  d <- .oc_soc()
+  tbl <- table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, bmi, smoking),
+    exposure = employment_status,
+    covariates = c(age, sex),
+    family = list(smoking = stats::binomial())
+  )
+  gl <- broom::glance(tbl)
+  expect_identical(gl$outcome, c("wellbeing_score", "bmi", "smoking"))
+  expect_identical(unique(gl$model_id), "M1")
+  f <- stats::lm(bmi ~ employment_status + age + sex, data = d)
+  g <- stats::glm(smoking ~ employment_status + age + sex, binomial, data = d)
+  expect_identical(gl$nobs[2:3], c(stats::nobs(f), stats::nobs(g)))
+  expect_equal(gl$r.squared[2L], summary(f)$r.squared, tolerance = 1e-12)
+  expect_true(is.na(gl$r.squared[3L]))
+  expect_equal(gl$AIC[3L], stats::AIC(g), tolerance = 1e-10)
+  expect_equal(gl$logLik[2L], as.numeric(stats::logLik(f)), tolerance = 1e-10)
+})
+
+
 # ---- 7. Variance and clusters ---------------------------------------------
 
 test_that("a robust variance reaches every model", {
