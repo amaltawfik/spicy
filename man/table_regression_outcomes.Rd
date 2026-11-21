@@ -182,7 +182,14 @@ numeric exposure and k outcomes, k x (L - 1) for a factor of L levels.
 The covariates and the intercepts are not part of the family. The
 note counts the outcomes and the tests. \code{p_adjust = "none"} gives the
 unadjusted p-values, and any method of \code{\link[stats:p.adjust]{stats::p.adjust()}} is
-accepted.
+accepted. A term-level test (\code{"partial_f"}, \code{"partial_chi2"}) counts
+once per outcome, in a family of its own.
+
+\code{\link[=table_regression]{table_regression()}} leaves the coefficients of one model unadjusted
+by default, each testing its own hypothesis. One exposure tested on
+several outcomes is the other case its help names, the design with
+several endpoints, where the adjustment is the convention: see
+\emph{Multiple-comparison adjustment} there.
 }
 
 \section{Intercepts}{

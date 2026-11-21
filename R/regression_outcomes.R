@@ -66,7 +66,14 @@
 #' The covariates and the intercepts are not part of the family. The
 #' note counts the outcomes and the tests. `p_adjust = "none"` gives the
 #' unadjusted p-values, and any method of [stats::p.adjust()] is
-#' accepted.
+#' accepted. A term-level test (`"partial_f"`, `"partial_chi2"`) counts
+#' once per outcome, in a family of its own.
+#'
+#' [table_regression()] leaves the coefficients of one model unadjusted
+#' by default, each testing its own hypothesis. One exposure tested on
+#' several outcomes is the other case its help names, the design with
+#' several endpoints, where the adjustment is the convention: see
+#' *Multiple-comparison adjustment* there.
 #'
 #' # Intercepts
 #' Hidden by default: each model has its own intercept, which says

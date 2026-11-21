@@ -1196,16 +1196,13 @@ test_that("each partial test enters its family once", {
     numeric(1)
   )
   pf <- td[td$estimate_type == "partial_f", , drop = FALSE]
-  skip(paste0(
-    "Depends on the fix of the family of term-level tests ",
-    "(apply_p_adjust_to_frame_coefs(), parallel lot): the value repeated ",
-    "on each level is adjusted once per level today."
-  ))
-  expect_equal(
-    unique(pf$p.value[pf$outcome == "wellbeing_score"]),
-    stats::p.adjust(raw, "holm")[[1L]],
-    tolerance = 1e-10
-  )
+  for (y in names(raw)) {
+    expect_equal(
+      unique(pf$p.value[pf$outcome == y]),
+      stats::p.adjust(raw, "holm")[[y]],
+      tolerance = 1e-10
+    )
+  }
 })
 
 test_that("stacked tables of outcomes keep their own families in the note", {
