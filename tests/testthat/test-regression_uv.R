@@ -647,6 +647,59 @@ test_that("HC3 flows through to every univariable fit", {
   expect_match(out, "heteroskedasticity-robust (HC3)", fixed = TRUE)
 })
 
+test_that("an unknown vcov lists the values of the fits the screen wraps", {
+  d <- .uv_soc()
+  msg <- conditionMessage(expect_error(
+    table_regression_uv(
+      d,
+      outcome = wellbeing_score,
+      method = "lm",
+      predictors = c(age, bmi),
+      vcov = "foo"
+    ),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(msg, "Unknown `vcov` type(s): \"foo\".", fixed = TRUE)
+  expect_match(msg, "\"HC0\", \"HC1\"", fixed = TRUE)
+  # CR1S is a value of lm() alone.
+  expect_match(msg, "\"CR1S\"", fixed = TRUE)
+  msg <- conditionMessage(expect_error(
+    table_regression_uv(
+      d,
+      outcome = smoking,
+      method = "glm",
+      predictors = c(age, bmi),
+      vcov = "foo"
+    ),
+    class = "spicy_invalid_input"
+  ))
+  expect_match(msg, "\"HC0\", \"HC1\"", fixed = TRUE)
+  expect_no_match(msg, "CR1S", fixed = TRUE)
+})
+
+test_that("a screen asked for a dispersion row is refused, naming the families", {
+  d <- .uv_soc()
+  err <- expect_error(
+    table_regression_uv(
+      d,
+      outcome = wellbeing_score,
+      predictors = c(age, bmi),
+      show_fit_stats = c("nobs", "theta")
+    ),
+    class = "spicy_invalid_input"
+  )
+  expect_match(
+    conditionMessage(err),
+    "defined only for NB2 negative-binomial fits",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(err),
+    "no model in the table is one",
+    fixed = TRUE
+  )
+})
+
 
 test_that("CR2 clusters align to each fit's own sample (differing Ns)", {
   skip_on_cran()

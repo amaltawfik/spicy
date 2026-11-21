@@ -121,6 +121,20 @@ test_that("the vcov gate reads the first class of the fit and its aliases", {
   g <- glm(am ~ wt, binomial, mtcars)
   class(g) <- c("myglm", class(g))
   expect_identical(.robust_vcov_support(g), "classical")
+  err <- expect_error(
+    table_regression(g, vcov = "HC1"),
+    class = "spicy_unsupported_vcov"
+  )
+  expect_match(
+    conditionMessage(err),
+    "`vcov = \"HC1\"` is not available for `myglm` models.",
+    fixed = TRUE
+  )
+  expect_match(
+    conditionMessage(err),
+    "This class supports: classical. See ?table_regression.",
+    fixed = TRUE
+  )
   expect_true(all(.REG_VCOV_ALIAS %in% names(.REG_VCOV)))
   expect_true(all(.REG_VCOV_AT_COMPUTE %in% names(.REG_VCOV_CLASSICAL_ONLY)))
   for (a in names(.REG_VCOV_ALIAS)) {
