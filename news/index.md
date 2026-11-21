@@ -57,6 +57,29 @@
   The option `spicy.re_se_max_n` is removed: the computation no longer
   needs a cap.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  tests an average marginal effect on the reference distribution of the
+  coefficients it depends on. Where the coefficients share their degrees
+  of freedom, the AME is tested on a t with them:
+  [`rms::ols()`](https://rdrr.io/pkg/rms/man/ols.html),
+  [`nlme::gls()`](https://rdrr.io/pkg/nlme/man/gls.html),
+  [`AER::ivreg()`](https://rdrr.io/pkg/AER/man/ivreg.html), `estimatr`
+  models, [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html)
+  and a Gaussian [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html)
+  tested it on z, so that an
+  [`ols()`](https://rdrr.io/pkg/rms/man/ols.html) model gave an AME
+  p-value other than the one of the same
+  [`lm()`](https://rdrr.io/r/stats/lm.html). Where the degrees of
+  freedom go by coefficient
+  ([`nlme::lme()`](https://rdrr.io/pkg/nlme/man/lme.html), lmerTest, a
+  clustered
+  [`lm_robust()`](https://declaredesign.org/r/estimatr/reference/lm_robust.html)
+  under CR2), each AME takes the smallest among the coefficients of the
+  terms that hold its variable, and the note says so. The p-values and
+  intervals of these AME widen in small samples: on 24 observations, an
+  interval went from \[-0.017, 0.611\] to \[-0.036, 0.630\]. Models
+  tested on z do not change.
+
 - The note of
   [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   names a standard-error estimator the same way for every class.
@@ -99,16 +122,20 @@
   model alone shows its categories. Its default columns are B, SE and p:
   ask for the interval with `show_columns`. A factor or a logical
   predictor has a header, its levels and a reference row, where the
-  table read `kidsTRUE`. Beside other models, or under `nested = TRUE`,
-  the equations stay in rows. `outcome_labels` renames the two groups.
-  `keep` and `drop` match the terms of such a table without their prefix
+  table read `kidsTRUE`. `outcome_labels` renames the two groups. Beside
+  a model of another class, a selection model shows the same two groups,
+  “Heckman: Outcome” and “Heckman: Selection”, and its rows align with
+  those of the other model, as in a table of least squares next to the
+  corrected estimates. Two selection models side by side, and
+  `nested = TRUE`, keep the equations in rows. In the tables with
+  groups, `keep` and `drop` match the terms without their prefix
   (`"educ"`), and
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
   selects the equation with `model`, under its name in any language
-  (`inline(tbl, educ, model = "outcome")`), no longer with `level`.
-  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
-  `output = "long"` keep the prefixed terms and fill `factor_term` and
-  `factor_level`; the long output gains the reference rows.
+  (`model = "outcome"`, `model = "Heckman: outcome"`), no longer with
+  `level`. [`tidy()`](https://generics.r-lib.org/reference/tidy.html)
+  and `output = "long"` keep the prefixed terms and fill `factor_term`
+  and `factor_level`; the long output gains the reference rows.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   names the rows of a fixest model as
@@ -511,6 +538,19 @@
   another model, the cell of the design model is a dash.
 
 ### New features
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  gains `fallback`, for a model class that has no table of its own. Such
+  a class is still refused by default, and the error now says how to
+  proceed: `fallback = "broom"` or `fallback = "parameters"` builds the
+  rows from what
+  [`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) or
+  [`parameters::model_parameters()`](https://easystats.github.io/parameters/reference/model_parameters.html)
+  returns, one coefficient per row, with n and the AIC when they can be
+  read. The note names the function the numbers come from. A robust
+  variance, `cluster`, the AME, `standardized`, `nested = TRUE` and
+  `exponentiate` are refused for such a model, since the table does not
+  know how it was fitted.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   shows the smooth terms of an

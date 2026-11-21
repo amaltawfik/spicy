@@ -189,8 +189,13 @@ rules of <code><a href="table_regression.html">table_regression()</a></code> and
 class, are on <a href="table_regression_tokens.html">table_regression_tokens</a>.</p>
 <p>A sample-selection fit (<code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>, <code>heckit()</code>,
 <code>treatReg()</code>) alone shows its two equations as column groups, <code>Outcome</code>
-then <code>Selection</code>; beside other models, or under <code>nested = TRUE</code>, each
-variable has its <code>selection</code> and <code>outcome</code> rows. A factor or a logical
+then <code>Selection</code>. Beside a model of another class, each selection fit
+shows the same two groups, headed <code>&lt;model&gt;: Outcome</code> and
+<code>&lt;model&gt;: Selection</code>, and its rows align by term with the other models
+(an <code><a href="https://rdrr.io/r/stats/lm.html" class="external-link">lm()</a></code> and the outcome equation share the row of <code>educ</code>); its
+<code>Error terms</code>, n and AIC sit under its first group. In a table of
+selection fits only, or under <code>nested = TRUE</code>, each variable has its
+<code>selection</code> and <code>outcome</code> rows. A factor or a logical
 predictor has a header, its levels and a reference row. The
 <code>Error terms</code> block follows: \(\sigma\) and
 \(\rho\) for a maximum-likelihood fit (\(\rho\) alone for a

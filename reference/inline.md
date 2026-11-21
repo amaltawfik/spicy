@@ -46,7 +46,8 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   row. `"(Missing)"` addresses the missing-value category by role. A
   group of `by` is selected with `model`. In a regression table, the
   outcome category of a multinomial row or the equation of a Heckman
-  row, under the header of its term, when the model sits beside others.
+  row, under the header of its term, when the model sits beside others
+  shown in rows.
 
 - column:
 
@@ -77,8 +78,9 @@ inline(x, variable, level = NULL, column = NULL, model = NULL)
   displayed) or its position. A value that is no displayed label is also
   looked up among the identities of the models (`"M1"`, and the
   equations `"outcome"` and `"selection"` of a selection model alone, in
-  any case), so a call survives the language of the table. See *Groups
-  and models*.
+  any case; beside another class, the identifier of the model and the
+  equation, `"Heckman: outcome"`), so a call survives the language of
+  the table. See *Groups and models*.
 
 ## Value
 
@@ -158,12 +160,14 @@ row of missing values. In a regression table, it also names the rows
 under the header of a term: the outcome categories of a multinomial
 model beside other models
 (`inline(tbl, age, "Student", model = "Adjusted")`) and the two
-equations of a Heckman selection model beside other models
+equations of a Heckman selection model beside other selection models
 (`"selection"`, `"outcome"`). Alone, a multinomial or selection model
 has its categories or equations as column groups, which `model` selects
 by their label or position (`inline(tbl, educ, model = "Outcome")`):
-there, `level = "outcome"` is an error that gives that call. Until spicy
-0.14.0 it also selected the groups of
+there, `level = "outcome"` is an error that gives that call. Beside a
+model of another class, a selection model has two groups as well,
+selected by their label (`model = "Heckman: Selection"`) or position.
+Until spicy 0.14.0 it also selected the groups of
 [`table_continuous()`](https://amaltawfik.github.io/spicy/reference/table_continuous.md),
 [`table_continuous_svy()`](https://amaltawfik.github.io/spicy/reference/table_continuous_svy.md)
 and

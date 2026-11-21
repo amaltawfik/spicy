@@ -192,7 +192,8 @@ Gamma / inverse.gaussian / quasi families with any link.</p>
 <span>  clipboard_delim <span class="op">=</span> <span class="st">"\t"</span>,</span>
 <span>  word_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  word_template <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  style <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  style <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fallback <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -212,8 +213,8 @@ cumulative-link mixed models <code><a href="https://rdrr.io/pkg/ordinal/man/clmm
 <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code>/<code>bam</code>, <code>betareg</code>, <code>mlogit</code>, <code><a href="https://rdrr.io/pkg/survey/man/svyglm.html" class="external-link">survey::svyglm</a></code>, <code>rms</code>
 (<code>ols</code>/<code>lrm</code>/<code>cph</code>/<code>Glm</code>), and Bayesian (<code>rstanarm</code>/<code>brms</code>),
 among others. An unsupported class raises
-<code>spicy_unsupported</code>. Raw data + formula is not accepted
-– fit-only API.</p></dd>
+<code>spicy_unsupported</code>, unless <code>fallback</code> is set. Raw data + formula
+is not accepted – fit-only API.</p></dd>
 
 
 <dt id="arg-vcov">vcov<a class="anchor" aria-label="anchor" href="#arg-vcov"></a></dt>
@@ -513,10 +514,11 @@ they match by their mgcv label (<code>"s(age)"</code>, <code>"te(bmi,ped)"</code
 <code>drop = "^s\\("</code> removes the <code>Smooth terms</code> block with its note.
 The <code>Error terms</code> of a sample-selection model are coefficients of
 <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code> and follow <code>keep</code> and <code>drop</code> under those names (<code>"sigma"</code>,
-<code>"rho"</code>, <code>"invMillsRatio"</code>). A multinomial or sample-selection
-model alone, whose categories or equations are column groups,
-matches its terms without their prefix (<code>"educ"</code>, <code>"cityyes"</code>);
-beside other models, with it (<code>"Student: age"</code>, <code>"outcome: educ"</code>).
+<code>"rho"</code>, <code>"invMillsRatio"</code>). A model whose categories or equations
+are column groups (a multinomial or sample-selection model alone, a
+sample-selection model beside a model of another class) matches its
+terms without their prefix (<code>"educ"</code>, <code>"cityyes"</code>); in rows, with it
+(<code>"Student: age"</code>, <code>"outcome: educ"</code>).
 Mutually exclusive with <code>drop</code>. Filtering is a display
 choice; <code>p_adjust</code> runs against the full coefficient family
 before filtering. Default <code>NULL</code> (no filter).</p></dd>
@@ -751,8 +753,11 @@ the place of the column headers; a vector gives each panel its label.
 <code><a href="table_stack.html">table_stack()</a></code> applies the rule to tables built separately, a table
 built with <code>FALSE</code> taking no row. A multinomial model alone has no
 Outcome row, its title naming the outcome; in a stack, its panel
-takes one by this rule, the label once, across its columns. The
-console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
+takes one by this rule, the label once, across its columns. A
+selection model beside a model of another class gives its label to
+its outcome group; its selection group shows the selection variable,
+named as any outcome by <code>labels</code>.
+The console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
 print each label across the columns of its model. gt, which merges
 no cells of the body, moves the row into the header: each label
 spans the columns of its model, under the model's name. A stacked gt
@@ -1079,6 +1084,14 @@ abbreviations the note defines, not full editorial conformity;
 <code><a href="spicy_style.html">?spicy_style</a></code> lists the exact rules each one encodes and the
 official document they come from. An unknown name is an error.</p></dd>
 
+
+<dt id="arg-fallback">fallback<a class="anchor" aria-label="anchor" href="#arg-fallback"></a></dt>
+<dd><p><code>NULL</code> (the default), <code>"broom"</code> or <code>"parameters"</code>. For
+a model whose class has no table of its own, the tidier whose output
+gives its rows (<code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> or <code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code>);
+with <code>NULL</code>, such a model is refused. Classes that have a table of
+their own ignore it. See <em>Classes without a table of their own</em>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -1126,6 +1139,25 @@ follow the rules of this page. GEE fits are described in
 <code><a href="table_regression_models.html">table_regression_models()</a></code>, which lists every supported class. The
 tokens of <code>show_columns</code> and <code>show_fit_stats</code> are on
 <a href="table_regression_tokens.html">table_regression_tokens</a>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="classes-without-a-table-of-their-own">Classes without a table of their own<a class="anchor" aria-label="anchor" href="#classes-without-a-table-of-their-own"></a></h2>
+    <p>A class that is not in <code><a href="table_regression_models.html">table_regression_models()</a></code> is refused by
+default. With <code>fallback = "broom"</code> or <code>fallback = "parameters"</code>, its
+rows come from <code>broom::tidy(fit, conf.int = TRUE, conf.level = ci_level)</code> or <code>parameters::model_parameters(fit, ci = ci_level)</code>: one
+row per coefficient under the name the tidier gives it, without factor
+headers or reference rows, and the estimate, standard error, interval,
+test and p-value the tidier returns (a quantity it does not return is
+shown as missing; under the default <code>show_columns</code>, a standard-error,
+interval or p-value column empty for every model is left out). A model with several components, responses or levels
+has its terms prefixed by them (<code>"count: x"</code>); random-effect rows are
+not shown. The title names the outcome when the fit has a formula. The
+note names the tidier in place of the standard errors, and the fit
+statistics are n, AIC, BIC and the log-likelihood when the fit returns
+them. spicy does not know how these numbers were computed, so a robust
+<code>vcov</code>, <code>cluster</code>, the AME columns, <code>standardized</code>, <code>exponentiate</code> and
+<code>nested</code> are refused for such a model. A class that spicy refuses by
+name (see <code><a href="table_regression_models.html">table_regression_models()</a></code>) stays refused.</p>
     </div>
     <div class="section level2">
     <h2 id="vocabulary-tokens">Vocabulary tokens<a class="anchor" aria-label="anchor" href="#vocabulary-tokens"></a></h2>
@@ -1378,8 +1410,11 @@ groups; see <a href="table_regression_categorical.html">table_regression_categor
 model (<code><a href="https://rdrr.io/pkg/sampleSelection/man/selection.html" class="external-link">sampleSelection::selection()</a></code>, <code>heckit()</code>, <code>treatReg()</code>) sets
 its two equations as column groups, "Outcome" then "Selection", in the
 language of the table, with its <code>Error terms</code>, n and AIC under the
-first; beside other models, or under <code>nested = TRUE</code>, each term has a
-<code>selection</code> and an <code>outcome</code> row; see <a href="table_regression_models.html">table_regression_models</a>.</p><div class="section">
+first. Beside a model of another class, each selection model keeps its
+two groups (<code>Heckman: Outcome</code>, <code>Heckman: Selection</code>), whose rows align
+by term with the other models. In a table of selection models only, or
+under <code>nested = TRUE</code>, each term has a <code>selection</code> and an <code>outcome</code>
+row; see <a href="table_regression_models.html">table_regression_models</a>.</p><div class="section">
 <h3 id="robust-se-availability-by-model-class">Robust SE availability by model class<a class="anchor" aria-label="anchor" href="#robust-se-availability-by-model-class"></a></h3>
 
 

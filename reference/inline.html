@@ -126,7 +126,7 @@ category shown as a row. <code>"(Missing)"</code> addresses the missing-value
 category by role. A group of <code>by</code> is selected with <code>model</code>. In a
 regression table, the outcome category of a multinomial row or the
 equation of a Heckman row, under the header of its term, when the
-model sits beside others.</p></dd>
+model sits beside others shown in rows.</p></dd>
 
 
 <dt id="arg-column">column<a class="anchor" aria-label="anchor" href="#arg-column"></a></dt>
@@ -151,8 +151,9 @@ refuses and gives the address of a mean.</p></dd>
 its label (as displayed) or its position. A value that is no
 displayed label is also looked up among the identities of the
 models (<code>"M1"</code>, and the equations <code>"outcome"</code> and <code>"selection"</code> of a
-selection model alone, in any case), so a call survives the language
-of the table. See <em>Groups and models</em>.</p></dd>
+selection model alone, in any case; beside another class, the
+identifier of the model and the equation, <code>"Heckman: outcome"</code>), so
+a call survives the language of the table. See <em>Groups and models</em>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -216,12 +217,14 @@ Asked with <code>model</code>, whichever group it names, they are an error (clas
 its row of missing values. In a regression table, it also names the
 rows under the header of a term: the outcome categories of a
 multinomial model beside other models (<code>inline(tbl, age, "Student", model = "Adjusted")</code>) and the two equations of a Heckman selection
-model beside other models (<code>"selection"</code>, <code>"outcome"</code>). Alone, a
-multinomial or selection model has its categories or equations as
-column groups, which <code>model</code> selects by their label or position
-(<code>inline(tbl, educ, model = "Outcome")</code>): there, <code>level = "outcome"</code>
-is an error that gives that call. Until spicy 0.14.0 it also
-selected the groups of <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>
+model beside other selection models (<code>"selection"</code>, <code>"outcome"</code>).
+Alone, a multinomial or selection model has its categories or
+equations as column groups, which <code>model</code> selects by their label or
+position (<code>inline(tbl, educ, model = "Outcome")</code>): there,
+<code>level = "outcome"</code> is an error that gives that call. Beside a model of
+another class, a selection model has two groups as well, selected by
+their label (<code>model = "Heckman: Selection"</code>) or position. Until spicy
+0.14.0 it also selected the groups of <code><a href="table_continuous.html">table_continuous()</a></code>, <code><a href="table_continuous_svy.html">table_continuous_svy()</a></code>
 and <code><a href="table_continuous_lm.html">table_continuous_lm()</a></code>: that use is an error (class
 <code>spicy_defunct</code>) whose message gives the call to use instead.</p>
 <p><code><a href="table_multiresponse.html">table_multiresponse()</a></code> has one row per item, addressed by its column

@@ -94,8 +94,9 @@ And when you fit something the guide does not cover: if the class is
 supported, the registry below renders it; if it is not, spicy refuses
 with a classed error that lists the supported classes and points to
 [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
-(see *When a class is not supported*) – it never renders an
-approximation of a model it does not understand.
+(see *When a class is not supported*). It never dresses a model it does
+not understand as one it does: `fallback` shows what a tidier returns
+for it, and says so.
 
 ## The registry
 
@@ -439,7 +440,37 @@ table_regression(fit)
 #> ! Some `models` are not supported by `table_regression()`.
 #> Position 1: `loess` – not a supported model class. If support would be useful, please open an issue: https://github.com/amaltawfik/spicy/issues
 #> ℹ Supported model classes: lm, glm, negbin, rlm, nls, lm_robust, iv_robust, ivreg, tobit, rq, fixest, lmerMod, glmerMod, glmmTMB, lme, gls, polr, clm, clmm, multinom, mlogit, zeroinfl, hurdle, coxph, survreg, cph, flexsurvreg, svyglm, svyolr, svycoxph, geeglm, gam, betareg, selection, ols, lrm, Glm, stanreg, brmsfit. `table_regression_models()` lists them with their engines.
+#> ℹ `fallback = "broom"` or `fallback = "parameters"` builds the rows from what `broom::tidy()` or `parameters::model_parameters()` returns.
 ```
+
+The last line of the error gives the way out. `fallback = "broom"` or
+`fallback = "parameters"` builds the rows from what
+[`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) or
+[`parameters::model_parameters()`](https://easystats.github.io/parameters/reference/model_parameters.html)
+returns for the fit, when one of them reads its class:
+
+``` r
+
+fit_ar <- arima(lh, order = c(1, 0, 0))
+table_regression(fit_ar, fallback = "parameters")
+#> Regression
+#> 
+#>  Variable  │   B     SE      95% CI       p   
+#> ───────────┼──────────────────────────────────
+#>  ar1       │  0.57  0.12  [0.35, 0.80]  <.001 
+#>  intercept │  2.41  0.15  [2.13, 2.70]  <.001 
+#> ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n         │ 48                               
+#>  AIC       │ 64.8                             
+#> 
+#> Note. Regression. Estimates, standard errors, tests and intervals as returned by parameters::model_parameters(). CI = confidence interval; AIC = Akaike information criterion.
+```
+
+The table holds one coefficient per row, n and the AIC, and its note
+names the function the numbers come from. spicy does not know how such a
+model was fitted, so it refuses for it what needs that knowledge: a
+robust variance, the AME, `standardized`, `nested = TRUE` and
+`exponentiate`.
 
 The same contract applies inside a family: a request a class cannot
 honor – `HC*` for `multinom`, AME for `mlogit`, `exponentiate` on a

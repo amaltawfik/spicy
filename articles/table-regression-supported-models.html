@@ -356,8 +356,9 @@ univariable screen.</p>
 supported, the registry below renders it; if it is not, spicy refuses
 with a classed error that lists the supported classes and points to
 <code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> (see <em>When a class is not
-supported</em>) – it never renders an approximation of a model it does
-not understand.</p>
+supported</em>). It never dresses a model it does not understand as one
+it does: <code>fallback</code> shows what a tidier returns for it, and
+says so.</p>
 </div>
 <div class="section level2">
 <h2 id="the-registry">The registry<a class="anchor" aria-label="anchor" href="#the-registry"></a>
@@ -1208,7 +1209,32 @@ regression tables</em></a>.</p>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `table_regression()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Some `models` are not supported by `table_regression()`.</span></span>
 <span><span class="co">#&gt; Position 1: `loess` – not a supported model class. If support would be useful, please open an issue: https://github.com/amaltawfik/spicy/issues</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Supported model classes: lm, glm, negbin, rlm, nls, lm_robust, iv_robust, ivreg, tobit, rq, fixest, lmerMod, glmerMod, glmmTMB, lme, gls, polr, clm, clmm, multinom, mlogit, zeroinfl, hurdle, coxph, survreg, cph, flexsurvreg, svyglm, svyolr, svycoxph, geeglm, gam, betareg, selection, ols, lrm, Glm, stanreg, brmsfit. `table_regression_models()` lists them with their engines.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> Supported model classes: lm, glm, negbin, rlm, nls, lm_robust, iv_robust, ivreg, tobit, rq, fixest, lmerMod, glmerMod, glmmTMB, lme, gls, polr, clm, clmm, multinom, mlogit, zeroinfl, hurdle, coxph, survreg, cph, flexsurvreg, svyglm, svyolr, svycoxph, geeglm, gam, betareg, selection, ols, lrm, Glm, stanreg, brmsfit. `table_regression_models()` lists them with their engines.</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">ℹ</span> `fallback = "broom"` or `fallback = "parameters"` builds the rows from what `broom::tidy()` or `parameters::model_parameters()` returns.</span></span></code></pre></div>
+<p>The last line of the error gives the way out.
+<code>fallback = "broom"</code> or <code>fallback = "parameters"</code>
+builds the rows from what <code><a href="https://generics.r-lib.org/reference/tidy.html" class="external-link">broom::tidy()</a></code> or
+<code><a href="https://easystats.github.io/parameters/reference/model_parameters.html" class="external-link">parameters::model_parameters()</a></code> returns for the fit, when
+one of them reads its class:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_ar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/arima.html" class="external-link">arima</a></span><span class="op">(</span><span class="va">lh</span>, order <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/table_regression.html">table_regression</a></span><span class="op">(</span><span class="va">fit_ar</span>, fallback <span class="op">=</span> <span class="st">"parameters"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Regression</span></span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Variable  <span style="color: #9E9E9E;">│</span>   B     SE      95% CI       p   </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">───────────┼──────────────────────────────────</span></span></span>
+<span><span class="co">#&gt;  ar1       <span style="color: #9E9E9E;">│</span>  0.57  0.12  [0.35, 0.80]  &lt;.001 </span></span>
+<span><span class="co">#&gt;  intercept <span style="color: #9E9E9E;">│</span>  2.41  0.15  [2.13, 2.70]  &lt;.001 </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌</span></span></span>
+<span><span class="co">#&gt;  n         <span style="color: #9E9E9E;">│</span> 48                               </span></span>
+<span><span class="co">#&gt;  AIC       <span style="color: #9E9E9E;">│</span> 64.8                             </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #9E9E9E;">Note. Regression. Estimates, standard errors, tests and intervals as returned by parameters::model_parameters(). CI = confidence interval; AIC = Akaike information criterion.</span></span></span></code></pre></div>
+<p>The table holds one coefficient per row, n and the AIC, and its note
+names the function the numbers come from. spicy does not know how such a
+model was fitted, so it refuses for it what needs that knowledge: a
+robust variance, the AME, <code>standardized</code>,
+<code>nested = TRUE</code> and <code>exponentiate</code>.</p>
 <p>The same contract applies inside a family: a request a class cannot
 honor – <code>HC*</code> for <code>multinom</code>, AME for
 <code>mlogit</code>, <code>exponentiate</code> on a probit link,
@@ -1220,7 +1246,7 @@ and the supported alternative, never silently degraded.</p>
 </h2>
 <p><code><a href="../reference/table_regression_models.html">table_regression_models()</a></code> returns the registry as a
 plain data frame – convenient to filter, join, or cite:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu"><a href="../reference/table_regression_models.html">table_regression_models</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">family</span> <span class="op">==</span> <span class="st">"Survival"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      family       class                  engine                    ame                 exponentiate</span></span>
 <span><span class="co">#&gt; 24 Survival       coxph       survival::coxph()       RMST / risk diff                           HR</span></span>

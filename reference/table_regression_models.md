@@ -136,7 +136,12 @@ and the fit statistics of each class, are on
 A sample-selection fit
 ([`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
 `heckit()`, `treatReg()`) alone shows its two equations as column
-groups, `Outcome` then `Selection`; beside other models, or under
+groups, `Outcome` then `Selection`. Beside a model of another class,
+each selection fit shows the same two groups, headed `<model>: Outcome`
+and `<model>: Selection`, and its rows align by term with the other
+models (an [`lm()`](https://rdrr.io/r/stats/lm.html) and the outcome
+equation share the row of `educ`); its `Error terms`, n and AIC sit
+under its first group. In a table of selection fits only, or under
 `nested = TRUE`, each variable has its `selection` and `outcome` rows. A
 factor or a logical predictor has a header, its levels and a reference
 row. The `Error terms` block follows: \\\sigma\\ and \\\rho\\ for a

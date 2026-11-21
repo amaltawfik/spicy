@@ -77,7 +77,8 @@ table_regression(
   clipboard_delim = "\t",
   word_path = NULL,
   word_template = NULL,
-  style = NULL
+  style = NULL,
+  fallback = NULL
 )
 ```
 
@@ -98,8 +99,8 @@ table_regression(
   `mlogit`,
   [`survey::svyglm`](https://rdrr.io/pkg/survey/man/svyglm.html), `rms`
   (`ols`/`lrm`/`cph`/`Glm`), and Bayesian (`rstanarm`/`brms`), among
-  others. An unsupported class raises `spicy_unsupported`. Raw data +
-  formula is not accepted – fit-only API.
+  others. An unsupported class raises `spicy_unsupported`, unless
+  `fallback` is set. Raw data + formula is not accepted – fit-only API.
 
 - vcov:
 
@@ -411,12 +412,13 @@ table_regression(
   sample-selection model are coefficients of
   [`coef()`](https://rdrr.io/r/stats/coef.html) and follow `keep` and
   `drop` under those names (`"sigma"`, `"rho"`, `"invMillsRatio"`). A
-  multinomial or sample-selection model alone, whose categories or
-  equations are column groups, matches its terms without their prefix
-  (`"educ"`, `"cityyes"`); beside other models, with it
-  (`"Student: age"`, `"outcome: educ"`). Mutually exclusive with `drop`.
-  Filtering is a display choice; `p_adjust` runs against the full
-  coefficient family before filtering. Default `NULL` (no filter).
+  model whose categories or equations are column groups (a multinomial
+  or sample-selection model alone, a sample-selection model beside a
+  model of another class) matches its terms without their prefix
+  (`"educ"`, `"cityyes"`); in rows, with it (`"Student: age"`,
+  `"outcome: educ"`). Mutually exclusive with `drop`. Filtering is a
+  display choice; `p_adjust` runs against the full coefficient family
+  before filtering. Default `NULL` (no filter).
 
 - drop:
 
@@ -672,14 +674,16 @@ table_regression(
   applies the rule to tables built separately, a table built with
   `FALSE` taking no row. A multinomial model alone has no Outcome row,
   its title naming the outcome; in a stack, its panel takes one by this
-  rule, the label once, across its columns. The console, flextable,
-  Word, Excel and tinytable (HTML, LaTeX, Typst) print each label across
-  the columns of its model. gt, which merges no cells of the body, moves
-  the row into the header: each label spans the columns of its model,
-  under the model's name. A stacked gt table and the markdown grid of
-  tinytable keep the label in the first column of the model, so a long
-  label widens that column. For a single multinomial model, the labels
-  of the category spanners; see
+  rule, the label once, across its columns. A selection model beside a
+  model of another class gives its label to its outcome group; its
+  selection group shows the selection variable, named as any outcome by
+  `labels`. The console, flextable, Word, Excel and tinytable (HTML,
+  LaTeX, Typst) print each label across the columns of its model. gt,
+  which merges no cells of the body, moves the row into the header: each
+  label spans the columns of its model, under the model's name. A
+  stacked gt table and the markdown grid of tinytable keep the label in
+  the first column of the model, so a long label widens that column. For
+  a single multinomial model, the labels of the category spanners; see
   [table_regression_categorical](https://amaltawfik.github.io/spicy/reference/table_regression_categorical.md).
   For a single sample-selection model, the labels of its two equation
   groups, in their order (outcome, selection).
@@ -995,6 +999,15 @@ table_regression(
   lists the exact rules each one encodes and the official document they
   come from. An unknown name is an error.
 
+- fallback:
+
+  `NULL` (the default), `"broom"` or `"parameters"`. For a model whose
+  class has no table of its own, the tidier whose output gives its rows
+  ([`broom::tidy()`](https://generics.r-lib.org/reference/tidy.html) or
+  [`parameters::model_parameters()`](https://easystats.github.io/parameters/reference/model_parameters.html));
+  with `NULL`, such a model is refused. Classes that have a table of
+  their own ignore it. See *Classes without a table of their own*.
+
 ## Value
 
 A `spicy_regression_table` object (a `data.frame` subclass with classes
@@ -1057,6 +1070,30 @@ the rules of this page. GEE fits are described in
 which lists every supported class. The tokens of `show_columns` and
 `show_fit_stats` are on
 [table_regression_tokens](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md).
+
+## Classes without a table of their own
+
+A class that is not in
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
+is refused by default. With `fallback = "broom"` or
+`fallback = "parameters"`, its rows come from
+`broom::tidy(fit, conf.int = TRUE, conf.level = ci_level)` or
+`parameters::model_parameters(fit, ci = ci_level)`: one row per
+coefficient under the name the tidier gives it, without factor headers
+or reference rows, and the estimate, standard error, interval, test and
+p-value the tidier returns (a quantity it does not return is shown as
+missing; under the default `show_columns`, a standard-error, interval or
+p-value column empty for every model is left out). A model with several
+components, responses or levels has its terms prefixed by them
+(`"count: x"`); random-effect rows are not shown. The title names the
+outcome when the fit has a formula. The note names the tidier in place
+of the standard errors, and the fit statistics are n, AIC, BIC and the
+log-likelihood when the fit returns them. spicy does not know how these
+numbers were computed, so a robust `vcov`, `cluster`, the AME columns,
+`standardized`, `exponentiate` and `nested` are refused for such a
+model. A class that spicy refuses by name (see
+[`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md))
+stays refused.
 
 ## Vocabulary tokens
 
@@ -1356,8 +1393,11 @@ A single sample-selection model
 ([`sampleSelection::selection()`](https://rdrr.io/pkg/sampleSelection/man/selection.html),
 `heckit()`, `treatReg()`) sets its two equations as column groups,
 "Outcome" then "Selection", in the language of the table, with its
-`Error terms`, n and AIC under the first; beside other models, or under
-`nested = TRUE`, each term has a `selection` and an `outcome` row; see
+`Error terms`, n and AIC under the first. Beside a model of another
+class, each selection model keeps its two groups (`Heckman: Outcome`,
+`Heckman: Selection`), whose rows align by term with the other models.
+In a table of selection models only, or under `nested = TRUE`, each term
+has a `selection` and an `outcome` row; see
 [table_regression_models](https://amaltawfik.github.io/spicy/reference/table_regression_models.md).
 
 ### Robust SE availability by model class

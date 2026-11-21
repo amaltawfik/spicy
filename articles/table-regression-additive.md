@@ -730,7 +730,8 @@ work are not selected on what the model does not observe, and a
 regression on them alone would do. Here ρ is −0.13, p = .424: these data
 give no sign of such a selection.
 
-Beside another model, the equations go back to rows: each variable has a
+Beside another selection model, the equations go back to rows, which set
+the two estimators of a coefficient on one line: each variable has a
 `selection` row, an `outcome` row, or both.
 
 ``` r
@@ -809,6 +810,51 @@ distribution of error terms”. It adds that “standard errors tend to be
 large without a strong exclusion restriction”, that is, without a
 variable that enters the selection equation and not the outcome
 equation.
+
+### Beside least squares
+
+A selection model is usually read against the regression it corrects.
+Beside a model of another class, its two equations become two groups of
+columns, and the rows align term by term.
+
+``` r
+
+fit_ols <- lm(wage ~ exper + I(exper^2) + educ + city, data = Mroz87,
+              subset = lfp == 1)
+table_regression(list(OLS = fit_ols, Heckman = fit_ml),
+                 show_columns = c("b", "se"))
+#> Regression comparison: wage
+#> 
+#>                                OLS       Heckman: Outcome  Heckman: Selection 
+#>                            ────────────  ────────────────  ────────────────── 
+#>  Variable                │   B      SE       B        SE         B        SE  
+#> ─────────────────────────┼────────────────────────────────────────────────────
+#>  (Intercept)             │  -2.56  0.93     -1.96    1.20      -4.12     1.40 
+#>  exper                   │   0.03  0.06      0.03    0.06                     
+#>  I(exper^2)              │  -0.00  0.00     -0.00    0.00                     
+#>  educ                    │   0.48  0.07      0.46    0.07       0.10     0.02 
+#>  city                    │   0.45  0.32      0.45    0.32                     
+#>  age                     │                                      0.18     0.07 
+#>  I(age^2)                │                                     -0.00     0.00 
+#>  faminc                  │                                      0.01     0.00 
+#>  kids:                   │                                                    
+#>    FALSE (ref.)          │                                       –        –   
+#>    TRUE                  │                                     -0.45     0.13 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Error terms:            │                                                    
+#>    σ (outcome error)     │                   3.11    0.11                     
+#>    ρ (error correlation) │                  -0.13    0.17                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                       │ 428             753                                
+#>  R²                      │   0.12             –                               
+#>  Adj. R²                 │   0.12             –                               
+#> 
+#> Note. OLS: linear regression; Heckman: Heckman selection model. Heckman: Outcome observed for 428 of 753. Std. errors: OLS: classical (OLS), Heckman: classical (Fisher information). Heckman: P-values and CIs: t distribution with 740 df. Error terms: σ, standard deviation of the outcome error; ρ, correlation of the selection and outcome errors.
+```
+
+A year of education is worth 0.48 by least squares on the women who work
+and 0.46 in the outcome equation. The correction changes little here, as
+ρ suggested.
 
 ### Comparing two selection models
 
