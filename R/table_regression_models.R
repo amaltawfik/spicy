@@ -792,9 +792,11 @@
 )
 
 # The registry class of a fit: the first class of the fit that has a row
-# in the registry (a `bam` reads `gam`), NA for a class without one.
+# in the registry (a `bam` reads `gam`), NA for a class without one. An
+# S4 fit reads its superclasses too (.class2()): an lmerTest fit, of
+# class `lmerModLmerTest`, is an `lmerMod`.
 .reg_registry_class <- function(fit) {
-  cls <- intersect(class(fit), .supported_models_registry()$class)
+  cls <- intersect(.class2(fit), .supported_models_registry()$class)
   if (length(cls) == 0L) NA_character_ else cls[1L]
 }
 

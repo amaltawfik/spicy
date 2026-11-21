@@ -502,3 +502,41 @@ test_that("no class of a group lists a token its group control refuses", {
   # Every group has a class of the registry in it.
   expect_setequal(seen, names(rr_group_lists))
 })
+
+test_that("every fixture reads the registry class it is filed under", {
+  skip_on_cran()
+  for (id in .refusal_ids()) {
+    expect_identical(
+      .reg_registry_class(.class_fixture(id)),
+      .CLASS_FIXTURES[[id]]$class,
+      label = id
+    )
+  }
+  for (cl in names(rr_stan_classes)) {
+    fit <- structure(list(), class = rr_stan_classes[[cl]])
+    expect_identical(.reg_registry_class(fit), cl)
+  }
+})
+
+test_that("an lmerTest fit reads the registry row of lmer() and gets its remedy", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  ss <- lme4::sleepstudy
+  f_test <- suppressMessages(
+    lmerTest::lmer(Reaction ~ Days + (1 | Subject), ss)
+  )
+  f_lme4 <- lme4::lmer(Reaction ~ Days + (1 | Subject), ss)
+  # Its S4 class has no row; its superclass `lmerMod` does.
+  expect_identical(class(f_test)[1L], "lmerModLmerTest")
+  expect_identical(.reg_registry_class(f_test), "lmerMod")
+  expect_identical(.reg_help_page(f_test), "?table_regression_mixed")
+  refusal <- function(fit) {
+    conditionMessage(expect_error(
+      table_regression(fit, show_fit_stats = c("nobs", "r2")),
+      class = "spicy_invalid_input"
+    ))
+  }
+  msg <- refusal(f_test)
+  expect_match(msg, "Use the Nakagawa R", fixed = TRUE)
+  expect_identical(msg, refusal(f_lme4))
+})
