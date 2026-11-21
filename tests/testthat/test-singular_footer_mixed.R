@@ -338,3 +338,25 @@ test_that("a mixed fit that keeps a dropped fixed coefficient gets the rank-defi
   # The random part is not singular: no boundary sentence.
   expect_no_match(out, "boundary of the parameter space", fixed = TRUE)
 })
+
+test_that("an empty beta column of a full-rank fit gives no rank-deficiency note", {
+  # standardized = "pseudo" is not defined for a Poisson glm: every beta
+  # row is NA, the coefficients are all estimated.
+  fit <- glm(carb ~ wt + hp, poisson, mtcars)
+  out <- paste(
+    capture.output(print(suppressWarnings(table_regression(
+      fit,
+      standardized = "pseudo",
+      show_columns = c("b", "se", "beta")
+    )))),
+    collapse = "\n"
+  )
+  expect_no_match(out, "Rank-deficient", fixed = TRUE)
+  frame <- spicy:::as_regression_frame_validated(fit)
+  frame$coefs$estimate_type <- "beta"
+  frame$coefs$estimate[2L] <- NA_real_
+  expect_false(spicy:::.frame_has_dropped_coefs(frame))
+  expect_false(isTRUE(
+    spicy:::.unestimated_coefs(frame)$info$extras$has_singular
+  ))
+})

@@ -3295,12 +3295,13 @@ build_singular_footer_block_from_frames <- function(
   rank_msg
 }
 
-# A coefficient row the fit could not estimate (.unestimated_coefs()).
+# A coefficient (a B row) the fit could not estimate
+# (.unestimated_coefs()); an empty beta, AME or estimand row is not one.
 .frame_has_dropped_coefs <- function(frame) {
   cf <- frame$coefs
   is.data.frame(cf) &&
     nrow(cf) > 0L &&
-    any(is.na(cf$estimate) & !cf$is_ref)
+    any(is.na(cf$estimate) & !cf$is_ref & cf$estimate_type %in% "B")
 }
 
 .is_mixed_frame <- function(frame) {

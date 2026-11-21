@@ -423,7 +423,10 @@ as_regression_frame_validated <- function(fit, ..., fallback = NULL) {
     cf[[col]][gone] <- NA
   }
   frame$coefs <- cf
-  if (!.is_mixed_frame(frame)) {
+  # Only a coefficient (a B row) makes the model rank-deficient: a beta,
+  # AME or estimand row can be empty in a full-rank fit
+  # (`standardized = "pseudo"` on a Poisson glm).
+  if (!.is_mixed_frame(frame) && .frame_has_dropped_coefs(frame)) {
     frame$info$extras$has_singular <- TRUE
   }
   frame
