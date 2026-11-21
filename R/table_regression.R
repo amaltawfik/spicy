@@ -3804,6 +3804,7 @@ table_regression <- function(
   # descriptive tables (`.warn_unknown_label_names()`), once the rows are
   # aligned (below).
   var_labs <- .reg_variable_labels(labels, models, frames)
+  var_labs$terms <- .reg_outcome_block_labels(frames, var_labs$terms)
   for (i in seq_along(frames)) {
     frames[[i]]$info$dv_display <- var_labs$outcomes[[i]]
   }
@@ -4019,7 +4020,8 @@ table_regression <- function(
     ]
     ad
   } else {
-    aligned
+    # A table of outcomes names each row by its model's coefficient.
+    .reg_dekey_aligned(aligned, frames)
   }
 
   # ---- Title + footer (Step 7) -------------------------------------------
@@ -4058,7 +4060,10 @@ table_regression <- function(
   # `aligned$coefs_aligned` has `factor_term` (parent name for factor
   # rows, NA for non-factor rows) instead of the frame's `parent_var`
   # column. Coalesce to recover the parent-var view of the display.
-  ca <- aligned$coefs_aligned
+  # A table of outcomes names the variables of its rows by their models'
+  # terms, not by the outcome keys of its blocks.
+  ca <- .reg_dekey_aligned(aligned, frames)$coefs_aligned
+  frames_render_note <- .reg_dekey_frames(frames_render)
   displayed_parent_vars <- unique(ifelse(
     is.na(ca$factor_term),
     ca$term,
@@ -4092,7 +4097,7 @@ table_regression <- function(
   # kept on the table, for `table_stack()` to merge the notes of panels.
   footer_parts <- build_regression_footer_from_frames(
     frames,
-    frames_display = frames_render,
+    frames_display = frames_render_note,
     standardized = standardized,
     p_adjust = p_adjust,
     stars = stars,

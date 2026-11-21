@@ -76,6 +76,8 @@ Excel workbook, and its PDF), since 0.14.0
 \code{\link[=table_battery_svy]{table_battery_svy()}}, since 0.15.0
 \item Stacked tables: \code{\link[=table_stack]{table_stack()}}, with
 \code{table_regression(layout = "stacked")}, since 0.15.0
+\item One exposure across several outcomes:
+\code{\link[=table_regression_outcomes]{table_regression_outcomes()}}, since 0.15.0
 }
 
 \strong{Internal API} (not part of the public surface; can change

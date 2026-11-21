@@ -198,6 +198,7 @@ reference:
     contents:
       - table_regression
       - table_regression_uv
+      - table_regression_outcomes
       - table_stack
       - table_regression_models
       - table_regression_tokens
@@ -258,4 +259,5 @@ reference:
       - starts_with("as.data.frame.", internal = TRUE)
       - starts_with("tidy.", internal = TRUE)
       - terms.spicy_uv_screen
+      - terms.spicy_outcomes_screen
       - as_flextable.spicy_flextable

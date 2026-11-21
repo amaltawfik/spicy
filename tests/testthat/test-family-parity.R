@@ -3599,6 +3599,22 @@ test_that("the sentences of every note come in the four kinds, in order", {
           std_err,
           paste0(spicy_str("header_ci_label_confidence"), " =")
         )
+      ),
+      table_regression_outcomes = list(
+        q(table_regression_outcomes(
+          d,
+          outcomes = c(xn, age),
+          exposure = xc,
+          covariates = g2
+        )),
+        c(
+          .fn_lead("note_outcomes_separate"),
+          .fn_lead("note_outcomes_adjusted_for"),
+          .fn_lead("note_outcomes_varying_n"),
+          std_err,
+          .fn_lead("note_p_adjusted_outcomes"),
+          paste0(spicy_str("header_ci_label_confidence"), " =")
+        )
       )
     )
     for (fn in names(cases)) {

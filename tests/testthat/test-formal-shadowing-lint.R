@@ -33,6 +33,7 @@ test_that("no function reassigns a display-family formal it received", {
     "table_regression:show_columns",
     "table_regression:show_fit_stats",
     "table_regression:title",
+    "table_regression_outcomes:title",
     "table_regression_uv:title"
   )
 

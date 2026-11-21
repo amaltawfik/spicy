@@ -502,6 +502,7 @@
   note_p_adjusted_per_model_one = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour 1 test (m\u00E9thode de %s).",
   note_p_adjusted_per_model_unequal = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le (m\u00E9thode de %s), pour %s tests respectivement.",
   note_p_adjusted_per_named_model = "Valeurs p ajust\u00E9es dans chaque mod\u00E8le pour %s tests (%s, m\u00E9thode de %s).",
+  note_p_adjusted_outcomes = "Valeurs p ajust\u00E9es sur les %s variables d\u00E9pendantes pour %s tests (m\u00E9thode de %s).",
   note_p_adjusted_ame = "Valeurs p des AME ajust\u00E9es pour %s tests (m\u00E9thode de %s).",
   note_p_adjusted_ame_one = "Valeurs p des AME ajust\u00E9es pour 1 test (m\u00E9thode de %s).",
   note_p_adjusted_ame_per_model = "Valeurs p des AME ajust\u00E9es dans chaque mod\u00E8le pour %s tests (m\u00E9thode de %s).",
@@ -740,6 +741,10 @@
   title_uv_screen_cox = "R\u00E9gression de Cox univariable \u00E0 risques proportionnels (pr\u00E9s\u00E9lection)\u00A0: %s",
   note_uv_common_complete_cases = "Tous les mod\u00E8les sont estim\u00E9s sur les %d m\u00EAmes cas complets.",
   note_uv_varying_n = "Chaque mod\u00E8le univariable est estim\u00E9 sur ses propres cas complets. N varie selon le pr\u00E9dicteur (%d\u2013%d).",
+  title_outcomes = "R\u00E9gression de chaque variable d\u00E9pendante sur %s",
+  note_outcomes_separate = "Un mod\u00E8le par variable d\u00E9pendante, estim\u00E9 s\u00E9par\u00E9ment.",
+  note_outcomes_adjusted_for = "Ajust\u00E9 sur %s.",
+  note_outcomes_varying_n = "Chaque mod\u00E8le est estim\u00E9 sur ses propres cas complets. N varie selon la variable d\u00E9pendante (%d\u2013%d).",
   # La phrase entiere est l'unite : "Modeles de regression lineaire."
   # (le prefixe arrive en minuscule initiale, regle du site d'appel).
   note_type_models = "Mod\u00E8les de %s.",

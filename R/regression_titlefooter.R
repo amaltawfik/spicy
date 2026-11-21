@@ -437,6 +437,8 @@ build_regression_footer_from_frames <- function(
       )
     ),
     what = .footer_paragraph(
+      # A table of outcomes: its models are separate, and adjusted alike.
+      build_outcomes_design_footer_block_from_frames(frames),
       # Before the variance label (c), so a design table reads "what the
       # design is" then "where the standard errors come from" -- the
       # order the descriptive twins use.
@@ -4028,6 +4030,16 @@ build_p_adjust_footer_block_from_frames <- function(
     return(NULL)
   }
   fam <- .p_adjust_families(frames, show_columns)
+  # A table of outcomes is one family: the exposure rows of every model.
+  blocks <- frames[[1L]]$info$extras$outcome_blocks
+  if (length(frames) == 1L && is.data.frame(blocks) && fam$m[[1L]] >= 2L) {
+    return(spicy_fmt(
+      "note_p_adjusted_outcomes",
+      nrow(blocks),
+      fam$m[[1L]],
+      .p_adjust_method_name(p_adjust)
+    ))
+  }
   .p_adjust_note_text(p_adjust, fam$m, fam$ame, fam$ame_ref, fam$m_ref)
 }
 

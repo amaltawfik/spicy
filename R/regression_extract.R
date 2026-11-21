@@ -1033,8 +1033,12 @@ detect_factor_term_meta <- function(fit) {
 #     convention.
 .spicy_fixed_coef_names <- function(fit) {
   if (inherits(fit, "spicy_screen")) {
-    # A bundle of fits: the union over the underlying fits.
-    return(unique(unlist(lapply(fit$fits, .spicy_fixed_coef_names))))
+    # A bundle of fits: the union over the underlying fits, and the
+    # outcomes of a table of outcomes, which name its rows.
+    return(unique(c(
+      unlist(lapply(fit$fits, .spicy_fixed_coef_names)),
+      fit$outcomes
+    )))
   }
   if (inherits(fit, "merMod")) {
     return(names(lme4::fixef(fit)))

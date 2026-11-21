@@ -70,6 +70,8 @@
 #'         [table_battery_svy()], since 0.15.0
 #'   \item Stacked tables: [table_stack()], with
 #'         `table_regression(layout = "stacked")`, since 0.15.0
+#'   \item One exposure across several outcomes:
+#'         [table_regression_outcomes()], since 0.15.0
 #' }
 #'
 #' **Internal API** (not part of the public surface; can change

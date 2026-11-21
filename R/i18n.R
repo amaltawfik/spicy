@@ -691,6 +691,15 @@
   # or the range of the per-predictor N.
   note_uv_common_complete_cases = "All models fit on the %d common complete cases.",
   note_uv_varying_n = "Each univariable model is fit on its own complete cases; N varies by predictor (%d\u2013%d).",
+  # The default title of `table_regression_outcomes()`. One hole: the
+  # exposure label.
+  title_outcomes = "Regression of each outcome on %s",
+  # The design sentences of that table: the models are separate, and
+  # (one hole, the covariates joined by `.join_and()`) what each is
+  # adjusted for. Then the range of the per-outcome N.
+  note_outcomes_separate = "One model per outcome, fitted separately.",
+  note_outcomes_adjusted_for = "Adjusted for %s.",
+  note_outcomes_varying_n = "Each model is fit on its own complete cases; N varies by outcome (%d\u2013%d).",
   # The type footer's same-family plural ("Linear regression models.").
   # French inverts the construction, so the whole sentence is the unit.
   note_type_models = "%s models.",
@@ -1130,6 +1139,9 @@
   # The same sentence naming its models, when the table shows the AME
   # p-values alone and some models have no AME (`_ame_per_named_model`).
   note_p_adjusted_per_named_model = "P-values adjusted within each model for %s tests (%s, %s method).",
+  # The family of a table of outcomes: the exposure rows of every model.
+  # Holes: the number of outcomes, of tests, and the method.
+  note_p_adjusted_outcomes = "P-values adjusted across the %s outcomes for %s tests (%s method).",
   # The AME p-values are adjusted as a family of their own. When the table
   # shows them beside the coefficients' and the two families differ in
   # size (an AME on each outcome category), a second sentence counts
@@ -1861,6 +1873,7 @@ spicy_fmt <- function(key, ...) {
   "note_rows_missing_weights",
   "note_uv_common_complete_cases",
   "note_uv_varying_n",
+  "note_outcomes_varying_n",
   "note_multiresponse_n_nodata",
   "note_multiresponse_n_none",
   "note_negative_weights",

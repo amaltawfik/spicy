@@ -495,6 +495,7 @@ spicy_match_arg <- function(arg, choices = NULL, arg_name = NULL) {
   table_multiresponse = "There is no design twin of this table: its tests assume a simple random sample of respondents, and a complex design needs its own correction.",
   table_battery = "Use `table_battery_svy(design, ...)`: it delegates every statistic to survey (Lumley) and documents the design in the table note.",
   table_regression_uv = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`.",
+  table_regression_outcomes = "There is no design twin of this table: fit each model on the design with `survey::svyglm()` and tabulate them with `table_regression()`.",
   cross_tab = "There is no design twin of this table: use `table_categorical_svy(design, select = <x>, by = <y>)`, the distribution of `x` within each level of `y` and survey's test of their independence.",
   freq = "There is no design twin of this table: use `table_categorical_svy(design, select = <x>)`, the distribution of `x` estimated under the design.",
   mean_n = "A row score does not depend on the design: compute it on the design's data and add it to the design, `design <- update(design, score = mean_n(design$variables, select = ...))`.",
