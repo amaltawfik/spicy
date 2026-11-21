@@ -540,3 +540,26 @@ test_that("an lmerTest fit reads the registry row of lmer() and gets its remedy"
   expect_match(msg, "Use the Nakagawa R", fixed = TRUE)
   expect_identical(msg, refusal(f_lme4))
 })
+
+test_that("under a robust vcov the Wald change row answers f_change and lrt_change", {
+  m1 <- lm(mpg ~ wt, mtcars)
+  m2 <- lm(mpg ~ wt + hp, mtcars)
+  out <- table_regression(
+    list(m1, m2),
+    nested = TRUE,
+    vcov = "HC3",
+    show_fit_stats = c("nobs", "f_change", "p_change"),
+    output = "data.frame"
+  )
+  expect_true("wald_f_change" %in% out$variable)
+  g1 <- glm(am ~ wt, binomial, mtcars)
+  g2 <- glm(am ~ wt + hp, binomial, mtcars)
+  out <- table_regression(
+    list(g1, g2),
+    nested = TRUE,
+    vcov = "HC3",
+    show_fit_stats = c("nobs", "lrt_change", "p_change"),
+    output = "data.frame"
+  )
+  expect_true("wald_chi2_change" %in% out$variable)
+})

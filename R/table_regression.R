@@ -5035,6 +5035,22 @@ table_regression <- function(
   call = rlang::caller_env()
 ) {
   absent <- .reg_tokens_without_rows(frames, unique(requested))
+  # Under a robust variance the Wald change rows answer a request for
+  # the classical change test (insert_wald_change_tokens()).
+  wald <- vapply(
+    frames,
+    function(fr) {
+      any(vapply(
+        fr$info$fit_stats[.NESTED_WALD_CHANGE_TOKENS],
+        function(v) isTRUE(is.finite(scalar_or_na(v))),
+        logical(1)
+      ))
+    },
+    logical(1)
+  )
+  if (any(wald)) {
+    absent <- setdiff(absent, c("f_change", "lrt_change"))
+  }
   if (length(absent) == 0L) {
     return(invisible(NULL))
   }
