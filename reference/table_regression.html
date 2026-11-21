@@ -5,7 +5,7 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Regression coefficient summary table — table_regression"><meta name="description" content="Publication-ready coefficient table from one or more fitted
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.5.0/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.5.0/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Regression coefficient summary table — table_regression"><meta name="description" content="Publication-ready coefficient table from one or more fitted
 regression models: linear and generalized linear models, robust,
 instrumental-variable, quantile and fixed-effects estimators,
 mixed-effects and GEE models, ordinal, multinomial, count and
@@ -491,7 +491,9 @@ the full enumeration. Default <code>NULL</code> selects a context-aware
 layout: <code>"all_b"</code> (single model) or <code>"all_b_compact"</code>
 (multi-model, and the single-multinomial outcome-as-columns
 layout, which has the same width pressure – restore CIs with
-atomic tokens, e.g. <code>c("b", "se", "ci", "p")</code>). The <code>"p"</code>
+atomic tokens, e.g. <code>c("b", "se", "ci", "p")</code>). Under the
+default, a <code>"se"</code>, <code>"ci"</code> or <code>"p"</code> column that no model of the
+table fills is left out; asked for by name, it is shown. The <code>"p"</code>
 token is always the B / beta p-value; for the AME-specific
 p-value use <code>"ame_p"</code>. <code>"none"</code> shows the fit statistics alone,
 one column per model (see <em>Fit statistics alone</em> in
@@ -785,7 +787,10 @@ numeric.</p></dd>
 for adjacent models (M2 vs M1, M3 vs M2, ...). <code>FALSE</code>
 (default) – pure side-by-side display. <code>TRUE</code> – requires
 identical <code>nobs</code> and identical response variable across all
-models. Under a non-classical <code>vcov</code>, each pair is tested by a
+models, listed from the smallest to the largest: each model must
+have more parameters than the previous one, or the table is
+refused, and a model that drops a term of the previous one gets a
+warning. Under a non-classical <code>vcov</code>, each pair is tested by a
 Wald test of the coefficients the current model adds, on that
 model's matrix, shown as "Wald F-change" or "Wald
 \(\chi^2\) (change)" by the regime of its coefficient
@@ -994,12 +999,15 @@ tables); <code>"excel"</code> (writes to <code>excel_path</code>); <code>"clipbo
 <dt id="arg-excel-path">excel_path<a class="anchor" aria-label="anchor" href="#arg-excel-path"></a></dt>
 <dd><p>File path for <code>output = "excel"</code>, ending in
 <code>".xlsx"</code>, in a directory that exists. Default <code>NULL</code> (required when
-<code>output = "excel"</code>).</p></dd>
+<code>output = "excel"</code>). A file already at that path is replaced: each
+call writes a new workbook.</p></dd>
 
 
 <dt id="arg-excel-sheet">excel_sheet<a class="anchor" aria-label="anchor" href="#arg-excel-sheet"></a></dt>
 <dd><p>Sheet name when writing to Excel. <code>NULL</code> (the
-default) uses <code>"Regression"</code>.</p></dd>
+default) uses <code>"Regression"</code>. The workbook holds this one sheet: a
+second call with the same <code>excel_path</code> replaces the file and does
+not add a sheet.</p></dd>
 
 
 <dt id="arg-clipboard-delim">clipboard_delim<a class="anchor" aria-label="anchor" href="#arg-clipboard-delim"></a></dt>
@@ -2161,7 +2169,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  F-change        <span style="color: #9E9E9E;">│</span>    2.41 (1, 1171)              </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  p (change)      <span style="color: #9E9E9E;">│</span>     .121                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS).</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models. Std. errors: classical (OLS). Each change statistic compares a model with the previous one.</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The same comparison by its fit statistics alone.</span></span></span>
 <span class="r-in"><span><span class="fu">table_regression</span><span class="op">(</span></span></span>
@@ -2180,7 +2188,7 @@ broom integration:
 <span class="r-out co"><span class="r-pr">#&gt;</span>  F-change   <span style="color: #9E9E9E;">│</span>     –      18.26 (1, 1172)     2.41 (1, 1171) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  p (change) <span style="color: #9E9E9E;">│</span>     –       &lt;.001               .121          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #9E9E9E;">Note. Linear regression models. Each change statistic compares a model with the previous one.</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>

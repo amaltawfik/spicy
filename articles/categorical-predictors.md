@@ -319,6 +319,8 @@ g_fac <- glm(smoking ~ sex + age + education,  data = sh,
              family = binomial)
 table_regression(list(g_lin, g_fac), nested = TRUE,
                  show_columns = c("b", "p"))
+#> Warning: `nested = TRUE`: Model 2 does not contain the term(s) `educ_score` of Model 1.
+#> ℹ The change test assumes that each model holds the previous one. Check that the models are nested under another writing, or use `nested = FALSE`.
 #> Hierarchical logistic regression: smoking
 #> 
 #>                                Model 1           Model 2       
@@ -373,6 +375,8 @@ s_lin <- lm(wellbeing_score ~ age + srh_score,  data = d3)
 s_fac <- lm(wellbeing_score ~ age + srh_factor, data = d3)
 table_regression(list(s_lin, s_fac), nested = TRUE,
                  show_columns = c("b", "p"))
+#> Warning: `nested = TRUE`: Model 2 does not contain the term(s) `srh_score` of Model 1.
+#> ℹ The change test assumes that each model holds the previous one. Check that the models are nested under another writing, or use `nested = FALSE`.
 #> Hierarchical linear regression: wellbeing_score
 #> 
 #>                     Model 1              Model 2          

@@ -747,51 +747,75 @@ table_regression(
 )
 #> Cumulative logit regression (proportional odds) comparison: self_rated_health
 #> 
-#>                                        Unadjusted                   Adjusted 
-#>                       ────────────────────────────────────────────  ──────── 
-#>  Variable           │    B     p Poor  p Fair  p Good  p Very good      B    
-#> ────────────────────┼────────────────────────────────────────────────────────
-#>  smoking:           │                                                        
-#>    No (ref.)        │     –      –       –       –            –          –   
-#>    Yes              │   -0.27    .067    .050    .218         .037     -0.27 
-#>  age                │                                                  -0.00 
-#>  sex:               │                                                        
-#>    Female (ref.)    │                                                    –   
-#>    Male             │                                                   0.02 
-#>  physical_activity: │                                                        
-#>    No (ref.)        │                                                    –   
-#>    Yes              │                                                   0.03 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Thresholds:        │                                                        
-#>    Poor | Fair      │   -2.97                                          -2.98 
-#>    Fair | Good      │   -1.01                                          -1.02 
-#>    Good | Very good │    1.06                                           1.04 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  n                  │ 1156                                           1156    
-#>  R² (McFadden)      │    0.00                                           0.00 
-#>  AIC                │ 2755.3                                         2761.2  
+#>                                       Unadjusted                  
+#>                       ─────────────────────────────────────────── 
+#>  Variable           │    B     AME p Poor  AME p Fair  AME p Good 
+#> ────────────────────┼─────────────────────────────────────────────
+#>  smoking:           │                                             
+#>    No (ref.)        │     –          –           –           –    
+#>    Yes              │   -0.27        .067        .050        .218 
+#>  age                │                                             
+#>  sex:               │                                             
+#>    Female (ref.)    │                                             
+#>    Male             │                                             
+#>  physical_activity: │                                             
+#>    No (ref.)        │                                             
+#>    Yes              │                                             
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                             
+#>    Poor | Fair      │   -2.97                                     
+#>    Fair | Good      │   -1.01                                     
+#>    Good | Very good │    1.06                                     
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │ 1156                                        
+#>  R² (McFadden)      │    0.00                                     
+#>  AIC                │ 2755.3                                      
 #> 
-#>                                    Adjusted               
-#>                       ─────────────────────────────────── 
-#>  Variable           │ p Poor  p Fair  p Good  p Very good 
-#> ────────────────────┼─────────────────────────────────────
-#>  smoking:           │                                     
-#>    No (ref.)        │   –       –       –            –    
-#>    Yes              │   .069    .052    .221         .038 
-#>  age                │   .831    .831    .833         .831 
-#>  sex:               │                                     
-#>    Female (ref.)    │   –       –       –            –    
-#>    Male             │   .874    .874    .875         .875 
-#>  physical_activity: │                                     
-#>    No (ref.)        │   –       –       –            –    
-#>    Yes              │   .794    .794    .794         .794 
-#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-#>  Thresholds:        │                                     
-#>    Poor | Fair      │                                     
-#>    Fair | Good      │                                     
-#>    Good | Very good │                                     
+#>                         Unadjusted                Adjusted             
+#>                       ───────────────  ─────────────────────────────── 
+#>  Variable           │ AME p Very good     B     AME p Poor  AME p Fair 
+#> ────────────────────┼──────────────────────────────────────────────────
+#>  smoking:           │                                                  
+#>    No (ref.)        │            –         –          –           –    
+#>    Yes              │            .037    -0.27        .069        .052 
+#>  age                │                    -0.00        .831        .831 
+#>  sex:               │                                                  
+#>    Female (ref.)    │                      –          –           –    
+#>    Male             │                     0.02        .874        .874 
+#>  physical_activity: │                                                  
+#>    No (ref.)        │                      –          –           –    
+#>    Yes              │                     0.03        .794        .794 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                                                  
+#>    Poor | Fair      │                    -2.98                         
+#>    Fair | Good      │                    -1.02                         
+#>    Good | Very good │                     1.04                         
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  n                  │                  1156                            
+#>  R² (McFadden)      │                     0.00                         
+#>  AIC                │                  2761.2                          
 #> 
-#> Note. Cumulative logit regression (proportional odds) models. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AIC = Akaike information criterion.
+#>                                Adjusted           
+#>                       ─────────────────────────── 
+#>  Variable           │ AME p Good  AME p Very good 
+#> ────────────────────┼─────────────────────────────
+#>  smoking:           │                             
+#>    No (ref.)        │       –                –    
+#>    Yes              │       .221             .038 
+#>  age                │       .833             .831 
+#>  sex:               │                             
+#>    Female (ref.)    │       –                –    
+#>    Male             │       .875             .875 
+#>  physical_activity: │                             
+#>    No (ref.)        │       –                –    
+#>    Yes              │       .794             .794 
+#> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+#>  Thresholds:        │                             
+#>    Poor | Fair      │                             
+#>    Fair | Good      │                             
+#>    Good | Very good │                             
+#> 
+#> Note. Cumulative logit regression (proportional odds) models. Std. errors: classical (Fisher information). AME of a continuous predictor: average slope (dY/dX). Thresholds: latent-scale category cut-points. AME = average marginal effect on a response-category probability; AIC = Akaike information criterion.
 ```
 
 ## Output formats

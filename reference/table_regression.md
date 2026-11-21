@@ -388,10 +388,11 @@ table_regression(
   layout: `"all_b"` (single model) or `"all_b_compact"` (multi-model,
   and the single-multinomial outcome-as-columns layout, which has the
   same width pressure – restore CIs with atomic tokens, e.g.
-  `c("b", "se", "ci", "p")`). The `"p"` token is always the B / beta
-  p-value; for the AME-specific p-value use `"ame_p"`. `"none"` shows
-  the fit statistics alone, one column per model (see *Fit statistics
-  alone* in
+  `c("b", "se", "ci", "p")`). Under the default, a `"se"`, `"ci"` or
+  `"p"` column that no model of the table fills is left out; asked for
+  by name, it is shown. The `"p"` token is always the B / beta p-value;
+  for the AME-specific p-value use `"ame_p"`. `"none"` shows the fit
+  statistics alone, one column per model (see *Fit statistics alone* in
   [table_regression_tokens](https://amaltawfik.github.io/spicy/reference/table_regression_tokens.md)).
 
 - keep:
@@ -703,12 +704,15 @@ table_regression(
   Whether to inject pairwise change-statistic rows for adjacent models
   (M2 vs M1, M3 vs M2, ...). `FALSE` (default) – pure side-by-side
   display. `TRUE` – requires identical `nobs` and identical response
-  variable across all models. Under a non-classical `vcov`, each pair is
-  tested by a Wald test of the coefficients the current model adds, on
-  that model's matrix, shown as "Wald F-change" or "Wald \\\chi^2\\
-  (change)" by the regime of its coefficient tests. See *Hierarchical
-  (nested) model comparison* for the rule, the classes it covers and its
-  small-sample caution.
+  variable across all models, listed from the smallest to the largest:
+  each model must have more parameters than the previous one, or the
+  table is refused, and a model that drops a term of the previous one
+  gets a warning. Under a non-classical `vcov`, each pair is tested by a
+  Wald test of the coefficients the current model adds, on that model's
+  matrix, shown as "Wald F-change" or "Wald \\\chi^2\\ (change)" by the
+  regime of its coefficient tests. See *Hierarchical (nested) model
+  comparison* for the rule, the classes it covers and its small-sample
+  caution.
 
 - digits:
 
@@ -910,12 +914,14 @@ table_regression(
 - excel_path:
 
   File path for `output = "excel"`, ending in `".xlsx"`, in a directory
-  that exists. Default `NULL` (required when `output = "excel"`).
+  that exists. Default `NULL` (required when `output = "excel"`). A file
+  already at that path is replaced: each call writes a new workbook.
 
 - excel_sheet:
 
   Sheet name when writing to Excel. `NULL` (the default) uses
-  `"Regression"`.
+  `"Regression"`. The workbook holds this one sheet: a second call with
+  the same `excel_path` replaces the file and does not add a sheet.
 
 - clipboard_delim:
 
@@ -2295,7 +2301,7 @@ table_regression(
 #>  F-change        │    2.41 (1, 1171)              
 #>  p (change)      │     .121                       
 #> 
-#> Note. Linear regression models. Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS). Each change statistic compares a model with the previous one.
 
 # The same comparison by its fit statistics alone.
 table_regression(
@@ -2314,7 +2320,7 @@ table_regression(
 #>  F-change   │     –      18.26 (1, 1172)     2.41 (1, 1171) 
 #>  p (change) │     –       <.001               .121          
 #> 
-#> Note. Linear regression models.
+#> Note. Linear regression models. Each change statistic compares a model with the previous one.
 # }
 
 # \donttest{

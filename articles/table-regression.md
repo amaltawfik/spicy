@@ -283,16 +283,16 @@ table_regression(
 #> ──────────────────────────┼──────────────────────────────────────────
 #>  (Intercept)              │   53.96  <.001                           
 #>  age                      │    0.03   .344  0.00  [0.00, 0.00]  0.00 
-#>  sex:                     │                                          
+#>  sex:                     │                 0.02  [0.00, 0.03]  0.02 
 #>    Female (ref.)          │     –     –                              
-#>    Male                   │    3.57  <.001  0.02  [0.00, 0.03]  0.02 
-#>  smoking:                 │                                          
+#>    Male                   │    3.57  <.001                           
+#>  smoking:                 │                 0.00  [0.00, 0.00]  0.00 
 #>    No (ref.)              │     –     –                              
-#>    Yes                    │    0.68   .496  0.00  [0.00, 0.00]  0.00 
-#>  education:               │                                          
+#>    Yes                    │    0.68   .496                           
+#>  education:               │                 0.21  [0.17, 0.25]  0.21 
 #>    Lower secondary (ref.) │     –     –                              
-#>    Upper secondary        │   11.89  <.001  0.21  [0.17, 0.25]  0.21 
-#>    Tertiary               │   19.71  <.001  0.21  [0.17, 0.25]  0.21 
+#>    Upper secondary        │   11.89  <.001                           
+#>    Tertiary               │   19.71  <.001                           
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                                     
 #>  R²                       │    0.22                                  
@@ -302,16 +302,16 @@ table_regression(
 #> ──────────────────────────┼──────────────
 #>  (Intercept)              │              
 #>  age                      │ [0.00, 0.00] 
-#>  sex:                     │              
+#>  sex:                     │ [0.00, 0.03] 
 #>    Female (ref.)          │              
-#>    Male                   │ [0.00, 0.03] 
-#>  smoking:                 │              
+#>    Male                   │              
+#>  smoking:                 │ [0.00, 0.00] 
 #>    No (ref.)              │              
-#>    Yes                    │ [0.00, 0.00] 
-#>  education:               │              
+#>    Yes                    │              
+#>  education:               │ [0.17, 0.25] 
 #>    Lower secondary (ref.) │              
-#>    Upper secondary        │ [0.17, 0.25] 
-#>    Tertiary               │ [0.17, 0.25] 
+#>    Upper secondary        │              
+#>    Tertiary               │              
 #> 
 #> Note. Linear regression. Std. errors: classical (OLS). η² = partial eta squared (Type II); CI = confidence interval; ω² = partial omega squared (Type II).
 ```
@@ -619,13 +619,13 @@ table_regression_uv(sh, outcome = smoking,
 #>                             ───────────────────────────────  ───────────── 
 #>  Variable                 │  N     OR      95% CI       p            OR    
 #> ──────────────────────────┼────────────────────────────────────────────────
-#>  sex:                     │                                                
-#>    Female (ref.)          │    –   –         –         –               –   
-#>    Male                   │ 1175  0.95  [0.72, 1.26]   .713           0.96 
+#>  sex:                     │ 1175                                           
+#>    Female (ref.)          │        –         –         –               –   
+#>    Male                   │       0.95  [0.72, 1.26]   .713           0.96 
 #>  age                      │ 1175  1.01  [1.00, 1.01]   .292           1.01 
-#>  education:               │                                                
-#>    Lower secondary (ref.) │    –   –         –         –               –   
-#>    Upper secondary        │ 1175  0.62  [0.44, 0.87]   .005           0.62 
+#>  education:               │ 1175                                           
+#>    Lower secondary (ref.) │        –         –         –               –   
+#>    Upper secondary        │       0.62  [0.44, 0.87]   .005           0.62 
 #>    Tertiary               │       0.41  [0.28, 0.60]  <.001           0.40 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │                                        1175    
@@ -736,7 +736,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  F-change        │   28.13 (1, 1158)              
 #>  p (change)      │    <.001                       
 #> 
-#> Note. Linear regression models. Std. errors: classical (OLS).
+#> Note. Linear regression models. Std. errors: classical (OLS). Each change statistic compares a model with the previous one.
 ```
 
 Reading the change rows: each test carries its degrees of freedom,
@@ -832,7 +832,7 @@ table_regression(list(m1, m2, m3), nested = TRUE, vcov = "HC3")
 #>  Wald F-change   │   29.34 (1, 1158)              
 #>  p (change)      │    <.001                       
 #> 
-#> Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3).
+#> Note. Linear regression models. Std. errors: heteroskedasticity-robust (HC3). Each change statistic compares a model with the previous one.
 ```
 
 ### Comparing models by their fit statistics
@@ -864,7 +864,7 @@ table_regression(
 #>  F-change   │     –       2.28 (1, 1159)    28.13 (1, 1158) 
 #>  p (change) │     –        .132              <.001          
 #> 
-#> Note. Linear regression models. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+#> Note. Linear regression models. Each change statistic compares a model with the previous one. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 ```
 
 The title still names the outcome, and the note keeps what describes the
@@ -1405,10 +1405,10 @@ table_regression(fit2, show_columns = c("b", "partial_chi2", "p"))
 #> ──────────────────────────┼───────────────────────────
 #>  (Intercept)              │   -1.13             <.001 
 #>  age                      │    0.01   1.55 (1)   .213 
-#>  education:               │                           
+#>  education:               │          21.70 (2)        
 #>    Lower secondary (ref.) │     –                –    
-#>    Upper secondary        │   -0.48  21.70 (2)   .005 
-#>    Tertiary               │   -0.91  21.70 (2)  <.001 
+#>    Upper secondary        │   -0.48              .005 
+#>    Tertiary               │   -0.91             <.001 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n                        │ 1175                      
 #>  R² (Tjur)                │    0.02                   
@@ -1757,7 +1757,7 @@ table_regression(list(m1, m2, m3), nested = TRUE)
 #>  Δχ²                      │   21.64 (2)              
 #>  p (change)               │    <.001                 
 #> 
-#> Note. Logistic regression models. Std. errors: classical (Fisher information). AIC = Akaike information criterion.
+#> Note. Logistic regression models. Std. errors: classical (Fisher information). Each change statistic compares a model with the previous one. AIC = Akaike information criterion.
 ```
 
 ### Gaussian glm caveat

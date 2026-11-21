@@ -236,6 +236,8 @@ table_regression(
   show_columns = c("b", "p"),
   show_fit_stats = c("nobs", "aic", "lrt_change", "p_change")
 )
+#> Warning: `nested = TRUE`: Model 2 does not contain the term(s) `age` of Model 1.
+#> ℹ The change test assumes that each model holds the previous one. Check that the models are nested under another writing, or use `nested = FALSE`.
 #> Hierarchical logistic regression: type
 #> 
 #>                   Linear           Spline       
@@ -705,6 +707,8 @@ table_regression(
   nested = TRUE,
   show_columns = c("b", "p")
 )
+#> Warning: `nested = TRUE`: Model 2 does not contain the term(s) `age` of Model 1.
+#> ℹ The change test assumes that each model holds the previous one. Check that the models are nested under another writing, or use `nested = FALSE`.
 #> Hierarchical linear regression: bmi
 #> 
 #>                   Linear              Spline         

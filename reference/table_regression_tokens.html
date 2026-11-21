@@ -5,7 +5,7 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.4.10/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Column and fit-statistic tokens in table_regression() — table_regression_tokens"><meta name="description" content="Two vector arguments – show_columns and show_fit_stats –
+</script><script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/IBM_Plex_Sans-0.5.0/font.css" rel="stylesheet"><link href="../deps/IBM_Plex_Mono-0.5.0/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Column and fit-statistic tokens in table_regression() — table_regression_tokens"><meta name="description" content="Two vector arguments – show_columns and show_fit_stats –
 accept named tokens that select what to display and in
 what order. All tokens are lowercase
 (snake_case for compound tokens). Group tokens
@@ -168,11 +168,18 @@ number with its df in the number format (<code>0.00" (2, 28)"</code>).
 and its df as numbers, in the statistic's column, then
 <code>"&lt;column&gt;: df"</code> and, for the F, <code>"&lt;column&gt;: residual df"</code>.
 <code>tidy()</code> has them in <code>df</code> and <code>df.residual</code>, and <code><a href="inline.html">inline()</a></code> cites
-the statistic alone.</p></li>
+the statistic alone. The test and the partial effect sizes belong
+to the whole term: under the header row of a factor (the grouped
+<code>factor_layout</code>) they are shown once, on that row, and the level
+rows leave the cell empty. In the flat layout each level row
+carries them. <code>tidy()</code> and the long output keep them
+on every level row, and <code><a href="inline.html">inline()</a></code> reads them by the variable, or
+by the variable and any of its levels.</p></li>
 <li><p>Variance explained per fit – <code>lm</code> only: <code>"r2"</code>,
 <code>"adj_r2"</code>. Like <code>"n"</code>, these are <em>per-fit</em> columns: they are
 populated by <code><a href="table_regression_uv.html">table_regression_uv()</a></code> screens, where each
-predictor block is its own model and the \(R^2\)
+predictor block is its own model (its value on the predictor's
+row, or on the header row of a factor) and the \(R^2\)
 answers "how much of the outcome does this predictor explain
 on its own". A model whose \(R^2\) is a single
 model-level number drops the column and reports it in the

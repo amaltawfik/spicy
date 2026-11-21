@@ -86,12 +86,20 @@ Each token = one displayed column.
   then `"<column>: df"` and, for the F, `"<column>: residual df"`.
   `tidy()` has them in `df` and `df.residual`, and
   [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
-  cites the statistic alone.
+  cites the statistic alone. The test and the partial effect sizes
+  belong to the whole term: under the header row of a factor (the
+  grouped `factor_layout`) they are shown once, on that row, and the
+  level rows leave the cell empty. In the flat layout each level row
+  carries them. `tidy()` and the long output keep them on every level
+  row, and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  reads them by the variable, or by the variable and any of its levels.
 
 - Variance explained per fit – `lm` only: `"r2"`, `"adj_r2"`. Like
   `"n"`, these are *per-fit* columns: they are populated by
   [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
-  screens, where each predictor block is its own model and the \\R^2\\
+  screens, where each predictor block is its own model (its value on the
+  predictor's row, or on the header row of a factor) and the \\R^2\\
   answers "how much of the outcome does this predictor explain on its
   own". A model whose \\R^2\\ is a single model-level number drops the
   column and reports it in the fit-statistics rows instead (the `"r2"` /

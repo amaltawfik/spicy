@@ -495,6 +495,8 @@ fit_lin <- multinom(employment_status ~ age + sex + educ_score,
                     data = d, trace = FALSE)
 table_regression(list(fit_lin, fit), nested = TRUE,
                  show_columns = c("b", "p"))
+#> Warning: `nested = TRUE`: Model 2 does not contain the term(s) `educ_score` of Model 1.
+#> ℹ The change test assumes that each model holds the previous one. Check that the models are nested under another writing, or use `nested = FALSE`.
 #> Hierarchical multinomial logistic regression: employment_status
 #> 
 #>                                            Model 1           Model 2       

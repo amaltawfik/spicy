@@ -341,12 +341,14 @@ table_battery(
 - excel_path:
 
   Path for `output = "excel"`, ending in `".xlsx"`, in a directory that
-  exists. Defaults to `NULL`.
+  exists. Defaults to `NULL`. A file already at that path is replaced:
+  each call writes a new workbook.
 
 - excel_sheet:
 
   Sheet name for Excel export. `NULL` (the default) uses
-  `"Item battery"`.
+  `"Item battery"`. The workbook holds this one sheet: a second call
+  with the same `excel_path` replaces the file and does not add a sheet.
 
 - clipboard_delim:
 

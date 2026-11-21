@@ -83,12 +83,14 @@ table_stack(
 - excel_path:
 
   File path for `output = "excel"`, ending in `".xlsx"`, in a directory
-  that exists. Default `NULL` (required when `output = "excel"`).
+  that exists. Default `NULL` (required when `output = "excel"`). A file
+  already at that path is replaced: each call writes a new workbook.
 
 - excel_sheet:
 
   Sheet name when writing to Excel. `NULL` (the default) uses
-  `"Regression"`.
+  `"Regression"`. The workbook holds this one sheet: a second call with
+  the same `excel_path` replaces the file and does not add a sheet.
 
 - clipboard_delim:
 

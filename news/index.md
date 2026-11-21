@@ -349,6 +349,29 @@
   an F-change `12.38 (1, 29)`. `output = "data.frame"` keeps the
   statistic alone.
 
+- `table_regression(nested = TRUE)` refuses a model that has no more
+  parameters than the one before it. Two models that were not nested
+  (`y ~ x`, then `y ~ z`) showed a negative ΔR² and no test, and a
+  hierarchy listed from the largest model to the smallest came out
+  without change rows. A model that adds parameters but leaves out a
+  term of the previous one is compared, with a warning: it may hold the
+  term under another writing, `poly(x, 2)` after `x`.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  shows the term-level statistics of a factor once, on the header row of
+  the factor. The test of the term (`"partial_chi2"`, `"partial_f"`) and
+  its partial effect sizes were repeated on each level row, where they
+  read as tests of the levels.
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  shows the N and the R² of a factor on its header row too, where they
+  sat on the first level after the reference. The flat layout
+  (`factor_layout = "flat"`),
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"` do not change, and
+  [`inline()`](https://amaltawfik.github.io/spicy/reference/inline.md)
+  cites these values by the variable alone as well as by the variable
+  and a level.
+
 - [`table_categorical_svy()`](https://amaltawfik.github.io/spicy/reference/table_categorical_svy.md)
   gains `percent_base` and, like
   [`table_categorical()`](https://amaltawfik.github.io/spicy/reference/table_categorical.md),
@@ -1099,6 +1122,22 @@
   model under `vcov = "CR1S"` is pointed to its design instead of to
   `"CR2"`.
 
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  leaves out a default column that no model of the table fills: a
+  [`quantreg::rq()`](https://rdrr.io/pkg/quantreg/man/rq.html) model
+  under `vcov = "rank"` showed an SE and a p column of dashes. Named in
+  `show_columns`, the column stays. An AME column shown without the
+  `"ame"` column is headed “AME p”, “AME SE”, “AME 95% CI” or “AME df”,
+  where two columns read “p”.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  `show_columns = "n"`, `"r2"` or `"adj_r2"` on a table without a
+  univariable screen is refused, and the error points to the fit
+  statistic of the same quantity. These columns belong to
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
+  and were dropped without a word. The help of `excel_path` says that
+  each call writes a new workbook.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   `labels` names the reference level of a factor by the name its
   coefficient would have. With `Male` as the reference,
@@ -1143,6 +1182,59 @@
   [`robcov()`](https://rdrr.io/pkg/rms/man/robcov.html) used Huber’s or
   Efron’s method. `vcov = "CR0"` on such a model starts again from the
   model-based variance instead of building a sandwich on a sandwich.
+  Clusters given as `d$id` are named “id” in the note, as for the
+  `cluster` argument.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) model
+  fitted with `cluster =`, a
+  [`cluster()`](https://rdrr.io/pkg/survival/man/cluster.html) term,
+  `robust = TRUE` or non-integer weights, and a
+  [`survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) model
+  fitted with `cluster =` or `robust = TRUE`, report the robust variance
+  survival computed, and the note called it “classical (Fisher
+  information)”. It now reads “cluster-robust (Lin-Wei), clusters by id”
+  or “robust (Lin-Wei)” for a Cox model, and “(Huber)” for a parametric
+  one, an [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) model
+  included. The standard errors do not change. Under `nested = TRUE`,
+  two such Cox models are compared by a Wald test on that variance,
+  where the table stopped on an error of
+  [`anova()`](https://rdrr.io/r/stats/anova.html).
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  under a robust `vcov`, `"f_change"` or `"lrt_change"` in
+  `show_fit_stats` shows the Wald change row that takes its place. The
+  request was refused as having no value.
+
+- `table_regression(nested = TRUE)`: with three models or more, the note
+  says that each change statistic compares a model with the previous
+  one. `anova(m1, m2, m3)` tests each step on the residual variance of
+  the largest model and gives another F.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
+  a coefficient the model could not estimate (an aliased column, a
+  factor level without observations) has no standard error, p-value or
+  interval, and the note says that the model is rank-deficient, for
+  every class. A
+  [`coxph()`](https://rdrr.io/pkg/survival/man/coxph.html) or
+  [`survreg()`](https://rdrr.io/pkg/survival/man/survreg.html) model
+  showed “SE 0.00” beside the dash, and an
+  [`AER::tobit()`](https://rdrr.io/pkg/AER/man/tobit.html) model stopped
+  on an error. The RMST and risk-difference columns of a Cox model with
+  such a coefficient are refused with its name, where they stopped on a
+  bootstrap error.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  and
+  [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md):
+  a variable with a non-syntactic name (`revenu mensuel (CHF)`) is shown
+  without the backticks R quotes it with, and a factor so named gets its
+  header and its reference row. Its levels were printed as separate
+  rows, its events/N counts were those of the whole model, and the
+  univariable screen refused it. `labels` names such a variable with or
+  without the backticks.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"` keep R’s coefficient names.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a note says that an [`lrm()`](https://rdrr.io/pkg/rms/man/lrm.html) or

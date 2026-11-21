@@ -378,12 +378,14 @@ table_outcome(
 - excel_path:
 
   File path for `output = "excel"`, ending in `".xlsx"`, in a directory
-  that exists.
+  that exists. A file already at that path is replaced: each call writes
+  a new workbook.
 
 - excel_sheet:
 
   Sheet name for `output = "excel"`. `NULL` (the default) uses
-  `"Outcome"`.
+  `"Outcome"`. The workbook holds this one sheet: a second call with the
+  same `excel_path` replaces the file and does not add a sheet.
 
 - clipboard_delim:
 

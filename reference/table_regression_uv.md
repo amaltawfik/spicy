@@ -223,18 +223,19 @@ See
 
 By default each univariable model is fit on its **own complete cases**,
 so N varies across predictors – that is what the `N` column discloses
-(shown on the first row of each block), and a table note states it
-whenever the Ns differ. The multivariable model is fit on the complete
-cases of **all** its variables (its `n` appears in the fit-statistics
-rows). Pass `complete_cases = TRUE` to restrict every model –
-univariable and multivariable – to the common complete-case sample.
+(shown on the predictor's row, or once on the header row of a factor),
+and a table note states it whenever the Ns differ. The multivariable
+model is fit on the complete cases of **all** its variables (its `n`
+appears in the fit-statistics rows). Pass `complete_cases = TRUE` to
+restrict every model – univariable and multivariable – to the common
+complete-case sample.
 
 ## Variance explained
 
 `show_columns = c("n", "b", "ci", "p", "r2")` adds an \\R^2\\ column to
 the screen (`method = "lm"`): each predictor block reports its **own**
-model's \\R^2\\, on the first row of the block like `N`. It answers what
-a coefficient and its interval cannot – how much of the outcome the
+model's \\R^2\\, on the row that carries `N`. It answers what a
+coefficient and its interval cannot – how much of the outcome the
 predictor accounts for – and often shows that a firmly established
 association still explains a small share of the variance. Add `"adj_r2"`
 for the adjusted form. On the multivariable side the \\R^2\\ is one
@@ -315,11 +316,11 @@ table_regression_uv(
 #>  Variable        │  N     OR      95% CI       p      OR        95% CI    
 #> ─────────────────┼────────────────────────────────────────────────────────
 #>  age             │ 1175  1.01  [1.00, 1.01]   .292     1.01  [1.00, 1.02] 
-#>  sex:            │                                                        
-#>    Female (ref.) │    –   –         –         –         –         –       
-#>    Male          │ 1175  0.95  [0.72, 1.26]   .713     0.96  [0.73, 1.28] 
-#>  education:      │                                                        
-#>    .L            │ 1175  0.53  [0.40, 0.70]  <.001     0.53  [0.40, 0.69] 
+#>  sex:            │ 1175                                                   
+#>    Female (ref.) │        –         –         –         –         –       
+#>    Male          │       0.95  [0.72, 1.26]   .713     0.96  [0.73, 1.28] 
+#>  education:      │ 1175                                                   
+#>    .L            │       0.53  [0.40, 0.70]  <.001     0.53  [0.40, 0.69] 
 #>    .Q            │       1.03  [0.81, 1.29]   .832     1.02  [0.81, 1.29] 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │                                  1175                  
@@ -357,9 +358,9 @@ table_regression_uv(
 #>  Variable        │  N      B        95% CI        p     R²            B    
 #> ─────────────────┼─────────────────────────────────────────────────────────
 #>  age             │ 1200   0.04  [-0.02,  0.10]   .177  0.00           0.07 
-#>  sex:            │                                                         
-#>    Female (ref.) │    –    –          –          –      –              –   
-#>    Male          │ 1200   3.89  [ 2.13,  5.64]  <.001  0.02           4.27 
+#>  sex:            │ 1200                                0.02                
+#>    Female (ref.) │         –          –          –                     –   
+#>    Male          │        3.89  [ 2.13,  5.64]  <.001                 4.27 
 #>  bmi             │ 1188  -0.60  [-0.83, -0.36]  <.001  0.02          -0.67 
 #> ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 #>  n               │                                                 1188    
