@@ -516,6 +516,7 @@ build_regression_footer_from_frames <- function(
         decimal_mark = decimal_mark
       ),
       build_ame_satterthwaite_footer_block_from_frames(frames, show_columns),
+      build_ame_min_df_footer_block_from_frames(frames),
       build_p_adjust_footer_block_from_frames(frames, p_adjust, show_columns),
       if (re_se_ci_shown) build_re_apvar_footer_block_from_frames(frames),
       if (re_se_ci_shown) {
@@ -1630,6 +1631,34 @@ build_abbreviations_footer_block_from_frames <- function(
   }
 }
 
+
+# The AME test of a model whose coefficients have different df (lme,
+# lmerTest, estimatr CR2): each AME takes the smallest df of the
+# coefficients it depends on (.ame_rows_min_df()), which no
+# coefficient sentence says. A shared df or z needs no sentence.
+build_ame_min_df_footer_block_from_frames <- function(frames) {
+  hit <- vapply(
+    frames,
+    function(f) {
+      b_df <- .ame_reference_df(f$coefs)
+      a_df <- Filter(is.finite, f$coefs$df[f$coefs$estimate_type %in% "ame"])
+      !isTRUE(f$info$extras$use_ame_satterthwaite) &&
+        length(unique(b_df)) > 1L &&
+        length(a_df) > 0L &&
+        all(a_df %in% b_df)
+    },
+    logical(1)
+  )
+  if (!any(hit)) {
+    return(NULL)
+  }
+  idx <- which(hit)
+  .note_lines_by_model(
+    frames,
+    idx,
+    rep(spicy_str("note_ame_min_df"), length(idx))
+  )
+}
 
 # Frame-aware sibling of build_ame_satterthwaite_footer_block(). Reads
 #   frame$info$extras$use_ame_satterthwaite (was extract$use_ame_satterthwaite)

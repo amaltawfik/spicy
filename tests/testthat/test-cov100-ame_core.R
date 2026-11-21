@@ -96,7 +96,12 @@ test_that("aliased predictor AME cells are NA-mirrored onto the frame coefs", {
 
   # marginaleffects itself reports a FINITE (0) estimate for dup -- that is
   # exactly why the frame must overwrite it with NA.
-  sl <- suppressWarnings(marginaleffects::avg_slopes(m, conf_level = 0.95))
+  # The coefficients are tested on t(30): the AME too.
+  sl <- suppressWarnings(marginaleffects::avg_slopes(
+    m,
+    conf_level = 0.95,
+    df = stats::df.residual(m)
+  ))
   expect_true(is.finite(sl$estimate[sl$term == "dup"]))
 
   ame_dup <- out[out$estimate_type == "ame" & out$term == "dup", , drop = FALSE]

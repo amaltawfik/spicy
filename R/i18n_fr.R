@@ -420,6 +420,7 @@
   note_ame_satterthwaite = "Inf\u00E9rence sur les AME\u00A0: test t avec degr\u00E9s de libert\u00E9 de Satterthwaite%s.",
   note_ame_satterthwaite_qual_both = " (formule exacte pour lm\u00A0; approximation par le coefficient dominant pour glm)",
   note_ame_satterthwaite_qual_glm = " (approximation par le coefficient dominant)",
+  note_ame_min_df = "Inf\u00E9rence sur les AME\u00A0: test t sur le plus petit nombre de degr\u00E9s de libert\u00E9 parmi les coefficients dont d\u00E9pend chaque effet.",
   note_ame_slope = "AME d'un pr\u00E9dicteur continu\u00A0: pente moyenne (dY/dX).",
   note_ame_unit = "AME d'un pr\u00E9dicteur continu\u00A0: variation moyenne de la pr\u00E9diction pour une unit\u00E9 de plus.",
   note_ame_sd = "AME d'un pr\u00E9dicteur continu\u00A0: variation moyenne de la pr\u00E9diction pour un \u00E9cart-type de plus.",

@@ -5081,13 +5081,13 @@ table_regression <- function(
       } else {
         paste0(head, "its tests are z tests, which have no degrees of freedom.")
       },
-      # The AME of an `lme()` is tested on z: the list of `ame_df` leaves
-      # it out.
+      # The AME is tested on the distribution of the coefficients it
+      # depends on (.ame_reference_df()).
       "i" = if (identical(tk, "ame_df")) {
         paste0(
           "The column gives the degrees of freedom of the t tests of the ",
-          "AME (`lm`, a `glm` whose dispersion is estimated, a survey ",
-          "design, a cluster-robust `vcov = \"CR2\"`, ...)."
+          "AME, those of a model whose coefficients are tested on a t ",
+          "distribution."
         )
       } else {
         paste0(

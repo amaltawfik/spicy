@@ -860,6 +860,8 @@
   note_ame_satterthwaite = "AME inference: t-test with Satterthwaite df%s.",
   note_ame_satterthwaite_qual_both = " (closed-form for lm; dominant-coefficient approximation for glm)",
   note_ame_satterthwaite_qual_glm = " (dominant-coefficient approximation)",
+  # The AME test of a model whose coefficients have different df.
+  note_ame_min_df = "AME inference: t-test on the smallest df among the coefficients each effect depends on.",
   # The quantity the AME of a continuous predictor is, one sentence per
   # `ame_type` of table_regression(), the default included.
   note_ame_slope = "AME of a continuous predictor: average slope (dY/dX).",

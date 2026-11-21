@@ -1813,14 +1813,11 @@ extract_ame_glm <- function(
 # straight onto `frame$coefs`.
 #
 # Mechanics:
-#   * `marginaleffects::avg_slopes(fit, conf_level, df = Inf)` --
-#     response-scale AME with Wald-z asymptotic inference. Works for
-#     all four mixed-effects engines. We use df = Inf and the model-
-#     based vcov. That matches the B-row inference for glmer /
-#     glmmTMB / plain lmerMod (Wald-z themselves) but NOT for
-#     lmerModLmerTest (Satterthwaite t) or nlme::lme (containment-df
-#     t): there the AME p is a large-sample approximation sitting
-#     next to a t-based B-row p.
+#   * `marginaleffects::avg_slopes(fit, conf_level, df = df)` --
+#     response-scale AME, on the reference distribution of the
+#     coefficient rows that .attach_ame_to_frame_coefs() reads
+#     (.ame_reference_df()): z for glmer / glmmTMB / plain lmerMod, t
+#     for lmerTest and nlme::lme, whose df go by coefficient.
 #   * For factor terms, we reconstruct a coef-style `term` id
 #     (e.g. `Subjectmale`) so the renderer's factor-grouping logic
 #     finds these rows alongside the B-rows.
@@ -2355,13 +2352,18 @@ extract_ame_glm <- function(
   cluster = NULL,
   hdi = FALSE,
   vcov_matrix = NULL,
-  df = Inf,
+  df = NULL,
   ame_type = .ame_type_in_force()
 ) {
   ame_tokens <- .AME_COLUMN_TOKENS
   if (!any(ame_tokens %in% show_columns)) {
     return(coefs)
   }
+  # The reference distribution of the AME rows: the one of the
+  # coefficients it depends on (.ame_reference_df()), unless the caller
+  # gives the df (the design df of a survey fit).
+  df_coef <- df %||% .ame_reference_df(coefs)
+  df <- if (length(unique(df_coef)) == 1L) unique(df_coef) else Inf
   # Robust AME uncertainty: when a robust vcov was requested for the
   # coefficients, recompute the same matrix and pass it to avg_slopes so the AME
   # SE / CI / p honor the requested estimator. A no-op for the model-based
@@ -2417,6 +2419,9 @@ extract_ame_glm <- function(
   )
   if (is.null(ame_rows) || nrow(ame_rows) == 0L) {
     return(coefs)
+  }
+  if (length(unique(df_coef)) > 1L) {
+    ame_rows <- .ame_rows_min_df(ame_rows, fit, df_coef, ci_level)
   }
   # A perfectly-collinear (aliased) predictor has an NA coefficient and an
   # en-dashed B row; its AME is equally undefined, but marginaleffects returns a
@@ -2533,6 +2538,70 @@ extract_ame_glm <- function(
   # category dimension is PRESERVED (not dropped) -- the renderer / structured
   # accessor can then key off it instead of parsing the term prefix.
   .rbind_union(coefs, ame_rows)
+}
+
+
+# The AME is tested on the reference distribution of the coefficients
+# it depends on (dev/decisions/2026-11-21-ame-reference-distribution.md):
+# the df of each coefficient row, Inf for a z test, named by term. One
+# value when they share it (t on the residual df, or z); several when the
+# df go by coefficient (lme containment, lmerTest Satterthwaite, estimatr
+# CR2), and .ame_rows_min_df() takes the smallest one each AME depends
+# on. A frame without tested coefficients (a posterior) gives z.
+.ame_reference_df <- function(coefs) {
+  b <- coefs[
+    coefs$estimate_type %in%
+      "B" &
+      !(coefs$is_ref %in% TRUE) &
+      !is.na(coefs$estimate) &
+      coefs$test_type %in% c("t", "z"),
+    ,
+    drop = FALSE
+  ]
+  stats::setNames(ifelse(b$test_type == "t", b$df, Inf), b$term)
+}
+
+# Each AME row on t with the smallest df among the coefficients its
+# Jacobian loads on: in a model linear in its coefficients, those of the
+# terms that hold the variable (an exact zero test, where the numerical
+# Jacobian of avg_slopes() carries noise as large as a true small
+# loading); every coefficient otherwise. The emmeans "containment" rule.
+.ame_rows_min_df <- function(ame_rows, fit, df_coef, ci_level) {
+  dep <- tryCatch(
+    if (isTRUE(insight::model_info(fit, verbose = FALSE)$is_linear)) {
+      X <- insight::get_modelmatrix(fit)
+      fac <- attr(stats::terms(fit), "factors")
+      vars <- lapply(rownames(fac), function(r) all.vars(str2lang(r)))
+      stats::setNames(
+        lapply(attr(X, "assign"), function(k) {
+          if (k == 0L) character(0) else unlist(vars[fac[, k] > 0])
+        }),
+        colnames(X)
+      )
+    },
+    error = function(e) NULL
+  )
+  for (i in which(!(ame_rows$is_ref %in% TRUE))) {
+    v <- tryCatch(
+      all.vars(str2lang(ame_rows$parent_var[i])),
+      error = function(e) NULL
+    )
+    cf <- names(dep)[vapply(dep, function(u) any(v %in% u), logical(1))]
+    cf <- intersect(cf, names(df_coef))
+    df_i <- min(df_coef[if (length(cf)) cf else names(df_coef)])
+    if (!is.finite(df_i)) {
+      next
+    }
+    est <- ame_rows$estimate[i]
+    se <- ame_rows$std_error[i]
+    crit <- stats::qt(1 - (1 - ci_level) / 2, df_i)
+    ame_rows$df[i] <- df_i
+    ame_rows$test_type[i] <- "t"
+    ame_rows$p_value[i] <- 2 * stats::pt(-abs(est / se), df_i)
+    ame_rows$ci_lower[i] <- est - crit * se
+    ame_rows$ci_upper[i] <- est + crit * se
+  }
+  ame_rows
 }
 
 

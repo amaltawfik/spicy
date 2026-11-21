@@ -102,11 +102,12 @@ test_that("gam AME matches avg_slopes (single-outcome)", {
   d <- make_d()
   fit <- mgcv::gam(y ~ x1 + f, data = d)
   # The oracle is given the data: a gam's formula has the global
-  # environment, where marginaleffects would look `d` up.
-  xval_single(
-    as_regression_frame(fit, show_columns = c("b", "ame")),
-    marginaleffects::set_modeldata(fit, d)
-  )
+  # environment, where marginaleffects would look `d` up. A gaussian gam
+  # tests its coefficients on t with the residual df: its AME too.
+  fr <- as_regression_frame(fit, show_columns = c("b", "ame"))
+  df <- fr$coefs$df[fr$coefs$estimate_type == "B"][1L]
+  expect_true(is.finite(df))
+  xval_single(fr, marginaleffects::set_modeldata(fit, d), df = df)
 })
 
 test_that("gam AME use the fit's data, not a global object of the same name", {

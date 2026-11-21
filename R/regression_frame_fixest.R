@@ -104,18 +104,16 @@ as_regression_frame.fixest <- function(
   # tokens are refused up front by .robust_vcov_support(), which grants
   # fixest "classical" only. A GLM with fixed effects has no AME (see
   # .fixest_ame_ok()), so none is attempted. The AME rows take the
-  # distribution of the B rows: t on fixest's degrees of freedom when
-  # fixest reports t, z otherwise.
+  # distribution of the B rows (.ame_reference_df()): t on fixest's
+  # degrees of freedom when fixest reports t, z otherwise.
   if (.fixest_ame_ok(fit, is_glm)) {
-    b <- coefs[!coefs$is_ref, , drop = FALSE]
     coefs <- .attach_ame_to_frame_coefs(
       coefs,
       fit,
       ci_level,
       show_columns,
       vcov_type = vcov,
-      cluster = cluster,
-      df = if (all(b$test_type == "t")) b$df[1L] else Inf
+      cluster = cluster
     )
     coefs <- .fixest_align_ame_rows(coefs, fit)
   }

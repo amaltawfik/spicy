@@ -1238,12 +1238,12 @@
       ----
       error: spicy_invalid_input, spicy_error
         Token `"ame_df"` in `show_columns` has no value for any model in the table: its tests are z tests, which have no degrees of freedom.
-        i The column gives the degrees of freedom of the t tests of the AME (`lm`, a `glm` whose dispersion is estimated, a survey design, a cluster-robust `vcov = "CR2"`, ...).
-      Received by 31:
-        show_columns = "ame_df": bam, betareg, clm, gam, gam_betar, gam_logit,
-            gam_nb, geeglm, glm.nb, glm_logit, glm_poisson, glm_probit, glmer,
-            glmmTMB, gls, hurdle, iv_robust, ivreg, lm_robust, lme, lmer, lrm,
-            multinom, ols, polr, rlm, rms_Glm, rq, survreg, tobit, zeroinfl
+        i The column gives the degrees of freedom of the t tests of the AME, those of a model whose coefficients are tested on a t distribution.
+      Received by 23:
+        show_columns = "ame_df": bam, betareg, clm, gam_betar, gam_logit, gam_nb,
+            geeglm, glm.nb, glm_logit, glm_poisson, glm_probit, glmer, glmmTMB,
+            hurdle, lmer, lrm, multinom, polr, rlm, rms_Glm, survreg, tobit,
+            zeroinfl
       ----
       error: spicy_invalid_input, spicy_error
         Token `"ame_df"` in `show_columns` is not available for `mlogit` models.
@@ -4309,7 +4309,7 @@
       ----
       error: spicy_invalid_input, spicy_error
         Token `"ame_df"` in `show_columns` has no value for any model in the table: a posterior has no test.
-        i The column gives the degrees of freedom of the t tests of the AME (`lm`, a `glm` whose dispersion is estimated, a survey design, a cluster-robust `vcov = "CR2"`, ...).
+        i The column gives the degrees of freedom of the t tests of the AME, those of a model whose coefficients are tested on a t distribution.
       Received by 2:
         show_columns = "ame_df": brmsfit, stanreg
       ----
