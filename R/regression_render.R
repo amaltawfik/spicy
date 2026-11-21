@@ -1684,6 +1684,9 @@ format_term_label <- function(
     ft <- term_row$factor_term
     flat_key <- if (!is.na(ft) && nzchar(ft)) paste0(ft, lvl) else lvl
     flat_lbl <- resolve_label(flat_key, labels)
+    if (identical(flat_lbl, flat_key) && !is.na(ft) && nzchar(ft)) {
+      flat_lbl <- paste0(.reg_untick(ft), lvl)
+    }
     return(paste0(flat_lbl, ref_sep, reference_label))
   }
   # Subordinate-block rows (ordinal thresholds, PPO non-proportional
@@ -1730,6 +1733,9 @@ format_term_label <- function(
     return(paste0("  ", lbl))
   }
   lbl <- resolve_label(term, labels)
+  if (identical(lbl, term) && !isTRUE(term_row$is_reference)) {
+    lbl <- .reg_untick(term)
+  }
   # Flat, a selection-model row keeps its equation in front ("selection:
   # age"), in the table language as under the grouped header.
   ol <- term_row$outcome_prefix %||% NA_character_
@@ -1788,6 +1794,30 @@ resolve_label <- function(term, labels) {
   term
 }
 
+# A term as the table shows it: the backticks R puts around a
+# non-syntactic variable name (`` `revenu mensuel (CHF)` ``,
+# `` log(`a b`) ``, `` `a b`:gu ``) are dropped. A backticked piece whose
+# content is syntactic is no name R quoted (a level `` `v` `` in
+# `` g`v` ``) and is kept. Display only: the term stays the identifier.
+.reg_untick <- function(x) {
+  vapply(
+    x,
+    function(s) {
+      if (is.na(s) || !grepl("`", s, fixed = TRUE)) {
+        return(s)
+      }
+      m <- gregexpr("`[^`]+`", s)
+      regmatches(s, m) <- lapply(regmatches(s, m), function(q) {
+        inner <- substr(q, 2L, nchar(q) - 1L)
+        ifelse(make.names(inner) != inner, inner, q)
+      })
+      s
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+}
+
 
 # ---- Variable labels (decision 54) ----------------------------------------
 
@@ -1816,6 +1846,9 @@ resolve_label <- function(term, labels) {
 .reg_variable_labels <- function(labels, models, frames) {
   attr_base <- .labels_attr_base(labels)
   user <- if (is.character(labels)) unclass(labels) else character(0)
+  # A non-syntactic variable is named bare or backticked, as for the
+  # attribute labels below.
+  user <- .reg_ticked(user)
   # One map per model (frames and models are parallel), read only on the
   # attribute base.
   maps <- if (attr_base) lapply(models, .reg_model_var_labels)
@@ -2654,7 +2687,7 @@ format_fixed <- function(x, digits, decimal_mark = ".") {
   display <- if (!is.null(labels) && factor_term %in% names(labels)) {
     labels[[factor_term]]
   } else {
-    .reg_block_label(factor_term)
+    .reg_untick(.reg_block_label(factor_term))
   }
   header <- spicy_fmt("label_block_header", display)
   # Q5 \u2013 annotation mode bakes "[ref: <level>]" into the factor

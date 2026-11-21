@@ -4481,3 +4481,111 @@ test_that("the outputs that head LL and UL define them in their note", {
   expect_false(grepl("LL =", attr(st, "note"), fixed = TRUE))
   expect_true(endsWith(attr(st, "spicy_bounds_note"), bounds))
 })
+
+# ---- Non-syntactic variable names (lot-bench-fixes-3, B) ------------------
+
+.nonsyn_data <- function() {
+  set.seed(3)
+  d <- data.frame(
+    y = rnorm(100),
+    `revenu mensuel (CHF)` = rnorm(100),
+    `statut pro` = factor(sample(c("a", "b", "c"), 100, TRUE)),
+    `a b` = runif(100, 1, 2),
+    g = factor(sample(c("u", "`v`"), 100, TRUE)),
+    check.names = FALSE
+  )
+  d$`mon y` <- d$y
+  d
+}
+
+test_that("a non-syntactic variable is shown without its backticks", {
+  d <- .nonsyn_data()
+  fit <- lm(y ~ `revenu mensuel (CHF)` + `statut pro`, d)
+  out <- capture.output(print(table_regression(fit)))
+  expect_true(any(grepl("^ revenu mensuel \\(CHF\\) ", out)))
+  # The factor is grouped under its header, with its reference row.
+  expect_true(any(grepl("^ statut pro:", out)))
+  expect_true(any(grepl("^   a \\(ref\\.\\)", out)))
+  expect_false(any(grepl("`", out, fixed = TRUE)))
+  # The identifiers keep R's names.
+  long <- table_regression(fit, output = "long")
+  expect_true("`revenu mensuel (CHF)`" %in% long$term)
+  expect_true("`statut pro`b" %in% long$term)
+})
+
+test_that("interactions, transforms and the outcome drop the backticks; a level keeps its own", {
+  d <- .nonsyn_data()
+  fit <- lm(`mon y` ~ `a b` * g + log(`a b`), d)
+  out <- capture.output(print(table_regression(fit)))
+  expect_match(out[1L], "mon y", fixed = TRUE)
+  expect_true(any(grepl("^ log\\(a b\\) ", out)))
+  expect_true(any(grepl("^ a b:gu ", out)))
+  # A level written with backticks is data.
+  expect_true(any(grepl("^   `v` \\(ref\\.\\)", out)))
+  tab <- table_regression(fit, keep = "`a b`")
+  expect_true(any(grepl("^ a b ", capture.output(print(tab)))))
+})
+
+test_that("labels name a non-syntactic variable bare or backticked", {
+  d <- .nonsyn_data()
+  fit <- lm(y ~ `revenu mensuel (CHF)` + `statut pro`, d)
+  for (lab in list(
+    c("revenu mensuel (CHF)" = "Revenu", "statut pro" = "Statut"),
+    c("`revenu mensuel (CHF)`" = "Revenu", "`statut pro`" = "Statut")
+  )) {
+    expect_no_warning(
+      out <- capture.output(print(
+        table_regression(fit, labels = lab)
+      ))
+    )
+    expect_true(any(grepl("^ Revenu ", out)))
+    expect_true(any(grepl("^ Statut:", out)))
+  }
+  # A user label keeps its backticks.
+  out <- capture.output(print(
+    table_regression(fit, labels = c("revenu mensuel (CHF)" = "`Revenu`"))
+  ))
+  expect_true(any(grepl("^ `Revenu` ", out)))
+})
+
+test_that("the univariable screen fits and shows non-syntactic predictors", {
+  d <- .nonsyn_data()
+  out <- capture.output(print(table_regression_uv(
+    d,
+    outcome = "mon y",
+    predictors = c("revenu mensuel (CHF)", "statut pro")
+  )))
+  expect_true(any(grepl("^ revenu mensuel \\(CHF\\) ", out)))
+  expect_true(any(grepl("^ statut pro:", out)))
+  expect_false(any(grepl("`", out, fixed = TRUE)))
+})
+
+test_that("the rich outputs show a non-syntactic variable without backticks", {
+  skip_if_not_installed("tinytable")
+  d <- .nonsyn_data()
+  fit <- lm(y ~ `revenu mensuel (CHF)` + `statut pro`, d)
+  tt <- table_regression(fit, output = "tinytable")
+  v <- trimws(tt@data[[1L]])
+  expect_true("revenu mensuel (CHF)" %in% v)
+  expect_true("statut pro:" %in% v)
+})
+
+test_that("the events of a non-syntactic factor are counted per level", {
+  set.seed(3)
+  d <- data.frame(
+    yb = rbinom(100, 1, 0.5),
+    `statut pro` = factor(sample(c("a", "b", "c"), 100, TRUE)),
+    check.names = FALSE
+  )
+  fit <- glm(yb ~ `statut pro`, binomial, d)
+  long <- table_regression(
+    fit,
+    show_columns = c("b", "n_events"),
+    output = "long"
+  )
+  row <- long[long$term == "`statut pro`b", ]
+  expect_identical(
+    as.numeric(row$events_n),
+    as.numeric(sum(d$`statut pro` == "b"))
+  )
+})

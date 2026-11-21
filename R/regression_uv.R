@@ -1008,7 +1008,12 @@ as_regression_frame.spicy_uv_screen <- function(
       any_partial_es <- TRUE
     }
     cf <- fr$coefs
-    block <- cf[cf$parent_var == pred, , drop = FALSE]
+    # A non-syntactic predictor names its rows backticked.
+    block <- cf[
+      cf$parent_var %in% c(pred, .reg_tick_names(pred)),
+      ,
+      drop = FALSE
+    ]
     # nocov start -- defensive: lm/glm keep rank-deficient terms as
     # en-dash rows (dropped coefficients stay in the frame), so no
     # known input yields an empty block today; guards future engines.

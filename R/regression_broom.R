@@ -271,7 +271,7 @@ as_tibble.spicy_regression_table <- function(x, ...) {
       if (!is.null(term_labels) && v %in% names(term_labels)) {
         term_labels[[v]]
       } else {
-        .reg_block_label(v)
+        .reg_untick(.reg_block_label(v))
       }
     },
     character(1),

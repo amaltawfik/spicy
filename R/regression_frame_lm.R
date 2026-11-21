@@ -648,6 +648,9 @@ as_regression_frame.glm <- function(fit, ...) {
   cf <- frame$coefs
   events <- rep(sum(ev), nrow(cf))
   n_vec <- rep(length(ev), nrow(cf))
+  # A non-syntactic factor is keyed backticked, its model-frame column
+  # bare.
+  names(mf) <- .reg_tick_as_terms(names(mf), fit)
   for (k in seq_len(nrow(cf))) {
     pv <- cf$parent_var[k]
     lv <- cf$label[k]

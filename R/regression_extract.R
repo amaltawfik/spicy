@@ -743,8 +743,47 @@ detect_factor_term_meta <- function(fit) {
 # "FALSE" / "TRUE") gives logical predictors the same grouped header /
 # indent / reference-row layout as character and factor predictors
 # (the `factor_layout` documentation covers all three).
+#
+# A non-syntactic variable is keyed backticked (`` `statut pro` ``), as
+# its term label and its coefficient names write it: the model frame
+# and `fit$xlevels` write it bare, and a factor so named was never
+# matched to its coefficients.
 .spicy_get_xlevels <- function(fit) {
-  .augment_xlevels_with_logicals(fit, .spicy_get_xlevels_base(fit))
+  xlev <- .augment_xlevels_with_logicals(fit, .spicy_get_xlevels_base(fit))
+  if (length(xlev) > 0L) {
+    names(xlev) <- .reg_tick_as_terms(names(xlev), fit)
+  }
+  xlev
+}
+
+# A variable name as a term label writes it: backticked when it is not
+# syntactic. A name already backticked is kept.
+.reg_tick_names <- function(x) {
+  vapply(
+    x,
+    function(v) {
+      if (is.na(v) || !nzchar(v) || grepl("^`.*`$", v)) {
+        return(v)
+      }
+      deparse(as.name(v), backtick = TRUE)
+    },
+    character(1),
+    USE.NAMES = FALSE
+  )
+}
+
+# Names of model-frame columns as the terms of `fit` write them: a name
+# that is a term (or a piece of an interaction) as it stands is kept
+# (`factor(cyl)`, `I(x > 0)`); one that is a term once backticked takes
+# the backticks.
+.reg_tick_as_terms <- function(x, fit) {
+  tl <- tryCatch(
+    attr(.spicy_get_terms(fit), "term.labels"),
+    error = function(e) NULL
+  )
+  pieces <- unique(unlist(strsplit(as.character(tl), ":", fixed = TRUE)))
+  ticked <- .reg_tick_names(x)
+  ifelse(!x %in% pieces & ticked %in% pieces, ticked, x)
 }
 
 .augment_xlevels_with_logicals <- function(fit, xlev) {
@@ -775,7 +814,9 @@ detect_factor_term_meta <- function(fit) {
     return(xlev)
   }
   main_trms <- trms[!grepl(":", trms, fixed = TRUE)]
-  lgl_vars <- intersect(main_trms, names(d))
+  lgl_vars <- names(d)[
+    names(d) %in% main_trms | .reg_tick_names(names(d)) %in% main_trms
+  ]
   lgl_vars <- lgl_vars[vapply(
     lgl_vars,
     function(v) is.logical(d[[v]]),

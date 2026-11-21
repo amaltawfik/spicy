@@ -4343,6 +4343,12 @@ table_regression <- function(
 # under its term ("z", "x"), which labels its header.
 .reg_warn_label_names <- function(models, frames, labels, note_labels, terms) {
   label_keys <- c(.reg_label_keys(models), .reg_frame_label_keys(frames))
+  # A non-syntactic variable is named bare too (.reg_variable_labels()).
+  ticked <- grepl("^`[^`]+`$", label_keys)
+  label_keys <- c(
+    label_keys,
+    substr(label_keys[ticked], 2L, nchar(label_keys[ticked]) - 1L)
+  )
   several <- if (is.character(labels)) {
     Filter(
       function(r) length(r) > 1L,
