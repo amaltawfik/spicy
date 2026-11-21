@@ -3706,6 +3706,9 @@ table_regression <- function(
       )
     }
   }
+  if (isTRUE(nested) && length(models) >= 2L && is.null(panel_req)) {
+    check_nested_terms(models, call = rlang::current_env())
+  }
 
   # `exponentiate = TRUE` and `re_*` no-op detection, once every frame is
   # built. The panel of a stack leaves it to the driver, which asks every

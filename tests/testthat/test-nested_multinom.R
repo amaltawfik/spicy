@@ -26,13 +26,18 @@
 test_that("nested multinom renders with LRT-based change rows", {
   skip_if_not_installed("nnet")
   fits <- .fit_nested_multinom_pair()
-  out <- capture.output(print(
-    table_regression(
+  # educ_num is nested in the factor education_f under another writing:
+  # the pair is compared, with a warning that the term is not in Model 2.
+  expect_warning(
+    tb <- table_regression(
       list(fits$f1, fits$f2),
       nested = TRUE,
       show_columns = c("b", "p")
-    )
-  ))
+    ),
+    "educ_num",
+    class = "spicy_caveat"
+  )
+  out <- capture.output(print(tb))
   combined <- paste(out, collapse = "\n")
   expect_match(
     combined,

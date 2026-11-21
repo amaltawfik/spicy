@@ -950,12 +950,17 @@ test_that("Wald change refuses a previous model whose coefficients are not a sub
   m1 <- lm(y ~ x1, d)
   m2 <- lm(y ~ log(x1 + 10) + x2, d)
   expect_error(
-    table_regression(list(m1, m2), nested = TRUE, vcov = "HC3"),
+    suppressWarnings(
+      table_regression(list(m1, m2), nested = TRUE, vcov = "HC3")
+    ),
     class = "spicy_invalid_input"
   )
   # The classical vcov still compares them (the partial F does not need
-  # the names to match).
-  expect_no_error(table_regression(list(m1, m2), nested = TRUE))
+  # the names to match), with a warning that `x1` is not in Model 2.
+  expect_warning(
+    table_regression(list(m1, m2), nested = TRUE),
+    class = "spicy_caveat"
+  )
 })
 
 test_that("Wald change refuses a smooth term added under a robust vcov", {
@@ -2007,4 +2012,32 @@ test_that("change df: a fractional df in a comma table does not move the column"
   expect_length(.cd_anchor(structure(tbl, class = "data.frame")[[5L]], ","), 1L)
   skip_if_not_installed("tinytable")
   expect_length(.cd_anchor(build("tinytable")@data[[5L]], ","), 1L)
+})
+
+test_that("nested = TRUE refuses a model without more parameters than the previous one", {
+  expect_error(
+    table_regression(
+      list(lm(mpg ~ wt, mtcars), lm(mpg ~ hp, mtcars)),
+      nested = TRUE
+    ),
+    "no more parameters",
+    class = "spicy_invalid_input"
+  )
+})
+
+test_that("nested = TRUE warns when a model drops a term of the previous one", {
+  expect_warning(
+    table_regression(
+      list(lm(mpg ~ wt, mtcars), lm(mpg ~ poly(wt, 2), mtcars)),
+      nested = TRUE
+    ),
+    "does not contain the term(s) `wt`",
+    fixed = TRUE,
+    class = "spicy_caveat"
+  )
+  # An interaction written in another order is the same term.
+  expect_no_warning(table_regression(
+    list(lm(mpg ~ wt * hp, mtcars), lm(mpg ~ hp:wt + wt + hp + qsec, mtcars)),
+    nested = TRUE
+  ))
 })

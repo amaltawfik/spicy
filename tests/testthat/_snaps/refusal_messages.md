@@ -2798,6 +2798,12 @@
         nested = TRUE: svyglm, svyglm_binomial, svyglm_quasibinomial
       ----
       error: spicy_invalid_input, spicy_error
+        `nested = TRUE`: Model 2 has no more parameters than Model 1 (3 and 3).
+        i Each model must add terms to the previous one; with no added parameter there is no change to test. List the models from the smallest to the largest, or use `nested = FALSE`.
+      Received by 1:
+        nested = TRUE: feols_iv
+      ----
+      error: spicy_invalid_input, spicy_error
         `re_ci = "profile"` is available for lme4 fits (`lmer` / `glmer`) only.
         x Model 1 is not fitted with lme4.
         i glmmTMB, nlme::lme and ordinal::clmm variance-component CIs already come from their own engines (TMB's sdreport; nlme's apVar; the clmm Hessian) under the default `re_ci = "wald"`.

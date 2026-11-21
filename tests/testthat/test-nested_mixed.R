@@ -638,16 +638,17 @@ test_that("a reversed mixed hierarchy gets no change statistics", {
   expect_lt(fwd$aic_change[1L], 0)
 })
 
-test_that("a reversed REML hierarchy loses its refit note with its rows", {
+# A reversed hierarchy (the larger model first) has no change to test: it
+# is refused before any row or note is built.
+test_that("a reversed REML hierarchy is refused", {
   skip_if_not_installed("lme4")
   m1 <- lme4::lmer(Reaction ~ 1 + (1 | Subject), data = lme4::sleepstudy)
   m2 <- lme4::lmer(Reaction ~ Days + (1 | Subject), data = lme4::sleepstudy)
-  txt <- paste(
-    capture.output(table_regression(list(m2, m1), nested = TRUE)),
-    collapse = "\n"
+  expect_error(
+    table_regression(list(m2, m1), nested = TRUE),
+    "no more parameters",
+    class = "spicy_invalid_input"
   )
-  expect_false(grepl(spicy_str("note_nested_ml_refit"), txt, fixed = TRUE))
-  expect_false(grepl("p (change)", txt, fixed = TRUE))
 })
 
 

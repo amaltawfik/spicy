@@ -900,6 +900,96 @@ validate_nested_alignment <- function(
   invisible(NULL)
 }
 
+# Each model must hold the previous one, asked once the class guard of
+# table_regression() has passed. A model without more
+# parameters than the previous one leaves no change to test: refused. A
+# model that does not carry every term of the previous one may still
+# hold it under another writing (`poly(x, 2)` after `x`): warned.
+# Parameters are the likelihood's degrees of freedom (variance
+# components included), else the estimated coefficients.
+check_nested_terms <- function(models, call) {
+  # One count for both models of a pair: the likelihood's df when both
+  # have one, the coefficients otherwise.
+  ll_df <- function(fit) {
+    df <- tryCatch(
+      attr(suppressWarnings(stats::logLik(fit)), "df"),
+      error = function(e) NULL
+    )
+    if (length(df) == 1L && is.finite(df)) df else NA_real_
+  }
+  n_par <- function(pair) {
+    df <- vapply(pair, ll_df, numeric(1))
+    if (!anyNA(df)) {
+      return(df)
+    }
+    vapply(
+      pair,
+      function(fit) {
+        cf <- tryCatch(nested_wald_coefs(fit), error = function(e) NULL)
+        sum(!is.na(cf))
+      },
+      numeric(1)
+    )
+  }
+  labels <- function(fit) {
+    tl <- tryCatch(
+      attr(stats::terms(fit), "term.labels"),
+      error = function(e) NULL
+    )
+    if (!is.character(tl)) {
+      return(character(0))
+    }
+    vapply(
+      strsplit(tl, ":", fixed = TRUE),
+      function(p) paste(sort(p), collapse = ":"),
+      character(1)
+    )
+  }
+  for (k in seq_len(length(models) - 1L)) {
+    p <- n_par(models[c(k, k + 1L)])
+    if (p[2L] <= p[1L]) {
+      spicy_abort(
+        c(
+          sprintf(
+            "`nested = TRUE`: Model %d has no more parameters than Model %d (%s and %s).",
+            k + 1L,
+            k,
+            p[2L],
+            p[1L]
+          ),
+          "i" = paste0(
+            "Each model must add terms to the previous one; with no added ",
+            "parameter there is no change to test. List the models from ",
+            "the smallest to the largest, or use `nested = FALSE`."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    lost <- setdiff(labels(models[[k]]), labels(models[[k + 1L]]))
+    if (length(lost) > 0L) {
+      spicy_warn(
+        c(
+          sprintf(
+            "`nested = TRUE`: Model %d does not contain the term(s) %s of Model %d.",
+            k + 1L,
+            paste0("`", lost, "`", collapse = ", "),
+            k
+          ),
+          "i" = paste0(
+            "The change test assumes that each model holds the previous ",
+            "one. Check that the models are nested under another ",
+            "writing, or use `nested = FALSE`."
+          )
+        ),
+        class = "spicy_caveat"
+      )
+    }
+  }
+  invisible(NULL)
+}
+
 # Steps 6-8: vcov + cluster list/scalar coordination
 #
 # ---- Where a capability may be read from, and where it may not -------
