@@ -1427,6 +1427,10 @@ build_abbreviations_footer_block_from_frames <- function(
     for (tk in show_columns) {
       items <- c(
         items,
+        # Its header names the AME when the `ame` column is not shown.
+        if (tk %in% .AME_COLUMN_TOKENS && !("ame" %in% show_columns)) {
+          list(ame)
+        },
         switch(
           tk,
           b = list(.reg_abbrev_b(f)),

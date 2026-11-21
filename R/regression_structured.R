@@ -469,7 +469,7 @@ build_structured_body <- function(
         cs = cs,
         ci_role = .REG_CI_ROLE_LL,
         ci_pair = ul_name,
-        ci_label = ci_label_str
+        ci_label = cs$ci_label %||% ci_label_str
       )
       expanded[[length(expanded) + 1L]] <- list(
         name = ul_name,
@@ -477,7 +477,7 @@ build_structured_body <- function(
         cs = cs,
         ci_role = .REG_CI_ROLE_UL,
         ci_pair = ll_name,
-        ci_label = ci_label_str
+        ci_label = cs$ci_label %||% ci_label_str
       )
     } else if (
       length(cs$fields) >= 2L &&

@@ -732,8 +732,22 @@ build_column_spec <- function(
     lab = .spicy_str_en,
     lab_fmt = .spicy_fmt_en
   )
+  # An AME column shown without the `ame` column names the AME in its
+  # header ("AME p"); the column key stays the bare one ("p.2").
+  bare_ame <- !("ame" %in% show_columns)
   for (i in seq_along(shown)) {
     shown[[i]]$col_name <- named[[i]]$col_name
+    if (bare_ame && identical(shown[[i]]$estimate_type, "ame")) {
+      shown[[i]]$display_label <- spicy_fmt(
+        "header_ame_qualified",
+        spicy_str("header_ame"),
+        shown[[i]]$display_label
+      )
+      # The interval spanner of the rich engines (regression_structured.R).
+      if (length(shown[[i]]$fields) == 2L) {
+        shown[[i]]$ci_label <- shown[[i]]$display_label
+      }
+    }
   }
   shown
 }

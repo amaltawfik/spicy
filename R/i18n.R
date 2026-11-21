@@ -276,6 +276,8 @@
   header_with_ci_suffix = "%s %s",
   header_model_prefixed = "%s: %s",
   header_ame_by_category = "%s %s",
+  # "AME" before the header of an AME column shown without `ame` ("AME p").
+  header_ame_qualified = "%s %s",
   header_companion_qualified = "%s (%s)",
   # Exponentiated-coefficient headers, per family / link.
   header_exp_or = "OR",

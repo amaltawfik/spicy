@@ -2586,6 +2586,81 @@ test_that("show_columns – 'p' carries the B p-values, never the AME ones", {
   )))
 })
 
+test_that("show_columns – an AME column shown without 'ame' names the AME", {
+  skip_on_cran()
+  skip_if_not_installed("marginaleffects")
+  skip_if_not_installed("tinytable")
+  skip_if_not_installed("openxlsx2")
+  fit <- lm(mpg ~ wt + hp, data = mt)
+  sc <- c("b", "p", "ame_p", "se", "ame_se", "ci", "ame_ci", "df", "ame_df")
+  hdr <- function() {
+    console <- capture.output(print(table_regression(fit, show_columns = sc)))
+    tt <- table_regression(fit, show_columns = sc, output = "tinytable")
+    path <- withr::local_tempfile(fileext = ".xlsx")
+    table_regression(
+      fit,
+      show_columns = sc,
+      output = "excel",
+      excel_path = path
+    )
+    xl <- openxlsx2::read_xlsx(path, col_names = FALSE)
+    list(
+      # A wide table prints in several blocks, each with its header.
+      console = paste(console[grepl("^ Variable", console)], collapse = "\n"),
+      rich = paste(capture.output(print(tt, "markdown")), collapse = "\n"),
+      excel = unlist(xl[3L, ])
+    )
+  }
+  en <- hdr()
+  for (h in c("AME p", "AME SE", "AME 95% CI", "AME df")) {
+    expect_match(en$console, h, fixed = TRUE)
+    expect_match(en$rich, h, fixed = TRUE)
+    expect_true(h %in% en$excel)
+  }
+  # The AME the headers name is defined in the note.
+  expect_match(
+    attr(table_regression(fit, show_columns = c("b", "ame_p")), "note"),
+    "AME = average marginal effect",
+    fixed = TRUE
+  )
+  # The column keys stay the bare ones: a call that read them still does.
+  expect_identical(
+    names(table_regression(fit, show_columns = sc, output = "data.frame"))[
+      -(1:4)
+    ],
+    c(
+      "B",
+      "p",
+      "p.2",
+      "SE",
+      "SE.2",
+      "95% CI LL",
+      "95% CI UL",
+      "95% CI.2 LL",
+      "95% CI.2 UL",
+      "df",
+      "df.2"
+    )
+  )
+  # Beside the 'ame' column, the headers stay bare.
+  both <- capture.output(print(
+    table_regression(fit, show_columns = c("b", "p", "ame", "ame_p"))
+  ))
+  expect_false(any(grepl("AME p", both, fixed = TRUE)))
+  withr::local_options(spicy.language = "fr")
+  fr <- hdr()
+  ic <- spicy_fmt(
+    "header_ci_spanner",
+    "95",
+    spicy_str("header_ci_label_confidence")
+  )
+  for (h in c("AME p", "AME ES", paste("AME", ic), "AME ddl")) {
+    expect_match(fr$console, h, fixed = TRUE)
+    expect_match(fr$rich, h, fixed = TRUE)
+    expect_true(h %in% fr$excel)
+  }
+})
+
 test_that("show_columns – every base atomic token adds exactly one column", {
   skip_on_cran()
   # rd-core:show-columns-atomic-tokens (incl. the never-tested bare 't')
