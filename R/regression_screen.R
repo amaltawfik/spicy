@@ -7,11 +7,16 @@
 # The names `...` passes to `table_regression()`: every one an argument
 # of it, typed in full. `models`, `layout` and the arguments the calling
 # function has itself (`own_args`, the names of its formals) are not,
-# and an unnamed argument has nowhere to go.
+# and an unnamed argument has nowhere to go. `layout_msg`, the refusal of
+# `layout`, says what the table of the calling function is.
 .screen_check_dots <- function(
   dot_names,
   n_dots,
   own_args,
+  layout_msg = c(
+    "`layout` does not apply to a univariable screen: the screen is one table.",
+    "i" = "Stack several screens with `table_stack()`."
+  ),
   call = rlang::caller_env()
 ) {
   if (n_dots == 0L) {
@@ -27,16 +32,9 @@
       call = call
     )
   }
-  # `layout` lays out several models; the screen is one table.
+  # `layout` lays out several models; the bundle is one table.
   if ("layout" %in% dot_names) {
-    spicy_abort(
-      c(
-        "`layout` does not apply to a univariable screen: the screen is one table.",
-        "i" = "Stack several screens with `table_stack()`."
-      ),
-      class = "spicy_invalid_input",
-      call = call
-    )
+    spicy_abort(layout_msg, class = "spicy_invalid_input", call = call)
   }
   known <- setdiff(
     names(formals(table_regression)),
@@ -145,10 +143,12 @@
 # Cluster contract of a bundle: ONE value per row of `data`. The
 # single-model contract (length = the fit's estimation sample) cannot be
 # satisfied by one vector when the Ns of the fits differ, so the vector
-# is aligned per fit (.screen_cluster_for_fit()).
+# is aligned per fit (.screen_cluster_for_fit()). `what` names the table
+# of the calling function in the refusal of a list.
 .screen_check_cluster <- function(
   cluster,
   n_rows,
+  what = "a univariable screen",
   call = rlang::caller_env()
 ) {
   if (is.null(cluster)) {
@@ -157,7 +157,7 @@
   if (!is.atomic(cluster)) {
     spicy_abort(
       c(
-        "`cluster` must be a single vector for a univariable screen.",
+        sprintf("`cluster` must be a single vector for %s.", what),
         "i" = paste0(
           "Supply one value per row of `data`; per-model ",
           "cluster lists are not meaningful here."
