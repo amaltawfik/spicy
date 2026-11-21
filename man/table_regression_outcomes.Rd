@@ -57,8 +57,8 @@ across the exposure rows of all the models: \code{"holm"} (default),
 
 \item{show_columns}{Passed to \code{\link[=table_regression]{table_regression()}}. Default
 \code{c("n", "b", "ci", "p")}; \code{"n"} is the sample size of each model.
-\code{"r2"} and \code{"adj_r2"} give each outcome's own model R-squared, on the
-row of its N. The AME columns and \code{"none"} are refused.}
+\code{"r2"} and \code{"adj_r2"} give each outcome's own model R-squared (linear
+models), next to its N. The AME columns and \code{"none"} are refused.}
 
 \item{show_intercept}{Display the \code{(Intercept)} row of each model?
 Default \code{FALSE}. See \emph{Intercepts}.}
@@ -127,9 +127,11 @@ note, not shown in the table. This version fits linear models
 \section{Sample sizes}{
 By default each model is fit on its \strong{own complete cases} (its
 outcome, the exposure and the covariates), so N can vary across
-outcomes. The \code{N} column shows each model's N, on the row of a
-numeric exposure or on the first non-reference level of a factor, and
-the note gives the range whenever the Ns differ. Pass
+outcomes. The \code{N} column shows each model's N on the row of its
+outcome, or on the header of its block (the line that names the
+outcome) when the outcome has several rows, and the note gives the
+range whenever the Ns differ. The R-squared columns are placed the same
+way. Pass
 \code{complete_cases = TRUE} to fit every model on the rows complete on
 all the outcomes, the exposure and the covariates; the note then gives
 that common N.

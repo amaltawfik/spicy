@@ -20,9 +20,11 @@
 #' # Sample sizes
 #' By default each model is fit on its **own complete cases** (its
 #' outcome, the exposure and the covariates), so N can vary across
-#' outcomes. The `N` column shows each model's N, on the row of a
-#' numeric exposure or on the first non-reference level of a factor, and
-#' the note gives the range whenever the Ns differ. Pass
+#' outcomes. The `N` column shows each model's N on the row of its
+#' outcome, or on the header of its block (the line that names the
+#' outcome) when the outcome has several rows, and the note gives the
+#' range whenever the Ns differ. The R-squared columns are placed the same
+#' way. Pass
 #' `complete_cases = TRUE` to fit every model on the rows complete on
 #' all the outcomes, the exposure and the covariates; the note then gives
 #' that common N.
@@ -67,8 +69,8 @@
 #'   *Multiplicity*.
 #' @param show_columns Passed to [table_regression()]. Default
 #'   `c("n", "b", "ci", "p")`; `"n"` is the sample size of each model.
-#'   `"r2"` and `"adj_r2"` give each outcome's own model R-squared, on the
-#'   row of its N. The AME columns and `"none"` are refused.
+#'   `"r2"` and `"adj_r2"` give each outcome's own model R-squared (linear
+#'   models), next to its N. The AME columns and `"none"` are refused.
 #' @param show_intercept Display the `(Intercept)` row of each model?
 #'   Default `FALSE`. See *Intercepts*.
 #' @param labels How the variables are named: an outcome in its row or at

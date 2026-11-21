@@ -132,11 +132,26 @@ test_that("each block reports its own N, and the note the range", {
       stats::nobs(stats::lm(bmi ~ employment_status, data = d))
     ))
   )
-  # On the first level of each block, not on its reference.
+  # The data keep it on the first level of each block, not on its
+  # reference.
   expect_identical(
     ca$term[!is.na(ca$n_obs)],
     rep("employment_statusStudent", 2L)
   )
+  # The display shows it once, on the header that names the outcome, with
+  # the R-squared; the level rows leave the cells empty.
+  df <- table_regression_outcomes(
+    d,
+    outcomes = c(wellbeing_score, bmi),
+    exposure = employment_status,
+    show_columns = c("n", "b", "p", "r2"),
+    output = "data.frame"
+  )
+  hdr <- df$.row_role == "factor_header"
+  expect_identical(df$N[hdr], as.numeric(n))
+  expect_true(all(is.na(df$N[!hdr])))
+  expect_true(all(!is.na(df[[ncol(df)]][hdr])))
+  expect_true(all(is.na(df[[ncol(df)]][!hdr])))
   expect_match(
     .oc_note(tbl),
     "Each model is fit on its own complete cases; N varies by outcome (1188–1200).",
