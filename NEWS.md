@@ -770,6 +770,12 @@
   TRUE, y = TRUE)" for an rms model. A survey-design model under `vcov =
   "CR1S"` is pointed to its design instead of to `"CR2"`.
 
+* `table_regression()` leaves out a default column that no model of the
+  table fills: a `quantreg::rq()` model under `vcov = "rank"` showed an
+  SE and a p column of dashes. Named in `show_columns`, the column
+  stays. An AME column shown without the `"ame"` column is headed "AME
+  p", "AME SE", "AME 95% CI" or "AME df", where two columns read "p".
+
 * `table_regression()`: `show_columns = "n"`, `"r2"` or `"adj_r2"` on a
   table without a univariable screen is refused, and the error points to
   the fit statistic of the same quantity. These columns belong to
