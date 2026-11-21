@@ -57,6 +57,8 @@ ag_refusal <- c(
   nls = "error",
   coxph = "error",
   coxph_strata = "error",
+  # A robust variance does not lift the refusal of a Cox model.
+  coxph_cluster = "error",
   clmm = "error",
   mlogit = "error",
   cph = "error",
@@ -428,6 +430,10 @@ ag_oracles <- list(
   # strata() sets one scale per stratum; the mean exp(lp) does not
   # depend on it.
   survreg_strata = function(fit, d, v) ag_link(~x, exp)(fit, d, v),
+  # The robust variance the fit carries, which vcov() returns and the
+  # coefficient rows show, not the model's (fit$naive.var): the AME SE
+  # is 0.1036 on it, 0.1082 on the model's.
+  survreg_robust = function(fit, d, v) ag_link(~x, exp)(fit, d, v),
   svyglm = function(fit, d, v) ag_link(~x, identity, w = d$w)(fit, d, v),
   svyglm_binomial = function(fit, d, v) {
     ag_link(~x, stats::plogis, w = d$w)(fit, d, v)
@@ -447,6 +453,9 @@ ag_oracles <- list(
   ols_xy = ag_identity(~x),
   lrm = function(fit, d, v) ag_link(~x, stats::plogis)(fit, d, v),
   lrm_xy = function(fit, d, v) ag_link(~x, stats::plogis)(fit, d, v),
+  # robcov(): vcov() is the cluster sandwich the coefficient rows show,
+  # not fit$orig.var (AME SE 0.0278 on it, 0.0293 on the model's).
+  lrm_robcov = function(fit, d, v) ag_link(~x, stats::plogis)(fit, d, v),
   lrm_ordinal = function(fit, d, vars) {
     parts <- function(b, D) {
       # P(Y >= j) = plogis(alpha_j + eta), so P(Y <= j - 1) = plogis(-alpha_j
@@ -862,3 +871,24 @@ for (cl in names(ag_factor_cases)) {
     })
   })
 }
+
+test_that("the AME of a fit with its own robust variance rests on that variance", {
+  skip_if_no_ame_guard()
+  d <- .class_fixture_data()
+  for (id in c("survreg_robust", "lrm_robcov")) {
+    fit <- .class_fixture(id)
+    link <- if (inherits(fit, "lrm")) stats::plogis else exp
+    V_model <- as.matrix(
+      if (inherits(fit, "lrm")) fit$orig.var else fit$naive.var
+    )
+    dimnames(V_model) <- dimnames(ag_rn(as.matrix(stats::vcov(fit))))
+    sp <- ag_run(fit)$rows
+    # The coefficient rows show the robust variance.
+    lo <- table_regression(fit, output = "long")
+    b <- lo[lo$term == "x" & lo$estimate_type == "B", ]
+    expect_equal(b$std.error, sqrt(diag(stats::vcov(fit)))[["x"]], label = id)
+    # The AME SE is not the one of the model's variance.
+    or_model <- ag_link(~x, link, V = V_model)(fit, d, "x")
+    expect_gt(abs(sp$se[1L] / or_model$se - 1), 0.01, label = id)
+  }
+})
