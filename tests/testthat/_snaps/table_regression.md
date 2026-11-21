@@ -85,7 +85,7 @@
        Δχ²        │     –       0.09 (2)    55.18 (2) 
        p (change) │     –        .957        <.001    
       
-      Note. Logistic regression models. AIC = Akaike information criterion; BIC = Bayesian information criterion.
+      Note. Logistic regression models. Each change statistic compares a model with the previous one. AIC = Akaike information criterion; BIC = Bayesian information criterion.
 
 ---
 
@@ -120,5 +120,5 @@
        Δχ²           │      –       0,09 (2)    55,18 (2) 
        p (variation) │      –       0,957       <0,001    
       
-      Note. Modèles de régression logistique. AIC = critère d'information d'Akaike ; BIC = critère d'information bayésien.
+      Note. Modèles de régression logistique. Chaque statistique de variation compare un modèle au précédent. AIC = critère d'information d'Akaike ; BIC = critère d'information bayésien.
 

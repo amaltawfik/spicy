@@ -344,6 +344,11 @@
   # of one that holds a GAM, are statements about the pairs, which no
   # panel sees alone.
   change_notes <- c(
+    build_nested_pairwise_footer_block_from_frames(
+      frames,
+      nested_on,
+      c(np$show_fit_stats, tokens)
+    ),
     build_nested_ml_refit_footer_block_from_frames(
       frames,
       nested_on,

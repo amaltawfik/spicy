@@ -134,7 +134,7 @@
        F-change vs Model 2   │  1.35 (1, 28)                              
        p (change) vs Model 2 │   .255                                     
       
-      Note. Linear regression models. Std. errors: classical (OLS). CI = confidence interval.
+      Note. Linear regression models. Std. errors: classical (OLS). Each change statistic compares a model with the previous one. CI = confidence interval.
 
 # a stack with column groups, split by width, prints as pinned
 

@@ -503,6 +503,11 @@ build_regression_footer_from_frames <- function(
         decimal_mark = decimal_mark
       ),
       if (coef_note) build_mixed_inference_footer_block_from_frames(frames),
+      build_nested_pairwise_footer_block_from_frames(
+        frames,
+        nested,
+        show_fit_stats
+      ),
       build_nested_ml_refit_footer_block_from_frames(
         frames,
         nested,
@@ -2552,6 +2557,24 @@ build_nested_ml_refit_footer_block_from_frames <- function(
     return(NULL)
   }
   spicy_str("note_nested_ml_refit")
+}
+
+# "Each change test compares a model with the previous one.": a nested
+# table of three models or more, where anova(m1, m2, m3) would test each
+# pair on the residual variance of the largest model. With two models
+# there is one pair and nothing to tell apart.
+build_nested_pairwise_footer_block_from_frames <- function(
+  frames,
+  nested,
+  show_fit_stats = character(0)
+) {
+  if (
+    length(frames) < 3L ||
+      !.nested_change_row_shown(frames, nested, show_fit_stats)
+  ) {
+    return(NULL)
+  }
+  spicy_str("note_nested_pairwise")
 }
 
 # "Change test of an additive model: approximate, ...": a nested

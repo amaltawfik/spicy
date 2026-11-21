@@ -575,6 +575,9 @@
   # equally affected; and it claims no reason beyond the refit, because
   # the same gap appears on a pair whose fixed effects never changed.
   note_nested_ml_refit = "Change statistics are computed from maximum-likelihood refits and need not match differences of the displayed REML criteria.",
+  # A nested table of three models or more: each change row compares a
+  # model with the one before it, not with the largest model.
+  note_nested_pairwise = "Each change statistic compares a model with the previous one.",
   # A nested comparison with a GAM: mgcv's anova.gam() calls its p-values
   # approximate, and the df of the change are a difference of effective
   # degrees of freedom, not an integer.

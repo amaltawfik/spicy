@@ -289,6 +289,7 @@
   note_penalty_nonlinear = "non lin\u00E9aire %s",
   note_penalty_nonlinear_interaction = "interaction non lin\u00E9aire %s",
   note_nested_ml_refit = "Les statistiques de variation sont calcul\u00E9es \u00E0 partir de mod\u00E8les r\u00E9estim\u00E9s par maximum de vraisemblance et ne correspondent pas n\u00E9cessairement aux \u00E9carts entre les crit\u00E8res REML affich\u00E9s.",
+  note_nested_pairwise = "Chaque statistique de variation compare un mod\u00E8le au pr\u00E9c\u00E9dent.",
   note_nested_gam = "Test de variation d'un mod\u00E8le additif\u00A0: approch\u00E9, sur la diff\u00E9rence des degr\u00E9s de libert\u00E9 effectifs.",
   note_component_gloss_zero_inflation = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: logarithme de la cote d'un z\u00E9ro structurel (exc\u00E9dentaire).",
   note_component_gloss_dispersion = "Composante \u00AB\u00A0%s\u00A0\u00BB\u00A0: \u00E9chelle logarithmique.",

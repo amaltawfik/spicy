@@ -2041,3 +2041,29 @@ test_that("nested = TRUE warns when a model drops a term of the previous one", {
     nested = TRUE
   ))
 })
+
+test_that("a nested table of three models says each change compares a model with the previous one", {
+  m1 <- lm(mpg ~ wt, mtcars)
+  m2 <- update(m1, . ~ . + hp)
+  m3 <- update(m2, . ~ . + qsec)
+  note <- function(models, lang = "en") {
+    withr::local_options(spicy.language = lang)
+    attr(table_regression(models, nested = TRUE), "note")
+  }
+  expect_match(
+    note(list(m1, m2, m3)),
+    "Each change statistic compares a model with the previous one.",
+    fixed = TRUE
+  )
+  expect_match(
+    note(list(m1, m2, m3), "fr"),
+    "Chaque statistique de variation compare un mod\u00e8le au pr\u00e9c\u00e9dent.",
+    fixed = TRUE
+  )
+  # Two models: one pair, nothing to tell apart.
+  expect_no_match(note(list(m1, m2)), "previous one", fixed = TRUE)
+  # The F of each pair is its own partial F, not anova(m1, m2, m3)'s.
+  f <- anova(m1, m2)$F[2L]
+  out <- spicy:::compute_nested_comparisons(list(m1, m2, m3))
+  expect_equal(out$f_change[1L], f, tolerance = 1e-10)
+})
