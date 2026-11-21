@@ -121,8 +121,13 @@ class, are on \link{table_regression_tokens}.
 
 A sample-selection fit (\code{sampleSelection::selection()}, \code{heckit()},
 \code{treatReg()}) alone shows its two equations as column groups, \code{Outcome}
-then \code{Selection}; beside other models, or under \code{nested = TRUE}, each
-variable has its \code{selection} and \code{outcome} rows. A factor or a logical
+then \code{Selection}. Beside a model of another class, each selection fit
+shows the same two groups, headed \verb{<model>: Outcome} and
+\verb{<model>: Selection}, and its rows align by term with the other models
+(an \code{lm()} and the outcome equation share the row of \code{educ}); its
+\verb{Error terms}, n and AIC sit under its first group. In a table of
+selection fits only, or under \code{nested = TRUE}, each variable has its
+\code{selection} and \code{outcome} rows. A factor or a logical
 predictor has a header, its levels and a reference row. The
 \verb{Error terms} block follows: \eqn{\sigma}{sigma} and
 \eqn{\rho}{rho} for a maximum-likelihood fit (\eqn{\rho}{rho} alone for a

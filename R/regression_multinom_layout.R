@@ -36,6 +36,67 @@
 }
 
 
+# Several models, a selection model among them beside a model of another
+# class: each selection model shows its two equations as column groups,
+# whose rows align by term with the other models. A table of selection
+# models only, and a nested one, keep the rows, where each term already
+# puts the equations of the estimators side by side.
+.selection_columns_mixed <- function(models, nested) {
+  if (isTRUE(nested) || is.object(models) || length(models) < 2L) {
+    return(FALSE)
+  }
+  is_sel <- vapply(models, inherits, logical(1), "selection")
+  any(is_sel) && !all(is_sel)
+}
+
+
+# Explode each selection frame of such a table into its two equation
+# frames (.explode_multinom_frame()); the other frames pass through.
+# A group is identified by the identifier of its model and the English
+# name of its equation ("Heckman: Outcome"), headed by the label of the
+# model and the equation in the table language ("Heckman: Selection"),
+# and its column names carry the English key of the model. The group of
+# the selection equation has the selection variable for outcome, which
+# the Outcome row shows. `owner` maps each group to its model.
+.explode_selection_mixed <- function(frames, model_ids, labels, keys, models) {
+  sep <- paste0(spicy_fmt("label_block_header", ""), " ")
+  out <- list()
+  ids <- lab <- key <- character(0)
+  owner <- integer(0)
+  for (i in seq_along(frames)) {
+    ex <- if (identical(frames[[i]]$info$class, "selection")) {
+      .explode_multinom_frame(frames[[i]])
+    }
+    if (is.null(ex)) {
+      out <- c(out, frames[i])
+      ids <- c(ids, model_ids[[i]])
+      lab <- c(lab, labels[[i]])
+      key <- c(key, keys[[i]])
+      owner <- c(owner, i)
+      next
+    }
+    rid <- paste0(model_ids[[i]], ": ", ex$model_ids)
+    sel_dv <- tryCatch(
+      deparse(models[[i]]$termsS[[2L]]),
+      error = function(e) NA_character_
+    )
+    for (k in seq_along(ex$frames)) {
+      ex$frames[[k]]$info$model_id <- rid[[k]]
+      if (identical(ex$model_ids[[k]], "Selection") && !is.na(sel_dv)) {
+        ex$frames[[k]]$info$dv <- sel_dv
+        ex$frames[[k]]$info$dv_display <- sel_dv
+      }
+    }
+    out <- c(out, ex$frames)
+    ids <- c(ids, rid)
+    lab <- c(lab, paste0(labels[[i]], sep, ex$spanners))
+    key <- c(key, paste0(keys[[i]], ": ", ex$model_ids))
+    owner <- c(owner, rep(i, length(ex$frames)))
+  }
+  list(frames = out, model_ids = ids, labels = lab, keys = key, owner = owner)
+}
+
+
 # Blank every numeric fit statistic (typed NA) so the pseudo-model
 # frames after the first contribute empty fit-stat cells: n / AIC are
 # MODEL-level quantities and must print once, under the first category

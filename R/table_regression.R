@@ -327,8 +327,11 @@
 #' model (`sampleSelection::selection()`, `heckit()`, `treatReg()`) sets
 #' its two equations as column groups, "Outcome" then "Selection", in the
 #' language of the table, with its `Error terms`, n and AIC under the
-#' first; beside other models, or under `nested = TRUE`, each term has a
-#' `selection` and an `outcome` row; see [table_regression_models].
+#' first. Beside a model of another class, each selection model keeps its
+#' two groups (`Heckman: Outcome`, `Heckman: Selection`), whose rows align
+#' by term with the other models. In a table of selection models only, or
+#' under `nested = TRUE`, each term has a `selection` and an `outcome`
+#' row; see [table_regression_models].
 #'
 #' ## Robust SE availability by model class
 #'
@@ -993,10 +996,11 @@
 #'   `drop = "^s\\("` removes the `Smooth terms` block with its note.
 #'   The `Error terms` of a sample-selection model are coefficients of
 #'   `coef()` and follow `keep` and `drop` under those names (`"sigma"`,
-#'   `"rho"`, `"invMillsRatio"`). A multinomial or sample-selection
-#'   model alone, whose categories or equations are column groups,
-#'   matches its terms without their prefix (`"educ"`, `"cityyes"`);
-#'   beside other models, with it (`"Student: age"`, `"outcome: educ"`).
+#'   `"rho"`, `"invMillsRatio"`). A model whose categories or equations
+#'   are column groups (a multinomial or sample-selection model alone, a
+#'   sample-selection model beside a model of another class) matches its
+#'   terms without their prefix (`"educ"`, `"cityyes"`); in rows, with it
+#'   (`"Student: age"`, `"outcome: educ"`).
 #'   Mutually exclusive with `drop`. Filtering is a display
 #'   choice; `p_adjust` runs against the full coefficient family
 #'   before filtering. Default `NULL` (no filter).
@@ -1190,8 +1194,10 @@
 #'   [table_stack()] applies the rule to tables built separately, a table
 #'   built with `FALSE` taking no row. A multinomial model alone has no
 #'   Outcome row, its title naming the outcome; in a stack, its panel
-#'   takes one by this rule, the label once, across its columns. The
-#'   console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
+#'   takes one by this rule, the label once, across its columns. A
+#'   selection model beside a model of another class gives its label to
+#'   its outcome group; its selection group shows the selection variable.
+#'   The console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
 #'   print each label across the columns of its model. gt, which merges
 #'   no cells of the body, moves the row into the header: each label
 #'   spans the columns of its model, under the model's name. A stacked gt
@@ -3762,6 +3768,29 @@ table_regression <- function(
       mn_exploded <- TRUE
     }
   }
+  # A selection model beside a model of another class: its two equations
+  # as column groups, the other models unchanged; `sel_owner` maps each
+  # group to its model.
+  sel_mixed <- !fit_only &&
+    is.null(panel_req) &&
+    .selection_columns_mixed(models, nested)
+  sel_owner <- seq_along(frames)
+  if (sel_mixed) {
+    ex <- .explode_selection_mixed(
+      frames,
+      model_ids,
+      .resolve_model_labels(models, model_labels) %||%
+        spicy_fmt("label_model_name", seq_len(n_models)),
+      .resolve_model_labels(models, model_labels, .spicy_fmt_en) %||%
+        .spicy_fmt_en("label_model_name", seq_len(n_models)),
+      models
+    )
+    frames_render <- ex$frames
+    model_ids_render <- ex$model_ids
+    sel_owner <- ex$owner
+    sel_labels <- ex$labels
+    sel_keys <- ex$keys
+  }
 
   # ---- Multi-model alignment + wide pivot (Layer 2) ----------------------
   # align_frames() consumes the frames list directly and produces the
@@ -3809,7 +3838,11 @@ table_regression <- function(
       )[
         ca_err &
           aligned$coefs_aligned$model_id %in%
-            if (mn_exploded) model_ids_render else model_ids[[i]]
+            if (mn_exploded) {
+              model_ids_render
+            } else {
+              model_ids_render[sel_owner == i]
+            }
       ]
     }
   }
@@ -3853,7 +3886,7 @@ table_regression <- function(
   # (`keep = "^age$"` matches "age" but not "Student: age"), and
   # align_frames()'s own intercept filter never matches
   # "Student: (Intercept)".
-  aligned_data <- if (mn_exploded) {
+  aligned_data <- if (mn_exploded || sel_mixed) {
     ad <- align_frames(
       frames,
       model_ids = model_ids,
@@ -3868,6 +3901,11 @@ table_regression <- function(
       substring(ca$term, nchar(lvl) + 3L),
       ca$term
     )
+    # Beside other models, only a selection model shows bare terms.
+    exploded_ids <- model_ids[unique(sel_owner[duplicated(sel_owner)])]
+    if (sel_mixed) {
+      bare <- ifelse(ca$model_id %in% exploded_ids, bare, ca$term)
+    }
     ad$coefs_aligned <- ca[
       bare %in% unique(aligned$coefs_aligned$term),
       ,
@@ -4044,14 +4082,23 @@ table_regression <- function(
     dvs <- vapply(frames, function(f) f$info$dv %||% NA_character_, "")
     if (
       length(unique(dvs)) > 1L &&
-        (!is.null(named_model_labels) || anyDuplicated(dvs) > 0L)
+        (!is.null(named_model_labels) || sel_mixed || anyDuplicated(dvs) > 0L)
     ) {
       outcome_labels <- vapply(
-        frames,
+        frames_render,
         function(f) f$info$dv_display %||% f$info$dv %||% NA_character_,
         ""
       )
     }
+  } else if (sel_mixed && is.character(outcome_labels)) {
+    # One label per model: the outcome group of a selection model takes
+    # it, its selection group names the selection variable.
+    sel_eq <- !duplicated(sel_owner)
+    outcome_labels <- ifelse(
+      sel_eq,
+      outcome_labels[sel_owner],
+      vapply(frames_render, function(f) f$info$dv %||% NA_character_, "")
+    )
   }
 
   # ---- Render (Layer 3) --------------------------------------------------
@@ -4067,6 +4114,8 @@ table_regression <- function(
     # (already outcome_labels-overridden); `model_labels` itself was
     # refused fail-fast up top.
     mn_spanners
+  } else if (sel_mixed) {
+    sel_labels
   } else {
     named_model_labels # NULL: render_regression_table generates "Model 1", ...
   }
@@ -4078,7 +4127,7 @@ table_regression <- function(
     show_columns = show_columns,
     show_fit_stats = show_fit_stats,
     model_labels = effective_model_labels,
-    model_keys = named_model_keys,
+    model_keys = if (sel_mixed) sel_keys else named_model_keys,
     reference_label = reference_label,
     reference_style = reference_style,
     factor_layout = factor_layout,

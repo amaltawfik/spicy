@@ -1140,8 +1140,13 @@
 #'
 #' A sample-selection fit (`sampleSelection::selection()`, `heckit()`,
 #' `treatReg()`) alone shows its two equations as column groups, `Outcome`
-#' then `Selection`; beside other models, or under `nested = TRUE`, each
-#' variable has its `selection` and `outcome` rows. A factor or a logical
+#' then `Selection`. Beside a model of another class, each selection fit
+#' shows the same two groups, headed `<model>: Outcome` and
+#' `<model>: Selection`, and its rows align by term with the other models
+#' (an `lm()` and the outcome equation share the row of `educ`); its
+#' `Error terms`, n and AIC sit under its first group. In a table of
+#' selection fits only, or under `nested = TRUE`, each variable has its
+#' `selection` and `outcome` rows. A factor or a logical
 #' predictor has a header, its levels and a reference row. The
 #' `Error terms` block follows: \eqn{\sigma}{sigma} and
 #' \eqn{\rho}{rho} for a maximum-likelihood fit (\eqn{\rho}{rho} alone for a

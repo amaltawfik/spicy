@@ -352,10 +352,11 @@ they match by their mgcv label (\code{"s(age)"}, \code{"te(bmi,ped)"}), and
 \code{drop = "^s\\\\("} removes the \verb{Smooth terms} block with its note.
 The \verb{Error terms} of a sample-selection model are coefficients of
 \code{coef()} and follow \code{keep} and \code{drop} under those names (\code{"sigma"},
-\code{"rho"}, \code{"invMillsRatio"}). A multinomial or sample-selection
-model alone, whose categories or equations are column groups,
-matches its terms without their prefix (\code{"educ"}, \code{"cityyes"});
-beside other models, with it (\code{"Student: age"}, \code{"outcome: educ"}).
+\code{"rho"}, \code{"invMillsRatio"}). A model whose categories or equations
+are column groups (a multinomial or sample-selection model alone, a
+sample-selection model beside a model of another class) matches its
+terms without their prefix (\code{"educ"}, \code{"cityyes"}); in rows, with it
+(\code{"Student: age"}, \code{"outcome: educ"}).
 Mutually exclusive with \code{drop}. Filtering is a display
 choice; \code{p_adjust} runs against the full coefficient family
 before filtering. Default \code{NULL} (no filter).}
@@ -565,8 +566,10 @@ the place of the column headers; a vector gives each panel its label.
 \code{\link[=table_stack]{table_stack()}} applies the rule to tables built separately, a table
 built with \code{FALSE} taking no row. A multinomial model alone has no
 Outcome row, its title naming the outcome; in a stack, its panel
-takes one by this rule, the label once, across its columns. The
-console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
+takes one by this rule, the label once, across its columns. A
+selection model beside a model of another class gives its label to
+its outcome group; its selection group shows the selection variable.
+The console, flextable, Word, Excel and tinytable (HTML, LaTeX, Typst)
 print each label across the columns of its model. gt, which merges
 no cells of the body, moves the row into the header: each label
 spans the columns of its model, under the model's name. A stacked gt
@@ -1210,8 +1213,11 @@ groups; see \link{table_regression_categorical}. A single sample-selection
 model (\code{sampleSelection::selection()}, \code{heckit()}, \code{treatReg()}) sets
 its two equations as column groups, "Outcome" then "Selection", in the
 language of the table, with its \verb{Error terms}, n and AIC under the
-first; beside other models, or under \code{nested = TRUE}, each term has a
-\code{selection} and an \code{outcome} row; see \link{table_regression_models}.
+first. Beside a model of another class, each selection model keeps its
+two groups (\code{Heckman: Outcome}, \code{Heckman: Selection}), whose rows align
+by term with the other models. In a table of selection models only, or
+under \code{nested = TRUE}, each term has a \code{selection} and an \code{outcome}
+row; see \link{table_regression_models}.
 \subsection{Robust SE availability by model class}{
 
 Not every estimator is defined for every class. A robust \code{vcov}

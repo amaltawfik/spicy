@@ -684,3 +684,170 @@ test_that("outcome_labels of the wrong length names the equations", {
     expect_no_match(conditionMessage(err), "multinomial", fixed = TRUE)
   }
 })
+
+
+# ---- A selection model beside a model of another class --------------------
+
+.fit_selection_ols <- function() {
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  Mroz87$city <- factor(Mroz87$city, labels = c("no", "yes"))
+  stats::lm(wage ~ exper + educ + city, data = Mroz87, subset = lfp == 1)
+}
+
+test_that("beside another class, a selection model shows its equations as groups", {
+  skip_if_not_installed("broom")
+  fit <- .fit_selection_factors()
+  ols <- .fit_selection_ols()
+  tb <- table_regression(list(OLS = ols, Heckman = fit))
+  groups <- c("OLS", "Heckman: Outcome", "Heckman: Selection")
+  expect_identical(names(attr(tb, "spanners")), groups)
+  expect_identical(
+    names(tb)[-1L],
+    paste0(rep(groups, each = 3L), ": ", c("B", "SE", "p"))
+  )
+  # The rows align by term: educ of the lm and of the outcome equation on
+  # one row, each cell the estimate tidy() gives.
+  df <- table_regression(list(OLS = ols, Heckman = fit), output = "data.frame")
+  td <- as.data.frame(broom::tidy(tb))
+  educ <- df[df$variable == "educ", ]
+  expect_identical(nrow(educ), 1L)
+  b <- function(id, term) td$estimate[td$model_id == id & td$term == term]
+  expect_equal(educ[["OLS: B"]], b("OLS", "educ"))
+  expect_equal(educ[["Heckman: Outcome: B"]], b("Heckman", "outcome: educ"))
+  expect_equal(
+    educ[["Heckman: Selection: B"]],
+    b("Heckman", "selection: educ")
+  )
+  expect_true(is.na(df[["OLS: B"]][df$variable == "age"]))
+  # tidy() keeps one model per fit and the prefixed terms.
+  expect_identical(unique(td$model_id), c("OLS", "Heckman"))
+  expect_true("selection: age" %in% td$term)
+  # The rows of the whole model, under its first group only.
+  err <- df$variable == "Error terms" & df$.row_role == "level"
+  expect_true(all(!is.na(df[["Heckman: Outcome: B"]][err])))
+  expect_true(all(is.na(df[["Heckman: Selection: B"]][err])))
+  n_row <- tb[trimws(tb$Variable) == "n", ]
+  expect_identical(trimws(n_row[["Heckman: Outcome: B"]]), "753")
+  expect_identical(trimws(n_row[["Heckman: Selection: B"]]), "")
+  # The note names the model, never a group.
+  note <- attr(tb, "note")
+  expect_match(note, "Heckman: Outcome observed for 428 of 753", fixed = TRUE)
+  expect_no_match(note, "Heckman: Selection", fixed = TRUE)
+})
+
+test_that("default labels, the Outcome row and keep beside a selection model", {
+  fit <- .fit_selection_factors()
+  ols <- .fit_selection_ols()
+  data("Mroz87", package = "sampleSelection", envir = environment())
+  pr <- stats::glm(
+    lfp ~ age + educ,
+    data = Mroz87,
+    family = stats::binomial("probit")
+  )
+  tb <- table_regression(list(ols, fit))
+  expect_identical(
+    names(attr(tb, "spanners")),
+    c("Model 1", "Model 2: Outcome", "Model 2: Selection")
+  )
+  # The models do not share an outcome: the group of the selection
+  # equation has the selection variable.
+  outcome_row <- function(tb) {
+    out <- trimws(unlist(tb[trimws(tb$Variable) == "Outcome", -1L]))
+    unname(out[nzchar(out)])
+  }
+  tb <- table_regression(list(OLS = ols, Probit = pr, Heckman = fit))
+  expect_identical(outcome_row(tb), c("wage", "lfp", "wage", "lfp"))
+  tb <- table_regression(
+    list(OLS = ols, Probit = pr, Heckman = fit),
+    outcome_labels = c("Wage", "Participation", "Wage")
+  )
+  expect_identical(
+    outcome_row(tb),
+    c("Wage", "Participation", "Wage", "lfp")
+  )
+  # keep and labels read the bare terms.
+  tb <- expect_no_warning(table_regression(
+    list(OLS = ols, Heckman = fit),
+    keep = c("^educ$", "^age$"),
+    labels = c(educ = "Education")
+  ))
+  expect_identical(
+    trimws(tb$Variable)[1:3],
+    c("(Intercept)", "Education", "age")
+  )
+  long <- table_regression(
+    list(OLS = ols, Heckman = fit),
+    keep = "^age$",
+    show_intercept = FALSE,
+    output = "long"
+  )
+  expect_identical(unique(long$term), "selection: age")
+})
+
+test_that("selection models alone keep the rows; beside an lm, groups each", {
+  fit <- .fit_selection_factors()
+  two <- .fit_selection_factors(two_step = TRUE)
+  tb <- table_regression(list(ML = fit, "Two-step" = two))
+  expect_identical(names(attr(tb, "spanners")), c("ML", "Two-step"))
+  tb <- table_regression(
+    list(OLS = .fit_selection_ols(), ML = fit, "Two-step" = two)
+  )
+  expect_identical(
+    names(attr(tb, "spanners")),
+    c(
+      "OLS",
+      "ML: Outcome",
+      "ML: Selection",
+      "Two-step: Outcome",
+      "Two-step: Selection"
+    )
+  )
+  rows <- trimws(tb$Variable)
+  expect_true("Error terms:" %in% rows)
+  expect_false(any(grepl("^(selection|outcome)", rows)))
+})
+
+test_that("inline() picks a group beside another model by label, position or identity", {
+  fit <- .fit_selection_factors()
+  tb <- table_regression(list(OLS = .fit_selection_ols(), Heckman = fit))
+  b <- summary(fit)$estimate
+  sel <- sprintf("%.2f", b[grep("^educ$", rownames(b))[1L], "Estimate"])
+  expect_identical(inline(tb, educ, model = "Heckman: Selection"), sel)
+  expect_identical(inline(tb, educ, model = 3), sel)
+  expect_identical(inline(tb, educ, model = "heckman: selection"), sel)
+  expect_identical(
+    inline(tb, city, "yes", model = "Heckman: Outcome"),
+    sprintf("%.2f", b["cityyes", "Estimate"])
+  )
+  withr::with_options(list(spicy.language = "fr"), {
+    tbf <- table_regression(list(OLS = .fit_selection_ols(), Heckman = fit))
+    expect_identical(
+      names(attr(tbf, "spanners"))[2:3],
+      c("Heckman\u00a0: R\u00e9sultat", "Heckman\u00a0: S\u00e9lection")
+    )
+    # The identity does not depend on the language.
+    expect_identical(
+      inline(tbf, educ, model = "Heckman: selection"),
+      inline(tbf, educ, model = names(attr(tbf, "spanners"))[[3L]])
+    )
+  })
+})
+
+test_that("Excel writes the groups of a selection model beside another model", {
+  skip_if_not_installed("openxlsx2")
+  fit <- .fit_selection_factors()
+  fits <- list(OLS = .fit_selection_ols(), Heckman = fit)
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  table_regression(fits, output = "excel", excel_path = path)
+  x <- openxlsx2::read_xlsx(path, col_names = FALSE, skip_empty_rows = FALSE)
+  head_row <- unlist(x[3L, ])
+  expect_true(all(
+    c("OLS", "Heckman: Outcome", "Heckman: Selection") %in% head_row
+  ))
+  educ <- unlist(x[which(x[[1L]] == "educ"), ])
+  df <- table_regression(fits, output = "data.frame")
+  expect_equal(
+    as.numeric(educ[which(head_row == "Heckman: Selection")[1L]]),
+    df[["Heckman: Selection: B"]][df$variable == "educ"]
+  )
+})
