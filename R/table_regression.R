@@ -60,7 +60,8 @@
 #' row per coefficient under the name the tidier gives it, without factor
 #' headers or reference rows, and the estimate, standard error, interval,
 #' test and p-value the tidier returns (a quantity it does not return is
-#' shown as missing). A model with several components, responses or levels
+#' shown as missing; under the default `show_columns`, a standard-error,
+#' interval or p-value column empty for every model is left out). A model with several components, responses or levels
 #' has its terms prefixed by them (`"count: x"`); random-effect rows are
 #' not shown. The title names the outcome when the fit has a formula. The
 #' note names the tidier in place of the standard errors, and the fit
@@ -2016,6 +2017,7 @@ table_regression <- function(
   # the same width pressure (one column set per outcome category) and
   # compacts identically. The user can pass atomic tokens
   # (e.g. `c("b", "se", "ci", "p")`) to restore CI.
+  default_columns <- is.null(show_columns)
   if (is.null(show_columns)) {
     is_multi <- is.list(models) &&
       !inherits(models, "lm") &&
@@ -3706,6 +3708,19 @@ table_regression <- function(
   if (is.null(panel_req)) {
     .reg_warn_exponentiate_noop(frames, exponentiate)
     .reg_warn_re_args_noop(frames, re_scale, re_columns, re_test, re_ci)
+  }
+  # A default column that the tidier of a fallback model returns for no
+  # row of any model (no p-value for an arima read by broom) is left out.
+  if (default_columns && any(vapply(frames, .is_fallback_frame, NA))) {
+    cols <- c(se = "std_error", ci = "ci_lower", p = "p_value")
+    none <- vapply(
+      cols,
+      function(cl) {
+        all(is.na(unlist(lapply(frames, function(f) f$coefs[[cl]]))))
+      },
+      NA
+    )
+    show_columns <- setdiff(show_columns, names(cols)[none])
   }
 
   # Standardized-on-non-additive caveat (Q15, Phase E)

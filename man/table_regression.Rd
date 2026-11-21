@@ -953,7 +953,8 @@ rows come from \code{broom::tidy(fit, conf.int = TRUE, conf.level = ci_level)} o
 row per coefficient under the name the tidier gives it, without factor
 headers or reference rows, and the estimate, standard error, interval,
 test and p-value the tidier returns (a quantity it does not return is
-shown as missing). A model with several components, responses or levels
+shown as missing; under the default \code{show_columns}, a standard-error,
+interval or p-value column empty for every model is left out). A model with several components, responses or levels
 has its terms prefixed by them (\code{"count: x"}); random-effect rows are
 not shown. The title names the outcome when the fit has a formula. The
 note names the tidier in place of the standard errors, and the fit

@@ -52,6 +52,9 @@
   !is.null(fit) && !is.data.frame(fit) && !.has_as_regression_frame_method(fit)
 }
 
+# TRUE for a frame built by `.fallback_frame()`.
+.is_fallback_frame <- function(frame) !is.null(frame$info$extras$fallback)
+
 # The line of the refusal of an unknown class that names the way out.
 .fallback_hint <- function() {
   paste0(

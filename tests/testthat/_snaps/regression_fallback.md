@@ -41,13 +41,13 @@
     Output
       Regression
       
-       Variable  │   B     SE      95% CI     p 
-      ───────────┼──────────────────────────────
-       ar1       │  0.57  0.12  [0.35, 0.80]  – 
-       intercept │  2.41  0.15  [2.13, 2.70]  – 
-      ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-       n         │ 48                           
-       AIC       │ 64.8                         
+       Variable  │   B     SE      95% CI    
+      ───────────┼───────────────────────────
+       ar1       │  0.57  0.12  [0.35, 0.80] 
+       intercept │  2.41  0.15  [2.13, 2.70] 
+      ╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+       n         │ 48                        
+       AIC       │ 64.8                      
       
       Note. Regression. Estimates, standard errors, tests and intervals as returned by broom::tidy(). CI = confidence interval; AIC = Akaike information criterion.
     Code

@@ -344,6 +344,39 @@ test_that("the AME df column beside an lm is the refusal of the fallback", {
   )
 })
 
+test_that("a default column the tidier returns for no row is left out", {
+  skip_if_not_installed("broom")
+  fit <- stats::arima(datasets::lh, order = c(1, 0, 0))
+  # broom gives an arima no p-value: the default drops the p column.
+  expect_false(any(
+    names(table_regression(
+      fit,
+      fallback = "broom",
+      output = "data.frame"
+    )) ==
+      "p"
+  ))
+  # Asked for, it stays, with its dashes.
+  expect_true(
+    "p" %in%
+      names(table_regression(
+        fit,
+        fallback = "broom",
+        show_columns = c("b", "se", "p"),
+        output = "data.frame"
+      ))
+  )
+  # A model of the table that has p-values keeps the column.
+  expect_true(any(grepl(
+    "p",
+    names(table_regression(
+      list(lm(mpg ~ wt, data = mtcars), fit),
+      fallback = "broom",
+      output = "data.frame"
+    ))
+  )))
+})
+
 test_that("the outcome is read from the formula, else from insight", {
   .local_fake_methods()
   .local_fake_method("formula", "stats", function(x, ...) y ~ x)
