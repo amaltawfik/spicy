@@ -240,6 +240,16 @@
   term of the previous one is compared, with a warning: it may hold the
   term under another writing, `poly(x, 2)` after `x`.
 
+* `table_regression()` shows the term-level statistics of a factor once,
+  on the header row of the factor. The test of the term
+  (`"partial_chi2"`, `"partial_f"`) and its partial effect sizes were
+  repeated on each level row, where they read as tests of the levels.
+  `table_regression_uv()` shows the N and the R² of a factor on its
+  header row too, where they sat on the first level after the
+  reference. The flat layout (`factor_layout = "flat"`), `tidy()` and
+  `output = "long"` do not change, and `inline()` cites these values by
+  the variable alone as well as by the variable and a level.
+
 * `table_categorical_svy()` gains `percent_base` and, like
   `table_categorical()`, estimates its percentages on the observed
   values by default: the `(Missing)` row shows its count and no
