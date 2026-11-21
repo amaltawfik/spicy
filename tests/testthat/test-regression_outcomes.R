@@ -667,42 +667,191 @@ test_that("the arguments a table of outcomes has no use for are refused", {
   )
 })
 
-test_that("only linear models of numeric outcomes are fitted in this version", {
+test_that("the model of each outcome follows method and family as typed", {
   d <- .oc_soc()
-  expect_error(
-    table_regression_outcomes(d, c(wellbeing_score, bmi), age, method = "glm"),
-    "linear models only for now",
-    class = "spicy_invalid_input"
+  coef_of <- function(f) unname(stats::coef(f)[["income_k"]])
+  # method = "glm": every outcome by a logistic model.
+  g <- table_regression_outcomes(
+    d,
+    c(smoking, dentist_12m),
+    income_k,
+    method = "glm"
   )
-  expect_error(
+  expect_equal(
+    broom::tidy(g)$estimate,
+    c(
+      coef_of(stats::glm(smoking ~ income_k, binomial, data = d)),
+      coef_of(stats::glm(dentist_12m ~ income_k, binomial, data = d))
+    ),
+    tolerance = 1e-8
+  )
+  # A family alone: every outcome by glm() with it.
+  p <- table_regression_outcomes(
+    d,
+    c(life_sat_health, life_sat_work),
+    income_k,
+    family = stats::poisson()
+  )
+  expect_equal(
+    broom::tidy(p)$estimate[2L],
+    coef_of(stats::glm(life_sat_work ~ income_k, poisson, data = d)),
+    tolerance = 1e-8
+  )
+  # Its name, as glm() takes it.
+  p2 <- table_regression_outcomes(
+    d,
+    c(life_sat_health, life_sat_work),
+    income_k,
+    family = "poisson"
+  )
+  expect_equal(broom::tidy(p2)$estimate, broom::tidy(p)$estimate)
+  # A named list: the named outcomes by glm(), the others by lm().
+  m <- table_regression_outcomes(
+    d,
+    c(wellbeing_score, smoking, life_sat_work),
+    income_k,
+    family = list(smoking = stats::binomial(), life_sat_work = "poisson")
+  )
+  expect_equal(
+    broom::tidy(m)$estimate,
+    c(
+      coef_of(stats::lm(wellbeing_score ~ income_k, data = d)),
+      coef_of(stats::glm(smoking ~ income_k, binomial, data = d)),
+      coef_of(stats::glm(life_sat_work ~ income_k, poisson, data = d))
+    ),
+    tolerance = 1e-8
+  )
+  # The z of a glm and the t of an lm keep their own reference law.
+  td <- broom::tidy(m)
+  expect_equal(
+    td$p.value,
+    stats::p.adjust(
+      c(
+        summary(stats::lm(wellbeing_score ~ income_k, data = d))$coefficients[
+          "income_k",
+          4L
+        ],
+        summary(stats::glm(smoking ~ income_k, binomial, data = d))$coefficients[
+          "income_k",
+          4L
+        ],
+        summary(stats::glm(life_sat_work ~ income_k, poisson, data = d))$coefficients[
+          "income_k",
+          4L
+        ]
+      ),
+      "holm"
+    ),
+    tolerance = 1e-10
+  )
+})
+
+test_that("a binary outcome of a linear model is a linear probability model", {
+  d <- .oc_soc()
+  expect_warning(
+    lpm <- table_regression_outcomes(d, c(wellbeing_score, smoking), income_k),
+    "linear probability model for P(smoking = Yes)",
+    fixed = TRUE,
+    class = "spicy_model_choice"
+  )
+  y <- as.integer(d$smoking == "Yes")
+  expect_equal(
+    broom::tidy(lpm)$estimate[2L],
+    unname(stats::coef(stats::lm(y ~ d$income_k))[[2L]]),
+    tolerance = 1e-10
+  )
+  # A logical outcome is one too, and each binary outcome is named.
+  w <- character(0)
+  withCallingHandlers(
     table_regression_outcomes(
       d,
-      c(wellbeing_score, bmi),
-      age,
-      family = stats::poisson()
+      c(info_doctor, physical_activity),
+      income_k
     ),
-    "linear models only for now",
-    class = "spicy_invalid_input"
+    spicy_model_choice = function(c) {
+      w <<- c(w, conditionMessage(c))
+      invokeRestart("muffleWarning")
+    }
   )
-  expect_error(
+  expect_length(w, 2L)
+  expect_match(w[[1L]], "P(info_doctor = TRUE)", fixed = TRUE)
+  expect_match(w[[2L]], "family = list(physical_activity = binomial())", fixed = TRUE)
+  # `method = "lm"` typed is a choice: no warning.
+  expect_no_warning(
     table_regression_outcomes(
       d,
-      c(wellbeing_score, bmi),
-      age,
-      method = "probit"
-    ),
-    class = "spicy_invalid_input"
+      c(wellbeing_score, smoking),
+      income_k,
+      method = "lm"
+    )
   )
   expect_error(
-    table_regression_outcomes(d, c(wellbeing_score, smoking), age),
-    "numeric outcomes only for now, not `smoking`.",
+    table_regression_outcomes(d, c(wellbeing_score, education), income_k),
+    "`education` has 3 observed levels.",
     fixed = TRUE,
     class = "spicy_invalid_data"
   )
-  # method = "lm" typed is the default.
-  expect_s3_class(
-    table_regression_outcomes(d, c(wellbeing_score, bmi), age, method = "lm"),
-    "spicy_regression_table"
+})
+
+test_that("method and family are refused where they contradict", {
+  d <- .oc_soc()
+  oc <- function(...) {
+    table_regression_outcomes(d, c(wellbeing_score, smoking), income_k, ...)
+  }
+  expect_error(
+    oc(method = "glm", family = list(smoking = stats::binomial())),
+    "A list of families and `method` cannot be combined.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    oc(family = list(smokin = stats::binomial())),
+    "`family` names `smokin`, not among the outcomes.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    oc(family = list(stats::binomial())),
+    "must name each family by its outcome",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    oc(family = list(smoking = "binomial", smoking = "poisson")),
+    "must name each family by its outcome",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    oc(family = list(smoking = 3)),
+    "must be a stats::family object",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    oc(family = list(wellbeing_score = stats::gaussian())),
+    "Leave `wellbeing_score` out of `family`",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    oc(family = stats::gaussian()),
+    "`lm` by another name",
+    class = "spicy_invalid_input"
+  )
+  expect_error(
+    oc(method = "lm", family = stats::binomial()),
+    "`family` is not meaningful for `method = \"lm\"`.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+  expect_warning(
+    oc(method = "lm", family = stats::gaussian()),
+    class = "spicy_ignored_arg"
+  )
+  expect_error(oc(method = "probit"), class = "spicy_invalid_input")
+  # The error names the function the user called.
+  e <- expect_error(oc(family = list(x = "poisson")))
+  expect_identical(
+    as.character(conditionCall(e)[[1L]]),
+    "table_regression_outcomes"
   )
 })
 

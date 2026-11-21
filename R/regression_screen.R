@@ -113,10 +113,12 @@
 
 # A gaussian/identity glm is lm by another name; the right spelling
 # exists as an argument, so point straight at it (the generic "refit
-# with lm()" caveat would be off-target here).
+# with lm()" caveat would be off-target here). `hint` says how the
+# calling function fits a linear model.
 .screen_refuse_gaussian_glm <- function(
   method,
   family,
+  hint = "Use `method = \"lm\"` for the linear screen.",
   call = rlang::caller_env()
 ) {
   if (
@@ -130,7 +132,7 @@
           "`family = gaussian()` with the identity link is ",
           "`lm` by another name."
         ),
-        "i" = "Use `method = \"lm\"` for the linear screen."
+        "i" = hint
       ),
       class = "spicy_invalid_input",
       call = call
@@ -210,10 +212,13 @@
 # differences, comparable across models; Mood 2010); explicit
 # `method = "lm"` is an informed choice and stays silent. More than two
 # observed levels are refused. Returns `data`, the outcome recoded.
+# `texts` words the warning and the refusal for the calling table
+# (.SCREEN_LPM_TEXTS, the univariable screen's).
 .screen_lpm_recode <- function(
   data,
   outcome_name,
   method_supplied,
+  texts = .SCREEN_LPM_TEXTS,
   call = rlang::caller_env()
 ) {
   y <- data[[outcome_name]]
@@ -230,16 +235,8 @@
     } else {
       spicy_abort(
         c(
-          sprintf(
-            "The linear screen needs a numeric or two-level outcome; `%s` has %d observed levels.",
-            outcome_name,
-            nlevels(y_fac)
-          ),
-          "i" = paste0(
-            "Multinomial outcomes have no univariable screen: fit ",
-            "`nnet::multinom()` models and pass them to ",
-            "`table_regression()`."
-          )
+          sprintf(texts$levels, outcome_name, nlevels(y_fac)),
+          "i" = texts$levels_hint
         ),
         class = "spicy_invalid_data",
         call = call
@@ -251,28 +248,40 @@
   if (!is.null(lpm_level) && !method_supplied) {
     spicy_warn(
       c(
-        sprintf(
-          "`%s` is binary: the default linear screen fits a linear probability model for P(%s = %s).",
-          outcome_name,
-          outcome_name,
-          lpm_level
-        ),
+        sprintf(texts$binary, outcome_name, outcome_name, lpm_level),
         "i" = paste0(
           "Its coefficients are probability differences ",
           "(comparable across models; Mood 2010). Consider ",
           "`vcov = \"HC3\"` for the model's built-in ",
           "heteroskedasticity."
         ),
-        "i" = paste0(
-          "For the logistic screen, use `method = \"glm\"` ",
-          "(odds ratios with `exponentiate = TRUE`)."
-        )
+        "i" = texts$glm_hint
       ),
       class = "spicy_model_choice"
     )
   }
   data
 }
+
+.SCREEN_LPM_TEXTS <- list(
+  binary = paste0(
+    "`%s` is binary: the default linear screen fits a linear ",
+    "probability model for P(%s = %s)."
+  ),
+  glm_hint = paste0(
+    "For the logistic screen, use `method = \"glm\"` ",
+    "(odds ratios with `exponentiate = TRUE`)."
+  ),
+  levels = paste0(
+    "The linear screen needs a numeric or two-level outcome; ",
+    "`%s` has %d observed levels."
+  ),
+  levels_hint = paste0(
+    "Multinomial outcomes have no univariable screen: fit ",
+    "`nnet::multinom()` models and pass them to ",
+    "`table_regression()`."
+  )
+)
 
 
 # One model of a bundle: `response ~ rhs_names`, the right-hand side

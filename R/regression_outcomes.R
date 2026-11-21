@@ -155,7 +155,8 @@ table_regression_outcomes <- function(
       "i" = "Stack several tables with `table_stack()`."
     )
   )
-  .outcomes_linear_only(!missing(method), !missing(family), method)
+  method_supplied <- !missing(method)
+  family_supplied <- !missing(family)
   .check_data_frame(data, "table_regression_outcomes")
   .check_labels_arg(labels)
   .check_note_labels_arg(note_labels)
@@ -204,7 +205,14 @@ table_regression_outcomes <- function(
     ),
     arg = "covariates"
   )
-  .outcomes_numeric_only(data, outcome_names)
+  models <- .outcomes_resolve_models(
+    method,
+    family,
+    method_supplied,
+    family_supplied,
+    outcome_names,
+    env = parent.frame()
+  )
 
   # The exposure is named in the title, the covariates in the note: both
   # take `labels`, and a label of `note_labels`. The outcomes are named in
@@ -241,15 +249,26 @@ table_regression_outcomes <- function(
     dots$cluster <- cc$cluster
   }
 
+  # A two-level outcome of a linear model is coded 0/1: a linear
+  # probability model, disclosed unless `method = "lm"` was typed.
+  for (y in outcome_names[models$methods == "lm"]) {
+    data <- .screen_lpm_recode(
+      data,
+      y,
+      method_supplied,
+      texts = .outcomes_lpm_texts(y)
+    )
+  }
+
   rhs <- c(exposure_name, covariate_names)
   fits <- vector("list", length(outcome_names))
   for (k in seq_along(outcome_names)) {
     fits[[k]] <- .screen_fit_or_abort(
       rhs,
       paste0("`", outcome_names[k], "`"),
-      "lm",
+      models$methods[[k]],
       data,
-      NULL,
+      models$families[[k]],
       failed = sprintf(
         "The model for the outcome `%s` failed to fit.",
         outcome_names[k]
@@ -266,7 +285,8 @@ table_regression_outcomes <- function(
       exposure = exposure_name,
       covariates = covariate_names,
       covariates_note = covariates_note,
-      methods = rep("lm", length(outcome_names)),
+      methods = models$methods,
+      families = models$families,
       complete_cases = isTRUE(complete_cases),
       n_data = nrow(data),
       show_intercept = show_intercept
@@ -298,53 +318,147 @@ table_regression_outcomes <- function(
 }
 
 
-# This version fits linear models only. A `family`, or a `method` other
-# than "lm", is refused until the glm models are wired in.
-.outcomes_linear_only <- function(
+# The model of each outcome, from what was typed (no type detection):
+# nothing, every outcome by lm(); `method = "glm"`, every outcome by glm()
+# with `family` (binomial by default); a family alone, every outcome by
+# glm() with it; a named list of families, the named outcomes by glm()
+# and the others by lm(). Returns list(methods, families), one element
+# per outcome, the family NULL for lm().
+.outcomes_resolve_models <- function(
+  method,
+  family,
   method_supplied,
   family_supplied,
-  method,
+  outcome_names,
+  env,
   call = rlang::caller_env()
 ) {
-  method <- spicy_match_arg(method, c("lm", "glm"), "method")
-  if (family_supplied || !identical(method, "lm")) {
-    spicy_abort(
-      c(
-        "`table_regression_outcomes()` fits linear models only for now.",
-        "i" = "Drop `method` and `family`, or fit the models and pass them to `table_regression()`."
-      ),
-      class = "spicy_invalid_input",
-      call = call
-    )
+  k <- length(outcome_names)
+  if (family_supplied && is.list(family) && !inherits(family, "family")) {
+    if (method_supplied) {
+      spicy_abort(
+        c(
+          "A list of families and `method` cannot be combined.",
+          "i" = paste0(
+            "The list names the outcomes fitted by `glm()`, the others are ",
+            "fitted by `lm()`: drop `method`."
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    nms <- names(family)
+    if (
+      length(family) == 0L ||
+        is.null(nms) ||
+        any(is.na(nms) | !nzchar(nms)) ||
+        anyDuplicated(nms) > 0L
+    ) {
+      spicy_abort(
+        c(
+          "A list of families must name each family by its outcome, once.",
+          "i" = "E.g. `family = list(smoking = binomial(), visits = poisson())`."
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    unknown <- setdiff(nms, outcome_names)
+    if (length(unknown) > 0L) {
+      spicy_abort(
+        c(
+          sprintf(
+            "`family` names %s, not among the outcomes.",
+            paste0("`", unknown, "`", collapse = ", ")
+          ),
+          "i" = sprintf(
+            "The outcomes: %s.",
+            paste0("`", outcome_names, "`", collapse = ", ")
+          )
+        ),
+        class = "spicy_invalid_input",
+        call = call
+      )
+    }
+    families <- vector("list", k)
+    for (y in nms) {
+      fam <- .screen_normalize_family(family[[y]], env, call = call)
+      .screen_refuse_gaussian_glm(
+        "glm",
+        fam,
+        hint = sprintf(
+          "Leave `%s` out of `family`: it is then fitted by `lm()`.",
+          y
+        ),
+        call = call
+      )
+      families[[match(y, outcome_names)]] <- fam
+    }
+    methods <- ifelse(vapply(families, is.null, logical(1)), "lm", "glm")
+    return(list(methods = methods, families = families))
   }
-  invisible(NULL)
+  # A family without a method can only mean glm().
+  method <- if (family_supplied && !method_supplied) {
+    "glm"
+  } else {
+    spicy_match_arg(method, c("lm", "glm"), "method")
+  }
+  family <- .screen_normalize_family(family, env, call = call)
+  if (identical(method, "lm")) {
+    if (family_supplied) {
+      if (
+        identical(family$family, "gaussian") &&
+          identical(family$link, "identity")
+      ) {
+        spicy_warn(
+          "`family = gaussian()` is ignored for `method = \"lm\"`, which fits it.",
+          class = "spicy_ignored_arg"
+        )
+      } else {
+        spicy_abort(
+          c(
+            "`family` is not meaningful for `method = \"lm\"`.",
+            "i" = "Use `method = \"glm\"` to fit that family, or drop `family`."
+          ),
+          class = "spicy_invalid_input",
+          call = call
+        )
+      }
+    }
+    return(list(methods = rep("lm", k), families = vector("list", k)))
+  }
+  .screen_refuse_gaussian_glm(
+    method,
+    family,
+    hint = "Drop `family` and `method`: the outcomes are then fitted by `lm()`.",
+    call = call
+  )
+  list(methods = rep("glm", k), families = rep(list(family), k))
 }
 
-# An outcome a linear model cannot take as it is: until the linear
-# probability model of a two-level outcome is wired in, every outcome
-# is numeric.
-.outcomes_numeric_only <- function(
-  data,
-  outcome_names,
-  call = rlang::caller_env()
-) {
-  bad <- outcome_names[
-    !vapply(outcome_names, function(v) is.numeric(data[[v]]), logical(1))
-  ]
-  if (length(bad) > 0L) {
-    spicy_abort(
-      c(
-        sprintf(
-          "`table_regression_outcomes()` takes numeric outcomes only for now, not %s.",
-          paste0("`", bad, "`", collapse = ", ")
-        ),
-        "i" = "Code a two-level outcome 0/1, or fit the models and pass them to `table_regression()`."
-      ),
-      class = "spicy_invalid_data",
-      call = call
+# The linear probability model warning and the refusal of a factor of
+# more than two levels, worded for the outcome `y` of a table of outcomes
+# (.screen_lpm_recode()).
+.outcomes_lpm_texts <- function(y) {
+  list(
+    binary = paste0(
+      "`%s` is binary: its linear model is a linear probability model ",
+      "for P(%s = %s)."
+    ),
+    glm_hint = sprintf(
+      "For a logistic model of this outcome, use `family = list(%s = binomial())`.",
+      y
+    ),
+    levels = paste0(
+      "A linear model needs a numeric or two-level outcome; ",
+      "`%s` has %d observed levels."
+    ),
+    levels_hint = paste0(
+      "Fit a `nnet::multinom()` model of it and pass it to ",
+      "`table_regression()`."
     )
-  }
-  invisible(NULL)
+  )
 }
 
 # The arguments of `table_regression()` a table of outcomes has no use
@@ -518,7 +632,8 @@ as_regression_frame.spicy_outcomes_screen <- function(
         )
     )
   }
-  coefs <- do.call(rbind, blocks)
+  # The frames of lm() and glm() fits do not carry the same columns.
+  coefs <- Reduce(.rbind_union, blocks)
   rownames(coefs) <- NULL
 
   info <- .screen_pool_info(frames, bundle$fits, ns, "outcomes_screen")
