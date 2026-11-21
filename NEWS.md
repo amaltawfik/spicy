@@ -856,6 +856,15 @@
   previous one. `anova(m1, m2, m3)` tests each step on the residual
   variance of the largest model and gives another F.
 
+* `table_regression()` with `p_adjust`: the test of a term
+  (`"partial_f"`, `"partial_chi2"`) counts once in its family. It was
+  counted once per row of the term, so the adjusted p-values that
+  `tidy()` and `output = "long"` give for these tests were too large for
+  a factor of three levels or more, a `poly()` or `ns()` term and an
+  interaction with a factor. For `lm(mpg ~ factor(cyl) + wt + hp)` under
+  Holm, the test of `factor(cyl)` had 0.19 where the three tests of the
+  model give 0.13. The p-values of the coefficients do not change.
+
 * `table_regression()`: a coefficient the model could not estimate (an
   aliased column, a factor level without observations) has no standard
   error, p-value or interval, and the note says that the model is
