@@ -94,3 +94,41 @@ test_that("align_frames() takes the outcome of a row from the frame", {
   expect_identical(out$outcome[out$term == "wt"], "y1")
   expect_true(all(out$outcome[out$term != "wt"] == "mpg"))
 })
+
+test_that("a bundle cites the conditional variances its fits name", {
+  skip_if_not_installed("rms")
+  # An rms fit kept without x = TRUE, y = TRUE has its cluster-robust
+  # variance under a condition: the bundle that wraps it says so.
+  b <- structure(
+    list(
+      fits = list(
+        stats::lm(mpg ~ wt, data = mtcars),
+        rms::ols(mpg ~ wt, data = mtcars)
+      )
+    ),
+    class = c("spicy_test_screen", "spicy_screen")
+  )
+  one <- .vcov_cited(b$fits[[2L]])
+  expect_match(one$others, "x = TRUE, y = TRUE", fixed = TRUE)
+  cited <- .vcov_cited(b)
+  expect_identical(cited$others, one$others)
+  expect_identical(
+    cited$values,
+    intersect(.vcov_cited(b$fits[[1L]])$values, one$values)
+  )
+})
+
+test_that("several unknown arguments of a screen are named together", {
+  expect_error(
+    table_regression_uv(
+      .screen_soc(),
+      outcome = wellbeing_score,
+      predictors = c(age, sex),
+      foo = 1,
+      bar = 2
+    ),
+    "Unknown arguments passed to `table_regression()` through `...`: `foo`, `bar`.",
+    fixed = TRUE,
+    class = "spicy_invalid_input"
+  )
+})
