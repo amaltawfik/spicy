@@ -467,7 +467,9 @@ test_that("a factor of five levels and a poly() term count once each", {
 })
 
 test_that("two terms with the same F stay two tests", {
-  # A balanced 2 x 2 design gives `a` and `b` bit-identical tests.
+  # A balanced 2 x 2 design gives `a` and `b` the same test, to the last
+  # bit on some platforms and not on others: the terms are told apart by
+  # their name, never by their values.
   d <- data.frame(
     a = rep(c(0, 0, 1, 1), 3),
     b = rep(c(0, 1, 0, 1), 3),
@@ -475,7 +477,7 @@ test_that("two terms with the same F stay two tests", {
   )
   fit <- lm(y ~ a + b, data = d)
   raw <- anova(fit)[["Pr(>F)"]][1:2]
-  expect_identical(raw[1], raw[2])
+  expect_equal(raw[1], raw[2], tolerance = 1e-10)
   tb <- table_regression(
     fit,
     show_columns = c("b", "p", "partial_f"),
