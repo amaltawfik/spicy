@@ -860,24 +860,24 @@ column:
 ``` r
 
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-#> # A tibble: 23 × 18
+#> # A tibble: 23 × 19
 #>    model_id outcome         outcome_level term  estimate_type estimate std.error
 #>    <chr>    <chr>           <chr>         <chr> <chr>            <dbl>     <dbl>
-#>  1 M1       self_rated_hea… Poor          age   ame            3.91e-5 0.000183 
-#>  2 M1       self_rated_hea… Fair          age   ame            1.20e-4 0.000565 
-#>  3 M1       self_rated_hea… Good          age   ame           -1.20e-5 0.0000571
-#>  4 M1       self_rated_hea… Very good     age   ame           -1.47e-4 0.000692 
+#>  1 M1       Poor            Poor          age   ame            3.91e-5 0.000183 
+#>  2 M1       Fair            Fair          age   ame            1.20e-4 0.000565 
+#>  3 M1       Good            Good          age   ame           -1.20e-5 0.0000571
+#>  4 M1       Very good       Very good     age   ame           -1.47e-4 0.000691 
 #>  5 M1       self_rated_hea… NA            age   B             -7.94e-4 0.00372  
-#>  6 M1       self_rated_hea… Poor          sexM… ame           -8.52e-4 0.00539  
-#>  7 M1       self_rated_hea… Fair          sexM… ame           -2.62e-3 0.0166   
-#>  8 M1       self_rated_hea… Good          sexM… ame            2.62e-4 0.00166  
-#>  9 M1       self_rated_hea… Very good     sexM… ame            3.21e-3 0.0204   
+#>  6 M1       Poor            Poor          sexM… ame           -8.52e-4 0.00539  
+#>  7 M1       Fair            Fair          sexM… ame           -2.62e-3 0.0166   
+#>  8 M1       Good            Good          sexM… ame            2.62e-4 0.00166  
+#>  9 M1       Very good       Very good     sexM… ame            3.21e-3 0.0204   
 #> 10 M1       self_rated_hea… NA            sexM… B              1.73e-2 0.110    
 #> # ℹ 13 more rows
-#> # ℹ 11 more variables: conf.low <dbl>, conf.high <dbl>, statistic <dbl>,
+#> # ℹ 12 more variables: conf.low <dbl>, conf.high <dbl>, statistic <dbl>,
 #> #   df <dbl>, df.residual <dbl>, p.value <dbl>, test_type <chr>,
 #> #   is_intercept <lgl>, factor_term <chr>, factor_level <chr>,
-#> #   partial_type <chr>
+#> #   partial_type <chr>, exponentiated <lgl>
 ```
 
 ## References

@@ -359,9 +359,11 @@ table_regression(
   [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html); applied
   per-model and per `estimate_type` (B and AME p-values are adjusted
   independently within their own families). The tests of the smooth
-  terms of a GAM join the B family. Active adjustments are documented in
-  the footer (method + family size). See the *Multiple-comparison
-  adjustment* section for when this is and is not appropriate.
+  terms of a GAM join the B family. A term-level test (`"partial_f"`,
+  `"partial_chi2"`) counts once per term in its own family, a factor's
+  included. Active adjustments are documented in the footer (method +
+  family size). See the *Multiple-comparison adjustment* section for
+  when this is and is not appropriate.
 
 - show_columns:
 
@@ -2373,16 +2375,17 @@ if (requireNamespace("clubSandwich", quietly = TRUE)) {
 if (requireNamespace("broom", quietly = TRUE)) {
   broom::tidy(table_regression(fit))
 }
-#> # A tibble: 4 × 18
+#> # A tibble: 4 × 19
 #>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
 #>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
 #> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
 #> 2 M1       wellbe… NA            age   B               0.0465    0.0307  -0.0137
 #> 3 M1       wellbe… NA            sexM… B               3.86      0.905    2.08  
 #> 4 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
-#> # ℹ 10 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> # ℹ 11 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
 #> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
-#> #   factor_term <chr>, factor_level <chr>, partial_type <chr>
+#> #   factor_term <chr>, factor_level <chr>, partial_type <chr>,
+#> #   exponentiated <lgl>
 
 if (FALSE) { # \dontrun{
 # ---- Rich-format outputs (require optional Suggests packages) ----

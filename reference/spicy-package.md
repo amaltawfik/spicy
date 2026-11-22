@@ -113,6 +113,10 @@ clock rather than the parent family's):
   [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md),
   with `table_regression(layout = "stacked")`, since 0.15.0
 
+- One exposure across several outcomes:
+  [`table_regression_outcomes()`](https://amaltawfik.github.io/spicy/reference/table_regression_outcomes.md),
+  since 0.15.0
+
 **Internal API** (not part of the public surface; can change without
 notice – avoid calling directly from downstream code):
 

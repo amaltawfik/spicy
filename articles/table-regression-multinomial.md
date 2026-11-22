@@ -742,21 +742,22 @@ the reference:
 ``` r
 
 broom::tidy(table_regression(fit, show_columns = c("b", "ame")))
-#> # A tibble: 31 × 18
+#> # A tibble: 31 × 19
 #>    model_id outcome    outcome_level term  estimate_type estimate std.error conf.low conf.high statistic    df df.residual p.value
 #>    <chr>    <chr>      <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>     <dbl>     <dbl> <dbl>       <dbl>   <dbl>
-#>  1 M1       employmen… Student       Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672       -3.70    Inf          NA 2.13e-4
-#>  2 M1       employmen… Unemployed    Unem… B             -7.23e-1  0.333    -1.38e+0 -0.0716      -2.18    Inf          NA 2.96e-2
-#>  3 M1       employmen… Inactive      Inac… B             -1.75e+0  0.400    -2.53e+0 -0.965       -4.37    Inf          NA 1.23e-5
-#>  4 M1       employmen… Student       Stud… ame           -1.06e-3  0.000641 -2.32e-3  0.000199    -1.65    Inf          NA 9.89e-2
-#>  5 M1       employmen… Student       Stud… B             -1.04e-2  0.00627  -2.27e-2  0.00188     -1.66    Inf          NA 9.70e-2
-#>  6 M1       employmen… Unemployed    Unem… ame           -2.72e-4  0.000683 -1.61e-3  0.00107     -0.398   Inf          NA 6.91e-1
-#>  7 M1       employmen… Unemployed    Unem… B             -3.38e-3  0.00583  -1.48e-2  0.00804     -0.580   Inf          NA 5.62e-1
-#>  8 M1       employmen… Inactive      Inac… ame            3.91e-4  0.000591 -7.67e-4  0.00155      0.661   Inf          NA 5.08e-1
-#>  9 M1       employmen… Inactive      Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155       0.360   Inf          NA 7.19e-1
-#> 10 M1       employmen… Employed      Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278      0.998   Inf          NA 3.18e-1
+#>  1 M1       Student    Student       Stud… B             -1.43e+0  0.386    -2.18e+0 -0.672       -3.70    Inf          NA 2.13e-4
+#>  2 M1       Unemployed Unemployed    Unem… B             -7.23e-1  0.333    -1.38e+0 -0.0716      -2.18    Inf          NA 2.96e-2
+#>  3 M1       Inactive   Inactive      Inac… B             -1.75e+0  0.400    -2.53e+0 -0.965       -4.37    Inf          NA 1.23e-5
+#>  4 M1       Student    Student       Stud… ame           -1.06e-3  0.000641 -2.32e-3  0.000199    -1.65    Inf          NA 9.89e-2
+#>  5 M1       Student    Student       Stud… B             -1.04e-2  0.00627  -2.27e-2  0.00188     -1.66    Inf          NA 9.70e-2
+#>  6 M1       Unemployed Unemployed    Unem… ame           -2.72e-4  0.000683 -1.61e-3  0.00107     -0.398   Inf          NA 6.91e-1
+#>  7 M1       Unemployed Unemployed    Unem… B             -3.38e-3  0.00583  -1.48e-2  0.00804     -0.580   Inf          NA 5.62e-1
+#>  8 M1       Inactive   Inactive      Inac… ame            3.91e-4  0.000591 -7.67e-4  0.00155      0.661   Inf          NA 5.08e-1
+#>  9 M1       Inactive   Inactive      Inac… B              2.40e-3  0.00667  -1.07e-2  0.0155       0.360   Inf          NA 7.19e-1
+#> 10 M1       Employed   Employed      Empl… ame            9.39e-4  0.000941 -9.06e-4  0.00278      0.998   Inf          NA 3.18e-1
 #> # ℹ 21 more rows
-#> # ℹ 5 more variables: test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>, partial_type <chr>
+#> # ℹ 6 more variables: test_type <chr>, is_intercept <lgl>, factor_term <chr>, factor_level <chr>, partial_type <chr>,
+#> #   exponentiated <lgl>
 ```
 
 ## References

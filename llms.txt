@@ -929,6 +929,8 @@ returns the supported model classes.
   : Regression coefficient summary table
 - [`table_regression_uv()`](https://amaltawfik.github.io/spicy/reference/table_regression_uv.md)
   : Univariable screening table (with optional multivariable merge)
+- [`table_regression_outcomes()`](https://amaltawfik.github.io/spicy/reference/table_regression_outcomes.md)
+  : One exposure across several outcomes
 - [`table_stack()`](https://amaltawfik.github.io/spicy/reference/table_stack.md)
   : Stack tables one under the other
 - [`table_regression_models()`](https://amaltawfik.github.io/spicy/reference/table_regression_models.md)
@@ -1205,6 +1207,9 @@ Documented here for direct invocation with custom arguments (e.g.,
 
 - [`terms(`*`<spicy_uv_screen>`*`)`](https://amaltawfik.github.io/spicy/reference/terms.spicy_uv_screen.md)
   : Terms method for univariable screen bundles
+
+- [`terms(`*`<spicy_outcomes_screen>`*`)`](https://amaltawfik.github.io/spicy/reference/terms.spicy_outcomes_screen.md)
+  : Terms method for bundles of one model per outcome
 
 - [`as_flextable(`*`<spicy_flextable>`*`)`](https://amaltawfik.github.io/spicy/reference/as_flextable.spicy_flextable.md)
   : Convert a spicy flextable output to a plain flextable

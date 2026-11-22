@@ -562,6 +562,29 @@
 
 ### New features
 
+- New
+  [`table_regression_outcomes()`](https://amaltawfik.github.io/spicy/reference/table_regression_outcomes.md),
+  experimental: one exposure across several outcomes. It fits one model
+  per outcome, each with the same exposure and the same covariates, and
+  shows the coefficients of the exposure in one table: one row per
+  outcome for a numeric exposure, one block of levels per outcome for a
+  factor. An outcome is fitted by
+  [`lm()`](https://rdrr.io/r/stats/lm.html), or by
+  [`glm()`](https://rdrr.io/r/stats/glm.html) with the family `family`
+  gives it, so linear and logistic models can share a table. Under
+  `exponentiate = TRUE` the column is then headed “Estimate” and each
+  outcome names its measure (“smoking (OR)”, “bmi (B)”). The p-values
+  are adjusted across the outcomes by default (`p_adjust = "holm"`). The
+  note says that the models are fitted separately, names the covariates
+  and gives the range of the sample sizes.
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  [`glance()`](https://generics.r-lib.org/reference/glance.html) give
+  one row per outcome.
+
+- [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"` of a regression table gain an `exponentiated`
+  column, `TRUE` on the rows whose estimate is shown exponentiated.
+
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
   gains `fallback`, for a model class that has no table of its own. Such
   a class is still refused by default, and the error now says how to
@@ -1210,6 +1233,18 @@
   says that each change statistic compares a model with the previous
   one. `anova(m1, m2, m3)` tests each step on the residual variance of
   the largest model and gives another F.
+
+- [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)
+  with `p_adjust`: the test of a term (`"partial_f"`, `"partial_chi2"`)
+  counts once in its family. It was counted once per row of the term, so
+  the adjusted p-values that
+  [`tidy()`](https://generics.r-lib.org/reference/tidy.html) and
+  `output = "long"` give for these tests were too large for a factor of
+  three levels or more, a [`poly()`](https://rdrr.io/r/stats/poly.html)
+  or `ns()` term and an interaction with a factor. For
+  `lm(mpg ~ factor(cyl) + wt + hp)` under Holm, the test of
+  `factor(cyl)` had 0.19 where the three tests of the model give 0.13.
+  The p-values of the coefficients do not change.
 
 - [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md):
   a coefficient the model could not estimate (an aliased column, a

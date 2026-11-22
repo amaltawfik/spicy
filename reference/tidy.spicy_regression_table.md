@@ -57,10 +57,14 @@ names the hypothesis of the partial rows' test, `"II"` or `"III"` (the
 [`table_regression()`](https://amaltawfik.github.io/spicy/reference/table_regression.md)),
 and is `NA` on every other row. `outcome_level` names the response
 category of per-category rows (ordinal / multinomial average marginal
-effects) and is `NA` for single-outcome models. Reference-row
-placeholders (factor reference levels) and singular coefficients (NA
-estimates) are dropped. Columns:
-`model_id, outcome, outcome_level, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, df.residual, p.value, test_type, is_intercept, factor_term, factor_level, partial_type`.
+effects) and is `NA` for single-outcome models. `exponentiated` is
+`TRUE` on the rows whose `estimate`, `std.error` and interval are
+exponentiated (`exponentiate = TRUE` on a model with a log or logit
+link: odds, rate, hazard ratios), `FALSE` on every other row, so that a
+table mixing scales says which is which. Reference-row placeholders
+(factor reference levels) and singular coefficients (NA estimates) are
+dropped. Columns:
+`model_id, outcome, outcome_level, term, estimate_type, estimate, std.error, conf.low, conf.high, statistic, df, df.residual, p.value, test_type, is_intercept, factor_term, factor_level, partial_type, exponentiated`.
 
 `glance()` returns one row per `(model_id, outcome)` with model-level
 statistics. Columns:

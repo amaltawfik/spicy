@@ -1954,7 +1954,7 @@ fit <- lm(wellbeing_score ~ age + sex + smoking, data = sochealth)
 out <- table_regression(fit, standardized = "refit")
 
 broom::tidy(out)
-#> # A tibble: 8 × 18
+#> # A tibble: 8 × 19
 #>   model_id outcome outcome_level term  estimate_type estimate std.error conf.low
 #>   <chr>    <chr>   <chr>         <chr> <chr>            <dbl>     <dbl>    <dbl>
 #> 1 M1       wellbe… NA            (Int… B              65.2       1.66    62.0   
@@ -1965,9 +1965,10 @@ broom::tidy(out)
 #> 6 M1       wellbe… NA            sexM… beta            0.247     0.0579   0.133 
 #> 7 M1       wellbe… NA            smok… B              -1.72      1.11    -3.89  
 #> 8 M1       wellbe… NA            smok… beta           -0.110     0.0708  -0.249 
-#> # ℹ 10 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
+#> # ℹ 11 more variables: conf.high <dbl>, statistic <dbl>, df <dbl>,
 #> #   df.residual <dbl>, p.value <dbl>, test_type <chr>, is_intercept <lgl>,
-#> #   factor_term <chr>, factor_level <chr>, partial_type <chr>
+#> #   factor_term <chr>, factor_level <chr>, partial_type <chr>,
+#> #   exponentiated <lgl>
 broom::glance(out)
 #> # A tibble: 1 × 18
 #>   model_id outcome       nobs weighted_nobs r.squared adj.r.squared omega2 sigma
